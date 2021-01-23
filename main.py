@@ -1,22 +1,23 @@
-import config
 import discord
+import src.config as config
 from src.functions import *
-import shelve
+from src.privateCommands import *
 from discord.utils import get
+from src.config import privateCommands
+
 
 client = discord.Client()
 LOGGER = config.getLogger()
 
-valentineCommandAnon = '!валентика'
-valentineCommandDeAnon = '!девалентика'
-simpleMesageCommand = '!m'
-voiceCommand = '!connect'
+
+guildCommands = []
 
 
 
 @client.event
 async def on_ready():
     LOGGER.info('Successfully connected')
+
     '''
     channel = client.get_channel(791757047800659969)
     message = await channel.fetch_message(793189861065490452)
@@ -26,92 +27,82 @@ async def on_ready():
         print()
     '''
 
-
-
-
 @client.event
 async def on_message(message):
 
     if message.author == client.user:
         return
 
-    #LOGGER.info(message)
+    #LOGGER.info(message.channel)
 
-    urlImage = ''
-    logChannel = client.get_channel(config.logChannel)
-    messageChannel = client.get_channel(config.messageChannel)
+    urlImage = None
     userName = message.author.display_name
+    UID = message.author.id
+    msg = message.content
+
+    if message.attachments:
+        urlImage = message.attachments[0].url
+
+    #private messages
+    if isCommand(msg, privateCommands.values()):
+        if str(message.channel.type) == 'private':
+
+            splitStr = privateCommands['valentineCommandAnon']
+            if msg.startswith(splitStr):
+                await valentineCommand(client = client,
+                                       message = message,
+                                       UID = UID,
+                                       splitStr = splitStr,
+                                       urlImage = urlImage)
 
 
-    #only private messages
-    try:
-        UID = message.channel.recipient.id
+            splitStr = privateCommands['valentineCommandDeAnon']
+            if msg.startswith(splitStr):
+                await valentineCommand(client = client,
+                                       message = message,
+                                       UID = UID,
+                                       splitStr = splitStr,
+                                       urlImage = urlImage,
+                                       anon = False)
 
-        #check attachments
-        if message.attachments:
-            if len(message.attachments) > 1:
-                await message.channel.send('Слишком много дополнительных файлов.\nВы можете прикрепить только одну картинку.')
-                return
-            else:
-                urlImage = message.attachments[0].url
+            splitStr = privateCommands['deleteValentine']
+            if msg.startswith(splitStr):
+                await deleteValentine(client = client,
+                                      message = message,
+                                      UID = UID,
+                                      splitStr = splitStr)
 
-        if message.content.startswith(valentineCommandAnon):
-            embedLog = createEmbed(title = "Новая заявка",
-                                   description = 'Пользователь - <@{0}>\nСообщение - {1}\n'.format(UID, message.content.split(valentineCommandAnon)[1]),
-                                   color = 0x00ff00,
-                                   urlImage = urlImage)
+            if msg.startswith(privateCommands['simpleMesageCommand']):
+                logChannel = client.get_channel(346775939709009920)
+                logChannel.send(msg.split(simpleMesageCommand)[1])
 
-            embedMes = createEmbed(title = "Анонимная валентинка!",
-                                   description = '{0}\n'.format(message.content.split(valentineCommandAnon)[1]),
-                                   color = 0x00ff00,
-                                   urlImage = urlImage,
-                                   thumbnail = config.thumbnail)
+        # channel messages
+        else:
+            timeMsg = await message.channel.send('<@{0}>, эта команда только для личных сообщений'.format(UID))
+            await message.delete()
+            await timeMsg.delete(delay = 3)
 
-            await logChannel.send(embed=embedLog)
-            await messageChannel.send(embed=embedMes)
-            await message.channel.send('Анонимная валентинка успешно отправлена!')
+        return
 
-        if message.content.startswith(valentineCommandDeAnon):
-            embedLog = createEmbed(title = "Новая заявка",
-                                   description = '**Пользователь** - <@{0}>\n**Сообщение** - {1}\n'.format(UID, message.content.split(valentineCommandDeAnon)[1]),
-                                   color = 0x00ff00,
-                                   urlImage = urlImage)
+    elif isCommand(msg, guildCommands):
+        return
 
-            embedMes = createEmbed(title = "Валентинка от {0}!".format(userName),
-                                   description = '{1}\n'.format(UID, message.content.split(valentineCommandDeAnon)[1]),
-                                   color = 0x00ff00,
-                                   urlImage = urlImage,
-                                   thumbnail = config.thumbnail)
-
-            await logChannel.send(embed=embedLog)
-            await messageChannel.send(embed=embedMes)
-            await message.channel.send('Неанонимная валентинка успешно отправлена!')
-
-        if message.content.startswith(simpleMesageCommand):
-            logChannel = client.get_channel(346775939709009920)
-            await logChannel.send(message.content.split(simpleMesageCommand)[1])
-
-
-    except AttributeError:
-        pass
-
-    except Exception as e:
-        LOGGER.exception('Exception: ' + str(e))
 
 @client.event
 async def on_voice_state_update(member, before, after):
     if member.id == config.yokoId:
-        if before.channel and after.channel:
+
+        if before.channel and after.channel and before.channel.id != after.channel.id:
             channel = discord.utils.get(client.voice_clients, channel=before.channel)
             await channel.disconnect()
             channel = client.get_channel(after.channel.id)
             await channel.connect()
 
-        elif before.channel:
+        elif before.channel and before.self_mute == after.self_mute and before.self_deaf == after.self_deaf:
             channel = discord.utils.get(client.voice_clients, channel=before.channel)
             await channel.disconnect()
 
-        else:
+        elif after.channel and before.self_mute == after.self_mute and before.self_deaf == after.self_deaf:
             channel = client.get_channel(after.channel.id)
             await channel.connect()
     else:

@@ -15,3 +15,10 @@ async def delMsg(client, channelID, msgID):
     channel = client.get_channel(733631069542416387)
     msg = await channel.fetch_message(801580586636279840)
     await msg.delete()
+
+
+def isCommand(msg, cmdList):
+    for cmd in cmdList:
+        if len(msg.split(cmd)) >= 2: return 1
+
+    return 0
