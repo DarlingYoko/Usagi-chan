@@ -1,0 +1,5 @@
+doc.txt
+readData.py
+/src/__pycache__
+/events/__pycache__
+testConnect.py
