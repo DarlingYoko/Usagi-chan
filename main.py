@@ -37,7 +37,6 @@ class UsahiChan:
 
 
 
-
 usagi = UsahiChan()
 usagi.checkConnection()
 usagi.setMessageEvent()
@@ -45,5 +44,7 @@ usagi.setVoiceStateUpdateEvent()
 usagi.setNewReactionEvent()
 usagi.setRemoveReactionEvent()
 
-Thread(target=usagi.run).start()
-asyncio.run(checkRequests())
+
+
+Thread(target=asyncio.run, args=(checkRequests(), )).start()
+usagi.run()

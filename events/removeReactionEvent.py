@@ -24,7 +24,7 @@ async def dellEmoji(payload, client, db):
         embed = msg.embeds[0].to_dict()
     except:
         return
-    emojiIds = db.get(userId = messageId, table = 'emojiData')
+    emojiIds = db.getEmoji(userId = messageId)
     if emojiIds:# and str(userId) not in requestsData.keys():
         timeEmoji = eval(emojiIds)
         if '2️⃣' == str(emoji):
@@ -37,7 +37,7 @@ async def dellEmoji(payload, client, db):
             timeEmoji = await removeReaction(4, timeEmoji, msg, payload, embed)
 
 
-        db.update(userId = messageId, messageId = timeEmoji, table = 'emojiData')
+        db.updateEmoji(userId = messageId, messageId = timeEmoji)
 
 
 async def removeReaction(id, timeEmoji, msg, payload, embed):

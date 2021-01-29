@@ -4,10 +4,10 @@ class Database():
     def __init__(self):
         try:
             self.con = psycopg2.connect(
-                                      database="yoko_bot_test",
-                                      user="yoko_bot",
-                                      password="yoko_password",
-                                      host="62.109.11.88",
+                                      database="vzztcyjq",
+                                      user="vzztcyjq",
+                                      password="aMY1iBAoG9SBz6Vxmyl11Dxd2fT5AlTJ",
+                                      host="ziggy.db.elephantsql.com",
                                       port="5432"
                                       )
 
@@ -17,34 +17,74 @@ class Database():
         except Exception as e:
             print('Fail to connect to database')
 
+#  user TABLE
 
-    def insert(self, userId, messageId, table):
+    def insert(self, userId, messageId):
         try:
-            self.cur.execute("INSERT INTO {0} (userId, messageIDs) VALUES (\'{1}\', \'{2}\');".format(table, userId, messageId))
+            self.cur.execute("INSERT INTO requestsData (userId, messageIDs) VALUES (\'{0}\', \'{1}\');".format(userId, messageId))
             self.con.commit()
             return 1
         except:
             return 0
 
-    def get(self, userId, table):
+    def get(self, userId):
         try:
-            self.cur.execute("SELECT messageIDs from {0} where userId = \'{1}\';".format(table, userId))
+            self.cur.execute("SELECT messageIDs from requestsData where userId = \'{0}\';".format(userId))
             return self.cur.fetchall()[0][0]
         except:
             return 0
 
-    def update(self, userId, messageId, table):
-        self.cur.execute("UPDATE {0} set messageIDs = \'{1}\' where userId = \'{2}\';".format(table, messageId, userId))
-        self.con.commit()
+    def update(self, userId, messageId):
         try:
-
+            self.cur.execute("UPDATE requestsData set messageIDs = \'{0}\' where userId = \'{1}\';".format(messageId, userId))
+            self.con.commit()
             return 1
         except:
             return 0
 
-    def remove(self, userId, table):
+    def remove(self, userId):
         try:
-            self.cur.execute("DELETE from {0} where userId = \'{1}\';".format(table, userId))
+            self.cur.execute("DELETE from requestsData where userId = \'{0}\';".format(userId))
+            self.con.commit()
+            return 1
+        except:
+            return 0
+
+# emoji TABLE
+
+    def insertEmoji(self, userId, messageId, time):
+        try:
+            self.cur.execute("INSERT INTO emojiData (userId, messageIDs, createTime) VALUES (\'{0}\', \'{1}\', \'{2}\');".format(userId, messageId, time))
+            self.con.commit()
+            return 1
+        except:
+            return 0
+
+    def getEmoji(self, userId):
+        try:
+            self.cur.execute("SELECT messageIDs from emojiData where userId = \'{0}\';".format(userId))
+            return self.cur.fetchall()[0][0]
+        except:
+            return 0
+
+    def getTime(self, userId):
+        try:
+            self.cur.execute("SELECT createTime from emojiData where userId = \'{0}\';".format(userId))
+            return self.cur.fetchall()[0][0]
+        except:
+            return 0
+
+    def updateEmoji(self, userId, messageId):
+        try:
+            self.cur.execute("UPDATE emojiData set messageIDs = \'{0}\' where userId = \'{1}\';".format(messageId, userId))
+            self.con.commit()
+            return 1
+        except:
+            return 0
+
+    def removeEmoji(self, userId):
+        try:
+            self.cur.execute("DELETE from emojiData where userId = \'{0}\';".format(userId))
             self.con.commit()
             return 1
         except:

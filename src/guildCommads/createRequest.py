@@ -1,6 +1,6 @@
 import src.config as config
 from src.functions import wrongMessage, getCurrentTime, createEmbed
-import shelve
+import pickle
 from datetime import datetime
 
 async def createRequest(data, db):
@@ -97,18 +97,22 @@ async def createRequest(data, db):
     for i in range(numberOfSlots):
         await timeMsg.add_reaction(counter[i + 2])
 
-    await timeMsg.pin()
+    try:
+        await timeMsg.pin()
+    except:
+        pass
+
 
 
     userId = data['message'].author.id
-    msgIds = db.get(userId = userId, table = 'requestsData')
+    msgIds = db.get(userId = userId)
     if msgIds:
         msgIds = eval(msgIds)
         msgIds.append(timeMsg.id)
-        db.update(userId = userId, messageId = msgIds, table = 'requestsData')
+        db.update(userId = userId, messageId = msgIds)
 
     else:
         msgIds = [timeMsg.id]
-        db.insert(userId = userId, messageId = msgIds, table = 'requestsData')
+        db.insert(userId = userId, messageId = msgIds)
 
-    db.insert(userId = timeMsg.id, messageId = {}, table = 'emojiData')
+    db.insertEmoji(userId = timeMsg.id, messageId = {}, time = time)

@@ -22,8 +22,6 @@ async def fillEmoji(payload, client, db):
     emoji = payload.emoji
     channelId = payload.channel_id
 
-    emojiData = shelve.open('db/emojiData')
-
     channel = client.get_channel(channelId)
     msg = await channel.fetch_message(messageId)
     try:
@@ -33,8 +31,8 @@ async def fillEmoji(payload, client, db):
     #print(emoji)
 
 
-    msgIds = db.get(userId = userId, table = 'requestsData')
-    emojiIds = db.get(userId = messageId, table = 'emojiData')
+    msgIds = db.get(userId = userId)
+    emojiIds = db.getEmoji(userId = messageId)
     if '🔒' == str(emoji):
         if msgIds:
             msgIds = eval(msgIds)
@@ -47,18 +45,20 @@ async def fillEmoji(payload, client, db):
 
                 msgIds.remove(messageId)
                 if len(msgIds) == 0:
-                    db.remove(userId = userId, table = 'requestsData')
+                    db.remove(userId = userId)
                 else:
-                    db.update(userId = userId, messageId = msgIds, table = 'requestsData')
+                    db.update(userId = userId, messageId = msgIds)
 
-                db.remove(userId = messageId, table = 'emojiData')
-
-        else:
-            if userId != config.botId:
-                await msg.remove_reaction(emoji = emoji, member = payload.member)
+                db.removeEmoji(userId = messageId)
+                return
 
 
-    elif emojiIds:
+        if userId != config.botId:
+            await msg.remove_reaction(emoji = emoji, member = payload.member)
+        return
+
+
+    if emojiIds:
         if msgIds:
             msgIds = eval(msgIds)
             if messageId in msgIds:
@@ -75,7 +75,7 @@ async def fillEmoji(payload, client, db):
         if '4️⃣' == str(emoji):
             timeEmoji = await addReaction(4, timeEmoji, msg, payload, embed)
 
-        db.update(userId = messageId, messageId = timeEmoji, table = 'emojiData')
+        db.updateEmoji(userId = messageId, messageId = timeEmoji)
 
     if str(emoji) not in accessEmoji:
         await msg.remove_reaction(emoji = payload.emoji, member = payload.member)
