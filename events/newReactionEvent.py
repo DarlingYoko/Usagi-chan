@@ -1,6 +1,6 @@
-from src.functions import createEmbed
+from src.functions import createEmbed, newLog
 import src.config as config
-import shelve
+import shelve, datetime
 
 
 def setNewReactionEvent(self):
@@ -14,71 +14,73 @@ def setNewReactionEvent(self):
 
 
 async def fillEmoji(payload, client, db):
-
-    accessEmoji = ['🔒', '2️⃣', '3️⃣', '4️⃣']
-
-    messageId = payload.message_id
-    userId = payload.user_id
-    emoji = payload.emoji
-    channelId = payload.channel_id
-
-    channel = client.get_channel(channelId)
-    msg = await channel.fetch_message(messageId)
     try:
-        embed = msg.embeds[0].to_dict()
-    except:
-        return
-    #print(emoji)
+        accessEmoji = ['🔒', '2️⃣', '3️⃣', '4️⃣']
+
+        messageId = payload.message_id
+        userId = payload.user_id
+        emoji = payload.emoji
+        channelId = payload.channel_id
+
+        channel = client.get_channel(channelId)
+        msg = await channel.fetch_message(messageId)
+        try:
+            embed = msg.embeds[0].to_dict()
+        except:
+            return
+        #print(emoji)
 
 
-    msgIds = db.get(userId = userId)
-    emojiIds = db.getEmoji(userId = messageId)
-    if '🔒' == str(emoji):
-        if msgIds:
-            msgIds = eval(msgIds)
-            if messageId in msgIds:
-                guild = await client.fetch_guild(payload.guild_id)
-                user = await guild.fetch_member(userId)
-                newEmbed = createEmbed(description = '~~' + embed['description'] + '~~', thumbnail = embed['thumbnail']['url'], footer = embed['footer']['text'], authorName = '{0} закрыл заявку.'.format(user.display_name), authorIconURL = embed['author']['icon_url'])
-                await msg.edit(content = None, embed = newEmbed)
-                await msg.unpin()
+        msgIds = db.get(userId = userId, table = 'requestsData')
+        emojiIds = db.get(userId = messageId, table = 'emojiData')
+        if '🔒' == str(emoji):
+            if msgIds:
+                msgIds = eval(msgIds)
+                if messageId in msgIds:
+                    guild = await client.fetch_guild(payload.guild_id)
+                    user = await guild.fetch_member(userId)
+                    newEmbed = createEmbed(description = '~~' + embed['description'] + '~~', thumbnail = embed['thumbnail']['url'], footer = embed['footer']['text'], authorName = '{0} закрыл заявку.'.format(user.display_name), authorIconURL = embed['author']['icon_url'])
+                    await msg.edit(content = None, embed = newEmbed)
+                    await msg.unpin()
 
-                msgIds.remove(messageId)
-                if len(msgIds) == 0:
-                    db.remove(userId = userId)
-                else:
-                    db.update(userId = userId, messageId = msgIds)
+                    msgIds.remove(messageId)
+                    if len(msgIds) == 0:
+                        db.remove(userId = userId, table = 'requestsData')
+                    else:
+                        db.update(userId = userId, messageId = msgIds, table = 'requestsData')
 
-                db.removeEmoji(userId = messageId)
-                return
-
-
-        if userId != config.botId:
-            await msg.remove_reaction(emoji = emoji, member = payload.member)
-        return
+                    db.remove(userId = messageId, table = 'emojiData')
+                    return
 
 
-    if emojiIds:
-        if msgIds:
-            msgIds = eval(msgIds)
-            if messageId in msgIds:
-                await msg.remove_reaction(emoji = payload.emoji, member = payload.member)
-                return
+            if userId != config.botId:
+                await msg.remove_reaction(emoji = emoji, member = payload.member)
+            return
 
-        timeEmoji = eval(emojiIds)
-        if '2️⃣' == str(emoji):
-            timeEmoji = await addReaction(2, timeEmoji, msg, payload, embed)
 
-        if '3️⃣' == str(emoji):
-            timeEmoji = await addReaction(3, timeEmoji, msg, payload, embed)
+        if emojiIds:
+            if msgIds:
+                msgIds = eval(msgIds)
+                if messageId in msgIds:
+                    await msg.remove_reaction(emoji = payload.emoji, member = payload.member)
+                    return
 
-        if '4️⃣' == str(emoji):
-            timeEmoji = await addReaction(4, timeEmoji, msg, payload, embed)
+            timeEmoji = eval(emojiIds)
+            if '2️⃣' == str(emoji):
+                timeEmoji = await addReaction(2, timeEmoji, msg, payload, embed)
 
-        db.updateEmoji(userId = messageId, messageId = timeEmoji)
+            if '3️⃣' == str(emoji):
+                timeEmoji = await addReaction(3, timeEmoji, msg, payload, embed)
 
-    if str(emoji) not in accessEmoji:
-        await msg.remove_reaction(emoji = payload.emoji, member = payload.member)
+            if '4️⃣' == str(emoji):
+                timeEmoji = await addReaction(4, timeEmoji, msg, payload, embed)
+
+            db.update(userId = messageId, messageId = timeEmoji, table = 'emojiData')
+
+        if str(emoji) not in accessEmoji:
+            await msg.remove_reaction(emoji = payload.emoji, member = payload.member)
+    except Exception as e:
+        newLog('New error in new reaction event at {1}:\n{0}'.format(e, datetime.datetime.now()))
 
 
 

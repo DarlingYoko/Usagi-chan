@@ -34,3 +34,13 @@ def getCurrentTime():
 async def wrongMessage(data, title = None, description = None, delay = 10):
     embed = createEmbed(title = title, description = description)
     await data['message'].channel.send('<@{0}>'.format(data['message'].author.id), embed = embed, delete_after = delay)
+
+
+def newLog(text, new = None):
+    if new:
+        file = open('logs.txt', 'w')
+        file.write('Logs\n')
+    else:
+        file = open('logs.txt', 'w')
+    file.write('\n' + text)
+    file.close()
