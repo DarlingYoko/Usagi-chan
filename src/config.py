@@ -10,6 +10,8 @@ botId = 801153197552304129
 requestRoleID = 803362317978304512
 puficonfaId = 733631069542416384
 
+moviegoers = [yokoId, 289485158153715713]
+
 token = 'ODAxMTUzMTk3NTUyMzA0MTI5.YAciDw.Gm9x7NeXHvUrJvLfJ-tmlbD9URs'
 
 
@@ -20,7 +22,8 @@ requestThumbnail = 'https://cdn.discordapp.com/attachments/801159693404864543/80
 privateCommands = {
     'createValentine': '!валентинка',
     'simpleMessageCommand': '!m',
-    'deleteValentine': '!сотри'}
+    'deleteValentine': '!сотри',
+    'updateShedule': '!обновить'}
 
 guildCommands = {
     'createRequest': '!создать',

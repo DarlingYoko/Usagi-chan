@@ -2,12 +2,13 @@ from src.functions import isCommand, newLog
 import src.config as config
 from src.guildCommands.createRequest import createRequest
 from src.guildCommands.helpCommand import helpCommand
+from src.privatCommands.updateShedule import updateShedule
 import datetime
 
 def setMessageEvent(self):
     @self.client.event
     async def on_message(message):
-        try:
+        #try:
             if str(message.type) == 'MessageType.pins_add':
                 await message.delete()
                 return
@@ -46,6 +47,15 @@ def setMessageEvent(self):
                         else:
                             await message.channel.send('Ты не мой создатель!')
 
+                    command = config.privateCommands['updateShedule']
+                    if msg.startswith(command):
+                        if message.author.id in config.moviegoers:
+
+                            embed = updateShedule()
+                            await message.channel.send('Успешно!', embed = embed)
+                        else:
+                            await message.channel.send('У вас нет прав на использование этой команды.')
+
                 # channel messages
                 else:
                     timeMsg = await message.channel.send('<@{0}>, эта команда только для личных сообщений'.format(UID))
@@ -53,7 +63,7 @@ def setMessageEvent(self):
                     await timeMsg.delete(delay = 3)
                     #pass
                 return
-
+            '''
             if isCommand(msg, config.guildCommands.values()):
                 await message.delete()
                 if str(message.channel.type) == 'text':
@@ -72,5 +82,6 @@ def setMessageEvent(self):
 
                 else:
                     await message.channel.send('<@{0}>, эта команда только для каналов'.format(UID), delete_after = 5)
-        except Exception as e:
-            newLog('New error in message event at {1}:\n{0}'.format(e, datetime.datetime.now()))
+            '''
+        #except Exception as e:
+            #newLog('New error in message event at {1}:\n{0}'.format(e, datetime.datetime.now()))
