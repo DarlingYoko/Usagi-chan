@@ -48,6 +48,6 @@ usagi.setNewReactionEvent()
 usagi.setRemoveReactionEvent()
 
 
-
+newLog('', new = 1)
 Thread(target=asyncio.run, args=(checkRequests(), )).start()
 usagi.run()

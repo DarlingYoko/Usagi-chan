@@ -38,9 +38,9 @@ async def wrongMessage(data, title = None, description = None, delay = 10):
 
 def newLog(text, new = None):
     if new:
-        file = open('logs.txt', 'w')
-        file.write('Logs\n')
+        file = open('logs.txt', 'a')
+        file.write('\n\nLogs new start\n')
     else:
-        file = open('logs.txt', 'w')
+        file = open('logs.txt', 'a')
     file.write('\n' + text)
     file.close()
