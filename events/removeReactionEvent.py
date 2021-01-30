@@ -5,9 +5,6 @@ import shelve
 def setRemoveReactionEvent(self):
     @self.client.event
     async def on_raw_reaction_remove(payload):
-        if payload.guild_id == 346775939105161247:
-            return
-
         if payload.user_id == config.botId:
             return
         await dellEmoji(payload, self.client, self.db)

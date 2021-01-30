@@ -6,8 +6,6 @@ import shelve, datetime
 def setNewReactionEvent(self):
     @self.client.event
     async def on_raw_reaction_add(payload):
-        if payload.guild_id == 346775939105161247: # УББРАТЬ ПРИ ДЕПЛОЕ
-            return
         if payload.user_id == config.botId:
             return
         await fillEmoji(payload, self.client, self.db)
