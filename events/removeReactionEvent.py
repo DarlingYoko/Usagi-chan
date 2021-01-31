@@ -5,9 +5,6 @@ import shelve
 def setRemoveReactionEvent(self):
     @self.client.event
     async def on_raw_reaction_remove(payload):
-        if payload.guild_id == 346775939105161247:
-            return
-
         if payload.user_id == config.botId:
             return
         await dellEmoji(payload, self.client, self.db)
@@ -17,7 +14,7 @@ def setRemoveReactionEvent(self):
 async def dellEmoji(payload, client, db):
     try:
         emoji = payload.emoji
-
+        accessEmoji = {'2️⃣': 2, '3️⃣': 3, '4️⃣': 4}
         messageId = payload.message_id
         channel = client.get_channel(payload.channel_id)
         msg = await channel.fetch_message(payload.message_id)
@@ -26,19 +23,22 @@ async def dellEmoji(payload, client, db):
         except:
             return
         emojiIds = db.get(userId = messageId, table = 'emojiData')
-        if emojiIds:# and str(userId) not in requestsData.keys():
+
+        # проверка на существование заявки
+        if emojiIds:
             timeEmoji = eval(emojiIds)
-            if '2️⃣' == str(emoji):
-                timeEmoji = await removeReaction(2, timeEmoji, msg, payload, embed)
+        else:
+            return
 
-            if '3️⃣' == str(emoji):
-                timeEmoji = await removeReaction(3, timeEmoji, msg, payload, embed)
+        # Проверка на доступные эмодзи от любого другого пользователя кроме создателя заявки
+        if str(emoji) in accessEmoji.keys():
+            timeEmoji = await removeReaction(accessEmoji[str(emoji)], timeEmoji, msg, payload, embed)
 
-            if '4️⃣' == str(emoji):
-                timeEmoji = await removeReaction(4, timeEmoji, msg, payload, embed)
+            if timeEmoji != -1:
+                db.update(userId = messageId, messageId = timeEmoji, table = 'emojiData')
+            return
 
 
-            db.update(userId = messageId, messageId = timeEmoji, table = 'emojiData')
     except Exception as e:
         newLog('New error in remove reaction event at {1}:\n{0}'.format(e, datetime.datetime.now()))
 
@@ -48,8 +48,9 @@ async def removeReaction(id, timeEmoji, msg, payload, embed):
     if id in timeEmoji.keys() and timeEmoji[id] == payload.user_id:
         del timeEmoji[id]
         await removeFromEmbed(id, msg, embed)
+        return timeEmoji
 
-    return timeEmoji
+    return -1
 
 async def removeFromEmbed(id, msg, embed):
     newUser = '***{0}) Слот:** Пусто*'.format(id)

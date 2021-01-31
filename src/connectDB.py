@@ -12,11 +12,11 @@ class Database():
                                             port="5432"
                                             )
 
-            newLog('Successfully connected to database at {0}'.format(datetime.datetime.now()), new = 1)
+            newLog('Successfully connected to database at {0}'.format(datetime.datetime.now()))
             self.cur = self.con.cursor()
 
         except Exception as e:
-            newLog('Fail to connect to database at {0}'.format(datetime.datetime.now()), new = 1)
+            newLog('Fail to connect to database at {0}'.format(datetime.datetime.now()))
 
 
     def insert(self, userId, messageId, time = None, user = None):

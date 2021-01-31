@@ -8,7 +8,7 @@ import datetime
 def setMessageEvent(self):
     @self.client.event
     async def on_message(message):
-        #try:
+        try:
             if str(message.type) == 'MessageType.pins_add':
                 await message.delete()
                 return
@@ -63,7 +63,7 @@ def setMessageEvent(self):
                     await timeMsg.delete(delay = 3)
                     #pass
                 return
-            '''
+            
             if isCommand(msg, config.guildCommands.values()):
                 await message.delete()
                 if str(message.channel.type) == 'text':
@@ -77,11 +77,9 @@ def setMessageEvent(self):
                     if msg.startswith(command):
                         await helpCommand(data = data)
 
-
-
-
                 else:
                     await message.channel.send('<@{0}>, эта команда только для каналов'.format(UID), delete_after = 5)
-            '''
-        #except Exception as e:
-            #newLog('New error in message event at {1}:\n{0}'.format(e, datetime.datetime.now()))
+                    
+        except Exception as e:
+            newLog('New error in message event at {1}:\n{0}'.format(e, datetime.datetime.now()))
+

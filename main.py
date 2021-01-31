@@ -26,6 +26,7 @@ class UsahiChan:
         async def on_ready():
 
             self.LOGGER.info('Successfully connected to discord')
+            await self.client.change_presence(status=discord.Status.online, activity=discord.Game("ver 1.0.0.0.2 | Учится работать |"))
             newLog('Successfully connected to discord at {0}'.format(datetime.datetime.now()))
             self.loop = asyncio.get_event_loop()
 
@@ -48,6 +49,6 @@ usagi.setNewReactionEvent()
 usagi.setRemoveReactionEvent()
 
 
-
+newLog('', new = 1)
 Thread(target=asyncio.run, args=(checkRequests(), )).start()
 usagi.run()

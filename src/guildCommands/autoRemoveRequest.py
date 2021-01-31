@@ -6,7 +6,7 @@ async def autoRemoveRequest(db, client):
     requestsList = db.getTime()
     for (msgId, time, author) in requestsList:
         time = datetime.fromtimestamp(float(time))
-        if datetime.now() - time > timedelta(seconds = 10):#(hours = 6):
+        if datetime.now() - time > timedelta(hours = 6):
             await removeRequest(db, client, msgId, author)
 
 
