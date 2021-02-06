@@ -13,7 +13,7 @@ async def checkRequests():
 class UsahiChan:
 
     def __init__(self):
-        self.config = loadConfig('src/TESTconfig')
+        self.config = loadConfig('src/config')
         intents = discord.Intents.all()
         self.client = discord.Client(intents=intents)
         self.LOGGER = getLogger()
