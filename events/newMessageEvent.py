@@ -1,6 +1,7 @@
 from src.functions import isCommand, newLog
 from src.guildCommands.createRequest import createRequest
 from src.guildCommands.helpCommand import helpCommand
+from src.privatCommands.updateShedule import updateShedule
 import sys
 
 def setMessageEvent(self):
@@ -37,6 +38,18 @@ def setMessageEvent(self):
                         data['content'] = msg.split(splitStr)[1]
                         await deleteValentine(data = data)
                     '''
+                    command = self.config['privateCommands']['updateShedule']
+                    if msg.startswith(command):
+                        if message.author.id in eval(self.config['sheduleData']['moviegoers']):
+                            embed = updateShedule()
+                            await message.channel.send('Успешно!')
+                            channel = await self.client.fetch_channel(self.config['sheduleData']['sheduleChannel'])
+                            msg = await channel.fetch_message(self.config['sheduleData']['sheduleId'])
+                            await msg.edit(embed=embed)
+                        else:
+                            await message.channel.send('У вас нет прав на использование этой команды.')
+
+
                     command = self.config['privateCommands']['simpleMessageCommand']
                     if msg.startswith(command):
                         if message.author.id == self.config['usersIDs']['yokoId']:

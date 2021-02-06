@@ -2,26 +2,11 @@
 
 Logs new start
 
-New error in creating request at 2021-02-06 19:05:35.813260:
-type - <class 'NameError'>, name - newReactionEvent.py, line - 75, error - name 'self' is not defined
+
+Logs new start
 
 
 Logs new start
 
-New error in creating request at 2021-02-06 19:07:19.710476:
-type - <class 'discord.errors.NotFound'>, name - newMessageEvent.py, line - 58, error - 404 Not Found (error code: 10008): Unknown Message
-
-New error in creating request at 2021-02-06 19:07:27.619744:
-type - <class 'discord.errors.NotFound'>, name - newMessageEvent.py, line - 58, error - 404 Not Found (error code: 10008): Unknown Message
-
-New error in creating request at 2021-02-06 19:07:30.392869:
-type - <class 'discord.errors.NotFound'>, name - newMessageEvent.py, line - 11, error - 404 Not Found (error code: 10008): Unknown Message
-
-New error in creating request at 2021-02-06 19:07:51.499091:
-type - <class 'NameError'>, name - newReactionEvent.py, line - 75, error - name 'self' is not defined
-
-New error in creating request at 2021-02-06 19:07:51.980849:
-type - <class 'NameError'>, name - newReactionEvent.py, line - 75, error - name 'self' is not defined
-
-
-Logs new start
+New error in creating request at 2021-02-06 21:38:10.888118:
+type - <class 'AttributeError'>, name - newMessageEvent.py, line - 54, error - 'Message' object has no attribute 'startswith'
