@@ -10,3 +10,9 @@ Logs new start
 
 New error in creating request at 2021-02-06 21:38:10.888118:
 type - <class 'AttributeError'>, name - newMessageEvent.py, line - 54, error - 'Message' object has no attribute 'startswith'
+
+
+Logs new start
+
+New error in creating request at 2021-02-06 21:41:46.717009:
+type - <class 'AttributeError'>, name - newMessageEvent.py, line - 54, error - 'Message' object has no attribute 'startswith'

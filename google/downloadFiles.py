@@ -41,13 +41,11 @@ def downloadShedule():
         done = False
         while done is False:
             status, done = downloader.next_chunk()
-            print ("Download %d%%." % int(status.progress() * 100))
 
         fh.seek(0)
         with open(file_name, 'wb') as f:
             shutil.copyfileobj(fh, f)
 
-        print("File Downloaded")
 
         return 1
 
