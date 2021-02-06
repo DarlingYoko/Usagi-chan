@@ -1,19 +1,19 @@
 from datetime import datetime, timedelta
-import src.config as config
 from src.functions import createEmbed, newLog
+import sys
 
-async def autoRemoveRequest(db, client):
-    requestsList = db.getTime()
+async def autoRemoveRequest(self):
+    requestsList = self.db.getTime()
     for (msgId, time, author) in requestsList:
         time = datetime.fromtimestamp(float(time))
         if datetime.now() - time > timedelta(hours = 6):
-            await removeRequest(db, client, msgId, author)
+            await removeRequest(self, msgId, author)
 
 
-async def removeRequest(db, client, msgId, author):
+async def removeRequest(self, msgId, author):
     try:
-        guild = await client.fetch_guild(config.puficonfaId)
-        channel = await client.fetch_channel(config.requestChannel)
+        guild = await self.client.fetch_guild(self.config['data']['guildId'])
+        channel = await self.client.fetch_channel(self.config['requestsData']['channel'])
         user = await guild.fetch_member(author)
         msg = await channel.fetch_message(msgId)
         embed = msg.embeds[0].to_dict()
@@ -23,19 +23,20 @@ async def removeRequest(db, client, msgId, author):
         await msg.edit(content = None, embed = newEmbed)
         await msg.unpin()
 
-        msgIds = db.get(userId = author, table = 'requestsData')
+        msgIds = self.db.get(userId = author, table = 'requestsData')
         if msgIds:
             msgIds = eval(msgIds)
         else:
             return
         msgIds.remove(int(msgId))
         if len(msgIds) == 0:
-            db.remove(userId = author, table = 'requestsData')
+            self.db.remove(userId = author, table = 'requestsData')
         else:
-            db.update(userId = author, messageId = msgIds, table = 'requestsData')
+            self.db.update(userId = author, messageId = msgIds, table = 'requestsData')
 
-        db.remove(userId = msgId, table = 'emojiData')
+        self.db.remove(userId = msgId, table = 'emojiData')
 
     except Exception as e:
-        newLog('New error in auto remove request at {1}:\n{0}'.format(e, datetime.datetime.now()))
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        newLog(exc_type, exc_obj, exc_tb, e)
     return

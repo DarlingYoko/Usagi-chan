@@ -1,17 +1,16 @@
 from src.functions import createEmbed, newLog
-import src.config as config
-import shelve, datetime
+import shelve, sys
 
 
 def setNewReactionEvent(self):
     @self.client.event
     async def on_raw_reaction_add(payload):
-        if payload.user_id == config.botId:
+        if payload.user_id == self.config['usersIDs'].getint('botId'):
             return
-        await fillEmoji(payload, self.client, self.db)
+        await fillEmoji(self, payload)
 
 
-async def fillEmoji(payload, client, db):
+async def fillEmoji(self, payload):
     try:
         accessEmoji = {'2️⃣': 2, '3️⃣': 3, '4️⃣': 4}
 
@@ -20,7 +19,7 @@ async def fillEmoji(payload, client, db):
         emoji = payload.emoji
         channelId = payload.channel_id
 
-        channel = client.get_channel(channelId)
+        channel = self.client.get_channel(channelId)
         msg = await channel.fetch_message(messageId)
         try:
             embed = msg.embeds[0].to_dict()
@@ -28,8 +27,8 @@ async def fillEmoji(payload, client, db):
             return
 
 
-        msgIds = db.get(userId = userId, table = 'requestsData')
-        emojiIds = db.get(userId = messageId, table = 'emojiData')
+        msgIds = self.db.get(userId = userId, table = 'requestsData')
+        emojiIds = self.db.get(userId = messageId, table = 'emojiData')
 
 
         # проверка на существование заявки
@@ -43,7 +42,7 @@ async def fillEmoji(payload, client, db):
             if msgIds:
                 msgIds = eval(msgIds)
                 if messageId in msgIds:
-                    guild = await client.fetch_guild(payload.guild_id)
+                    guild = await self.client.fetch_guild(payload.guild_id)
                     user = await guild.fetch_member(userId)
                     newEmbed = createEmbed(description = '~~' + embed['description'] + '~~', thumbnail = embed['thumbnail']['url'], footer = embed['footer']['text'], authorName = '{0} закрыл заявку.'.format(user.display_name), authorIconURL = embed['author']['icon_url'])
                     await msg.edit(content = None, embed = newEmbed)
@@ -51,14 +50,14 @@ async def fillEmoji(payload, client, db):
 
                     msgIds.remove(messageId)
                     if len(msgIds) == 0:
-                        db.remove(userId = userId, table = 'requestsData')
+                        self.db.remove(userId = userId, table = 'requestsData')
                     else:
-                        db.update(userId = userId, messageId = msgIds, table = 'requestsData')
+                        self.db.update(userId = userId, messageId = msgIds, table = 'requestsData')
 
-                    db.remove(userId = messageId, table = 'emojiData')
+                    self.db.remove(userId = messageId, table = 'emojiData')
                     return
 
-            if userId != config.botId:
+            if userId != self.config['usersIDs']['botId']:
                 await msg.remove_reaction(emoji = emoji, member = payload.member)
             return
 
@@ -73,10 +72,10 @@ async def fillEmoji(payload, client, db):
 
         # Проверка на доступные эмодзи от любого другого пользователя кроме создателя заявки
         if str(emoji) in accessEmoji.keys():
-            timeEmoji = await addReaction(accessEmoji[str(emoji)], timeEmoji, msg, payload, embed)
+            timeEmoji = await addReaction(self, accessEmoji[str(emoji)], timeEmoji, msg, payload, embed)
 
             if timeEmoji:
-                db.update(userId = messageId, messageId = timeEmoji, table = 'emojiData')
+                self.db.update(userId = messageId, messageId = timeEmoji, table = 'emojiData')
             return
 
 
@@ -85,20 +84,21 @@ async def fillEmoji(payload, client, db):
             await msg.remove_reaction(emoji = payload.emoji, member = payload.member)
 
     except Exception as e:
-        newLog('New error in new reaction event at {1}:\n{0}'.format(e, datetime.datetime.now()))
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        newLog(exc_type, exc_obj, exc_tb, e)
 
 
 
-async def addReaction(id, timeEmoji, msg, payload, embed):
+async def addReaction(self, id, timeEmoji, msg, payload, embed):
     if id not in timeEmoji.keys():
-        if payload.user_id in timeEmoji.values() and payload.user_id != config.botId:
+        if payload.user_id in timeEmoji.values() and payload.user_id != self.config['usersIDs']['botId']:
             await msg.remove_reaction(emoji = payload.emoji, member = payload.member)
             return 0
         else:
             timeEmoji[id] = payload.user_id
             await addInEmbed(id, msg, payload, embed)
     else:
-        if payload.user_id != config.botId:
+        if payload.user_id != self.config['usersIDs']['botId']:
             await msg.remove_reaction(emoji = payload.emoji, member = payload.member)
             return 0
 

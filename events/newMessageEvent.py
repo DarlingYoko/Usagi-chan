@@ -1,8 +1,7 @@
 from src.functions import isCommand, newLog
-import src.config as config
 from src.guildCommands.createRequest import createRequest
 from src.guildCommands.helpCommand import helpCommand
-import datetime
+import sys
 
 def setMessageEvent(self):
     @self.client.event
@@ -16,16 +15,16 @@ def setMessageEvent(self):
                 return
 
             msg = message.content
-            data = {'client': self.client,
+            data = {
                     'attachmentURL': None,
-                    'message': message}
+                    'message': message
+                    }
 
             if message.attachments:
                 data['urlImage'] = message.attachments[0].url
 
             #private messages
-
-            if isCommand(msg, config.privateCommands.values()):
+            if isCommand(msg, self.config['privateCommands'].values()):
                 if str(message.channel.type) == 'private':
                     '''
                     splitStr = privateCommands['createValentine']
@@ -38,9 +37,9 @@ def setMessageEvent(self):
                         data['content'] = msg.split(splitStr)[1]
                         await deleteValentine(data = data)
                     '''
-                    command = config.privateCommands['simpleMessageCommand']
+                    command = self.config['privateCommands']['simpleMessageCommand']
                     if msg.startswith(command):
-                        if message.author.id == config.yokoId:
+                        if message.author.id == self.config['usersIDs']['yokoId']:
                             channel = self.client.get_channel(346775939709009920)
                             await channel.send(msg.split(command)[1])
                         else:
@@ -54,21 +53,23 @@ def setMessageEvent(self):
                     #pass
                 return
 
-            if isCommand(msg, config.guildCommands.values()):
+
+            if isCommand(msg, self.config['guildCommands'].values()):
                 await message.delete()
                 if str(message.channel.type) == 'text':
 
-                    command = config.guildCommands['createRequest']
+                    command = self.config['guildCommands']['createRequest']
                     if msg.startswith(command):
                         data['content'] = msg.split(command)[1]
-                        await createRequest(data = data, db = self.db)
+                        await createRequest(self, data = data)
 
-                    command = config.guildCommands['helpCommand']
+                    command = self.config['guildCommands']['helpCommand']
                     if msg.startswith(command):
-                        await helpCommand(data = data)
+                        await helpCommand(self, data = data)
 
                 else:
                     await message.channel.send('<@{0}>, эта команда только для каналов'.format(UID), delete_after = 5)
-                    
+
         except Exception as e:
-            newLog('New error in message event at {1}:\n{0}'.format(e, datetime.datetime.now()))
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            newLog(exc_type, exc_obj, exc_tb, e)

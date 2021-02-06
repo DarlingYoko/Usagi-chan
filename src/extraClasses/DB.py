@@ -1,22 +1,22 @@
-import psycopg2, datetime
+import psycopg2, datetime, sys
 from src.functions import newLog
 
 class Database():
-    def __init__(self):
+    def __init__(self, usagi):
         try:
             self.con = psycopg2.connect(
-                                            database="yoko_bot_test",
-                                            user="yoko_bot",
-                                            password="yoko_password",
-                                            host="62.109.11.88",
-                                            port="5432"
-                                            )
+                                        database = usagi.config['configDB']['database'],
+                                        user = usagi.config['configDB']['user'],
+                                        password = usagi.config['configDB']['password'],
+                                        host = usagi.config['configDB']['host'],
+                                        port = usagi.config['configDB']['port']
+                                        )
 
-            newLog('Successfully connected to database at {0}'.format(datetime.datetime.now()))
             self.cur = self.con.cursor()
 
         except Exception as e:
-            newLog('Fail to connect to database at {0}'.format(datetime.datetime.now()))
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            newLog(exc_type, exc_obj, exc_tb, e)
 
 
     def insert(self, userId, messageId, time = None, user = None):
@@ -28,7 +28,8 @@ class Database():
             self.con.commit()
             return 1
         except Exception as e:
-            newLog('New error in insert db at {1}:\n{0}'.format(e, datetime.datetime.now()))
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            newLog(exc_type, exc_obj, exc_tb, e)
             return 0
 
     def get(self, userId, table):
@@ -36,7 +37,6 @@ class Database():
             self.cur.execute("SELECT messageIDs from {0} where userId = \'{1}\';".format(table, userId))
             return self.cur.fetchall()[0][0]
         except Exception as e:
-            newLog('New error in get db at {1}:\n{0}'.format(e, datetime.datetime.now()))
             return 0
 
     def update(self, userId, messageId, table):
@@ -45,7 +45,8 @@ class Database():
             self.con.commit()
             return 1
         except Exception as e:
-            newLog('New error in update db at {1}:\n{0}'.format(e, datetime.datetime.now()))
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            newLog(exc_type, exc_obj, exc_tb, e)
             return 0
 
     def remove(self, userId, table):
@@ -54,7 +55,8 @@ class Database():
             self.con.commit()
             return 1
         except Exception as e:
-            newLog('New error in remove db at {1}:\n{0}'.format(e, datetime.datetime.now()))
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            newLog(exc_type, exc_obj, exc_tb, e)
             return 0
 
     def getTime(self):
@@ -62,5 +64,6 @@ class Database():
             self.cur.execute("SELECT userId, createTime, author from emojiData;")
             return self.cur.fetchall()
         except Exception as e:
-            newLog('New error in get time db at {1}:\n{0}'.format(e, datetime.datetime.now()))
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            newLog(exc_type, exc_obj, exc_tb, e)
             return 0

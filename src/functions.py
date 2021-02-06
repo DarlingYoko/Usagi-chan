@@ -1,7 +1,6 @@
-import discord
+import discord, pytz, logging.config, configparser
 from datetime import datetime
-import pytz
-
+import sys, os
 
 def createEmbed(title = None, description = None, color = 0x00ff00, urlImage = None, thumbnail = None, footer = None, authorName = None, authorIconURL = None):
     embed = discord.Embed(title = title, description = description, color = color)
@@ -36,11 +35,45 @@ async def wrongMessage(data, title = None, description = None, delay = 10):
     await data['message'].channel.send('<@{0}>'.format(data['message'].author.id), embed = embed, delete_after = delay)
 
 
-def newLog(text, new = None):
+def newLog(exc_type, exc_obj, exc_tb, e, new = None):
+    file = open('logs.txt', 'a')
     if new:
-        file = open('logs.txt', 'a')
         file.write('\n\nLogs new start\n')
     else:
-        file = open('logs.txt', 'a')
-    file.write('\n' + text)
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        file.write('\n' + 'New error in creating request at {0}:\ntype - {1}, name - {2}, line - {3}, error - {4}\n'.format(datetime.now(), exc_type, fname, exc_tb.tb_lineno, e))
     file.close()
+
+
+def loadConfig(name):
+    config = configparser.ConfigParser()
+    config.read('{0}.ini'.format(name), encoding = 'UTF8')
+    return config
+
+
+def getLogger():
+    logging.config.dictConfig({
+        "version": 1,
+        "disable_existing_loggers": False,
+        "formatters": {
+            "default": {
+                "format": "[%(name)s] %(message)s"
+            }
+        },
+        "handlers": {
+            "console": {
+                "class": "logging.StreamHandler",
+                "level": "INFO",
+                "formatter": "default",
+                "stream": "ext://sys.stdout"
+            }
+        },
+        "root": {
+            "level": "INFO",
+            "handlers": [
+                "console"
+            ]
+        }
+    })
+
+    return logging.getLogger()

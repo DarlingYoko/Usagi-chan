@@ -1,28 +1,27 @@
 from src.functions import createEmbed, newLog
-import src.config as config
-import shelve
+import shelve, sys
 
 def setRemoveReactionEvent(self):
     @self.client.event
     async def on_raw_reaction_remove(payload):
-        if payload.user_id == config.botId:
+        if payload.user_id == self.config['usersIDs'].getint('botId'):
             return
-        await dellEmoji(payload, self.client, self.db)
+        await dellEmoji(self, payload)
 
 
 
-async def dellEmoji(payload, client, db):
+async def dellEmoji(self, payload):
     try:
         emoji = payload.emoji
         accessEmoji = {'2️⃣': 2, '3️⃣': 3, '4️⃣': 4}
         messageId = payload.message_id
-        channel = client.get_channel(payload.channel_id)
+        channel = self.client.get_channel(payload.channel_id)
         msg = await channel.fetch_message(payload.message_id)
         try:
             embed = msg.embeds[0].to_dict()
         except:
             return
-        emojiIds = db.get(userId = messageId, table = 'emojiData')
+        emojiIds = self.db.get(userId = messageId, table = 'emojiData')
 
         # проверка на существование заявки
         if emojiIds:
@@ -35,12 +34,13 @@ async def dellEmoji(payload, client, db):
             timeEmoji = await removeReaction(accessEmoji[str(emoji)], timeEmoji, msg, payload, embed)
 
             if timeEmoji != -1:
-                db.update(userId = messageId, messageId = timeEmoji, table = 'emojiData')
+                self.db.update(userId = messageId, messageId = timeEmoji, table = 'emojiData')
             return
 
 
     except Exception as e:
-        newLog('New error in remove reaction event at {1}:\n{0}'.format(e, datetime.datetime.now()))
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        newLog(exc_type, exc_obj, exc_tb, e)
 
 
 async def removeReaction(id, timeEmoji, msg, payload, embed):

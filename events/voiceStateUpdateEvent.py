@@ -1,4 +1,3 @@
-import src.config as config
 import discord
 
 def setVoiceStateUpdateEvent(self):
@@ -6,7 +5,7 @@ def setVoiceStateUpdateEvent(self):
     async def on_voice_state_update(member, before, after):
 
         try:
-            if member.id == config.yokoId:
+            if member.id == self.config['usersIDs'].getint('botId'):
 
                 if before.channel and after.channel and before.channel.id != after.channel.id:
                     await discord.utils.get(client.voice_clients, channel=before.channel).disconnect()

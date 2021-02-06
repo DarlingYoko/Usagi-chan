@@ -1,20 +1,21 @@
-import src.config as config
-from src.functions import wrongMessage, getCurrentTime, createEmbed
+from src.functions import wrongMessage, getCurrentTime, createEmbed, newLog
 from time import mktime
 from datetime import datetime
+import sys
 
 
-async def createRequest(data, db):
+
+async def createRequest(self, data):
     try:
-        if data['message'].channel.id != config.requestChannel:
+        if data['message'].channel.id != self.config['requestsData'].getint('channel'):
             title = 'В этом канале нельзя использовать эту команду!'
-            description = 'Вам сюда 👉 <#{0}>'.format(config.requestChannel)
+            description = 'Вам сюда 👉 <#{0}>'.format(self.config['requestsData']['channel'])
             await wrongMessage(data = data, title = title, description = description)
             return
 
 
         msg = data['content'].split('/')
-        messageChannel = data['client'].get_channel(config.requestChannel)
+        messageChannel = self.client.get_channel(self.config['requestsData'].getint('channel'))
         counter = {2: '2️⃣', 3: '3️⃣', 4: '4️⃣'}
         serversId = {6: 'Америка', 7: 'Европа', 8: 'Азия', 9: 'Тайвань'}
 
@@ -91,8 +92,8 @@ async def createRequest(data, db):
         footer = 'Заявка создана в {0} по МСК'.format(getCurrentTime())
         time = mktime(datetime.now().timetuple())
 
-        embed = createEmbed(description = description, thumbnail = config.requestThumbnail, footer = footer, authorName = authorName, authorIconURL = authorIconURL)
-        timeMsg = await messageChannel.send('<@&{}>'.format(config.requestRoleID), embed = embed)
+        embed = createEmbed(description = description, thumbnail = self.config['requestsData']['thumbnail'], footer = footer, authorName = authorName, authorIconURL = authorIconURL)
+        timeMsg = await messageChannel.send('<@&{}>'.format(self.config['requestsData']['roleID']), embed = embed)
 
         await timeMsg.add_reaction('🔒')
         for i in range(numberOfSlots):
@@ -106,16 +107,17 @@ async def createRequest(data, db):
 
 
         userId = data['message'].author.id
-        msgIds = db.get(userId = userId, table = 'requestsData')
+        msgIds = self.db.get(userId = userId, table = 'requestsData')
         if msgIds:
             msgIds = eval(msgIds)
             msgIds.append(timeMsg.id)
-            db.update(userId = userId, messageId = msgIds, table = 'requestsData')
+            self.db.update(userId = userId, messageId = msgIds, table = 'requestsData')
 
         else:
             msgIds = [timeMsg.id]
-            db.insert(userId = userId, messageId = msgIds)
+            self.db.insert(userId = userId, messageId = msgIds)
 
-        db.insert(userId = timeMsg.id, messageId = {}, time = time, user = userId)
+        self.db.insert(userId = timeMsg.id, messageId = {}, time = time, user = userId)
     except Exception as e:
-        newLog('New error in creating request at {1}:\n{0}'.format(e, datetime.datetime.now()))
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        newLog(exc_type, exc_obj, exc_tb, e)
