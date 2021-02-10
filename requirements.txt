@@ -1,5 +1,13 @@
+<<<<<<< HEAD
 discord
 google-api-python-client
 google-auth-oauthlib
 openpyxl
 psycopg2-binary
+=======
+discord
+google-api-python-client
+google-auth-oauthlib
+openpyxl
+psycopg2-binary
+>>>>>>> 634de8221c8463b8d4006242546d580dcbf536ea
