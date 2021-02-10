@@ -20,6 +20,7 @@ class UsahiChan:
         self.members = Members(self.config['data']['guildId'])
         self.db = Database(self)
         self.loop = None
+        self.vc = None
 
 
     def checkConnection(self):

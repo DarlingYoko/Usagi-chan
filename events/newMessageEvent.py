@@ -52,7 +52,7 @@ def setMessageEvent(self):
 
                     command = self.config['privateCommands']['simpleMessageCommand']
                     if msg.startswith(command):
-                        if message.author.id == self.config['usersIDs']['yokoId']:
+                        if message.author.id == self.config['usersIDs'].getint('yokoId'):
                             channel = self.client.get_channel(346775939709009920)
                             await channel.send(msg.split(command)[1])
                         else:

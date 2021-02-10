@@ -8,13 +8,14 @@ def setVoiceStateUpdateEvent(self):
             if member.id == self.config['usersIDs'].getint('yokoId'):
 
                 if before.channel and after.channel and before.channel.id != after.channel.id:
-                    await discord.utils.get(client.voice_clients, channel=before.channel).disconnect()
-                    await self.client.get_channel(after.channel.id).connect()
+                    await discord.utils.get(self.client.voice_clients, channel=before.channel).disconnect()
+                    self.vc = await self.client.get_channel(after.channel.id).connect()
 
                 elif before.channel and not after.channel:
                     await discord.utils.get(self.client.voice_clients, channel=before.channel).disconnect()
+                    self.vc = None
 
                 elif after.channel and not before.channel:
-                    await self.client.get_channel(after.channel.id).connect()
+                    self.vc = await self.client.get_channel(after.channel.id).connect()
         except:
             pass
