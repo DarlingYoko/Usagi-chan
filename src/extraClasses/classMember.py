@@ -1,18 +1,23 @@
+from datetime import datetime
+
 class Members():
     def __init__(self, guildId):
         self.dict = {}
         self.guildId = guildId
 
-    async def fillMembers(self):
-        guild = await self.client.fetch_guild(self.guildId)
+    async def fillMembers(self, client):
+        guild = await client.fetch_guild(self.guildId)
         membersDict = {}
         members = await guild.fetch_members(limit=None).flatten()
         for member in members:
-            membersDict[member.id] = {'name': member.name, 'tag': member.discriminator}
+            membersDict[member.id] = {'name': member.name, 'tag': member.discriminator, 'lastMsg': datetime.now()}
         self.dict = membersDict
 
     def getMembers(self):
         return self.dict
+
+    def getMember(self, id):
+        return self.dict[id]
 
     def setClient(self, client):
         self.client = client
@@ -21,13 +26,13 @@ class Members():
         self.dict.pop(member.id)
 
     def addMember(self, member):
-        self.dict[member.id] = {'name': member.name, 'tag': member.discriminator}
+        self.dict[member.id] = {'name': member.name, 'tag': member.discriminator, 'lastMsg': datetime.now()}
 
-    def updateName(self, name, id):
-        self.dict[id]['name'] = name
+    def updateName(self, member):
+        self.dict[member.id]['name'] = member.name
 
-    def updateTag(self, tag, id):
-        self.dict[id]['tag'] = tag
+    def updateTag(self, member):
+        self.dict[member.id]['tag'] = member.discriminator
 
     def findByName(self, name, tag):
         for key, member in self.dict.items():

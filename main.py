@@ -28,8 +28,9 @@ class UsahiChan:
         async def on_ready():
 
             self.LOGGER.info('Successfully connected to discord')
-            await self.client.change_presence(status=discord.Status.online, activity=discord.Game("ver 1.0.0.0.3 | Учится работать |"))
+            await self.client.change_presence(status=discord.Status.online, activity=discord.Game("ver 1.0.0.0.4 | Учится работать |"))
             self.loop = asyncio.get_event_loop()
+            await self.members.fillMembers(self.client)
 
     def run(self):
         self.client.run(self.config['data']['token'])
@@ -39,6 +40,7 @@ class UsahiChan:
     from events.voiceStateUpdateEvent import setVoiceStateUpdateEvent
     from events.newReactionEvent import setNewReactionEvent
     from events.removeReactionEvent import setRemoveReactionEvent
+    from events.usersChangedEvents import setUsersChangedEvents
 
 
 
@@ -48,6 +50,7 @@ usagi.setMessageEvent()
 usagi.setVoiceStateUpdateEvent()
 usagi.setNewReactionEvent()
 usagi.setRemoveReactionEvent()
+usagi.setUsersChangedEvents()
 
 
 

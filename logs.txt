@@ -2,5 +2,413 @@
 
 Logs new start
 
-New error in creating request at 2021-02-09 21:16:51.670336:
-type - <class 'TypeError'>, name - newMessageEvent.py, line - 82, error - source must an AudioSource not str
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+New error in creating request at 2021-02-13 21:54:23.288424:
+type - <class 'discord.errors.NotFound'>, name - helpValentine.py, line - 10, error - 404 Not Found (error code: 10008): Unknown Message
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+New error in creating request at 2021-02-13 23:19:44.073027:
+type - <class 'discord.errors.NotFound'>, name - helpValentine.py, line - 10, error - 404 Not Found (error code: 10008): Unknown Message
+
+
+Logs new start
+
+
+Logs new start
+
+New error in creating request at 2021-02-13 23:43:59.902541:
+type - <class 'discord.errors.NotFound'>, name - helpValentine.py, line - 10, error - 404 Not Found (error code: 10008): Unknown Message
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+New error in creating request at 2021-02-14 00:14:27.423461:
+type - <class 'discord.errors.Forbidden'>, name - helpValentine.py, line - 42, error - 403 Forbidden (error code: 50007): Cannot send messages to this user
+
+New error in creating request at 2021-02-14 00:14:39.047770:
+type - <class 'discord.errors.Forbidden'>, name - helpValentine.py, line - 42, error - 403 Forbidden (error code: 50007): Cannot send messages to this user
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start

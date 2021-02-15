@@ -1,13 +1,15 @@
 from src.functions import isCommand, newLog
 from src.guildCommands.createRequest import createRequest
 from src.guildCommands.helpCommand import helpCommand
+from src.guildCommands.helpValentine import helpValentine
 from src.privatCommands.updateShedule import updateShedule
+from src.privatCommands.createValentine import valentineCommand
 import sys
 
 def setMessageEvent(self):
     @self.client.event
     async def on_message(message):
-        try:
+        #try:
             if str(message.type) == 'MessageType.pins_add':
                 await message.delete()
                 return
@@ -17,7 +19,7 @@ def setMessageEvent(self):
 
             msg = message.content
             data = {
-                    'attachmentURL': None,
+                    'urlImage': None,
                     'message': message
                     }
 
@@ -27,17 +29,12 @@ def setMessageEvent(self):
             #private messages
             if isCommand(msg, self.config['privateCommands'].values()):
                 if str(message.channel.type) == 'private':
-                    '''
-                    splitStr = privateCommands['createValentine']
-                    if msg.startswith(splitStr):
-                        data['content'] = msg.split(splitStr)[1]
-                        await valentineCommand(data = data, members = members)
 
-                    splitStr = privateCommands['deleteValentine']
-                    if msg.startswith(splitStr):
-                        data['content'] = msg.split(splitStr)[1]
-                        await deleteValentine(data = data)
-                    '''
+                    command = self.config['privateCommands']['createValentine']
+                    if msg.startswith(command):
+                        data['content'] = msg.split(command)[1]
+                        await valentineCommand(self, data = data)
+
                     command = self.config['privateCommands']['updateShedule']
                     if msg.startswith(command):
                         if message.author.id in eval(self.config['sheduleData']['moviegoers']):
@@ -80,9 +77,13 @@ def setMessageEvent(self):
                     if msg.startswith(command):
                         await helpCommand(self, data = data)
 
+                    command = self.config['guildCommands']['helpValentine']
+                    if msg.startswith(command):
+                        await helpValentine(self, data = data)
+
                 else:
                     await message.channel.send('<@{0}>, эта команда только для каналов'.format(UID), delete_after = 5)
 
-        except Exception as e:
-            exc_type, exc_obj, exc_tb = sys.exc_info()
-            newLog(exc_type, exc_obj, exc_tb, e)
+        #except Exception as e:
+            #exc_type, exc_obj, exc_tb = sys.exc_info()
+            #newLog(exc_type, exc_obj, exc_tb, e)
