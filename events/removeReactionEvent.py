@@ -10,11 +10,11 @@ def setRemoveReactionEvent(self):
 
 
 def checkRemoveNotification(self, messageId, userId):
-    msgIds = self.db.getShedule(userId = messageId)
-    users = eval(msgIds[0][1])
+    users = self.db.getValue(tableName = 'shedule', argument = 'users', selector = 'messageId', value = messageId)
+    users = eval(users)
     if userId in users:
         users.remove(userId)
-        self.db.updateShedule(users, messageId)
+        self.db.update(tableName = 'shedule', argument = 'users', selector = 'messageId', newValue = users, findValue = messageId)
 
 
 async def dellEmoji(self, payload):

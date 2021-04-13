@@ -69,10 +69,11 @@ def setMessageEvent(self):
                                 if messageHistory.id == 807711419415396392:
                                     break
                                 await messageHistory.delete()
-                                self.db.remove(messageHistory.id, 'SHEDULE')
+                                self.db.remove(tableName = 'shedule', selector = 'messageId', value = messageHistory.id)
+
                             for embed in embeds.keys():
                                 reloadMes = await channel.send(embed=embed)
-                                self.db.insertShedule(userId = reloadMes.id, data = embeds[embed], users = '[]')
+                                self.db.insert('shedule', reloadMes.id, embeds[embed], '[]')             
                                 await reloadMes.add_reaction(sheduleEmoji)
 
                             answer = 'Успешно!'

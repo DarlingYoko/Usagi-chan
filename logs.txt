@@ -49043,3 +49043,39 @@ Logs new start
 
 
 Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+
+Logs new start
+
+New error in creating request at 2021-04-13 18:39:22.568040:
+type - <class 'AttributeError'>, name - removeReactionEvent.py, line - 41, error - 'Database' object has no attribute 'get'
+
+New error in creating request at 2021-04-13 18:39:54.122317:
+type - <class 'AttributeError'>, name - removeReactionEvent.py, line - 41, error - 'Database' object has no attribute 'get'
+
+New error in creating request at 2021-04-13 18:39:54.574943:
+type - <class 'AttributeError'>, name - removeReactionEvent.py, line - 41, error - 'Database' object has no attribute 'get'
+
+New error in creating request at 2021-04-13 18:40:08.296045:
+type - <class 'AttributeError'>, name - removeReactionEvent.py, line - 41, error - 'Database' object has no attribute 'get'
+
+New error in creating request at 2021-04-13 18:40:40.180396:
+type - <class 'AttributeError'>, name - removeReactionEvent.py, line - 41, error - 'Database' object has no attribute 'get'
+
+New error in creating request at 2021-04-13 18:40:40.832257:
+type - <class 'AttributeError'>, name - removeReactionEvent.py, line - 41, error - 'Database' object has no attribute 'get'
+
+
+Logs new start

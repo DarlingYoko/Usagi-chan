@@ -19,12 +19,9 @@ class Database():
             newLog(exc_type, exc_obj, exc_tb, e)
 
 
-    def insert(self, userId, messageId, time = None, user = None):
+    def insert(self, tableName, *values):
         try:
-            if time:
-                self.cur.execute("INSERT INTO emojiData (userId, messageIDs, createTime, author) VALUES (\'{0}\', \'{1}\', \'{2}\', \'{3}\');".format(userId, messageId, time, user))
-            else:
-                self.cur.execute("INSERT INTO requestsData (userId, messageIDs) VALUES (\'{0}\', \'{1}\');".format(userId, messageId))
+            self.cur.execute("INSERT INTO {0} VALUES {1};".format(tableName, values))
             self.con.commit()
             return 1
         except Exception as e:
@@ -32,26 +29,16 @@ class Database():
             newLog(exc_type, exc_obj, exc_tb, e)
             return 0
 
-    def insertShedule(self, userId, data, users):
+    def getValue(self, tableName, argument, selector, value):
         try:
-            self.cur.execute("INSERT INTO SHEDULE (userId, data, users) VALUES (\'{0}\', \'{1}\', \'{2}\');".format(userId, data, users))
-            self.con.commit()
-            return 1
-        except Exception as e:
-            exc_type, exc_obj, exc_tb = sys.exc_info()
-            newLog(exc_type, exc_obj, exc_tb, e)
-            return 0
-
-    def get(self, userId, table):
-        try:
-            self.cur.execute("SELECT messageIDs from {0} where userId = \'{1}\';".format(table, userId))
+            self.cur.execute("SELECT {1} from {0} where {2} = \'{3}\';".format(tableName, argument, selector, value))
             return self.cur.fetchall()[0][0]
         except Exception as e:
             return 0
 
-    def update(self, userId, messageId, table):
+    def update(self, tableName, argument, selector, newValue, findValue):
         try:
-            self.cur.execute("UPDATE {0} set messageIDs = \'{1}\' where userId = \'{2}\';".format(table, messageId, userId))
+            self.cur.execute("UPDATE {0} set {1} = \'{3}\' where {2} = \'{4}\';".format(tableName, argument, selector, newValue, findValue))
             self.con.commit()
             return 1
         except Exception as e:
@@ -59,9 +46,9 @@ class Database():
             newLog(exc_type, exc_obj, exc_tb, e)
             return 0
 
-    def updateShedule(self, users, userId):
+    def remove(self, tableName, selector, value):
         try:
-            self.cur.execute("UPDATE SHEDULE set users = \'{0}\' where userId = \'{1}\';".format(users, userId))
+            self.cur.execute("DELETE from {0} where {1} = \'{2}\';".format(tableName, selector, value))
             self.con.commit()
             return 1
         except Exception as e:
@@ -69,38 +56,11 @@ class Database():
             newLog(exc_type, exc_obj, exc_tb, e)
             return 0
 
-    def remove(self, userId, table):
+    def getAll(self, tableName):
         try:
-            self.cur.execute("DELETE from {0} where userId = \'{1}\';".format(table, userId))
-            self.con.commit()
-            return 1
-        except Exception as e:
-            exc_type, exc_obj, exc_tb = sys.exc_info()
-            newLog(exc_type, exc_obj, exc_tb, e)
-            return 0
-
-    def getTime(self):
-        try:
-            self.cur.execute("SELECT userId, createTime, author from emojiData;")
+            self.cur.execute("SELECT * from {0};".format(tableName))
             return self.cur.fetchall()
         except Exception as e:
             exc_type, exc_obj, exc_tb = sys.exc_info()
             newLog(exc_type, exc_obj, exc_tb, e)
-            return 0
-
-    def getData(self):
-        try:
-            self.cur.execute("SELECT userId, data, users from SHEDULE;")
-            return self.cur.fetchall()
-        except Exception as e:
-            exc_type, exc_obj, exc_tb = sys.exc_info()
-            newLog(exc_type, exc_obj, exc_tb, e)
-            return 0
-
-
-    def getShedule(self, userId):
-        try:
-            self.cur.execute("SELECT data, users from SHEDULE where userId = \'{0}\';".format(userId))
-            return self.cur.fetchall()
-        except Exception as e:
             return 0
