@@ -14,7 +14,7 @@ def downloadShedule():
     try:
         creds = None
 
-        if os.path.exists('google/token.pickle'):
+        if os.path.exists('D:\Projects\Discord\Yoko-bot\\google\\token.pickle'):
             with open('google/token.pickle', 'rb') as token:
                 creds = pickle.load(token)
 
@@ -26,13 +26,13 @@ def downloadShedule():
                     'googlecreds.json', SCOPES)
                 creds = flow.run_local_server(port=0)
 
-            with open('google/token.pickle', 'wb') as token:
+            with open('D:\Projects\Discord\Yoko-bot\\google\\token.pickle', 'wb') as token:
                 pickle.dump(creds, token)
 
         service = build('drive', 'v3', credentials=creds, cache_discovery=False)
 
 
-        file_name = 'google/shedule.xlsx'
+        file_name = 'D:\Projects\Discord\Yoko-bot\\google\\shedule.xlsx'
         file_id = '10c4NhBgVtJQfyKP6vQrpSoB7g0HhnbwVjP4AoX7C6XU'
         request = service.files().export_media(fileId=file_id,
                                                  mimeType='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')

@@ -1,34 +1,48 @@
-import discord, asyncio, time, shelve, datetime, sys
-from src.extraClasses.classMember import Members
+import discord, asyncio, time, shelve, datetime, sys, os
 from threading import Thread
+from src.extraClasses.classMember import Members
 from src.extraClasses.DB import Database
+from src.extraClasses.musicPlayer import MusicPlayer
 from src.guildCommands.autoRemoveRequest import autoRemoveRequest
 from src.functions import newLog, loadConfig, getLogger
+from src.privatCommands.updateShedule import checkNotification
 
 async def checkRequests():
     while True:
         time.sleep(10)
         asyncio.run_coroutine_threadsafe(autoRemoveRequest(usagi), usagi.loop)
 
+
+async def checkShedule():
+    while True:
+        time.sleep(10)
+        asyncio.run_coroutine_threadsafe(checkNotification(usagi), usagi.loop)
+
+def checkAudio():
+    while True:
+        time.sleep(5)
+        usagi.musicPlayer.checkPlay()
+
+
+
 class UsahiChan:
 
     def __init__(self):
-        self.config = loadConfig('src/config')
+        self.config = loadConfig('src/TESTconfig')
+        self.loop = None
         intents = discord.Intents.all()
-        self.client = discord.Client(intents=intents)
+        self.client = discord.Client(intents = intents)
         self.LOGGER = getLogger()
         self.members = Members(self.config['data']['guildId'])
         self.db = Database(self)
-        self.loop = None
-        self.vc = None
-
+        self.musicPlayer = MusicPlayer()
 
     def checkConnection(self):
         @self.client.event
         async def on_ready():
 
             self.LOGGER.info('Successfully connected to discord')
-            await self.client.change_presence(status=discord.Status.online, activity=discord.Game("ver 1.0.0.0.4 | Учится работать |"))
+            await self.client.change_presence(status=discord.Status.online, activity=discord.Game("ver 1.0.0.1.0 | Всё ещё учится работать |"))
             self.loop = asyncio.get_event_loop()
             await self.members.fillMembers(self.client)
 
@@ -55,5 +69,7 @@ usagi.setUsersChangedEvents()
 
 
 newLog('', '', '', '', new = 1)
-Thread(target=asyncio.run, args=(checkRequests(), )).start()
+#Thread(target=asyncio.run, args=(checkRequests(), )).start()
+Thread(target=asyncio.run, args=(checkShedule(), )).start()
+Thread(target=checkAudio).start()
 usagi.run()

@@ -32,6 +32,16 @@ class Database():
             newLog(exc_type, exc_obj, exc_tb, e)
             return 0
 
+    def insertShedule(self, userId, data, users):
+        try:
+            self.cur.execute("INSERT INTO SHEDULE (userId, data, users) VALUES (\'{0}\', \'{1}\', \'{2}\');".format(userId, data, users))
+            self.con.commit()
+            return 1
+        except Exception as e:
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            newLog(exc_type, exc_obj, exc_tb, e)
+            return 0
+
     def get(self, userId, table):
         try:
             self.cur.execute("SELECT messageIDs from {0} where userId = \'{1}\';".format(table, userId))
@@ -42,6 +52,16 @@ class Database():
     def update(self, userId, messageId, table):
         try:
             self.cur.execute("UPDATE {0} set messageIDs = \'{1}\' where userId = \'{2}\';".format(table, messageId, userId))
+            self.con.commit()
+            return 1
+        except Exception as e:
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            newLog(exc_type, exc_obj, exc_tb, e)
+            return 0
+
+    def updateShedule(self, users, userId):
+        try:
+            self.cur.execute("UPDATE SHEDULE set users = \'{0}\' where userId = \'{1}\';".format(users, userId))
             self.con.commit()
             return 1
         except Exception as e:
@@ -66,4 +86,21 @@ class Database():
         except Exception as e:
             exc_type, exc_obj, exc_tb = sys.exc_info()
             newLog(exc_type, exc_obj, exc_tb, e)
+            return 0
+
+    def getData(self):
+        try:
+            self.cur.execute("SELECT userId, data, users from SHEDULE;")
+            return self.cur.fetchall()
+        except Exception as e:
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            newLog(exc_type, exc_obj, exc_tb, e)
+            return 0
+
+
+    def getShedule(self, userId):
+        try:
+            self.cur.execute("SELECT data, users from SHEDULE where userId = \'{0}\';".format(userId))
+            return self.cur.fetchall()
+        except Exception as e:
             return 0

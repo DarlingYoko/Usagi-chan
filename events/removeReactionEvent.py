@@ -9,12 +9,29 @@ def setRemoveReactionEvent(self):
         await dellEmoji(self, payload)
 
 
+def checkRemoveNotification(self, messageId, userId):
+    msgIds = self.db.getShedule(userId = messageId)
+    users = eval(msgIds[0][1])
+    if userId in users:
+        users.remove(userId)
+        self.db.updateShedule(users, messageId)
+
 
 async def dellEmoji(self, payload):
+
+
+    messageId = payload.message_id
+    userId = payload.user_id
+    emoji = payload.emoji
+    channelId = payload.channel_id
+
+    sheduleEmoji = self.client.get_emoji(810182035955777576)
+
+    if sheduleEmoji == emoji and str(channelId) == self.config['sheduleData']['sheduleChannel']:
+        checkRemoveNotification(self, messageId, userId)
+
     try:
-        emoji = payload.emoji
         accessEmoji = {'2️⃣': 2, '3️⃣': 3, '4️⃣': 4}
-        messageId = payload.message_id
         channel = self.client.get_channel(payload.channel_id)
         msg = await channel.fetch_message(payload.message_id)
         try:

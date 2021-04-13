@@ -9,16 +9,28 @@ def setNewReactionEvent(self):
             return
         await fillEmoji(self, payload)
 
+def checkNewNotification(self, messageId, userId):
+    msgIds = self.db.getShedule(userId = messageId)
+    users = eval(msgIds[0][1])
+    if userId not in users:
+        users.append(userId)
+        self.db.updateShedule(users, messageId)
+
 
 async def fillEmoji(self, payload):
+
+    messageId = payload.message_id
+    userId = payload.user_id
+    emoji = payload.emoji
+    channelId = payload.channel_id
+
+    sheduleEmoji = self.client.get_emoji(810182035955777576)
+
+    if sheduleEmoji == emoji and str(channelId) == self.config['sheduleData']['sheduleChannel']:
+        checkNewNotification(self, messageId, userId)
+
     try:
         accessEmoji = {'2️⃣': 2, '3️⃣': 3, '4️⃣': 4}
-
-        messageId = payload.message_id
-        userId = payload.user_id
-        emoji = payload.emoji
-        channelId = payload.channel_id
-
         channel = self.client.get_channel(channelId)
         msg = await channel.fetch_message(messageId)
         try:
