@@ -1,9 +1,9 @@
+import sys, discord, os, subprocess, random, time
 from youtube_dl import YoutubeDL
 from gtts import gTTS
-from spotdl import __main__ as spotdl
-import sys, discord, os, subprocess, random, time
 from threading import Thread
 from random import randint
+from src.spotdl.downloadSpoti import downloadSpoti
 
 class MusicPlayer():
     def __init__(self):
@@ -98,7 +98,7 @@ class MusicPlayer():
             self.audioList.append(name)
 
     def downloadSpoti(self, URL):
-        subprocess.check_call([sys.executable, spotdl.__file__, URL])
+        downloadSpoti(URL)
         self.reloadTracks()
 
     def downloadYoutube(self, URL):
