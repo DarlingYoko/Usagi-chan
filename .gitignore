@@ -5,7 +5,7 @@ testConnect.py
 oldmain.py
 logs.txt
 movieBot
-TESTconfig.ini
+src/TESTconfig.ini
 config.ini
 player.py
 files
