@@ -9,3 +9,9 @@ gTTS
 spotdl
 spotipy
 PyNaCl
+mutagen
+pytube
+tqdm
+rapidfuzz
+ytmusicapi
+spotipy
