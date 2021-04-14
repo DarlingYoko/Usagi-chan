@@ -45,7 +45,7 @@ class MusicPlayer():
     def nowPlay(self):
         answer = 'Ничего не играет'
         if self.lastAudio:
-            answer = 'Сейчас играет - {0}'.format(self.lastAudio.split('\\')[2].split('.')[0])
+            answer = 'Сейчас играет - {0}'.format(self.lastAudio.split('/')[2].split('.')[0])
         return answer
 
     def skip(self):
@@ -57,7 +57,7 @@ class MusicPlayer():
 
             self.lastAudio = self.audioList.pop(0)
             self.vc.play(discord.FFmpegPCMAudio(source = self.lastAudio))
-            answer = 'Песенка скипнута\nСейчас играет - {0}'.format(self.lastAudio.split('\\')[2].split('.')[0])
+            answer = 'Песенка скипнута\nСейчас играет - {0}'.format(self.lastAudio.split('/')[2].split('.')[0])
         else:
             self.vc.stop()
             self.lastAudio = None
@@ -65,11 +65,11 @@ class MusicPlayer():
         return answer
 
     def query(self):
-        audioList = ['{0}. {1}'.format(i+1, self.audioList[i].split('\\')[2].split('.')[0]) for i in range(len(self.audioList))]
+        audioList = ['{0}. {1}'.format(i+1, self.audioList[i].split('/')[2].split('.')[0]) for i in range(len(self.audioList))]
         if len(self.audioList) == 0 and not self.lastAudio:
             answer = 'Пусто('
         else:
-            answer = 'Сейчас играет - {0}\n{1}'.format(self.lastAudio.split('\\')[2].split('.')[0], '\n'.join(audioList))
+            answer = 'Сейчас играет - {0}\n{1}'.format(self.lastAudio.split('/')[2].split('.')[0], '\n'.join(audioList))
         return answer
 
     def repeat(self, msg):
@@ -89,7 +89,7 @@ class MusicPlayer():
         for file in os.listdir():
             if file == 'Temp' or file == 'logs.txt':
                 continue
-            name = '..\\audio\\' + file
+            name = '../audio/' + file
             try:
                 os.rename(file, name)
             except:
@@ -107,7 +107,7 @@ class MusicPlayer():
         self.reloadTracks()
 
     def simpleVoice(self, msg, command):
-        file = '..\\audio\\message.mp3'
+        file = '../audio/message.mp3'
         language = 'ru'
         speech = gTTS(text = msg.split(command)[1], lang = language, slow = False)
         speech.save(file)
