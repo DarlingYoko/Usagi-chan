@@ -6,3 +6,5 @@ openpyxl==3.0.6
 psycopg2-binary==2.8.6
 youtube-dl==2021.4.7
 gTTS==2.2.2
+spotdl==3.3.3
+spotipy==2.17.1
