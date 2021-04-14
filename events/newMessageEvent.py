@@ -73,10 +73,11 @@ def setMessageEvent(self):
 
                             for embed in embeds.keys():
                                 reloadMes = await channel.send(embed=embed)
-                                self.db.insert('shedule', reloadMes.id, embeds[embed], '[]')             
+                                self.db.insert('shedule', reloadMes.id, embeds[embed], '[]')
                                 await reloadMes.add_reaction(sheduleEmoji)
 
                             answer = 'Успешно!'
+                            delay = 60
 
 
                     command = self.config['privateCommands']['simpleMessageCommand']
