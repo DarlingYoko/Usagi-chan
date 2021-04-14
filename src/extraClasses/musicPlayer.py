@@ -45,7 +45,7 @@ class MusicPlayer():
     def nowPlay(self):
         answer = 'Ничего не играет'
         if self.lastAudio:
-            answer = 'Сейчас играет - {0}'.format(self.lastAudio.split('\\')[6].split('.')[0])
+            answer = 'Сейчас играет - {0}'.format(self.lastAudio.split('\\')[2].split('.')[0])
         return answer
 
     def skip(self):
@@ -56,8 +56,8 @@ class MusicPlayer():
                 os.remove(self.lastAudio)
 
             self.lastAudio = self.audioList.pop(0)
-            self.vc.play(discord.FFmpegPCMAudio(executable="..\\ffmpeg\\ffmpeg.exe", source = self.lastAudio))
-            answer = 'Песенка скипнута\nСейчас играет - {0}'.format(self.lastAudio.split('\\')[6].split('.')[0])
+            self.vc.play(discord.FFmpegPCMAudio(source = self.lastAudio))
+            answer = 'Песенка скипнута\nСейчас играет - {0}'.format(self.lastAudio.split('\\')[2].split('.')[0])
         else:
             self.vc.stop()
             self.lastAudio = None
@@ -65,11 +65,11 @@ class MusicPlayer():
         return answer
 
     def query(self):
-        audioList = ['{0}. {1}'.format(i+1, self.audioList[i].split('\\')[6].split('.')[0]) for i in range(len(self.audioList))]
+        audioList = ['{0}. {1}'.format(i+1, self.audioList[i].split('\\')[2].split('.')[0]) for i in range(len(self.audioList))]
         if len(self.audioList) == 0 and not self.lastAudio:
             answer = 'Пусто('
         else:
-            answer = 'Сейчас играет - {0}\n{1}'.format(self.lastAudio.split('\\')[6].split('.')[0], '\n'.join(audioList))
+            answer = 'Сейчас играет - {0}\n{1}'.format(self.lastAudio.split('\\')[2].split('.')[0], '\n'.join(audioList))
         return answer
 
     def repeat(self, msg):
@@ -86,8 +86,8 @@ class MusicPlayer():
         self.vc = await channel.connect()
 
     def reloadTracks(self):
-        for file in os.listdir(self.path):
-            if file == 'Temp':
+        for file in os.listdir():
+            if file == 'Temp' or file == 'logs.txt':
                 continue
             name = '..\\audio\\' + file
             try:
@@ -111,12 +111,12 @@ class MusicPlayer():
         language = 'ru'
         speech = gTTS(text = msg.split(command)[1], lang = language, slow = False)
         speech.save(file)
-        self.vc.play(discord.FFmpegPCMAudio(executable="..\\ffmpeg\\ffmpeg.exe", source = file), after=lambda e: print(f'music in channel has finished playing.'))
+        self.vc.play(discord.FFmpegPCMAudio(source = file), after=lambda e: print(f'music in channel has finished playing.'))
 
     def checkPlay(self):
         try:
             if not self.vc.is_playing() and self.repeat and self.lastAudio and not self.pause:
-                self.vc.play(discord.FFmpegPCMAudio(executable="..\\ffmpeg\\ffmpeg.exe", source = self.lastAudio))
+                self.vc.play(discord.FFmpegPCMAudio(source = self.lastAudio))
 
             elif not self.vc.is_playing() and not self.repeat and len(self.audioList) > 0 and not self.pause:
                 if self.lastAudio:
@@ -124,7 +124,7 @@ class MusicPlayer():
                 self.lastAudio = self.audioList.pop(0)
                 print('начинаю играть')
                 try:
-                    self.vc.play(discord.FFmpegPCMAudio(executable="..\\ffmpeg\\ffmpeg.exe", source = self.lastAudio))
+                    self.vc.play(discord.FFmpegPCMAudio(source = self.lastAudio))
                 except Exception as e:
                     print(e)
 
