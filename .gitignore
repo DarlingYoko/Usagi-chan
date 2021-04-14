@@ -6,5 +6,7 @@ oldmain.py
 logs.txt
 movieBot
 player.py
-files
+files/gif
+files/photo
+files/video
 test.py
