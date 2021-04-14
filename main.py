@@ -36,6 +36,7 @@ class UsahiChan:
         self.members = Members(self.config['data']['guildId'])
         self.db = Database(self)
         self.musicPlayer = MusicPlayer()
+        print(os.listdir())
         os.chdir('files\\Downloads')
 
     def checkConnection(self):

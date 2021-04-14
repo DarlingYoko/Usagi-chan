@@ -92,7 +92,7 @@ class MusicPlayer():
             name = '..\\audio\\' + file
             try:
                 os.rename(file, name)
-            except :
+            except:
                 os.remove(file)
             print(name)
             self.audioList.append(name)
