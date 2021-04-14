@@ -9,10 +9,8 @@ async def checkNotification(self):
     for (messageId, data, users) in requestsList:
         time = datetime.fromtimestamp(float(data))
         users = eval(users)
-        print(messageId, data, users)
-        print(time - datetime.now())
         try:
-            if time - datetime.now() - timedelta(hours = 1) <= timedelta(minutes = 10):
+            if time - datetime.now() - timedelta(hours = 3) <= timedelta(minutes = 10):
                 answer = ''
                 for user in users:
                     answer += '<@{0}> '.format(user)

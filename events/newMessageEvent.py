@@ -84,6 +84,7 @@ def setMessageEvent(self):
                     if msg.startswith(command) and msg.split()[0] == command:
                         if message.author.id == self.config['usersIDs'].getint('yokoId'):
                             self.musicPlayer.simpleVoice(msg, command)
+                            answer = 'Проговорила'
 
                     if len(answer) >= 2000:
                         for i in range(0, len(answer), 2000):
