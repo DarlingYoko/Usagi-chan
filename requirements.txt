@@ -6,4 +6,6 @@ openpyxl
 psycopg2-binary
 youtube-dl
 gTTS
+spotdl
+spotipy
 PyNaCl

@@ -3,7 +3,7 @@ from youtube_dl import YoutubeDL
 from gtts import gTTS
 from threading import Thread
 from random import randint
-from src.spotdl.downloadSpoti import downloadSpoti
+from src.downloadSpoti import downloadSpoti
 
 class MusicPlayer():
     def __init__(self):
