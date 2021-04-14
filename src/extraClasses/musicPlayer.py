@@ -12,7 +12,6 @@ class MusicPlayer():
         self.pause = None
         self.audioList = []
         self.lastAudio = None
-        self.path = 'D:\Projects\Discord\Yoko-bot\\files\\Downloads'
         self.ydl_opts = {
                 'format': 'bestaudio/best',
                 'outtmpl': '%(title)s.%(ext)s',
@@ -57,7 +56,7 @@ class MusicPlayer():
                 os.remove(self.lastAudio)
 
             self.lastAudio = self.audioList.pop(0)
-            self.vc.play(discord.FFmpegPCMAudio(executable="D:\Projects\Discord\Yoko-bot\\files\\ffmpeg\\ffmpeg.exe", source = self.lastAudio))
+            self.vc.play(discord.FFmpegPCMAudio(executable="..\\ffmpeg\\ffmpeg.exe", source = self.lastAudio))
             answer = 'Песенка скипнута\nСейчас играет - {0}'.format(self.lastAudio.split('\\')[6].split('.')[0])
         else:
             self.vc.stop()
@@ -90,38 +89,34 @@ class MusicPlayer():
         for file in os.listdir(self.path):
             if file == 'Temp':
                 continue
-            name = 'D:\Projects\Discord\Yoko-bot\\files\\audio\\' + file
+            name = '..\\audio\\' + file
             try:
-                os.rename(self.path + '\\' + file, name)
+                os.rename(file, name)
             except :
-                os.remove(self.path + '\\' + file)
+                os.remove(file)
             print(name)
             self.audioList.append(name)
 
     def downloadSpoti(self, URL):
-        if os.getcwd() != self.path:
-            os.chdir(self.path)
         subprocess.check_call([sys.executable, spotdl.__file__, URL])
         self.reloadTracks()
 
     def downloadYoutube(self, URL):
-        if os.getcwd() != self.path:
-            os.chdir(self.path)
         with YoutubeDL(self.ydl_opts) as ydl:
             ydl.download([URL])
         self.reloadTracks()
 
     def simpleVoice(self, msg, command):
-        file = 'D:\Projects\Discord\Yoko-bot\\files\\audio\\message.mp3'
+        file = '..\\audio\\message.mp3'
         language = 'ru'
         speech = gTTS(text = msg.split(command)[1], lang = language, slow = False)
         speech.save(file)
-        self.vc.play(discord.FFmpegPCMAudio(executable="D:\Projects\Discord\Yoko-bot\\files\\ffmpeg\\ffmpeg.exe", source = file), after=lambda e: print(f'music in channel has finished playing.'))
+        self.vc.play(discord.FFmpegPCMAudio(executable="..\\ffmpeg\\ffmpeg.exe", source = file), after=lambda e: print(f'music in channel has finished playing.'))
 
     def checkPlay(self):
         try:
             if not self.vc.is_playing() and self.repeat and self.lastAudio and not self.pause:
-                self.vc.play(discord.FFmpegPCMAudio(executable="D:\Projects\Discord\Yoko-bot\\files\\ffmpeg\\ffmpeg.exe", source = self.lastAudio))
+                self.vc.play(discord.FFmpegPCMAudio(executable="..\\ffmpeg\\ffmpeg.exe", source = self.lastAudio))
 
             elif not self.vc.is_playing() and not self.repeat and len(self.audioList) > 0 and not self.pause:
                 if self.lastAudio:
@@ -129,7 +124,7 @@ class MusicPlayer():
                 self.lastAudio = self.audioList.pop(0)
                 print('начинаю играть')
                 try:
-                    self.vc.play(discord.FFmpegPCMAudio(executable="D:\Projects\Discord\Yoko-bot\\files\\ffmpeg\\ffmpeg.exe", source = self.lastAudio))
+                    self.vc.play(discord.FFmpegPCMAudio(executable="..\\ffmpeg\\ffmpeg.exe", source = self.lastAudio))
                 except Exception as e:
                     print(e)
 

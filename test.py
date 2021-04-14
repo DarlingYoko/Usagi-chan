@@ -1,6 +1,5 @@
-def a(a, *b):
-    print(a)
-    print(b)
+import os
 
-
-a(1,2,3,4,45)
+os.chdir('files\\Downloads')
+for file in os.listdir('..\\ffmpeg'):
+    print(file)
