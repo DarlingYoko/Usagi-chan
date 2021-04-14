@@ -65,7 +65,7 @@ def updateShedule():
     if not downloadShedule():
         return 0
 
-    wb = load_workbook('D:\Projects\Discord\Yoko-bot\\google\\shedule.xlsx')
+    wb = load_workbook('../../google/shedule.xlsx')
     embeds = {}
 
     sheet = wb['sheduleList']
