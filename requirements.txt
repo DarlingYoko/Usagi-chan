@@ -1,5 +1,6 @@
-discord
-google-api-python-client
-google-auth-oauthlib
-openpyxl
-psycopg2-binary
+discord==1.0.1
+discord.py==1.5.1
+google-api-python-client==1.12.8
+google-auth-oauthlib==0.4.2
+openpyxl==3.0.6
+psycopg2-binary==2.8.6
