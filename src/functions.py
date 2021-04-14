@@ -36,7 +36,7 @@ async def wrongMessage(data, title = None, description = None, delay = 10):
 
 
 def newLog(exc_type, exc_obj, exc_tb, e, new = None):
-    file = open('..\\..\\logs.txt', 'a')
+    file = open('../../logs.txt', 'a')
     if new:
         file.write('\n\nLogs new start\n')
     else:
