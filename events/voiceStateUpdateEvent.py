@@ -6,9 +6,9 @@ from threading import Thread
 def playAudio(self, file, timeout):
     time.sleep(timeout)
     try:
-        self.musicPlayer.vc.play(discord.FFmpegPCMAudio(executable="D:\Projects\Discord\Yoko-bot\\files\\ffmpeg\\ffmpeg.exe", source = file), after=lambda e: print(f'music in channel has finished playing.'))
-    except:
-        pass
+        self.musicPlayer.vc.play(discord.FFmpegPCMAudio(source = file), after=lambda e: print(f'music in channel has finished playing.'))
+    except Exception as e:
+        print(e)
 
     time.sleep(timeout)
     os.remove(file)
@@ -36,7 +36,9 @@ def setVoiceStateUpdateEvent(self):
 
 
         try:
-            if before.channel and not after.channel and before.channel.id == 788865135724068904 and member.id != self.config['usersIDs'].getint('yokoId') and member.id != self.config['usersIDs'].getint('botId'):
+            #print(before.channel and not after.channel and before.channel.id == 788865135724068904 and member.id != self.config['usersIDs'].getint('yokoId') and member.id != self.config['usersIDs'].getint('botId'))
+            #print(after.channel, not before.channel, after.channel.id == 733640826256752641, member.id != self.config['usersIDs'].getint('yokoId'), member.id != self.config['usersIDs'].getint('botId'))
+            if before.channel and not after.channel and before.channel.id == 733640826256752641 and member.id != self.config['usersIDs'].getint('yokoId') and member.id != self.config['usersIDs'].getint('botId'):
                 file = 'D:\Projects\Discord\Yoko-bot\\files\\audio\\{0}_vishel.mp3'.format(member.id)
                 text = '{0} вышёл'.format(member.display_name)
                 language = 'ru'
@@ -45,7 +47,7 @@ def setVoiceStateUpdateEvent(self):
                 Thread(target=playAudio, args=(self, file, 5, )).start()
 
 
-            elif after.channel and not before.channel and after.channel.id == 788865135724068904 and member.id != self.config['usersIDs'].getint('yokoId') and member.id != self.config['usersIDs'].getint('botId'):
+            elif after.channel and not before.channel and after.channel.id == 733640826256752641 and member.id != self.config['usersIDs'].getint('yokoId') and member.id != self.config['usersIDs'].getint('botId'):
                 file = 'D:\Projects\Discord\Yoko-bot\\files\\audio\\{0}_voshel.mp3'.format(member.id)
                 text = '{0} зашёл'.format(member.display_name)
                 language = 'ru'
