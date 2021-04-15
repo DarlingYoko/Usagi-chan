@@ -16,3 +16,4 @@ rapidfuzz
 ytmusicapi
 spotipy
 async-timeout
+asyncio
