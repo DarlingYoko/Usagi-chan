@@ -151,3 +151,9 @@ Logs new start
 
 New error in creating request at 2021-04-16 21:48:16.526919:
 type - <class 'discord.errors.NotFound'>, name - helpCommand.py, line - 24, error - 404 Not Found (error code: 10008): Unknown Message
+
+
+Logs new start
+
+
+Logs new start
