@@ -3,8 +3,8 @@ from src.functions import createEmbed, newLog
 import sys
 
 async def autoRemoveRequest(self):
-    requestsList = self.db.getTime()
-    for (msgId, time, author) in requestsList:
+    requestsList = self.db.getAll(tableName = 'emojiData')
+    for (msgId, helpers, time, author) in requestsList:
         time = datetime.fromtimestamp(float(time))
         if datetime.now() - time > timedelta(hours = 6):
             await removeRequest(self, msgId, author)
@@ -23,18 +23,18 @@ async def removeRequest(self, msgId, author):
         await msg.edit(content = None, embed = newEmbed)
         await msg.unpin()
 
-        msgIds = self.db.get(userId = author, table = 'requestsData')
+        msgIds = self.db.getValue(tableName = 'requestsData', argument = 'requests_ids', selector = 'user_id', value = author)
         if msgIds:
             msgIds = eval(msgIds)
         else:
             return
         msgIds.remove(int(msgId))
         if len(msgIds) == 0:
-            self.db.remove(userId = author, table = 'requestsData')
+            self.db.remove(tableName = 'requestsData', selector = 'user_id', value = author)
         else:
-            self.db.update(userId = author, messageId = msgIds, table = 'requestsData')
+            self.db.update(tableName = 'requestsData', argument = 'requests_ids', selector = 'user_id', newValue = str(msgIds), findValue = author)
 
-        self.db.remove(userId = msgId, table = 'emojiData')
+        self.db.remove(tableName = 'emojiData', selector = 'request_id', value = msgId)
 
     except Exception as e:
         exc_type, exc_obj, exc_tb = sys.exc_info()

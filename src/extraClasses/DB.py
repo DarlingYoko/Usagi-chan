@@ -59,6 +59,7 @@ class Database():
     def getAll(self, tableName):
         try:
             self.cur.execute("SELECT * from {0};".format(tableName))
+            self.con.commit()
             return self.cur.fetchall()
         except Exception as e:
             exc_type, exc_obj, exc_tb = sys.exc_info()

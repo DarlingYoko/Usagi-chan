@@ -17,6 +17,16 @@ def checkNewNotification(self, messageId, userId):
         users.append(userId)
         self.db.update(tableName = 'shedule', argument = 'users', selector = 'messageId', newValue = users, findValue = messageId)
 
+async def giveRequestsRole(self, messageId, userId):
+    if str(messageId) == self.config['requestsData']['getRoleMessage']:
+        guild = await self.client.fetch_guild(self.config['data']['guildId'])
+        role = guild.get_role(int(self.config['requestsData']['roleID']))
+        user = await guild.fetch_member(userId)
+        await user.add_roles(role)
+
+
+
+
 
 async def fillEmoji(self, payload):
 
@@ -27,10 +37,14 @@ async def fillEmoji(self, payload):
 
     sheduleEmoji = self.client.get_emoji(810182035955777576)
 
+
     if sheduleEmoji == emoji and str(channelId) == self.config['sheduleData']['sheduleChannel']:
         checkNewNotification(self, messageId, userId)
 
-    '''
+    if '⛏️' ==  str(emoji) and str(channelId) == self.config['requestsData']['getRoleChannel']:
+        await giveRequestsRole(self, messageId, userId)
+
+
     try:
         accessEmoji = {'2️⃣': 2, '3️⃣': 3, '4️⃣': 4}
         channel = self.client.get_channel(channelId)
@@ -41,8 +55,11 @@ async def fillEmoji(self, payload):
             return
 
 
-        msgIds = self.db.get(userId = userId, table = 'requestsData')
-        emojiIds = self.db.get(userId = messageId, table = 'emojiData')
+
+        msgIds = self.db.getValue(tableName = 'requestsData', argument = 'requests_ids', selector = 'user_id', value = userId)
+        emojiIds = self.db.getValue(tableName = 'emojiData', argument = 'helper_ids', selector = 'request_id', value = messageId)
+
+        print(msgIds, emojiIds)
 
 
         # проверка на существование заявки
@@ -64,11 +81,11 @@ async def fillEmoji(self, payload):
 
                     msgIds.remove(messageId)
                     if len(msgIds) == 0:
-                        self.db.remove(userId = userId, table = 'requestsData')
+                        self.db.remove(tableName = 'requestsData', selector = 'user_id', value = userId)
                     else:
-                        self.db.update(userId = userId, messageId = msgIds, table = 'requestsData')
+                        self.db.update(tableName = 'requestsData', argument = 'requests_ids', selector = 'user_id', newValue = str(msgIds), findValue = userId)
 
-                    self.db.remove(userId = messageId, table = 'emojiData')
+                    self.db.remove(tableName = 'emojiData', selector = 'request_id', value = messageId)
                     return
 
             if userId != self.config['usersIDs']['botId']:
@@ -89,7 +106,7 @@ async def fillEmoji(self, payload):
             timeEmoji = await addReaction(self, accessEmoji[str(emoji)], timeEmoji, msg, payload, embed)
 
             if timeEmoji:
-                self.db.update(userId = messageId, messageId = timeEmoji, table = 'emojiData')
+                self.db.update(tableName = 'emojiData', argument = 'helper_ids', selector = 'request_id', newValue = str(timeEmoji), findValue = messageId)
             return
 
 
@@ -100,7 +117,7 @@ async def fillEmoji(self, payload):
     except Exception as e:
         exc_type, exc_obj, exc_tb = sys.exc_info()
         newLog(exc_type, exc_obj, exc_tb, e)
-    '''
+
 
 
 

@@ -107,17 +107,17 @@ async def createRequest(self, data):
 
 
         userId = data['message'].author.id
-        msgIds = self.db.get(userId = userId, table = 'requestsData')
+        msgIds = self.db.getValue(tableName = 'requestsData', argument = 'requests_ids', selector = 'user_id', value = userId)
         if msgIds:
             msgIds = eval(msgIds)
             msgIds.append(timeMsg.id)
-            self.db.update(userId = userId, messageId = msgIds, table = 'requestsData')
+            self.db.update(tableName = 'requestsData', argument = 'requests_ids', selector = 'user_id', newValue = str(msgIds), findValue = userId)
 
         else:
             msgIds = [timeMsg.id]
-            self.db.insert(userId = userId, messageId = msgIds)
+            self.db.insert('requestsData', userId, str(msgIds))
 
-        self.db.insert(userId = timeMsg.id, messageId = {}, time = time, user = userId)
+        self.db.insert('emojidata', timeMsg.id, str({}), time, userId)
     except Exception as e:
         exc_type, exc_obj, exc_tb = sys.exc_info()
         newLog(exc_type, exc_obj, exc_tb, e)

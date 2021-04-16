@@ -9,16 +9,18 @@ async def helpCommand(self, data):
             await wrongMessage(data = data, title = title, description = description)
             await data['message'].delete()
             return
-        title = 'Справка'
-        description = ('> <@&{0}> - **автороль созданная для получения оповещений и создания заявок, в канале** <#{1}>\n'.format(self.config['requestsData']['roleID'], self.config['requestsData']['channel']) +
-                        ':meat_on_bone: **Получить роль** можно, в канале <#{0}> и нажмите на :pick: **под последним сообщением.**\n'.format(self.config['data']['getRoleChannel']) +
-                        ':poultry_leg: **Для создания заявки** в канале <#{0}> вам нужно указать;\n'.format(self.config['requestsData']['channel']) +
-                        '!создать `уровень мира`/`ваш уид`/`количество слотов свободных в пати`/`описание`\n' +
-                        ':poultry_leg: **Для закрытия** заявки вам нужно нажать на :lock: под **вашей** заявкой, но помните, что в ваша заявка будет **автоматически закрыта через 6 часов**.\n\n'
-                        '`Все подробности и примеры в канале `<#{0}> `в последнем посте.`'.format(self.config['data']['getRoleChannel']))
-        thumbnail = 'https://cdn.discordapp.com/attachments/801159693404864543/803383108484595762/unknown.png'
-        embed = createEmbed(title = title, description = description, thumbnail = thumbnail)
-        await data['message'].channel.send(embed = embed, delete_after = 60)
+
+        helpMsg = (':snail: **Для создания заявки вам нужно указать следующие параметры;**\n!создать `уровень мира`/`ваш уид`/`количество слотов свободных в пати`/`описание`\n\n' +
+                        '**Пример**\n:YEP~1: `- Знач пишу `\n!создать 7/3724627346/3/Хочу пособирать руду. Нужны 3 добровольца. Всяким **Кисикам**:loveKeqing:  не заходить. \n:peepoG~1: `- Нажимаю клавишу enter.`\n:peepoPANTIES: `- Ура! Работаеть!`\n\n\n' +
+                        '> :snail: **Для закрытия Заявки нужно:**\n\n:lock: Достаточно на **своей** же заявке нажать на реакцию :lock: и она закроется.\n:lock: **Если вы забывчивый человек**, то не переживайте, через 6 часов заявка закроется сама!\n\n' +
+                        ':PepeLaugh~1:`- Фух, ну теперь то я точно закрою заявку!`\n\n' +
+                        ':boom: **Очень важные примечания!** :boom:\n\n' +
+                        ':ban:  **Все поля** должны быть заполнены и разделены слешем `/`.\n' +
+                        ':ban:  **Не забывайте** закрывать заявки. `[или Программисты... Ну вы поняли.. Они же модераторы..]`\n' +
+                        ':ban:  **Если вы что-то забыли** то всегда есть **!помощь**. В ней кратко обо всём и ни о чём. `[вызывать справку можно только в канале` <#{0}>`]`\n\n'.format(self.config['requestsData']['channel']) +
+                        '`P.s.` Если найдёте **ошибку в использовании бота**, немедля пишите <@290166276796448768>. Он почти в тот же день её исправит.  :EZY: \n' +
+                        ':peepoCry: `- А теперь жамкайте на кирку и пора работать! Солнце ещё высоко!`\n:PepeHands:')
+        await data['message'].channel.send(helpMsg, delete_after = 60)
         await data['message'].delete()
     except Exception as e:
         exc_type, exc_obj, exc_tb = sys.exc_info()

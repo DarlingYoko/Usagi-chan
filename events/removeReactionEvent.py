@@ -16,6 +16,13 @@ def checkRemoveNotification(self, messageId, userId):
         users.remove(userId)
         self.db.update(tableName = 'shedule', argument = 'users', selector = 'messageId', newValue = users, findValue = messageId)
 
+async def removeRequestsRole(self, messageId, userId):
+    if str(messageId) == self.config['requestsData']['getRoleMessage']:
+        guild = await self.client.fetch_guild(self.config['data']['guildId'])
+        role = guild.get_role(int(self.config['requestsData']['roleID']))
+        user = await guild.fetch_member(userId)
+        await user.remove_roles(role)
+
 
 async def dellEmoji(self, payload):
 
@@ -30,6 +37,9 @@ async def dellEmoji(self, payload):
     if sheduleEmoji == emoji and str(channelId) == self.config['sheduleData']['sheduleChannel']:
         checkRemoveNotification(self, messageId, userId)
 
+    if '⛏️' ==  str(emoji) and str(channelId) == self.config['requestsData']['getRoleChannel']:
+        await removeRequestsRole(self, messageId, userId)
+
     try:
         accessEmoji = {'2️⃣': 2, '3️⃣': 3, '4️⃣': 4}
         channel = self.client.get_channel(payload.channel_id)
@@ -38,7 +48,7 @@ async def dellEmoji(self, payload):
             embed = msg.embeds[0].to_dict()
         except:
             return
-        emojiIds = self.db.get(userId = messageId, table = 'emojiData')
+        emojiIds = self.db.getValue(tableName = 'emojiData', argument = 'helper_ids', selector = 'request_id', value = messageId)
 
         # проверка на существование заявки
         if emojiIds:
@@ -51,7 +61,7 @@ async def dellEmoji(self, payload):
             timeEmoji = await removeReaction(accessEmoji[str(emoji)], timeEmoji, msg, payload, embed)
 
             if timeEmoji != -1:
-                self.db.update(userId = messageId, messageId = timeEmoji, table = 'emojiData')
+                self.db.update(tableName = 'emojiData', argument = 'helper_ids', selector = 'request_id', newValue = str(timeEmoji), findValue = messageId)
             return
 
 

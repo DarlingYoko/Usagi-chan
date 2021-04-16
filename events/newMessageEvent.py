@@ -52,7 +52,6 @@ def setMessageEvent(self):
             if isCommand(msg, self.config['privateCommands'].values()):
                 if str(message.channel.type) == 'private':
                     answer = 'Тебе низя использовать эту команду'
-                    delay = 5
                     '''
                     command = self.config['privateCommands']['createValentine']
                     if msg.startswith(command):
@@ -77,8 +76,6 @@ def setMessageEvent(self):
                                 await reloadMes.add_reaction(sheduleEmoji)
 
                             answer = 'Успешно!'
-                            delay = 60
-
 
                     command = self.config['privateCommands']['simpleMessageCommand']
                     if msg.startswith(command) and msg.split()[0] == command:
@@ -88,9 +85,9 @@ def setMessageEvent(self):
 
                     if len(answer) >= 2000:
                         for i in range(0, len(answer), 2000):
-                            await message.channel.send(answer[i:i+2000], delete_after = delay)
+                            await message.channel.send(answer[i:i+2000])
                     else:
-                        await message.channel.send(answer, delete_after = delay)
+                        await message.channel.send(answer)
 
 
 
@@ -110,16 +107,21 @@ def setMessageEvent(self):
                 if str(message.channel.type) == 'text':
                     answer = 'Тебе низя использовать эту команду'
                     delay = 5
-                    '''
+
                     command = self.config['guildCommands']['createRequest']
                     if msg.startswith(command):
                         data['content'] = msg.split(command)[1]
                         await createRequest(self, data = data)
+                        answer = 'Готово'
+                        delay = 1
 
                     command = self.config['guildCommands']['helpCommand']
                     if msg.startswith(command):
                         await helpCommand(self, data = data)
+                        answer = 'Готово'
+                        delay = 1
 
+                    '''
                     command = self.config['guildCommands']['helpValentine']
                     if msg.startswith(command):
                         await helpValentine(self, data = data)
