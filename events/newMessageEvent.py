@@ -48,6 +48,8 @@ def setMessageEvent(self):
             if message.attachments:
                 data['urlImage'] = message.attachments[0].url
 
+
+
             #private messages
             if isCommand(msg, self.config['privateCommands'].values()):
                 if str(message.channel.type) == 'private':
@@ -115,8 +117,13 @@ def setMessageEvent(self):
                         answer = 'Готово'
                         delay = 1
 
+                    command = self.config['guildCommands']['COCK']
+                    if msg.startswith(command) and msg.split()[0] == command:
+                        answer = '<:YEP:771044606913151002> COCK'
+                        delay = 60
+
                     command = self.config['guildCommands']['helpCommand']
-                    if msg.startswith(command):
+                    if msg.startswith(command) and msg.split()[0] == command:
                         await helpCommand(self, data = data)
                         answer = 'Готово'
                         delay = 1
