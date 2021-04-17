@@ -117,8 +117,8 @@ def setMessageEvent(self):
                         answer = 'Готово'
                         delay = 1
 
-                    command = self.config['guildCommands']['COCK']
-                    if msg.startswith(command) and msg.split()[0] == command:
+
+                    if 'cock' in msg.lower() and message.channel.id == 788546742677143552:
                         answer = '<:YEP:771044606913151002> COCK'
                         delay = 60
 
