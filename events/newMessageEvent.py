@@ -48,6 +48,11 @@ def setMessageEvent(self):
             if message.attachments:
                 data['urlImage'] = message.attachments[0].url
 
+            if 'cock' in msg.lower() and message.channel.id == 788546742677143552:
+                answer = '<:YEP:771044606913151002> COCK'
+                await message.channel.send(answer)
+                return
+
 
 
             #private messages
@@ -116,11 +121,6 @@ def setMessageEvent(self):
                         await createRequest(self, data = data)
                         answer = 'Готово'
                         delay = 1
-
-
-                    if 'cock' in msg.lower() and message.channel.id == 788546742677143552:
-                        answer = '<:YEP:771044606913151002> COCK'
-                        delay = 60
 
                     command = self.config['guildCommands']['helpCommand']
                     if msg.startswith(command) and msg.split()[0] == command:
