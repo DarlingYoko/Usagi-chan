@@ -28,7 +28,7 @@ def checkAudio():
 class UsahiChan:
 
     def __init__(self):
-        self.config = loadConfig('src/config')
+        self.config = loadConfig('src/TESTconfig')
         self.loop = None
         intents = discord.Intents.all()
         self.client = discord.Client(intents = intents)

@@ -86,13 +86,15 @@ async def createRequest(self, data):
         for i in range(numberOfSlots):
             slots += '***{0}) Слот:** Пусто*\n'.format(i + 2)
 
+        print(lvlWorld, UID, text, slots, server)
+
         authorName = '{0} создаёт новую заявку.'.format(data['message'].author.display_name)
         authorIconURL = data['message'].author.avatar_url
         description = ':park: **Мир:** {0} уровня\n:label: **UID:** {1}\n:map: **Сервер:** {4}\n:busts_in_silhouette: **Слоты:**\n{3}:pencil: **Описание:** {2}'.format(lvlWorld, UID, text, slots, server)
         footer = 'Заявка создана в {0} по МСК'.format(getCurrentTime())
         time = mktime(datetime.now().timetuple())
 
-        embed = createEmbed(description = description, thumbnail = self.config['requestsData']['thumbnail'], footer = footer, authorName = authorName, authorIconURL = authorIconURL)
+        embed = createEmbed(description = description, footer = footer, authorName = authorName, authorIconURL = authorIconURL)
         timeMsg = await messageChannel.send('<@&{}>'.format(self.config['requestsData']['roleID']), embed = embed)
 
         await timeMsg.add_reaction('🔒')
