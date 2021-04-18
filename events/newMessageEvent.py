@@ -71,12 +71,6 @@ def setMessageEvent(self):
                             embeds = updateShedule()
                             channel = await self.client.fetch_channel(self.config['sheduleData']['sheduleChannel'])
                             sheduleEmoji = self.client.get_emoji(810182035955777576)
-                            async for messageHistory in channel.history(limit=10):
-                                if messageHistory.id == 807711419415396392:
-                                    break
-                                await messageHistory.delete()
-                                self.db.remove(tableName = 'shedule', selector = 'messageId', value = messageHistory.id)
-
                             for embed in embeds.keys():
                                 reloadMes = await channel.send(embed=embed)
                                 self.db.insert('shedule', reloadMes.id, embeds[embed], '[]')
@@ -127,6 +121,17 @@ def setMessageEvent(self):
                         await helpCommand(self, data = data)
                         answer = 'Готово'
                         delay = 1
+
+                    command = self.config['guildCommands']['removeSession']
+                    if msg.startswith(command) and msg.split()[0] == command:
+                        if message.author.id in eval(self.config['sheduleData']['moviegoers']):
+                            channel = await self.client.fetch_channel(self.config['sheduleData']['sheduleChannel'])
+                            rmMsg = await channel.fetch_message(msg.split()[1])
+                            print(rmMsg)
+                            await rmMsg.delete()
+                            self.db.remove(tableName = 'shedule', selector = 'messageId', value = rmMsg.id)
+                            answer = 'Готово'
+                            delay = 1
 
                     '''
                     command = self.config['guildCommands']['helpValentine']
