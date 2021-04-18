@@ -1,10 +1,11 @@
 import discord, asyncio, time, shelve, datetime, sys, os
 from threading import Thread
+from src.functions import newLog, loadConfig, getLogger
 from src.extraClasses.classMember import Members
 from src.extraClasses.DB import Database
 from src.extraClasses.musicPlayer import MusicPlayer
+from src.extraClasses.Token import Token
 from src.guildCommands.autoRemoveRequest import autoRemoveRequest
-from src.functions import newLog, loadConfig, getLogger
 from src.privatCommands.updateShedule import checkNotification
 
 async def checkRequests():
@@ -23,9 +24,14 @@ def checkAudio():
         time.sleep(5)
         usagi.musicPlayer.checkPlay()
 
+async def checkTokens():
+    while True:
+        time.sleep(5)
+        asyncio.run_coroutine_threadsafe(usagi.token.checkTokens(usagi), usagi.loop)
 
 
-class UsahiChan:
+
+class UsagiChan:
 
     def __init__(self):
         self.config = loadConfig('src/config')
@@ -36,6 +42,7 @@ class UsahiChan:
         self.members = Members(self.config['data']['guildId'])
         self.db = Database(self)
         self.musicPlayer = MusicPlayer()
+        self.token = Token()
         if not os.path.exists('files/Downloads'):
             os.mkdir('files/Downloads')
         os.chdir('files/Downloads')
@@ -61,7 +68,7 @@ class UsahiChan:
 
 
 
-usagi = UsahiChan()
+usagi = UsagiChan()
 usagi.checkConnection()
 usagi.setMessageEvent()
 usagi.setVoiceStateUpdateEvent()
@@ -75,4 +82,5 @@ newLog('', '', '', '', new = 1)
 Thread(target=asyncio.run, args=(checkRequests(), )).start()
 Thread(target=asyncio.run, args=(checkShedule(), )).start()
 Thread(target=checkAudio).start()
+Thread(target=asyncio.run, args=(checkTokens(), )).start()
 usagi.run()

@@ -133,6 +133,20 @@ def setMessageEvent(self):
                             answer = 'Готово'
                             delay = 1
 
+                    command = self.config['guildCommands']['addToken']
+                    if msg.startswith(command) and msg.split()[0] == command:
+                        answer = self.token.addToken(self, msg.split(command)[1].strip())
+                        delay = 60
+
+                    command = self.config['guildCommands']['removeToken']
+                    if msg.startswith(command) and msg.split()[0] == command:
+                        answer = self.token.removeToken(self, msg.split(command)[1].strip())
+                        delay = 5
+
+                    command = self.config['guildCommands']['viewToken']
+                    if msg.startswith(command) and msg.split()[0] == command:
+                        answer = self.token.viewToken(self)
+                        delay = 60
                     '''
                     command = self.config['guildCommands']['helpValentine']
                     if msg.startswith(command):

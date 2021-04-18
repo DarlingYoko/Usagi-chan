@@ -32,6 +32,7 @@ class Database():
     def getValue(self, tableName, argument, selector, value):
         try:
             self.cur.execute("SELECT {1} from {0} where {2} = \'{3}\';".format(tableName, argument, selector, value))
+            self.con.commit()
             return self.cur.fetchall()[0][0]
         except Exception as e:
             return 0
@@ -59,6 +60,16 @@ class Database():
     def getAll(self, tableName):
         try:
             self.cur.execute("SELECT * from {0};".format(tableName))
+            self.con.commit()
+            return self.cur.fetchall()
+        except Exception as e:
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            newLog(exc_type, exc_obj, exc_tb, e)
+            return 0
+
+    def command(self, command):
+        try:
+            self.cur.execute(command)
             self.con.commit()
             return self.cur.fetchall()
         except Exception as e:
