@@ -3,7 +3,7 @@ from datetime import datetime
 import sys, os
 
 def createEmbed(title = None, description = None, color = 0x00ff00, urlImage = None, thumbnail = None, footer = None, authorName = None, authorIconURL = None):
-    embed = discord.Embed(title = title, description = description, color = color)
+    embed = discord.Embed(description = description, color = color)
     if urlImage:
         embed.set_image(url = urlImage)
 
@@ -15,6 +15,10 @@ def createEmbed(title = None, description = None, color = 0x00ff00, urlImage = N
 
     if authorName:
         embed.set_author(name = authorName, icon_url = authorIconURL)
+
+    if title:
+        embed.title = title
+
 
     return embed
 

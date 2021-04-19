@@ -731,3 +731,12 @@ Logs new start
 
 
 Logs new start
+
+
+Logs new start
+
+New error in creating request at 2021-04-19 13:13:57.950285:
+type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
+
+New error in creating request at 2021-04-19 13:13:58.656098:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
