@@ -11,7 +11,6 @@ def setNewReactionEvent(self):
 
 def checkNewNotification(self, messageId, userId):
     users = self.db.getValue(tableName = 'shedule', argument = 'users', selector = 'messageId', value = messageId)
-    print(users)
     users = eval(users)
     if userId not in users:
         users.append(userId)
@@ -58,8 +57,6 @@ async def fillEmoji(self, payload):
 
         msgIds = self.db.getValue(tableName = 'requestsData', argument = 'requests_ids', selector = 'user_id', value = userId)
         emojiIds = self.db.getValue(tableName = 'emojiData', argument = 'helper_ids', selector = 'request_id', value = messageId)
-
-        print(msgIds, emojiIds)
 
 
         # проверка на существование заявки

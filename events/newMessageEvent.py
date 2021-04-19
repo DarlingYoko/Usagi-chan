@@ -134,7 +134,6 @@ def setMessageEvent(self):
                         if message.author.id in eval(self.config['sheduleData']['moviegoers']):
                             channel = await self.client.fetch_channel(self.config['sheduleData']['sheduleChannel'])
                             rmMsg = await channel.fetch_message(msg.split()[1])
-                            print(rmMsg)
                             await rmMsg.delete()
                             self.db.remove(tableName = 'shedule', selector = 'messageId', value = rmMsg.id)
                             answer = 'Готово'
