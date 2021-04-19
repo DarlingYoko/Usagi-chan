@@ -78,11 +78,18 @@ def setMessageEvent(self):
 
                             answer = 'Успешно!'
 
-                    command = self.config['privateCommands']['simpleMessageCommand']
+                    command = self.config['privateCommands']['simpleVoiceCommand']
                     if msg.startswith(command) and msg.split()[0] == command:
                         if message.author.id == self.config['usersIDs'].getint('yokoId'):
                             self.musicPlayer.simpleVoice(msg, command)
                             answer = 'Проговорила'
+
+                    command = self.config['privateCommands']['simpleMessageCommand']
+                    if msg.startswith(command) and msg.split()[0] == command:
+                        if message.author.id == self.config['usersIDs'].getint('yokoId'):
+                            channel = await self.client.fetch_channel(788546742677143552)
+                            await channel.send(msg.split(command)[1].strip())
+                            answer = 'Написала'
 
                     if len(answer) >= 2000:
                         for i in range(0, len(answer), 2000):

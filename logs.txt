@@ -728,3 +728,6 @@ type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62
 
 
 Logs new start
+
+
+Logs new start
