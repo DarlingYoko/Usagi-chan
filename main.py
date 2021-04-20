@@ -29,6 +29,11 @@ async def checkTokens():
         time.sleep(5)
         asyncio.run_coroutine_threadsafe(usagi.token.checkTokens(usagi), usagi.loop)
 
+def restartDriver():
+    while True:
+        time.sleep(10 * 60 * 60)
+        usagi.token.restartDriver()
+
 
 
 class UsagiChan:
@@ -79,8 +84,9 @@ usagi.setUsersChangedEvents()
 
 
 newLog('', '', '', '', new = 1)
-Thread(target=asyncio.run, args=(checkRequests(), )).start()
-Thread(target=asyncio.run, args=(checkShedule(), )).start()
-Thread(target=checkAudio).start()
-Thread(target=asyncio.run, args=(checkTokens(), )).start()
+Thread(target = asyncio.run, args=(checkRequests(), )).start()
+Thread(target = asyncio.run, args=(checkShedule(), )).start()
+Thread(target = asyncio.run, args=(checkTokens(), )).start()
+Thread(target = checkAudio).start()
+Thread(target = restartDriver).start()
 usagi.run()
