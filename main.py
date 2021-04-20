@@ -52,7 +52,7 @@ class UsagiChan:
         async def on_ready():
 
             self.LOGGER.info('Successfully connected to discord')
-            await self.client.change_presence(status=discord.Status.online, activity=discord.Game("ver 1.0.0.1.0 | Всё ещё учится работать |"))
+            await self.client.change_presence(status=discord.Status.online, activity=discord.Game("ver 1.0.0.1.5 | Всё ещё учится работать |"))
             self.loop = asyncio.get_event_loop()
             await self.members.fillMembers(self.client)
 
