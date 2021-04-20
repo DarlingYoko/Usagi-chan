@@ -9,7 +9,7 @@ class Token():
     def __init__(self):
         self.xpath = '//*[@id="root"]/div/div[1]/div[2]/div/div[2]/div[1]/h1'
         self.url = 'https://poocoin.app/tokens/'
-        self.duration = 10000
+        self.duration = 5
         self.frequency = 0.01
 
         self.chrome_options = Options()

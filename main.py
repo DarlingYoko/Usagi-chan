@@ -26,7 +26,7 @@ def checkAudio():
 
 async def checkTokens():
     while True:
-        time.sleep(5)
+        time.sleep(10)
         asyncio.run_coroutine_threadsafe(usagi.token.checkTokens(usagi), usagi.loop)
 
 def restartDriver():
