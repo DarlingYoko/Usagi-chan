@@ -2,727 +2,206 @@
 
 Logs new start
 
-New error in creating request at 2021-04-18 20:18:42.845023:
-type - <class 'psycopg2.errors.SyntaxError'>, name - DB.py, line - 72, error - syntax error at or near "'tokens'"
-LINE 1: INSERT INTO 'tokens' VALUES (DEFAULT, 0xcfefa64b0ddd611b1251...
-                    ^
+New error in creating request at 2021-04-18 20:07:30.093397:
+type - <class 'psycopg2.errors.InvalidTextRepresentation'>, name - DB.py, line - 24, error - invalid input syntax for integer: "DEFAULT"
+LINE 1: INSERT INTO tokens VALUES ('DEFAULT', '0xcfefa64b0ddd611b125...
+                                   ^
 
 
-New error in creating request at 2021-04-18 20:18:47.417260:
-type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
+New error in creating request at 2021-04-18 20:07:32.377080:
+type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 61, error - current transaction is aborted, commands ignored until end of transaction block
 
 
-New error in creating request at 2021-04-18 20:18:47.529261:
-type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
+New error in creating request at 2021-04-18 20:07:32.494496:
+type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 61, error - current transaction is aborted, commands ignored until end of transaction block
 
 
-New error in creating request at 2021-04-18 20:18:57.427671:
-type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
+New error in creating request at 2021-04-18 20:07:42.390922:
+type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 61, error - current transaction is aborted, commands ignored until end of transaction block
 
 
-New error in creating request at 2021-04-18 20:18:57.539148:
-type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
+New error in creating request at 2021-04-18 20:07:42.508667:
+type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 61, error - current transaction is aborted, commands ignored until end of transaction block
 
 
-
-Logs new start
-
-New error in creating request at 2021-04-18 20:19:26.447612:
-type - <class 'psycopg2.errors.SyntaxError'>, name - DB.py, line - 72, error - syntax error at or near "xcfefa64b0ddd611b125157c41cd3827f2e8e8615"
-LINE 1: INSERT INTO tokens VALUES (DEFAULT, 0xcfefa64b0ddd611b125157...
-                                             ^
+New error in creating request at 2021-04-18 20:07:52.401176:
+type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 61, error - current transaction is aborted, commands ignored until end of transaction block
 
 
-New error in creating request at 2021-04-18 20:19:29.858204:
-type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
+New error in creating request at 2021-04-18 20:07:52.517885:
+type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 61, error - current transaction is aborted, commands ignored until end of transaction block
 
 
-New error in creating request at 2021-04-18 20:19:29.961921:
-type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
+New error in creating request at 2021-04-18 20:08:02.410791:
+type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 61, error - current transaction is aborted, commands ignored until end of transaction block
 
 
-New error in creating request at 2021-04-18 20:19:39.864021:
-type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
+New error in creating request at 2021-04-18 20:08:02.528698:
+type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 61, error - current transaction is aborted, commands ignored until end of transaction block
 
 
-New error in creating request at 2021-04-18 20:19:39.968807:
-type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
+New error in creating request at 2021-04-18 20:08:12.424905:
+type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 61, error - current transaction is aborted, commands ignored until end of transaction block
 
 
-New error in creating request at 2021-04-18 20:19:49.870034:
-type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
+New error in creating request at 2021-04-18 20:08:12.541688:
+type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 61, error - current transaction is aborted, commands ignored until end of transaction block
 
 
-New error in creating request at 2021-04-18 20:19:49.975035:
-type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
+New error in creating request at 2021-04-18 20:08:22.434888:
+type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 61, error - current transaction is aborted, commands ignored until end of transaction block
 
 
-New error in creating request at 2021-04-18 20:19:59.870846:
-type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
+New error in creating request at 2021-04-18 20:08:22.552605:
+type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 61, error - current transaction is aborted, commands ignored until end of transaction block
 
 
-New error in creating request at 2021-04-18 20:19:59.975594:
-type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
+New error in creating request at 2021-04-18 20:08:32.440885:
+type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 61, error - current transaction is aborted, commands ignored until end of transaction block
 
 
 
 Logs new start
 
-New error in creating request at 2021-04-18 20:20:41.514631:
-type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
+New error in creating request at 2021-04-18 20:09:51.984352:
+type - <class 'psycopg2.errors.UndefinedColumn'>, name - DB.py, line - 24, error - column "'DEFAULT'" does not exist
+LINE 1: INSERT INTO tokens VALUES ("'DEFAULT'", '0xcfefa64b0ddd611b1...
+                                   ^
 
-New error in creating request at 2021-04-18 20:20:42.296572:
-type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
 
-New error in creating request at 2021-04-18 20:20:51.563117:
-type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
-
-New error in creating request at 2021-04-18 20:20:52.189840:
-type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
-
-New error in creating request at 2021-04-18 20:21:01.729755:
-type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
-
-New error in creating request at 2021-04-18 20:21:02.378986:
-type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
-
-
-Logs new start
-
-New error in creating request at 2021-04-18 20:22:38.614888:
-type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
-
-New error in creating request at 2021-04-18 20:22:39.293563:
-type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
-
-New error in creating request at 2021-04-18 20:22:48.708625:
-type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
-
-New error in creating request at 2021-04-18 20:22:49.343992:
-type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
-
-New error in creating request at 2021-04-18 20:22:58.692943:
-type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
-
-New error in creating request at 2021-04-18 20:22:59.289795:
-type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
-
-New error in creating request at 2021-04-18 20:23:08.578925:
-type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
-
-New error in creating request at 2021-04-18 20:23:09.210988:
-type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
-
-New error in creating request at 2021-04-18 20:23:18.552626:
-type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
-
-New error in creating request at 2021-04-18 20:23:19.226889:
-type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
-
-New error in creating request at 2021-04-18 20:23:28.697600:
-type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
-
-New error in creating request at 2021-04-18 20:23:29.319782:
-type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
-
-New error in creating request at 2021-04-18 20:23:38.575677:
-type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
-
-New error in creating request at 2021-04-18 20:23:39.163472:
-type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
-
-New error in creating request at 2021-04-18 20:23:48.745120:
-type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
-
-New error in creating request at 2021-04-18 20:23:49.447292:
-type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
-
-New error in creating request at 2021-04-18 20:23:58.735653:
-type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
-
-New error in creating request at 2021-04-18 20:23:59.378985:
-type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
-
-New error in creating request at 2021-04-18 20:24:08.711726:
-type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
-
-New error in creating request at 2021-04-18 20:24:09.289264:
-type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
-
-New error in creating request at 2021-04-18 20:24:18.572579:
-type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
-
-New error in creating request at 2021-04-18 20:24:19.195115:
-type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
-
-New error in creating request at 2021-04-18 20:24:28.761828:
-type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
-
-New error in creating request at 2021-04-18 20:24:29.439568:
-type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
-
-New error in creating request at 2021-04-18 20:24:38.811794:
-type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
-
-New error in creating request at 2021-04-18 20:24:39.465609:
-type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
-
-New error in creating request at 2021-04-18 20:24:48.777041:
-type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
-
-New error in creating request at 2021-04-18 20:24:49.416779:
-type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
-
-New error in creating request at 2021-04-18 20:24:58.645060:
-type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
-
-New error in creating request at 2021-04-18 20:24:59.266588:
-type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
-
-New error in creating request at 2021-04-18 20:25:08.846527:
-type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
-
-New error in creating request at 2021-04-18 20:25:09.497459:
-type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
-
-New error in creating request at 2021-04-18 20:25:18.857518:
-type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
-
-New error in creating request at 2021-04-18 20:25:19.509021:
-type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
-
-New error in creating request at 2021-04-18 20:25:28.893885:
-type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
-
-New error in creating request at 2021-04-18 20:25:29.573853:
-type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
-
-New error in creating request at 2021-04-18 20:25:38.888485:
-type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
-
-New error in creating request at 2021-04-18 20:25:39.539571:
-type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
-
-New error in creating request at 2021-04-18 20:25:48.674885:
-type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
-
-New error in creating request at 2021-04-18 20:25:49.433624:
-type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
-
-New error in creating request at 2021-04-18 20:25:58.690679:
-type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
-
-New error in creating request at 2021-04-18 20:25:59.339152:
-type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
-
-New error in creating request at 2021-04-18 20:26:08.634143:
-type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
-
-New error in creating request at 2021-04-18 20:26:09.246755:
-type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
-
-New error in creating request at 2021-04-18 20:26:18.734299:
-type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
-
-New error in creating request at 2021-04-18 20:26:19.383397:
-type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
-
-New error in creating request at 2021-04-18 20:26:28.666995:
-type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
-
-New error in creating request at 2021-04-18 20:26:29.282297:
-type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
-
-New error in creating request at 2021-04-18 20:26:38.660098:
-type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
-
-New error in creating request at 2021-04-18 20:26:39.275465:
-type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
-
-New error in creating request at 2021-04-18 20:26:48.896172:
-type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
-
-New error in creating request at 2021-04-18 20:26:49.534066:
-type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
-
-New error in creating request at 2021-04-18 20:26:58.851136:
-type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
-
-New error in creating request at 2021-04-18 20:26:59.450923:
-type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
-
-New error in creating request at 2021-04-18 20:27:08.929874:
-type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
-
-New error in creating request at 2021-04-18 20:27:09.598043:
-type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
-
-New error in creating request at 2021-04-18 20:27:18.770712:
-type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
-
-New error in creating request at 2021-04-18 20:27:19.411056:
-type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
-
-New error in creating request at 2021-04-18 20:27:29.589185:
-type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
-
-New error in creating request at 2021-04-18 20:27:30.209917:
-type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
-
-New error in creating request at 2021-04-18 20:27:39.237748:
-type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
-
-New error in creating request at 2021-04-18 20:27:39.923010:
-type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
-
-New error in creating request at 2021-04-18 20:27:48.838517:
-type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
-
-New error in creating request at 2021-04-18 20:27:49.475237:
-type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
-
-New error in creating request at 2021-04-18 20:27:58.893735:
-type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
-
-New error in creating request at 2021-04-18 20:27:59.555061:
-type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
-
-New error in creating request at 2021-04-18 20:28:08.785199:
-type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
-
-New error in creating request at 2021-04-18 20:28:09.416974:
-type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
-
-New error in creating request at 2021-04-18 20:28:18.997080:
-type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
-
-New error in creating request at 2021-04-18 20:28:19.678118:
-type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
-
-New error in creating request at 2021-04-18 20:28:29.009589:
-type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
-
-New error in creating request at 2021-04-18 20:28:29.631360:
-type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
-
-New error in creating request at 2021-04-18 20:28:38.942533:
-type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
-
-New error in creating request at 2021-04-18 20:28:39.600086:
-type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
-
-New error in creating request at 2021-04-18 20:28:48.896719:
-type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
-
-New error in creating request at 2021-04-18 20:28:49.552365:
-type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
-
-New error in creating request at 2021-04-18 20:28:59.009572:
-type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
-
-New error in creating request at 2021-04-18 20:28:59.697605:
-type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
-
-New error in creating request at 2021-04-18 20:29:09.051764:
-type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
-
-New error in creating request at 2021-04-18 20:29:09.723120:
-type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
-
-New error in creating request at 2021-04-18 20:29:18.819487:
-type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
-
-New error in creating request at 2021-04-18 20:29:19.465188:
-type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
-
-New error in creating request at 2021-04-18 20:29:29.041443:
-type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
-
-New error in creating request at 2021-04-18 20:29:29.681043:
-type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
-
-New error in creating request at 2021-04-18 20:29:39.123388:
-type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
-
-New error in creating request at 2021-04-18 20:29:39.914932:
-type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
-
-New error in creating request at 2021-04-18 20:29:49.053979:
-type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
-
-New error in creating request at 2021-04-18 20:29:49.684338:
-type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
-
-New error in creating request at 2021-04-18 20:29:58.975947:
-type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
-
-New error in creating request at 2021-04-18 20:29:59.597040:
-type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
-
-New error in creating request at 2021-04-18 20:30:08.963801:
-type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
-
-New error in creating request at 2021-04-18 20:30:09.734733:
-type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
-
-New error in creating request at 2021-04-18 20:30:18.874783:
-type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
-
-New error in creating request at 2021-04-18 20:30:19.597781:
-type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
-
-New error in creating request at 2021-04-18 20:30:29.082765:
-type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
-
-New error in creating request at 2021-04-18 20:30:29.743833:
-type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
-
-New error in creating request at 2021-04-18 20:30:39.088924:
-type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
-
-New error in creating request at 2021-04-18 20:30:39.725902:
-type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
-
-New error in creating request at 2021-04-18 20:30:49.071016:
-type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
-
-New error in creating request at 2021-04-18 20:30:49.697962:
-type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
-
-New error in creating request at 2021-04-18 20:30:59.057002:
-type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
-
-New error in creating request at 2021-04-18 20:30:59.719873:
-type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
-
-New error in creating request at 2021-04-18 20:31:08.947617:
-type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
-
-New error in creating request at 2021-04-18 20:31:09.619527:
-type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
-
-New error in creating request at 2021-04-18 20:31:18.939948:
-type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
-
-New error in creating request at 2021-04-18 20:31:19.568028:
-type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
-
-New error in creating request at 2021-04-18 20:31:28.978998:
-type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
-
-New error in creating request at 2021-04-18 20:31:29.611067:
-type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
-
-New error in creating request at 2021-04-18 20:31:39.066572:
-type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
-
-New error in creating request at 2021-04-18 20:31:39.753116:
-type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
-
-New error in creating request at 2021-04-18 20:31:49.148763:
-type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
-
-New error in creating request at 2021-04-18 20:31:49.818599:
-type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
-
-
-Logs new start
-
-New error in creating request at 2021-04-18 22:33:41.041034:
-type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
-
-New error in creating request at 2021-04-18 22:33:41.705694:
-type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
-
-New error in creating request at 2021-04-18 22:33:51.214174:
-type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
-
-New error in creating request at 2021-04-18 22:33:51.836955:
-type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
-
-New error in creating request at 2021-04-18 22:34:00.888321:
-type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
-
-New error in creating request at 2021-04-18 22:34:01.749044:
-type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
-
-New error in creating request at 2021-04-18 22:34:11.055321:
-type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
-
-New error in creating request at 2021-04-18 22:34:11.709176:
-type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
-
-New error in creating request at 2021-04-18 22:34:21.032742:
-type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
-
-New error in creating request at 2021-04-18 22:34:21.753165:
-type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
-
-New error in creating request at 2021-04-18 22:34:31.176464:
-type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
-
-New error in creating request at 2021-04-18 22:34:31.801785:
-type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
-
-New error in creating request at 2021-04-18 22:34:40.912393:
-type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
-
-New error in creating request at 2021-04-18 22:34:41.579384:
-type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
-
-New error in creating request at 2021-04-18 22:34:51.004630:
-type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
-
-New error in creating request at 2021-04-18 22:34:51.722876:
-type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
-
-New error in creating request at 2021-04-18 22:35:01.105259:
-type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
-
-New error in creating request at 2021-04-18 22:35:01.727473:
-type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
-
-New error in creating request at 2021-04-18 22:35:10.993111:
-type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
-
-New error in creating request at 2021-04-18 22:35:11.684526:
-type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
-
-New error in creating request at 2021-04-18 22:35:21.055791:
-type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
-
-New error in creating request at 2021-04-18 22:35:21.732550:
-type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
-
-New error in creating request at 2021-04-18 22:35:31.098334:
-type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
-
-New error in creating request at 2021-04-18 22:35:31.735348:
-type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
-
-New error in creating request at 2021-04-18 22:35:41.225755:
-type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
-
-New error in creating request at 2021-04-18 22:35:41.938806:
-type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
-
-New error in creating request at 2021-04-18 22:35:50.993364:
-type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
-
-New error in creating request at 2021-04-18 22:35:51.565014:
-type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
-
-New error in creating request at 2021-04-18 22:36:01.061995:
-type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
-
-New error in creating request at 2021-04-18 22:36:01.779373:
-type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
-
-New error in creating request at 2021-04-18 22:36:11.018995:
-type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
-
-New error in creating request at 2021-04-18 22:36:11.653995:
-type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
-
-
-Logs new start
-
-
-Logs new start
-
-New error in creating request at 2021-04-18 22:48:51.354319:
-type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
-
-New error in creating request at 2021-04-18 22:48:51.988034:
-type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
-
-New error in creating request at 2021-04-18 22:49:01.114790:
-type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
-
-New error in creating request at 2021-04-18 22:49:01.785910:
-type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
-
-
-Logs new start
-
-New error in creating request at 2021-04-18 22:50:06.043233:
-type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
-
-New error in creating request at 2021-04-18 22:50:06.667974:
-type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
-
-New error in creating request at 2021-04-18 22:50:15.920847:
-type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
-
-New error in creating request at 2021-04-18 22:50:16.522685:
-type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
-
-New error in creating request at 2021-04-18 22:50:25.934265:
-type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
-
-New error in creating request at 2021-04-18 22:50:26.623120:
-type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
-
-New error in creating request at 2021-04-18 22:50:35.981787:
-type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
-
-New error in creating request at 2021-04-18 22:50:36.663911:
-type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
-
-New error in creating request at 2021-04-18 22:50:46.068254:
-type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
-
-New error in creating request at 2021-04-18 22:50:46.694925:
-type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
-
-
-Logs new start
-
-New error in creating request at 2021-04-18 22:51:37.911625:
-type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
-
-New error in creating request at 2021-04-18 22:51:38.501460:
-type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
-
-New error in creating request at 2021-04-18 22:51:47.993791:
-type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
-
-New error in creating request at 2021-04-18 22:51:48.704883:
-type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
-
-
-Logs new start
-
-New error in creating request at 2021-04-18 22:53:05.086129:
-type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
-
-New error in creating request at 2021-04-18 22:53:06.003137:
-type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
-
-
-Logs new start
-
-New error in creating request at 2021-04-18 22:54:11.540074:
-type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
-
-New error in creating request at 2021-04-18 22:54:12.214986:
-type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
-
-New error in creating request at 2021-04-18 22:54:21.150481:
-type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
-
-New error in creating request at 2021-04-18 22:54:21.792254:
-type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
-
-New error in creating request at 2021-04-18 22:54:31.326211:
-type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
-
-New error in creating request at 2021-04-18 22:54:32.021092:
-type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
-
-
-Logs new start
-
-New error in creating request at 2021-04-18 22:56:05.990420:
-type - <class 'psycopg2.errors.UndefinedTable'>, name - DB.py, line - 62, error - relation "tokens" does not exist
-LINE 1: SELECT * from tokens;
-                      ^
-
-
-New error in creating request at 2021-04-18 22:56:07.071096:
+New error in creating request at 2021-04-18 20:09:56.490245:
 type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
 
 
-New error in creating request at 2021-04-18 22:56:12.076976:
+New error in creating request at 2021-04-18 20:09:56.608806:
 type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
 
 
-New error in creating request at 2021-04-18 22:56:12.124676:
+New error in creating request at 2021-04-18 20:10:06.490962:
 type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
 
 
-New error in creating request at 2021-04-18 22:56:12.172366:
+New error in creating request at 2021-04-18 20:10:06.609886:
 type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
 
 
-New error in creating request at 2021-04-18 22:56:17.083173:
+New error in creating request at 2021-04-18 20:10:16.506393:
 type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
 
 
-New error in creating request at 2021-04-18 22:56:22.083774:
+New error in creating request at 2021-04-18 20:10:16.624778:
 type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
 
 
-New error in creating request at 2021-04-18 22:56:22.131234:
+New error in creating request at 2021-04-18 20:10:26.509911:
 type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
 
 
-New error in creating request at 2021-04-18 22:56:22.178668:
+New error in creating request at 2021-04-18 20:10:26.628018:
 type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
 
 
-New error in creating request at 2021-04-18 22:56:27.086488:
+New error in creating request at 2021-04-18 20:10:36.524090:
 type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
 
 
-New error in creating request at 2021-04-18 22:56:32.100247:
+New error in creating request at 2021-04-18 20:10:36.642092:
 type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
 
 
-New error in creating request at 2021-04-18 22:56:32.148384:
+New error in creating request at 2021-04-18 20:10:46.531338:
 type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
 
 
-New error in creating request at 2021-04-18 22:56:32.196164:
+New error in creating request at 2021-04-18 20:10:46.649840:
 type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
 
 
-New error in creating request at 2021-04-18 22:56:34.646122:
-type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 72, error - current transaction is aborted, commands ignored until end of transaction block
-
-
-New error in creating request at 2021-04-18 22:56:37.108501:
+New error in creating request at 2021-04-18 20:10:56.541525:
 type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
 
 
-New error in creating request at 2021-04-18 22:56:42.108784:
+New error in creating request at 2021-04-18 20:10:56.660033:
 type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
 
 
-New error in creating request at 2021-04-18 22:56:42.155748:
+New error in creating request at 2021-04-18 20:11:06.555623:
 type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
 
 
-New error in creating request at 2021-04-18 22:56:42.204295:
+New error in creating request at 2021-04-18 20:11:06.673863:
 type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
 
 
-
-Logs new start
-
-New error in creating request at 2021-04-18 22:57:04.124771:
-type - <class 'psycopg2.errors.UndefinedTable'>, name - DB.py, line - 72, error - relation "tokens" does not exist
-LINE 1: INSERT INTO tokens VALUES (DEFAULT, '0xcfefa64b0ddd611b12515...
-                    ^
-
-
-New error in creating request at 2021-04-18 22:57:04.175746:
+New error in creating request at 2021-04-18 20:11:16.570054:
 type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
 
 
-New error in creating request at 2021-04-18 22:57:07.484221:
+New error in creating request at 2021-04-18 20:11:16.688161:
 type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
 
 
-New error in creating request at 2021-04-18 22:57:07.532478:
+New error in creating request at 2021-04-18 20:11:26.573450:
 type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
 
 
-New error in creating request at 2021-04-18 22:57:07.579541:
+New error in creating request at 2021-04-18 20:11:26.691945:
 type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
 
 
-New error in creating request at 2021-04-18 22:57:12.499397:
+New error in creating request at 2021-04-18 20:11:36.577248:
+type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
+
+
+New error in creating request at 2021-04-18 20:11:36.696062:
+type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
+
+
+New error in creating request at 2021-04-18 20:11:46.580437:
+type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
+
+
+New error in creating request at 2021-04-18 20:11:46.699676:
+type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
+
+
+New error in creating request at 2021-04-18 20:11:56.581810:
+type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
+
+
+New error in creating request at 2021-04-18 20:11:56.700490:
+type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
+
+
+New error in creating request at 2021-04-18 20:12:06.592055:
+type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
+
+
+New error in creating request at 2021-04-18 20:12:06.711298:
+type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
+
+
+New error in creating request at 2021-04-18 20:12:16.598723:
+type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
+
+
+New error in creating request at 2021-04-18 20:12:16.717194:
+type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
+
+
+New error in creating request at 2021-04-18 20:12:26.600247:
+type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
+
+
+New error in creating request at 2021-04-18 20:12:26.718291:
+type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
+
+
+New error in creating request at 2021-04-18 20:12:36.611376:
+type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
+
+
+New error in creating request at 2021-04-18 20:12:36.729951:
 type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
 
 
@@ -732,11 +211,208 @@ Logs new start
 
 Logs new start
 
+New error in creating request at 2021-04-18 20:14:50.384899:
+type - <class 'psycopg2.errors.UndefinedColumn'>, name - DB.py, line - 24, error - column "'DEFAULT'" does not exist
+LINE 1: INSERT INTO tokens VALUES ("'DEFAULT'", '0xcfefa64b0ddd611b1...
+                                   ^
+
+
+New error in creating request at 2021-04-18 20:14:50.607800:
+type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
+
+
+New error in creating request at 2021-04-18 20:14:50.718798:
+type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
+
+
+New error in creating request at 2021-04-18 20:15:00.610590:
+type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
+
+
+New error in creating request at 2021-04-18 20:15:00.721938:
+type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
+
+
+New error in creating request at 2021-04-18 20:15:10.625304:
+type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
+
+
+New error in creating request at 2021-04-18 20:15:10.737166:
+type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
+
+
+New error in creating request at 2021-04-18 20:15:20.633137:
+type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
+
+
+New error in creating request at 2021-04-18 20:15:20.743971:
+type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
+
+
+New error in creating request at 2021-04-18 20:15:30.638333:
+type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
+
+
+New error in creating request at 2021-04-18 20:15:30.750465:
+type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
+
+
+New error in creating request at 2021-04-18 20:15:40.653947:
+type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
+
+
+New error in creating request at 2021-04-18 20:15:40.766172:
+type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
+
+
+New error in creating request at 2021-04-18 20:15:50.659313:
+type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
+
+
+New error in creating request at 2021-04-18 20:15:50.771008:
+type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
+
+
+New error in creating request at 2021-04-18 20:16:00.674919:
+type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
+
+
+New error in creating request at 2021-04-18 20:16:00.786827:
+type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
+
+
+New error in creating request at 2021-04-18 20:16:10.677404:
+type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
+
+
+New error in creating request at 2021-04-18 20:16:10.788556:
+type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
+
+
+New error in creating request at 2021-04-18 20:16:20.679506:
+type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
+
+
+New error in creating request at 2021-04-18 20:16:20.790973:
+type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
+
+
+New error in creating request at 2021-04-18 20:16:30.696170:
+type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
+
+
+New error in creating request at 2021-04-18 20:16:30.807492:
+type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
+
+
+New error in creating request at 2021-04-18 20:16:40.696951:
+type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
+
+
+New error in creating request at 2021-04-18 20:16:40.807979:
+type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
+
+
+New error in creating request at 2021-04-18 20:16:50.699626:
+type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
+
+
+New error in creating request at 2021-04-18 20:16:50.810762:
+type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
+
+
+New error in creating request at 2021-04-18 20:17:00.712798:
+type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
+
+
+New error in creating request at 2021-04-18 20:17:00.824871:
+type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
+
+
+New error in creating request at 2021-04-18 20:17:10.717665:
+type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
+
+
+New error in creating request at 2021-04-18 20:17:10.828831:
+type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
+
+
+New error in creating request at 2021-04-18 20:17:20.725016:
+type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
+
+
+New error in creating request at 2021-04-18 20:17:20.835929:
+type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
+
+
+New error in creating request at 2021-04-18 20:17:30.727530:
+type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
+
+
+New error in creating request at 2021-04-18 20:17:30.838067:
+type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
+
+
+New error in creating request at 2021-04-18 20:17:40.742146:
+type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
+
+
+New error in creating request at 2021-04-18 20:17:40.853680:
+type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
+
+
+New error in creating request at 2021-04-18 20:17:50.746007:
+type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
+
+
+New error in creating request at 2021-04-18 20:17:50.857979:
+type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
+
+
+New error in creating request at 2021-04-18 20:18:00.757402:
+type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
+
+
+New error in creating request at 2021-04-18 20:18:00.868900:
+type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
+
+
+New error in creating request at 2021-04-18 20:18:10.761971:
+type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
+
+
+New error in creating request at 2021-04-18 20:18:10.873471:
+type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
+
+
+New error in creating request at 2021-04-18 20:18:20.767640:
+type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
+
+
+New error in creating request at 2021-04-18 20:18:20.879806:
+type - <class 'psycopg2.errors.InFailedSqlTransaction'>, name - DB.py, line - 62, error - current transaction is aborted, commands ignored until end of transaction block
+
+
 
 Logs new start
 
-New error in creating request at 2021-04-19 13:13:57.950285:
+
+Logs new start
+
+New error in creating request at 2021-04-20 13:48:37.288769:
 type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
 
-New error in creating request at 2021-04-19 13:13:58.656098:
+New error in creating request at 2021-04-20 13:48:37.990330:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error in creating request at 2021-04-20 13:48:47.042838:
+type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
+
+New error in creating request at 2021-04-20 13:48:47.735504:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error in creating request at 2021-04-20 13:48:56.863324:
+type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
+
+New error in creating request at 2021-04-20 13:48:57.574614:
 type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'

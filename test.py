@@ -11,9 +11,10 @@ duration=10000
 frequency=0.01
 
 chrome_options = Options()
-chrome_options.add_argument("--headless")
+#chrome_options.add_argument("--headless")
 
 driver = webdriver.Chrome(chrome_options=chrome_options)
-driver.get(url)
-WebDriverWait(driver, duration, frequency).until(EC.visibility_of_element_located((By.XPATH, xpath)))
-print(float(driver.title.split('$')[1]) > 1.6)
+#driver.get(url)
+#WebDriverWait(driver, duration, frequency).until(EC.visibility_of_element_located((By.XPATH, xpath)))
+#print(float(driver.title.split('$')[1]) > 1.6)
+driver.close()
