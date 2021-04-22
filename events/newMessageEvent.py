@@ -54,7 +54,7 @@ def setMessageEvent(self):
                 return
 
             if 'глоськ' in msg.lower() and message.channel.id == 788546742677143552:
-                answer = '<:malGimmieHuggu:656512350505140237>'
+                answer = '<:Huggu:832641068355813376>'
                 await message.channel.send(answer)
                 return
 
