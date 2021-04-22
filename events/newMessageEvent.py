@@ -53,6 +53,11 @@ def setMessageEvent(self):
                 await message.channel.send(answer)
                 return
 
+            if 'глоськ' in msg.lower() and message.channel.id == 788546742677143552:
+                answer = '<:malGimmieHuggu:656512350505140237>'
+                await message.channel.send(answer)
+                return
+
 
 
             #private messages
