@@ -12,7 +12,7 @@ chrome_options = Options()
 chrome_options.add_argument("--headless")
 
 
-driver = webdriver.Chrome(chrome_options = chrome_options)
+driver = webdriver.Chrome(options = chrome_options)
 driver.get('https://discord.com/channels/733631069542416384/734004322177646614')
 
 
@@ -22,7 +22,7 @@ loginXpath = '//*[@id="app-mount"]/div[2]/div/div[2]/div/div/form/div/div/div[1]
 passXpath = '//*[@id="app-mount"]/div[2]/div/div[2]/div/div/form/div/div/div[1]/div[3]/div[2]/div/input'
 statusFromXpath = '//*[@id="app-mount"]/div[6]/div[2]/div/div/div[2]/div[1]/div/div/div[2]/input'
 
-WebDriverWait(driver, 10, 0.01).until(EC.visibility_of_element_located((By.XPATH, loginXpath)))
+WebDriverWait(driver, 5, 0.01).until(EC.visibility_of_element_located((By.XPATH, loginXpath)))
 loginForm = driver.find_element_by_xpath(loginXpath)
 passForm = driver.find_element_by_xpath(passXpath)
 
@@ -31,7 +31,7 @@ loginForm.send_keys(login)
 passForm.send_keys(pas)
 
 driver.find_element_by_xpath('//*[@id="app-mount"]/div[2]/div/div[2]/div/div/form/div/div/div[1]/div[3]/button[2]').click()
-WebDriverWait(driver, 10, 0.01).until(EC.visibility_of_element_located((By.XPATH, '//*[@id="app-mount"]/div[2]/div/div[2]/div/div/div/div/div[1]/section/div[2]')))
+WebDriverWait(driver, 5, 0.01).until(EC.visibility_of_element_located((By.XPATH, '//*[@id="app-mount"]/div[2]/div/div[2]/div/div/div/div/div[1]/section/div[2]')))
 
 string = 'YEP COCK YEP COCK YEP COCK YEP COCK YEP COCK YEP COCK YEP COCK YEP COCK YEP COCK YEP COCK YEP COCK YEP COCK YEP COCK '
 num_chars = 9
@@ -40,9 +40,9 @@ while True:
     time.sleep(2)
 
     driver.find_element_by_xpath('//*[@id="app-mount"]/div[2]/div/div[2]/div/div/div/div/div[1]/section/div[2]/div[1]/div').click()
-    WebDriverWait(driver, 10, 0.01).until(EC.visibility_of_element_located((By.XPATH, '//*[@id="status-picker-custom-status"]/div/div')))
+    WebDriverWait(driver, 5, 0.01).until(EC.visibility_of_element_located((By.XPATH, '//*[@id="status-picker-custom-status"]/div/div')))
     driver.find_element_by_xpath('//*[@id="status-picker-custom-status"]/div/div').click()
-    WebDriverWait(driver, 10, 0.01).until(EC.visibility_of_element_located((By.XPATH, statusFromXpath)))
+    WebDriverWait(driver, 5, 0.01).until(EC.visibility_of_element_located((By.XPATH, statusFromXpath)))
     form = driver.find_element_by_xpath(statusFromXpath)
     form.clear()
     form.send_keys(string[i:i+num_chars])
@@ -51,4 +51,4 @@ while True:
         i = 0
 
     driver.find_element_by_xpath('//*[@id="app-mount"]/div[6]/div[2]/div/div/div[3]/button[1]').click()
-    WebDriverWait(driver, 10, 0.01).until(EC.visibility_of_element_located((By.XPATH, '//*[@id="app-mount"]/div[2]/div/div[2]/div/div/div/div/div[1]/section/div[2]/div[1]/div')))
+    WebDriverWait(driver, 5, 0.01).until(EC.visibility_of_element_located((By.XPATH, '//*[@id="app-mount"]/div[2]/div/div[2]/div/div/div/div/div[1]/section/div[2]/div[1]/div')))

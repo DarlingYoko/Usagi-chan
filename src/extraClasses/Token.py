@@ -16,7 +16,7 @@ class Token():
         self.chrome_options.add_argument("--headless")
 
 
-        self.driver = webdriver.Chrome(chrome_options = self.chrome_options)
+        self.driver = webdriver.Chrome(options = self.chrome_options)
         self.driver.get(self.url)
 
     def addToken(self, usagi, info):
@@ -62,5 +62,5 @@ class Token():
 
     def restartDriver(self):
         self.driver.close()
-        self.driver = webdriver.Chrome(chrome_options = self.chrome_options)
+        self.driver = webdriver.Chrome(options = self.chrome_options)
         self.driver.get(self.url)
