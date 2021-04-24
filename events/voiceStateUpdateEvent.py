@@ -36,23 +36,23 @@ def setVoiceStateUpdateEvent(self):
 
 
         try:
+            file = None
             #print(before.channel and not after.channel and before.channel.id == 788865135724068904 and member.id != self.config['usersIDs'].getint('yokoId') and member.id != self.config['usersIDs'].getint('botId'))
             #print(after.channel, not before.channel, after.channel.id == 733640826256752641, member.id != self.config['usersIDs'].getint('yokoId'), member.id != self.config['usersIDs'].getint('botId'))
             if before.channel and not after.channel and before.channel.id == 788865135724068904 and member.id != self.config['usersIDs'].getint('yokoId') and member.id != self.config['usersIDs'].getint('botId'):
                 file = '../audio/{0}_vishel.mp3'.format(member.id)
                 text = '{0} вышёл'.format(member.display_name)
-                language = 'ru'
-                speech = gTTS(text = text, lang = language, slow = False)
-                speech.save(file)
-                Thread(target=playAudio, args=(self, file, 5, )).start()
 
 
             elif after.channel and not before.channel and after.channel.id == 788865135724068904 and member.id != self.config['usersIDs'].getint('yokoId') and member.id != self.config['usersIDs'].getint('botId'):
                 file = '../audio/{0}_voshel.mp3'.format(member.id)
                 text = '{0} зашёл'.format(member.display_name)
+
+            if file:
                 language = 'ru'
                 speech = gTTS(text = text, lang = language, slow = False)
                 speech.save(file)
                 Thread(target=playAudio, args=(self, file, 5, )).start()
+
         except Exception as e:
             print(e)

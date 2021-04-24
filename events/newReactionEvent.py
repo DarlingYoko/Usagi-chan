@@ -39,9 +39,11 @@ async def fillEmoji(self, payload):
 
     if sheduleEmoji == emoji and str(channelId) == self.config['sheduleData']['sheduleChannel']:
         checkNewNotification(self, messageId, userId)
+        return
 
     if '⛏️' ==  str(emoji) and str(channelId) == self.config['requestsData']['getRoleChannel']:
         await giveRequestsRole(self, messageId, userId)
+        return
 
 
     try:
@@ -107,7 +109,7 @@ async def fillEmoji(self, payload):
             return
 
 
-        # Очищечние эмодзи если заявка есть, но эмодзи не доступен
+        # Очистка эмодзи если заявка есть, но эмодзи не доступен
         if str(emoji) not in accessEmoji.keys():
             await msg.remove_reaction(emoji = payload.emoji, member = payload.member)
 

@@ -152,7 +152,6 @@ def setMessageEvent(self):
                     command = self.config['guildCommands']['removeToken']
                     if msg.startswith(command) and msg.split()[0] == command:
                         answer = self.token.removeToken(self, msg.split(command)[1].strip())
-                        delay = 5
 
                     command = self.config['guildCommands']['viewToken']
                     if msg.startswith(command) and msg.split()[0] == command:

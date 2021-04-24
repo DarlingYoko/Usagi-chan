@@ -7,6 +7,7 @@ from src.extraClasses.musicPlayer import MusicPlayer
 from src.extraClasses.Token import Token
 from src.guildCommands.autoRemoveRequest import autoRemoveRequest
 from src.privatCommands.updateShedule import checkNotification
+from events.usersChangedEvents import reportSpam
 
 async def checkRequests():
     while True:
@@ -34,6 +35,12 @@ def restartDriver():
         time.sleep(10 * 60 * 60)
         usagi.token.restartDriver()
 
+async def checkSpam():
+    time.sleep(10)
+    while True:
+        time.sleep(3)
+        asyncio.run_coroutine_threadsafe(reportSpam(usagi), usagi.loop)
+
 
 
 class UsagiChan:
@@ -41,6 +48,7 @@ class UsagiChan:
     def __init__(self):
         self.config = loadConfig('src/config')
         self.loop = None
+        self.spam = 0
         intents = discord.Intents.all()
         self.client = discord.Client(intents = intents)
         self.LOGGER = getLogger()
@@ -87,6 +95,7 @@ newLog('', '', '', '', new = 1)
 Thread(target = asyncio.run, args=(checkRequests(), )).start()
 Thread(target = asyncio.run, args=(checkShedule(), )).start()
 Thread(target = asyncio.run, args=(checkTokens(), )).start()
+Thread(target = asyncio.run, args=(checkSpam(), )).start()
 Thread(target = checkAudio).start()
 Thread(target = restartDriver).start()
 usagi.run()
