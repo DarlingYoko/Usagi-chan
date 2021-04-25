@@ -4,6 +4,6 @@
 from bin.commandConfig import commands
 
 
-a = '!q'
+a = 'q'
 
-print(commands['guild']['usual']['!помощь']['function'][6:])
+print(a.split()[0])
