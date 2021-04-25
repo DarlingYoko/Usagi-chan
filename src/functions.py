@@ -25,7 +25,8 @@ def createEmbed(title = None, description = None, color = 0x00ff00, urlImage = N
 
 def isCommand(msg, cmdList):
     for cmd in cmdList:
-        if msg.split()[0].lower() == cmd: return 1
+        print(msg.split())
+        if len(msg) > 0 and msg.split()[0].lower() == cmd: return 1
 
     return 0
 
