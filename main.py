@@ -46,7 +46,7 @@ async def checkSpam():
 class UsagiChan:
 
     def __init__(self):
-        self.config = loadConfig('src/TESTconfig')
+        self.config = loadConfig('src/config')
         self.loop = None
         self.spam = 0
         intents = discord.Intents.all()
