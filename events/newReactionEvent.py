@@ -47,6 +47,8 @@ async def fillEmoji(self, payload):
 
 
     try:
+        if channelId != self.config['data'].getint('usualChannelId'):
+            return
         accessEmoji = {'2️⃣': 2, '3️⃣': 3, '4️⃣': 4}
         channel = self.client.get_channel(channelId)
         msg = await channel.fetch_message(messageId)
