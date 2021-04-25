@@ -74,7 +74,8 @@ async def fillEmoji(self, payload):
                 if messageId in msgIds:
                     guild = await self.client.fetch_guild(payload.guild_id)
                     user = await guild.fetch_member(userId)
-                    newEmbed = createEmbed(description = '~~' + embed['description'] + '~~', thumbnail = embed['thumbnail']['url'], footer = embed['footer']['text'], authorName = '{0} закрыл заявку.'.format(user.display_name), authorIconURL = embed['author']['icon_url'])
+                    newEmbed = createEmbed(description = '~~' + embed['description'] + '~~', thumbnail = embed['thumbnail']['url'], footer = embed['footer']['text'],
+                                            authorName = '{0} закрыл заявку.'.format(user.display_name), authorIconURL = embed['author']['icon_url'], color = embed['color'])
                     await msg.edit(content = None, embed = newEmbed)
                     await msg.unpin()
 
@@ -139,5 +140,6 @@ async def addInEmbed(id, msg, payload, embed):
     newUser = '***{0}) Слот:** <@{1}>*'.format(id, payload.user_id)
     splitEmbed = embed['description'].split('\n')
     splitEmbed[3 + id] = newUser
-    newEmbed = createEmbed(description = '\n'.join(splitEmbed), thumbnail = embed['thumbnail']['url'], footer = embed['footer']['text'], authorName = embed['author']['name'], authorIconURL = embed['author']['icon_url'])
+    newEmbed = createEmbed(description = '\n'.join(splitEmbed), thumbnail = embed['thumbnail']['url'], footer = embed['footer']['text'],
+                            authorName = embed['author']['name'], authorIconURL = embed['author']['icon_url'], color = embed['color'])
     await msg.edit(embed = newEmbed)

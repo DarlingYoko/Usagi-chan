@@ -93,7 +93,7 @@ async def createRequest(self, data):
         footer = 'Заявка создана в {0} по МСК'.format(getCurrentTime())
         time = mktime(datetime.now().timetuple())
 
-        embed = createEmbed(description = description, thumbnail = self.config['requestsData']['thumbnail'], footer = footer, authorName = authorName, authorIconURL = authorIconURL)
+        embed = createEmbed(description = description, thumbnail = self.config['requestsData']['thumbnail'], footer = footer, authorName = authorName, authorIconURL = authorIconURL, color = 0xf08080)
         timeMsg = await messageChannel.send('<@&{}>'.format(self.config['requestsData']['roleID']), embed = embed)
 
         await timeMsg.add_reaction('🔒')

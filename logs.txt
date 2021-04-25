@@ -136,3 +136,180 @@ Logs new start
 
 
 Logs new start
+
+
+Logs new start
+
+New error in creating request at 2021-04-25 18:24:57.737887:
+type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
+
+New error in creating request at 2021-04-25 18:24:58.474711:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error in creating request at 2021-04-25 18:25:07.849684:
+type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
+
+New error in creating request at 2021-04-25 18:25:11.884163:
+type - <class 'TypeError'>, name - createRequest.py, line - 96, error - Expected discord.Colour, int, or Embed.Empty but received str instead.
+
+New error in creating request at 2021-04-25 18:25:12.066469:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error in creating request at 2021-04-25 18:25:17.689697:
+type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
+
+New error in creating request at 2021-04-25 18:25:18.301532:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error in creating request at 2021-04-25 18:25:24.623969:
+type - <class 'TypeError'>, name - createRequest.py, line - 96, error - Expected discord.Colour, int, or Embed.Empty but received str instead.
+
+New error in creating request at 2021-04-25 18:25:27.549850:
+type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
+
+New error in creating request at 2021-04-25 18:25:28.154658:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error in creating request at 2021-04-25 18:25:37.512106:
+type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
+
+New error in creating request at 2021-04-25 18:25:38.148946:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error in creating request at 2021-04-25 18:25:47.498754:
+type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
+
+New error in creating request at 2021-04-25 18:25:48.112590:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error in creating request at 2021-04-25 18:25:57.723300:
+type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
+
+New error in creating request at 2021-04-25 18:25:58.407840:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error in creating request at 2021-04-25 18:26:07.552022:
+type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
+
+New error in creating request at 2021-04-25 18:26:08.223267:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error in creating request at 2021-04-25 18:26:17.608817:
+type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
+
+New error in creating request at 2021-04-25 18:26:18.284691:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error in creating request at 2021-04-25 18:26:26.585237:
+type - <class 'TypeError'>, name - createRequest.py, line - 96, error - Expected discord.Colour, int, or Embed.Empty but received str instead.
+
+New error in creating request at 2021-04-25 18:26:27.594990:
+type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
+
+New error in creating request at 2021-04-25 18:26:28.213095:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error in creating request at 2021-04-25 18:26:37.558827:
+type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
+
+New error in creating request at 2021-04-25 18:26:38.147057:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error in creating request at 2021-04-25 18:26:47.575545:
+type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
+
+New error in creating request at 2021-04-25 18:26:48.201295:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error in creating request at 2021-04-25 18:26:57.667722:
+type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
+
+New error in creating request at 2021-04-25 18:26:58.317632:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+
+Logs new start
+
+New error in creating request at 2021-04-25 18:27:26.731780:
+type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
+
+New error in creating request at 2021-04-25 18:27:27.410965:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+
+Logs new start
+
+New error in creating request at 2021-04-25 18:29:27.555786:
+type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
+
+New error in creating request at 2021-04-25 18:29:28.215516:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error in creating request at 2021-04-25 18:29:37.754692:
+type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
+
+New error in creating request at 2021-04-25 18:29:38.960365:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error in creating request at 2021-04-25 18:29:48.878035:
+type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
+
+New error in creating request at 2021-04-25 18:29:49.516743:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error in creating request at 2021-04-25 18:29:58.902755:
+type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
+
+New error in creating request at 2021-04-25 18:29:59.527124:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error in creating request at 2021-04-25 18:30:08.650609:
+type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
+
+New error in creating request at 2021-04-25 18:30:11.496799:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error in creating request at 2021-04-25 18:30:20.075839:
+type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
+
+New error in creating request at 2021-04-25 18:30:20.757711:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error in creating request at 2021-04-25 18:30:27.858261:
+type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
+
+New error in creating request at 2021-04-25 18:30:28.476450:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error in creating request at 2021-04-25 18:30:37.693639:
+type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
+
+New error in creating request at 2021-04-25 18:30:38.877661:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error in creating request at 2021-04-25 18:30:47.789770:
+type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
+
+New error in creating request at 2021-04-25 18:30:48.482221:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error in creating request at 2021-04-25 18:30:57.786928:
+type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
+
+New error in creating request at 2021-04-25 18:30:58.416097:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+
+Logs new start
+
+New error in creating request at 2021-04-25 18:33:31.867294:
+type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
+
+New error in creating request at 2021-04-25 18:33:32.601634:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error in creating request at 2021-04-25 18:33:42.373084:
+type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
+
+New error in creating request at 2021-04-25 18:33:43.553955:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
