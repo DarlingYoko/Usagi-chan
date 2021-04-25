@@ -5,8 +5,9 @@ from src.extraClasses.classMember import Members
 from src.extraClasses.DB import Database
 from src.extraClasses.musicPlayer import MusicPlayer
 from src.extraClasses.Token import Token
-from src.guildCommands.autoRemoveRequest import autoRemoveRequest
-from src.privatCommands.updateShedule import checkNotification
+from bin.guildCommands.autoRemoveRequest import autoRemoveRequest
+from bin.privatCommands.updateShedule import checkNotification
+from bin.commandConfig import commands
 from events.usersChangedEvents import reportSpam
 
 async def checkRequests():
@@ -42,11 +43,10 @@ async def checkSpam():
         asyncio.run_coroutine_threadsafe(reportSpam(usagi), usagi.loop)
 
 
-
 class UsagiChan:
 
     def __init__(self):
-        self.config = loadConfig('src/config')
+        self.config = loadConfig('src/TESTconfig')
         self.loop = None
         self.spam = 0
         intents = discord.Intents.all()
@@ -56,6 +56,7 @@ class UsagiChan:
         self.db = Database(self)
         self.musicPlayer = MusicPlayer()
         self.token = Token()
+        self.commnds = commands
         if not os.path.exists('files/Downloads'):
             os.mkdir('files/Downloads')
         os.chdir('files/Downloads')
@@ -65,7 +66,7 @@ class UsagiChan:
         async def on_ready():
 
             self.LOGGER.info('Successfully connected to discord')
-            await self.client.change_presence(status=discord.Status.online, activity=discord.Game("ver 1.0.0.1.5 | Всё ещё учится работать |"))
+            await self.client.change_presence(status=discord.Status.online, activity=discord.Game("ver 1.0.0.1.6 | Всё ещё учится работать |"))
             self.loop = asyncio.get_event_loop()
             await self.members.fillMembers(self.client)
 

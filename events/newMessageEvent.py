@@ -1,10 +1,11 @@
-import sys, discord, os, subprocess, random, time
+import sys, discord, os, subprocess, random, time, asyncio
 from src.functions import isCommand, newLog
-from src.guildCommands.createRequest import createRequest
-from src.guildCommands.helpCommand import helpCommand
-from src.guildCommands.helpValentine import helpValentine
-from src.privatCommands.updateShedule import updateShedule
-from src.privatCommands.createValentine import valentineCommand
+from bin.guildCommands.createRequest import createRequest
+from bin.guildCommands.helpCommand import helpCommand
+from bin.guildCommands.helpValentine import helpValentine
+from bin.privatCommands.updateShedule import updateShedule, removeSession
+from bin.privatCommands.createValentine import valentineCommand
+from bin.commandConfig import commands, texts
 from youtube_dl import YoutubeDL
 from gtts import gTTS
 from spotdl import __main__ as spotdl
@@ -40,23 +41,12 @@ def setMessageEvent(self):
 
 
             msg = message.content
-            data = {
-                    'urlImage': None,
-                    'message': message
-                    }
 
-            if message.attachments:
-                data['urlImage'] = message.attachments[0].url
 
-            if 'cock' in msg.lower() and message.channel.id == 788546742677143552:
-                answer = '<:YEP:771044606913151002> COCK'
-                await message.channel.send(answer)
-                return
-
-            if 'глоськ' in msg.lower() and message.channel.id == 788546742677143552:
-                answer = '<:Huggu:832641068355813376>'
-                await message.channel.send(answer)
-                return
+            if message.channel.id == self.config['data'].getint('frameChannel'):
+                for key in texts.keys():
+                    if key in msg.lower():
+                        await message.channel.send(texts[key])
 
 
 
@@ -71,7 +61,7 @@ def setMessageEvent(self):
                         await valentineCommand(self, data = data)
                     '''
                     command = self.config['privateCommands']['updateShedule']
-                    if msg.startswith(command) and msg.split()[0] == command:
+                    if msg.split()[0].lower() == command:
                         if message.author.id in eval(self.config['sheduleData']['moviegoers']):
                             embeds = updateShedule()
                             channel = await self.client.fetch_channel(self.config['sheduleData']['sheduleChannel'])
@@ -84,13 +74,13 @@ def setMessageEvent(self):
                             answer = 'Успешно!'
 
                     command = self.config['privateCommands']['simpleVoiceCommand']
-                    if msg.startswith(command) and msg.split()[0] == command:
+                    if msg.split()[0].lower() == command:
                         if message.author.id == self.config['usersIDs'].getint('yokoId'):
                             self.musicPlayer.simpleVoice(msg, command)
                             answer = 'Проговорила'
 
                     command = self.config['privateCommands']['simpleMessageCommand']
-                    if msg.startswith(command) and msg.split()[0] == command:
+                    if msg.split()[0].lower() == command:
                         if message.author.id == self.config['usersIDs'].getint('yokoId'):
                             channel = await self.client.fetch_channel(788546742677143552)
                             await channel.send(msg.split(command)[1].strip())
@@ -114,121 +104,61 @@ def setMessageEvent(self):
                     #pass
                 return
 
+            guildCommands = list(commands['guild']['usual'].keys()) + list(commands['guild']['music'].keys()) + list(commands['guild']['token'].keys()) + list(commands['guild']['moviegoers'].keys()) + list(commands['guild']['my'].keys())
 
-            if isCommand(msg, self.config['guildCommands'].values()):
+            if isCommand(msg, guildCommands):
                 await message.delete()
+                delay = 10
                 if str(message.channel.type) == 'text':
                     answer = 'Тебе низя использовать эту команду'
-                    delay = 5
+                    command = msg.split()[0].lower()
+                    if command in commands['guild']['usual'].keys():
+                        if commands['guild']['usual'][command]['function']:
+                            eval(commands['guild']['usual'][command]['function'])
+                            answer = commands['guild']['usual'][command]['answer']
+                        else:
+                            answer = eval(commands['guild']['usual'][command]['answer'])
+                        delay = commands['guild']['usual'][command]['delay']
 
-                    command = self.config['guildCommands']['createRequest']
-                    if msg.startswith(command):
-                        data['content'] = msg.split(command)[1]
-                        await createRequest(self, data = data)
-                        answer = 'Готово'
-                        delay = 1
 
-                    command = self.config['guildCommands']['helpCommand']
-                    if msg.startswith(command) and msg.split()[0] == command:
-                        await helpCommand(self, data = data)
-                        answer = 'Готово'
-                        delay = 1
+                    if command in commands['guild']['music'].keys():
+                        if message.author.id in eval(self.config['audio']['accessList']):
+                            if commands['guild']['music'][command]['function']:
+                                eval(commands['guild']['music'][command]['function'])
+                                answer = commands['guild']['music'][command]['answer']
+                            else:
+                                answer = eval(commands['guild']['music'][command]['answer'])
+                            delay = commands['guild']['music'][command]['delay']
 
-                    command = self.config['guildCommands']['removeSession']
-                    if msg.startswith(command) and msg.split()[0] == command:
+
+                    if command in commands['guild']['token'].keys():
+                        if message.author.id in eval(self.config['token']['accessList']):
+                            if commands['guild']['token'][command]['function']:
+                                eval(commands['guild']['token'][command]['function'])
+                                answer = commands['guild']['token'][command]['answer']
+                            else:
+                                answer = eval(commands['guild']['token'][command]['answer'])
+                            delay = commands['guild']['token'][command]['delay']
+
+
+                    if command in commands['guild']['moviegoers'].keys():
                         if message.author.id in eval(self.config['sheduleData']['moviegoers']):
-                            channel = await self.client.fetch_channel(self.config['sheduleData']['sheduleChannel'])
-                            rmMsg = await channel.fetch_message(msg.split()[1])
-                            await rmMsg.delete()
-                            self.db.remove(tableName = 'shedule', selector = 'messageId', value = rmMsg.id)
-                            answer = 'Готово'
-                            delay = 1
-
-                    command = self.config['guildCommands']['addToken']
-                    if msg.startswith(command) and msg.split()[0] == command:
-                        answer = self.token.addToken(self, msg.split(command)[1].strip())
-                        delay = 60
-
-                    command = self.config['guildCommands']['removeToken']
-                    if msg.startswith(command) and msg.split()[0] == command:
-                        answer = self.token.removeToken(self, msg.split(command)[1].strip())
-
-                    command = self.config['guildCommands']['viewToken']
-                    if msg.startswith(command) and msg.split()[0] == command:
-                        answer = self.token.viewToken(self)
-                        delay = 60
-                    '''
-                    command = self.config['guildCommands']['helpValentine']
-                    if msg.startswith(command):
-                        await helpValentine(self, data = data)
-                    '''
-                    command = self.config['guildCommands']['playAudio']
-                    if msg.startswith(command) and msg.split()[0] == command:
-                        URL = msg.split(command)[1].strip()
-
-                        if message.author.id in eval(self.config['audio']['accessList']):
-                            self.musicPlayer.play(URL)
-                            answer = 'Добавила песенку в плейлист'
+                            if commands['guild']['moviegoers'][command]['function']:
+                                eval(commands['guild']['moviegoers'][command]['function'])
+                                answer = commands['guild']['moviegoers'][command]['answer']
+                            else:
+                                answer = eval(commands['guild']['moviegoers'][command]['answer'])
+                            delay = commands['guild']['moviegoers'][command]['delay']
 
 
-                    command = self.config['guildCommands']['pauseAudio']
-                    if msg.startswith(command) and msg.split()[0] == command:
-                        if message.author.id in eval(self.config['audio']['accessList']):
-                            self.musicPlayer.pauseAudio()
-                            answer = 'Поставила на паузу'
-
-
-                    command = self.config['guildCommands']['resumeAudio']
-                    if msg.startswith(command) and msg.split()[0] == command:
-                        if message.author.id in eval(self.config['audio']['accessList']):
-                            self.musicPlayer.resume()
-                            answer = 'Поставила дальше играть'
-
-
-                    command = self.config['guildCommands']['stopAudio']
-                    if msg.startswith(command) and msg.split()[0] == command:
-                        if message.author.id in eval(self.config['audio']['accessList']):
-                            self.musicPlayer.stop()
-                            answer = 'Остановила и очистила'
-
-
-                    command = self.config['guildCommands']['shuffleAudio']
-                    if msg.startswith(command) and msg.split()[0] == command:
-                        if message.author.id in eval(self.config['audio']['accessList']):
-                            self.musicPlayer.shuffle()
-                            answer = 'Перемешала'
-
-
-                    command = self.config['guildCommands']['nowAudio']
-                    if msg.startswith(command) and msg.split()[0] == command:
-                        if message.author.id in eval(self.config['audio']['accessList']):
-                            answer = self.musicPlayer.nowPlay()
-
-
-                    command = self.config['guildCommands']['skipAudio']
-                    if msg.startswith(command) and msg.split()[0] == command:
-                        if message.author.id in eval(self.config['audio']['accessList']):
-                            answer = self.musicPlayer.skip()
-
-
-
-                    command = self.config['guildCommands']['queryAudio']
-                    if msg.startswith(command) and msg.split()[0] == command:
-                        answer = self.musicPlayer.query()
-                        delay = 60
-
-
-                    command = self.config['guildCommands']['repeatAudio']
-                    if msg.startswith(command) and msg.split()[0] == command:
-                        if message.author.id in eval(self.config['audio']['accessList']):
-                            answer = self.musicPlayer.repeat(msg)
-
-
-                    command = self.config['guildCommands']['connectVoice']
-                    if msg.startswith(command) and msg.split()[0] == command:
+                    if command in commands['guild']['my'].keys():
                         if message.author.id == self.config['usersIDs'].getint('yokoId'):
-                            await self.musicPlayer.connect(self.client, msg, command)
-                            answer = 'Подключилась'
+                            if commands['guild']['my'][command]['function']:
+                                eval(commands['guild']['my'][command]['function'])
+                                answer = commands['guild']['my'][command]['answer']
+                            else:
+                                answer = eval(commands['guild']['my'][command]['answer'])
+                            delay = commands['guild']['my'][command]['delay']
 
                     if len(answer) >= 2000:
                         for i in range(0, len(answer), 2000):
@@ -239,6 +169,7 @@ def setMessageEvent(self):
 
                 else:
                     await message.channel.send('<@{0}>, эта команда только для каналов'.format(UID), delete_after = 5)
+
 
 
         #except Exception as e:

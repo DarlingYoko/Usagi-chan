@@ -25,7 +25,7 @@ def createEmbed(title = None, description = None, color = 0x00ff00, urlImage = N
 
 def isCommand(msg, cmdList):
     for cmd in cmdList:
-        if msg.startswith(cmd) and msg.split()[0] == cmd: return 1
+        if msg.split()[0].lower() == cmd: return 1
 
     return 0
 
@@ -34,9 +34,9 @@ def getCurrentTime():
     return datetime.now(IST).strftime("%H:%M")
 
 
-async def wrongMessage(data, title = None, description = None, delay = 10):
+async def wrongMessage(message, title = None, description = None, delay = 10):
     embed = createEmbed(title = title, description = description)
-    await data['message'].channel.send('<@{0}>'.format(data['message'].author.id), embed = embed, delete_after = delay)
+    await message.channel.send('<@{0}>'.format(message.author.id), embed = embed, delete_after = delay)
 
 
 def newLog(exc_type, exc_obj, exc_tb, e, new = None):

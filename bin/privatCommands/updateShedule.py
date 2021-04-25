@@ -129,3 +129,11 @@ def updateShedule():
 
 
     return embeds
+
+
+
+async def removeSession(self, msg):
+    channel = await self.client.fetch_channel(self.config['sheduleData']['sheduleChannel'])
+    rmMsg = await channel.fetch_message(msg.split()[1])
+    await rmMsg.delete()
+    self.db.remove(tableName = 'shedule', selector = 'messageId', value = rmMsg.id)

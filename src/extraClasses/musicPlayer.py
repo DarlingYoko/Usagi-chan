@@ -18,7 +18,8 @@ class MusicPlayer():
                 'output_extension': 'mp3',
             }
 
-    def play(self, URL):
+    def play(self, msg, command):
+        URL = msg.split(command)[1].strip()
         if 'spotify' in URL:
             Thread(target = self.downloadSpoti, args=(URL, )).start()
 

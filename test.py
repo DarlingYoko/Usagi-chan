@@ -1,9 +1,9 @@
-def printA():
-    print('a')
 
 
 
-a = 'printA()'
+from bin.commandConfig import commands
 
 
-answer = eval(a)
+a = '!q'
+
+print(commands['guild']['usual']['!помощь']['function'][6:])

@@ -1,13 +1,13 @@
 from src.functions import createEmbed, newLog, wrongMessage
 import sys
 
-async def helpCommand(self, data):
+async def helpCommand(self, message):
     try:
-        if data['message'].channel.id != self.config['requestsData'].getint('channel'):
+        if message.channel.id != self.config['requestsData'].getint('channel'):
             title = 'В этом канале нельзя использовать эту команду!'
             description = 'Вам сюда 👉 <#{0}>'.format(self.config['requestsData']['channel'])
-            await wrongMessage(data = data, title = title, description = description)
-            await data['message'].delete()
+            await wrongMessage(message = message, title = title, description = description)
+            await message.delete()
             return
 
         helpMsg = (':snail: **Для создания заявки вам нужно указать следующие параметры;**\n!создать `уровень мира`/`ваш уид`/`количество слотов свободных в пати`/`описание`\n\n' +
@@ -20,8 +20,8 @@ async def helpCommand(self, data):
                         '<:ban:798146277798838292> **Если вы что-то забыли** то всегда есть **!помощь**. В ней кратко обо всём и ни о чём. `[вызывать справку можно только в канале` <#{0}>`]`\n\n'.format(self.config['requestsData']['channel']) +
                         '`P.s.` Если найдёте **ошибку в использовании бота**, немедля пишите <@290166276796448768>. Он почти в тот же день её исправит.  <:EZY:771041695671648329> \n' +
                         '<:peepoCry:778150403375104060> `- А теперь жамкайте на кирку и пора работать! Солнце ещё высоко!`\n<:PepeHands:775664065116110848>')
-        await data['message'].channel.send(helpMsg, delete_after = 60)
-        await data['message'].delete()
+        await message.channel.send(helpMsg, delete_after = 60)
+        await message.delete()
     except Exception as e:
         exc_type, exc_obj, exc_tb = sys.exc_info()
         newLog(exc_type, exc_obj, exc_tb, e)
