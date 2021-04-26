@@ -130,7 +130,7 @@ def setMessageEvent(self):
                                 answer = eval(commands['guild']['music'][command]['answer'])
                             delay = commands['guild']['music'][command]['delay']
 
-
+                    '''
                     if command in commands['guild']['token'].keys():
                         if message.author.id in eval(self.config['token']['accessList']):
                             if commands['guild']['token'][command]['function']:
@@ -139,6 +139,7 @@ def setMessageEvent(self):
                             else:
                                 answer = eval(commands['guild']['token'][command]['answer'])
                             delay = commands['guild']['token'][command]['delay']
+                    '''
 
 
                     if command in commands['guild']['moviegoers'].keys():
