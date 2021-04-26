@@ -41,7 +41,7 @@ async def dellEmoji(self, payload):
         await removeRequestsRole(self, messageId, userId)
 
     try:
-        print(type(channelId), type(self.config['requestsData']['channel']))
+        #print(type(channelId), type(self.config['requestsData']['channel']))
         if channelId != self.config['requestsData'].getint('channel'):
             return
         accessEmoji = {'2️⃣': 2, '3️⃣': 3, '4️⃣': 4}
