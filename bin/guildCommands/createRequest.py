@@ -14,15 +14,15 @@ async def createRequest(self, message, command):
             return
 
 
-        msg = message.content.split(command)[1].split('/')
+        msg = message.content.split(command)[1].split()
         messageChannel = self.client.get_channel(self.config['requestsData'].getint('channel'))
         counter = {2: '2️⃣', 3: '3️⃣', 4: '4️⃣'}
         serversId = {6: 'Америка', 7: 'Европа', 8: 'Азия', 9: 'Тайвань'}
-
-        if len(msg) < 4 or len(msg) > 4:
+        # 6 706251801 3  Аждаха 90лвл, рандомы откисают уже 6 раз подряд, могу на дионе по кд щиты ставить
+        if len(msg) < 4:
             title = 'Неправильный формат запроса. Прочтите синтаксис!'
-            description = ''':round_pushpin: Использование: `!создать <world>/<id>/<slots>/<message>`
-                             :round_pushpin: Пример: `!создать 7/7000563212/3/Фармим рофлочурлов`
+            description = ''':round_pushpin: Использование: `!создать <world> <id> <slots> <message>`
+                             :round_pushpin: Пример: `!создать 7 7000563212 3 Фармим рофлочурлов`
                              **ПРИМЕЧАНИЕ**: Все поля обязательно должны быть заполнены и разделены `/`'''
             await wrongMessage(message = message, title = title, description = description, delay = 60)
             return
@@ -78,7 +78,7 @@ async def createRequest(self, message, command):
             await wrongMessage(message = message, title = title, description = description)
             return
 
-        text = msg[3]
+        text = ' '.join(msg[3:])
         slots = '***1) Слот:** <@{0}>*\n'.format(message.author.id)
 
 
@@ -119,6 +119,7 @@ async def createRequest(self, message, command):
             self.db.insert('requestsData', userId, str(msgIds))
 
         self.db.insert('emojidata', timeMsg.id, str({}), time, userId)
+        await message.delete()
     except Exception as e:
         exc_type, exc_obj, exc_tb = sys.exc_info()
         newLog(exc_type, exc_obj, exc_tb, e)
