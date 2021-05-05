@@ -1,4 +1,4 @@
-import discord, asyncio, time, shelve, datetime, sys, os
+import discord, asyncio, time, shelve, datetime, sys, os, datetime
 from threading import Thread
 from src.functions import newLog, loadConfig, getLogger
 from src.extraClasses.classMember import Members
@@ -56,6 +56,7 @@ class UsagiChan:
         self.db = Database(self)
         self.musicPlayer = MusicPlayer()
         #self.token = Token()
+        self.lastTimeJoin = datetime.datetime.now()
         self.commnds = commands
         if not os.path.exists('files/Downloads'):
             os.mkdir('files/Downloads')

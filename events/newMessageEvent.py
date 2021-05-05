@@ -107,7 +107,7 @@ def setMessageEvent(self):
             guildCommands = list(commands['guild']['usual'].keys()) + list(commands['guild']['music'].keys()) + list(commands['guild']['token'].keys()) + list(commands['guild']['moviegoers'].keys()) + list(commands['guild']['my'].keys())
 
             if isCommand(msg, guildCommands):
-                await message.delete()
+                #await message.delete()
                 delay = 10
                 if str(message.channel.type) == 'text':
                     answer = 'Тебе низя использовать эту команду'
@@ -122,6 +122,7 @@ def setMessageEvent(self):
 
 
                     if command in commands['guild']['music'].keys():
+                        await message.delete()
                         if message.author.id in eval(self.config['audio']['accessList']):
                             if commands['guild']['music'][command]['function']:
                                 eval(commands['guild']['music'][command]['function'])
@@ -143,6 +144,7 @@ def setMessageEvent(self):
 
 
                     if command in commands['guild']['moviegoers'].keys():
+                        await message.delete()
                         if message.author.id in eval(self.config['sheduleData']['moviegoers']):
                             if commands['guild']['moviegoers'][command]['function']:
                                 eval(commands['guild']['moviegoers'][command]['function'])
@@ -153,6 +155,7 @@ def setMessageEvent(self):
 
 
                     if command in commands['guild']['my'].keys():
+                        await message.delete()
                         if message.author.id == self.config['usersIDs'].getint('yokoId'):
                             if commands['guild']['my'][command]['function']:
                                 eval(commands['guild']['my'][command]['function'])

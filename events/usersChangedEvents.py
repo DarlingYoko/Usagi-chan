@@ -4,9 +4,9 @@ def setUsersChangedEvents(self):
     @self.client.event
     async def on_member_join(member):
         self.members.addMember(member)
-        time = datetime.now()
-        if time - member.created_at < timedelta(days = 7):
+        if self.lastTimeJoin - member.created_at < timedelta(minutes = 1):
             self.spam += 1
+        self.lastTimeJoin = member.created_at
 
     @self.client.event
     async def on_member_remove(member):
@@ -24,6 +24,6 @@ def setUsersChangedEvents(self):
 async def reportSpam(self):
     if self.spam >= 3:
         channel = await self.client.fetch_channel(770802979867328523)
-        await channel.send('Алёрт! Зашло много акков зареганых меньше недели назад')
+        await channel.send('Алёрт! Зашло много акков зареганых в одно время')
         self.spam = 0
     return
