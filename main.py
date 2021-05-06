@@ -70,6 +70,9 @@ class UsagiChan:
             await self.client.change_presence(status=discord.Status.online, activity=discord.Game("ver 1.0.0.1.7 | Всё ещё учится работать |"))
             self.loop = asyncio.get_event_loop()
             await self.members.fillMembers(self.client)
+            guild = await self.client.fetch_guild(733631069542416384)
+            role = guild.get_role(733632086266871888)
+            print('Name - {0}, count - {1}'.format(role.name, role.members))
 
     def run(self):
         self.client.run(self.config['data']['token'])
@@ -85,11 +88,11 @@ class UsagiChan:
 
 usagi = UsagiChan()
 usagi.checkConnection()
-usagi.setMessageEvent()
-usagi.setVoiceStateUpdateEvent()
-usagi.setNewReactionEvent()
-usagi.setRemoveReactionEvent()
-usagi.setUsersChangedEvents()
+#usagi.setMessageEvent()
+#usagi.setVoiceStateUpdateEvent()
+#usagi.setNewReactionEvent()
+#usagi.setRemoveReactionEvent()
+#usagi.setUsersChangedEvents()
 
 
 
@@ -97,7 +100,7 @@ newLog('', '', '', '', new = 1)
 Thread(target = asyncio.run, args=(checkRequests(), )).start()
 Thread(target = asyncio.run, args=(checkShedule(), )).start()
 #Thread(target = asyncio.run, args=(checkTokens(), )).start()
-Thread(target = asyncio.run, args=(checkSpam(), )).start()
+#Thread(target = asyncio.run, args=(checkSpam(), )).start()
 Thread(target = checkAudio).start()
 #Thread(target = restartDriver).start()
 usagi.run()
