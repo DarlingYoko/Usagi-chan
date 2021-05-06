@@ -70,7 +70,7 @@ class UsagiChan:
             await self.client.change_presence(status=discord.Status.online, activity=discord.Game("ver 1.0.0.1.7 | Всё ещё учится работать |"))
             self.loop = asyncio.get_event_loop()
             await self.members.fillMembers(self.client)
-            
+
 
     def run(self):
         self.client.run(self.config['data']['token'])
@@ -86,11 +86,11 @@ class UsagiChan:
 
 usagi = UsagiChan()
 usagi.checkConnection()
-#usagi.setMessageEvent()
-#usagi.setVoiceStateUpdateEvent()
-#usagi.setNewReactionEvent()
-#usagi.setRemoveReactionEvent()
-#usagi.setUsersChangedEvents()
+usagi.setMessageEvent()
+usagi.setVoiceStateUpdateEvent()
+usagi.setNewReactionEvent()
+usagi.setRemoveReactionEvent()
+usagi.setUsersChangedEvents()
 
 
 
