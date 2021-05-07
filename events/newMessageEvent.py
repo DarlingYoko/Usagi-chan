@@ -43,7 +43,7 @@ def setMessageEvent(self):
             msg = message.content
 
 
-            if message.channel.id == self.config['data'].getint('frameChannel'):
+            if message.channel.id == self.config['data'].getint('frameChannel') or message.channel.id == self.config['data'].getint('simpChannel'):
                 for key in texts.keys():
                     if key in msg.lower():
                         await message.channel.send(texts[key])
