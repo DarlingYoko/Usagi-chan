@@ -23,7 +23,7 @@ async def createRequest(self, message, command):
             title = 'Неправильный формат запроса. Прочтите синтаксис!'
             description = ''':round_pushpin: Использование: `!создать <world> <id> <slots> <message>`
                              :round_pushpin: Пример: `!создать 7 7000563212 3 Фармим рофлочурлов`
-                             **ПРИМЕЧАНИЕ**: Все поля обязательно должны быть заполнены и разделены `/`'''
+                             **ПРИМЕЧАНИЕ**: Все поля обязательно должны быть заполнены и разделены **пробелом**'''
             await wrongMessage(message = message, title = title, description = description, delay = 60)
             return
 

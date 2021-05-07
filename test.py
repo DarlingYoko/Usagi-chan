@@ -1,12 +1,11 @@
 
 
+def asd():
+    print('asd')
 
-from bin.commandConfig import commands
 
+a = asd
 
-a = 'q'
-
-print(a.split(' '))
 
 
 # https://github.com/heroku/heroku-buildpack-chromedriver

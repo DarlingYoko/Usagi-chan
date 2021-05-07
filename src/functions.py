@@ -45,7 +45,7 @@ def newLog(exc_type, exc_obj, exc_tb, e, new = None):
         file.write('\n\nLogs new start\n')
     else:
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-        file.write('\n' + 'New error in creating request at {0}:\ntype - {1}, name - {2}, line - {3}, error - {4}\n'.format(datetime.now(), exc_type, fname, exc_tb.tb_lineno, e))
+        file.write('\n' + 'New error at {0}:\ntype - {1}, name - {2}, line - {3}, error - {4}\n'.format(datetime.now(), exc_type, fname, exc_tb.tb_lineno, e))
     file.close()
 
 
