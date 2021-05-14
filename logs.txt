@@ -152,3 +152,33 @@ type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thum
 
 Logs new start
 [<Role id=346775939105161247 name='@everyone'>, <Role id=346778168293851137 name='Nightbot'>, <Role id=770801839427158036 name='SuperModers'>, <Role id=770995156891205633 name='Конеко'>, <Role id=770995628909002764 name='Рыцари осуждения'>, <Role id=771023652903714826 name='Twitch Subscriber'>, <Role id=771023652903714827 name='Twitch Subscriber: Tier 1'>, <Role id=771023652903714828 name='Twitch Subscriber: Tier 2'>, <Role id=771023652903714829 name='Twitch Subscriber: Tier 3'>, <Role id=771029540650614817 name='Bot'>, <Role id=771045634814771221 name='💰Шейх'>, <Role id=771702030997782560 name='Streamer'>, <Role id=772099669680586784 name='Королева'>, <Role id=774284038155796490 name='Мятный Барон'>, <Role id=774476708585275432 name='Гача качок'>, <Role id=774751022811578369 name='Любитель лолей'>, <Role id=774752289008648232 name='Главный по мемам'>, <Role id=775045565078568960 name='Лоровед'>, <Role id=780492893999726643 name='Любитель милф'>, <Role id=781353733107220490 name='Последователь Дилюка'>, <Role id=781356315045396531 name='Последователь Кэ Цин'>, <Role id=781357751229612033 name='Адепт Мудрая Сова'>, <Role id=781357930901012520 name='Адепт Громовой Стилет'>, <Role id=783061799771045948 name='Кардинал Рассвета'>, <Role id=783792684380717108 name='Можно говорить'>, <Role id=785570523584135238 name='Спартак S1'>, <Role id=788091289090261072 name='Баянист'>, <Role id=790900065161969683 name='Бард'>, <Role id=791013889692139590 name='Киноманы'>, <Role id=793839851333877763 name='Красный'>, <Role id=793840052778172427 name='Розовый'>, <Role id=793840406261268531 name='Малиновый'>, <Role id=793840707004661800 name='Фиолетовый'>, <Role id=793840893605445635 name='Оранжевый'>, <Role id=793841068067127327 name='Золотой'>, <Role id=793841247734857778 name='Персиковый'>, <Role id=793841412906680341 name='Синий'>, <Role id=793841888879837194 name='Зеленый'>, <Role id=793841967150399529 name='Салатовый'>, <Role id=793842156371836939 name='Аква'>, <Role id=793842472026767390 name='Коричневый'>, <Role id=793842833974493184 name='Серебряный'>, <Role id=794001054165368902 name='Маджента'>, <Role id=795815343179431976 name='Аристократ'>, <Role id=796107141843779615 name='Горящий хиличурл'>, <Role id=796107296840613928 name='Златовласка'>, <Role id=796107431443824661 name='Элементалист'>, <Role id=796107616963133481 name='Пустой S1'>, <Role id=796107936249806858 name='Милашный Симп'>, <Role id=796108119183982632 name='Сексуальный Симп'>, <Role id=796489572896079984 name='Ticket Tool'>, <Role id=797837941472362537 name='Пати Мейкер'>, <Role id=797952633163612170 name='Лютик'>, <Role id=798782667554160681 name='April'>, <Role id=799411255949393952 name='carl-bot'>, <Role id=799419044108566568 name='Мут (временный бан)'>, <Role id=801268332409913415 name='Usagi chan'>, <Role id=801915486828232725 name='Спартак S2'>, <Role id=802145906413010967 name='Statbot'>, <Role id=802330222393425931 name='🐳Китёнок'>, <Role id=802569588658929764 name='Гайдодел'>, <Role id=803947134167678987 name='Koneko Guard'>, <Role id=805820191267094530 name='Ножки'>, <Role id=806272481177763840 name='ЭкстраКек 1s'>, <Role id=810228843477991444 name='Гомункул'>, <Role id=810229339664678922 name='Глупик'>, <Role id=810229945321521183 name='Кадр'>, <Role id=810230331855994890 name='Купидон'>, <Role id=810837451378524191 name='Мудрец'>, <Role id=812821133169917972 name='Принц'>, <Role id=812990310027231262 name='Вознесенный'>, <Role id=812991004679471115 name='Коронованный'>, <Role id=813175168842727454 name='Белый'>, <Role id=813737010388664351 name='Спартак S3'>, <Role id=815235813881020418 name='Зеленый Фонарь'>, <Role id=816054416632840202 name='Фейкодел'>, <Role id=820964447353962516 name='Художник'>, <Role id=821297593811206196 name='Рисует как Вермеер'>, <Role id=821297798116802582 name='Шутит как Ху Тао'>, <Role id=823180070713557024 name='Сливка'>, <Role id=823993997973389322 name='Гнилая слива'>, <Role id=826389875154616342 name='Поэт ветряных цветов'>, <Role id=832224496068198430 name='Товарищ'>, <Role id=838337704479555624 name='Пустой S2'>]
+
+
+Logs new start
+
+New error at 2021-05-14 15:08:17.460740:
+type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
+
+New error at 2021-05-14 15:08:18.202744:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+
+Logs new start
+
+New error at 2021-05-14 15:09:02.258768:
+type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
+
+New error at 2021-05-14 15:09:02.947766:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-05-14 15:09:12.376016:
+type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
+
+New error at 2021-05-14 15:09:13.194054:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-05-14 15:09:22.260205:
+type - <class 'ValueError'>, name - autoRemoveRequest.py, line - 31, error - list.remove(x): x not in list
+
+New error at 2021-05-14 15:09:23.176246:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'

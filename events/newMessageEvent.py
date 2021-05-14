@@ -3,6 +3,7 @@ from src.functions import isCommand, newLog
 from bin.guildCommands.createRequest import createRequest
 from bin.guildCommands.helpCommand import helpCommand
 from bin.guildCommands.helpValentine import helpValentine
+from bin.guildCommands.boostPot import boostPot
 from bin.privatCommands.updateShedule import updateShedule, removeSession
 from bin.privatCommands.createValentine import valentineCommand
 from bin.commandConfig import commands, texts

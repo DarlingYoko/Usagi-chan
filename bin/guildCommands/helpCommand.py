@@ -1,4 +1,4 @@
-from src.functions import createEmbed, newLog, wrongMessage
+from src.functions import newLog, wrongMessage
 import sys
 
 async def helpCommand(self, message):
