@@ -33,7 +33,7 @@ commands = {
                 'function': None,
                 'delay': 60,
             },
-            '!б':{
+            '!ч':{
                 'answer': 'Готово',
                 'function': 'asyncio.run_coroutine_threadsafe(boostPot(self, message), self.loop)',
                 'delay': 1,
