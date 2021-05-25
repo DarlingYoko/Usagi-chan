@@ -4,6 +4,7 @@ from bin.guildCommands.createRequest import createRequest
 from bin.guildCommands.helpCommand import helpCommand
 from bin.guildCommands.helpValentine import helpValentine
 from bin.guildCommands.boostPot import boostPot
+from bin.guildCommands.manualRemoveRequest import manualRemoveRequest
 from bin.privatCommands.updateShedule import updateShedule, removeSession
 from bin.privatCommands.createValentine import valentineCommand
 from bin.commandConfig import commands, texts
@@ -164,7 +165,7 @@ def setMessageEvent(self):
                             else:
                                 answer = eval(commands['guild']['my'][command]['answer'])
                             delay = commands['guild']['my'][command]['delay']
-
+                            
                     if len(answer) >= 2000:
                         for i in range(0, len(answer), 2000):
                             await message.channel.send(answer[i:i+2000], delete_after = delay)

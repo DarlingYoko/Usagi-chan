@@ -106,6 +106,11 @@ commands = {
                 'function': 'asyncio.run_coroutine_threadsafe(self.musicPlayer.connect(self.client, msg, command), self.loop)',
                 'delay': 5,
             },
+            '!remove':{
+                'answer': 'Удалила и закрыла',
+                'function': 'asyncio.run_coroutine_threadsafe(manualRemoveRequest(self, message, msg.split(command)[1].strip()), self.loop)',
+                'delay': 5,
+            },
         }
 
     }
