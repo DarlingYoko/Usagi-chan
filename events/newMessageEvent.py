@@ -45,7 +45,7 @@ def setMessageEvent(self):
             msg = message.content
 
 
-            if message.channel.id == self.config['data'].getint('frameChannel') or message.channel.id == self.config['data'].getint('simpChannel'):
+            if message.channel.id == self.config['data'].getint('frameChannel') or message.channel.id == self.config['data'].getint('simpChannel') or message.channel.id == self.config['data'].getint('stoikaChannel'):
                 for key in texts.keys():
                     if key in msg.lower():
                         await message.channel.send(texts[key])
@@ -165,7 +165,7 @@ def setMessageEvent(self):
                             else:
                                 answer = eval(commands['guild']['my'][command]['answer'])
                             delay = commands['guild']['my'][command]['delay']
-                            
+
                     if len(answer) >= 2000:
                         for i in range(0, len(answer), 2000):
                             await message.channel.send(answer[i:i+2000], delete_after = delay)
