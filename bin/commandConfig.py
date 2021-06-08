@@ -38,11 +38,7 @@ commands = {
                 'function': 'asyncio.run_coroutine_threadsafe(boostPot(self, message), self.loop)',
                 'delay': 1,
             },
-            '!история':{
-                'answer': '',
-                'function': 'asyncio.run_coroutine_threadsafe(checkHistory(self, message, command), self.loop)',
-                'delay': 1,
-            },
+            
         },
         'music': {
             '!p':{

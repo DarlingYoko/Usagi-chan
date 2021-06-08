@@ -1,9 +1,10 @@
 
 async def checkHistory(self, incoming, command):
+    print(1)
     messages = await incoming.channel.history(limit=None).flatten()
     content = incoming.content.split(command)[1].strip()
     i = 0
-
+    print(len(messages))
     for message in messages:
         if message.author.id == incoming.author.id and content in message.content:
             i += 1
