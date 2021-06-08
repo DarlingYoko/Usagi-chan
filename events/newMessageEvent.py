@@ -5,6 +5,7 @@ from bin.guildCommands.helpCommand import helpCommand
 from bin.guildCommands.helpValentine import helpValentine
 from bin.guildCommands.boostPot import boostPot
 from bin.guildCommands.manualRemoveRequest import manualRemoveRequest
+from bin.guildCommands.checkHistory import checkHistory
 from bin.privatCommands.updateShedule import updateShedule, removeSession
 from bin.privatCommands.createValentine import valentineCommand
 from bin.commandConfig import commands, texts
@@ -45,136 +46,139 @@ def setMessageEvent(self):
             msg = message.content
 
 
+
             if message.channel.id == self.config['data'].getint('frameChannel') or message.channel.id == self.config['data'].getint('simpChannel') or message.channel.id == self.config['data'].getint('stoikaChannel'):
                 for key in texts.keys():
                     if key in msg.lower():
                         await message.channel.send(texts[key])
 
 
+            try:
+                #private messages
+                if isCommand(msg, self.config['privateCommands'].values()):
+                    if str(message.channel.type) == 'private':
+                        answer = 'Тебе низя использовать эту команду'
+                        '''
+                        command = self.config['privateCommands']['createValentine']
+                        if msg.startswith(command):
+                            data['content'] = msg.split(command)[1]
+                            await valentineCommand(self, data = data)
+                        '''
+                        command = self.config['privateCommands']['updateShedule']
+                        if msg.split()[0].lower() == command:
+                            if message.author.id in eval(self.config['sheduleData']['moviegoers']):
+                                embeds = updateShedule()
+                                channel = await self.client.fetch_channel(self.config['sheduleData']['sheduleChannel'])
+                                sheduleEmoji = self.client.get_emoji(810182035955777576)
+                                for embed in embeds.keys():
+                                    reloadMes = await channel.send(embed=embed)
+                                    self.db.insert('shedule', reloadMes.id, embeds[embed], '[]')
+                                    await reloadMes.add_reaction(sheduleEmoji)
 
-            #private messages
-            if isCommand(msg, self.config['privateCommands'].values()):
-                if str(message.channel.type) == 'private':
-                    answer = 'Тебе низя использовать эту команду'
-                    '''
-                    command = self.config['privateCommands']['createValentine']
-                    if msg.startswith(command):
-                        data['content'] = msg.split(command)[1]
-                        await valentineCommand(self, data = data)
-                    '''
-                    command = self.config['privateCommands']['updateShedule']
-                    if msg.split()[0].lower() == command:
-                        if message.author.id in eval(self.config['sheduleData']['moviegoers']):
-                            embeds = updateShedule()
-                            channel = await self.client.fetch_channel(self.config['sheduleData']['sheduleChannel'])
-                            sheduleEmoji = self.client.get_emoji(810182035955777576)
-                            for embed in embeds.keys():
-                                reloadMes = await channel.send(embed=embed)
-                                self.db.insert('shedule', reloadMes.id, embeds[embed], '[]')
-                                await reloadMes.add_reaction(sheduleEmoji)
+                                answer = 'Успешно!'
 
-                            answer = 'Успешно!'
+                        command = self.config['privateCommands']['simpleVoiceCommand']
+                        if msg.split()[0].lower() == command:
+                            if message.author.id == self.config['usersIDs'].getint('yokoId'):
+                                self.musicPlayer.simpleVoice(msg, command)
+                                answer = 'Проговорила'
 
-                    command = self.config['privateCommands']['simpleVoiceCommand']
-                    if msg.split()[0].lower() == command:
-                        if message.author.id == self.config['usersIDs'].getint('yokoId'):
-                            self.musicPlayer.simpleVoice(msg, command)
-                            answer = 'Проговорила'
+                        command = self.config['privateCommands']['simpleMessageCommand']
+                        if msg.split()[0].lower() == command:
+                            if message.author.id == self.config['usersIDs'].getint('yokoId'):
+                                channel = await self.client.fetch_channel(788546742677143552)
+                                await channel.send(msg.split(command)[1].strip())
+                                answer = 'Написала'
 
-                    command = self.config['privateCommands']['simpleMessageCommand']
-                    if msg.split()[0].lower() == command:
-                        if message.author.id == self.config['usersIDs'].getint('yokoId'):
-                            channel = await self.client.fetch_channel(788546742677143552)
-                            await channel.send(msg.split(command)[1].strip())
-                            answer = 'Написала'
-
-                    if len(answer) >= 2000:
-                        for i in range(0, len(answer), 2000):
-                            await message.channel.send(answer[i:i+2000])
-                    else:
-                        await message.channel.send(answer)
-
-
-
-
-
-                # channel messages
-                else:
-                    timeMsg = await message.channel.send('<@{0}>, эта команда только для личных сообщений'.format(UID))
-                    await message.delete()
-                    await timeMsg.delete(delay = 3)
-                    #pass
-                return
-
-            guildCommands = list(commands['guild']['usual'].keys()) + list(commands['guild']['music'].keys()) + list(commands['guild']['token'].keys()) + list(commands['guild']['moviegoers'].keys()) + list(commands['guild']['my'].keys())
-
-            if isCommand(msg, guildCommands):
-                #await message.delete()
-                delay = 10
-                if str(message.channel.type) == 'text':
-                    answer = 'Тебе низя использовать эту команду'
-                    command = msg.split()[0].lower()
-                    if command in commands['guild']['usual'].keys():
-                        if commands['guild']['usual'][command]['function']:
-                            eval(commands['guild']['usual'][command]['function'])
-                            answer = commands['guild']['usual'][command]['answer']
+                        if len(answer) >= 2000:
+                            for i in range(0, len(answer), 2000):
+                                await message.channel.send(answer[i:i+2000])
                         else:
-                            answer = eval(commands['guild']['usual'][command]['answer'])
-                        delay = commands['guild']['usual'][command]['delay']
+                            await message.channel.send(answer)
 
 
-                    if command in commands['guild']['music'].keys():
-                        await message.delete()
-                        if message.author.id in eval(self.config['audio']['accessList']):
-                            if commands['guild']['music'][command]['function']:
-                                eval(commands['guild']['music'][command]['function'])
-                                answer = commands['guild']['music'][command]['answer']
-                            else:
-                                answer = eval(commands['guild']['music'][command]['answer'])
-                            delay = commands['guild']['music'][command]['delay']
-
-                    '''
-                    if command in commands['guild']['token'].keys():
-                        if message.author.id in eval(self.config['token']['accessList']):
-                            if commands['guild']['token'][command]['function']:
-                                eval(commands['guild']['token'][command]['function'])
-                                answer = commands['guild']['token'][command]['answer']
-                            else:
-                                answer = eval(commands['guild']['token'][command]['answer'])
-                            delay = commands['guild']['token'][command]['delay']
-                    '''
 
 
-                    if command in commands['guild']['moviegoers'].keys():
-                        await message.delete()
-                        if message.author.id in eval(self.config['sheduleData']['moviegoers']):
-                            if commands['guild']['moviegoers'][command]['function']:
-                                eval(commands['guild']['moviegoers'][command]['function'])
-                                answer = commands['guild']['moviegoers'][command]['answer']
-                            else:
-                                answer = eval(commands['guild']['moviegoers'][command]['answer'])
-                            delay = commands['guild']['moviegoers'][command]['delay']
 
-
-                    if command in commands['guild']['my'].keys():
-                        await message.delete()
-                        if message.author.id == self.config['usersIDs'].getint('yokoId'):
-                            if commands['guild']['my'][command]['function']:
-                                eval(commands['guild']['my'][command]['function'])
-                                answer = commands['guild']['my'][command]['answer']
-                            else:
-                                answer = eval(commands['guild']['my'][command]['answer'])
-                            delay = commands['guild']['my'][command]['delay']
-
-                    if len(answer) >= 2000:
-                        for i in range(0, len(answer), 2000):
-                            await message.channel.send(answer[i:i+2000], delete_after = delay)
+                    # channel messages
                     else:
-                        await message.channel.send(answer, delete_after = delay)
+                        timeMsg = await message.channel.send('<@{0}>, эта команда только для личных сообщений'.format(UID))
+                        await message.delete()
+                        await timeMsg.delete(delay = 3)
+                        #pass
+                    return
+
+                guildCommands = list(commands['guild']['usual'].keys()) + list(commands['guild']['music'].keys()) + list(commands['guild']['token'].keys()) + list(commands['guild']['moviegoers'].keys()) + list(commands['guild']['my'].keys())
+
+                if isCommand(msg, guildCommands):
+                    #await message.delete()
+                    delay = 10
+                    if str(message.channel.type) == 'text':
+                        answer = 'Тебе низя использовать эту команду'
+                        command = msg.split()[0].lower()
+                        if command in commands['guild']['usual'].keys():
+                            if commands['guild']['usual'][command]['function']:
+                                eval(commands['guild']['usual'][command]['function'])
+                                answer = commands['guild']['usual'][command]['answer']
+                            else:
+                                answer = eval(commands['guild']['usual'][command]['answer'])
+                            delay = commands['guild']['usual'][command]['delay']
 
 
-                else:
-                    await message.channel.send('<@{0}>, эта команда только для каналов'.format(UID), delete_after = 5)
+                        if command in commands['guild']['music'].keys():
+                            await message.delete()
+                            if message.author.id in eval(self.config['audio']['accessList']):
+                                if commands['guild']['music'][command]['function']:
+                                    eval(commands['guild']['music'][command]['function'])
+                                    answer = commands['guild']['music'][command]['answer']
+                                else:
+                                    answer = eval(commands['guild']['music'][command]['answer'])
+                                delay = commands['guild']['music'][command]['delay']
+
+                        '''
+                        if command in commands['guild']['token'].keys():
+                            if message.author.id in eval(self.config['token']['accessList']):
+                                if commands['guild']['token'][command]['function']:
+                                    eval(commands['guild']['token'][command]['function'])
+                                    answer = commands['guild']['token'][command]['answer']
+                                else:
+                                    answer = eval(commands['guild']['token'][command]['answer'])
+                                delay = commands['guild']['token'][command]['delay']
+                        '''
+
+
+                        if command in commands['guild']['moviegoers'].keys():
+                            await message.delete()
+                            if message.author.id in eval(self.config['sheduleData']['moviegoers']):
+                                if commands['guild']['moviegoers'][command]['function']:
+                                    eval(commands['guild']['moviegoers'][command]['function'])
+                                    answer = commands['guild']['moviegoers'][command]['answer']
+                                else:
+                                    answer = eval(commands['guild']['moviegoers'][command]['answer'])
+                                delay = commands['guild']['moviegoers'][command]['delay']
+
+
+                        if command in commands['guild']['my'].keys():
+                            await message.delete()
+                            if message.author.id == self.config['usersIDs'].getint('yokoId'):
+                                if commands['guild']['my'][command]['function']:
+                                    eval(commands['guild']['my'][command]['function'])
+                                    answer = commands['guild']['my'][command]['answer']
+                                else:
+                                    answer = eval(commands['guild']['my'][command]['answer'])
+                                delay = commands['guild']['my'][command]['delay']
+
+                        if len(answer) >= 2000:
+                            for i in range(0, len(answer), 2000):
+                                await message.channel.send(answer[i:i+2000], delete_after = delay)
+                        else:
+                            await message.channel.send(answer, delete_after = delay)
+
+
+                    else:
+                        await message.channel.send('<@{0}>, эта команда только для каналов'.format(UID), delete_after = 5)
+            except discord.errors.HTTPException:
+                pass
 
 
 

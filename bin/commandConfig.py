@@ -14,12 +14,12 @@ commands = {
     'guild':{
         'usual': {
             '!помощь':{
-                'answer': 'Готово',
+                'answer': '',
                 'function': 'asyncio.run_coroutine_threadsafe(helpCommand(self, message), self.loop)',
                 'delay': 1,
             },
             '!создать':{
-                'answer': 'Готово',
+                'answer': '',
                 'function': 'asyncio.run_coroutine_threadsafe(createRequest(self, message, command), self.loop)',
                 'delay': 1,
             },
@@ -34,8 +34,13 @@ commands = {
                 'delay': 60,
             },
             '!ч':{
-                'answer': 'Готово',
+                'answer': '',
                 'function': 'asyncio.run_coroutine_threadsafe(boostPot(self, message), self.loop)',
+                'delay': 1,
+            },
+            '!история':{
+                'answer': '',
+                'function': 'asyncio.run_coroutine_threadsafe(checkHistory(self, message, command), self.loop)',
                 'delay': 1,
             },
         },

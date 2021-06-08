@@ -2,11 +2,11 @@
 import argparse
 
 # ! The actual download stuff
-from spotdl.download.downloader import DownloadManager
-from spotdl.search import spotifyClient
-from spotdl.search.songObj import SongObj
+#from spotdl.download.downloader import DownloadManager
+#from spotdl.search import spotifyClient
+#from spotdl.search.songObj import SongObj
 # ! Song Search from different start points
-from spotdl.search.utils import get_playlist_tracks, get_album_tracks, search_for_song
+#from spotdl.search.utils import get_playlist_tracks, get_album_tracks, search_for_song
 
 def downloadSpoti(url):
     '''
