@@ -73,7 +73,7 @@ class MusicPlayer():
             answer = 'Сейчас играет - {0}\n{1}'.format(self.lastAudio.split('/')[2].split('.')[0], '\n'.join(audioList))
         return answer
 
-    def repeat(self, msg):
+    def repeat(self, msg, command):
         if msg.split(command)[1].strip() == 'last':
             self.repeat = 1
             answer = 'Буду повторять песню'

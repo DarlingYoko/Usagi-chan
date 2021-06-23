@@ -38,7 +38,7 @@ commands = {
                 'function': 'asyncio.run_coroutine_threadsafe(boostPot(self, message), self.loop)',
                 'delay': 1,
             },
-            
+
         },
         'music': {
             '!p':{
@@ -72,7 +72,7 @@ commands = {
                 'delay': 5,
             },
             '!repeat':{
-                'answer': 'self.musicPlayer.repeat(msg)',
+                'answer': 'self.musicPlayer.repeat(msg, command)',
                 'function': None,
                 'delay': 5,
             },
