@@ -3,3 +3,951 @@ Logs new start
 
 
 Logs new start
+
+
+Logs new start
+
+New error at 2021-06-24 19:43:34.731012:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 19:43:35.533541:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 19:43:44.695390:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 19:43:45.401626:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 19:43:54.902978:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 19:43:55.554181:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 19:44:04.694368:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 19:44:05.379427:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 19:44:14.981128:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 19:44:15.693371:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 19:44:24.739007:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 19:44:25.429241:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 19:44:34.759023:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 19:44:35.479874:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 19:44:44.739292:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 19:44:45.471083:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 19:44:54.758642:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 19:44:55.522991:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+
+Logs new start
+
+New error at 2021-06-24 19:46:48.871548:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 19:46:49.555355:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 19:46:58.832132:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 19:46:59.494172:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 19:47:09.463013:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 19:47:10.078769:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 19:47:18.875987:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 19:47:19.610004:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+
+Logs new start
+
+New error at 2021-06-24 19:48:18.646173:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 19:48:19.298113:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 19:48:28.494002:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 19:48:29.194975:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 19:48:38.685173:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 19:48:39.354235:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 19:48:48.745198:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 19:48:49.418007:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+
+Logs new start
+
+New error at 2021-06-24 19:50:44.014747:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 19:50:44.760109:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 19:50:53.843153:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 19:50:54.648559:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 19:51:03.767286:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 19:51:04.521774:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 19:51:13.952681:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 19:51:14.654004:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 19:51:23.960759:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 19:51:24.610008:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 19:51:34.048342:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 19:51:34.688694:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 19:51:43.911700:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 19:51:44.601954:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 19:51:54.077784:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 19:51:54.780364:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 19:52:04.001738:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+
+Logs new start
+
+New error at 2021-06-24 19:53:29.266194:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 19:53:29.930232:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 19:53:38.976064:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 19:53:39.800283:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 19:53:49.109253:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 19:53:49.721827:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+
+Logs new start
+
+New error at 2021-06-24 19:55:14.985685:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 19:55:15.654163:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 19:55:24.913120:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 19:55:25.576412:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+
+Logs new start
+
+New error at 2021-06-24 19:55:48.488628:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 19:55:49.133145:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 19:55:58.362302:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 19:55:59.140715:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 19:56:08.459158:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 19:56:09.195352:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 19:56:18.605188:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 19:56:19.342527:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 19:56:28.600131:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 19:56:29.277938:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 19:56:38.506814:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 19:56:39.190970:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 19:56:48.571934:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 19:56:49.234873:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 19:56:58.588548:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 19:56:59.214149:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 19:57:08.429456:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 19:57:09.103082:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 19:57:18.409494:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 19:57:19.536727:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 19:57:28.407533:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 19:57:29.154847:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 19:57:38.424109:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 19:57:39.101686:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 19:57:48.613107:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 19:57:49.304036:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 19:57:58.423421:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 19:57:59.090033:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+
+Logs new start
+
+New error at 2021-06-24 19:58:23.460766:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 19:58:24.179213:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 19:58:33.254826:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 19:58:33.956960:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 19:58:43.270175:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 19:58:43.967480:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 19:58:53.254687:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 19:58:53.903662:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 19:59:03.565004:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 19:59:04.191817:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 19:59:13.399387:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 19:59:14.133861:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 19:59:23.534025:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 19:59:24.239846:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 19:59:33.360804:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 19:59:34.008422:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 19:59:43.561552:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 19:59:44.232732:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 19:59:53.407178:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 19:59:54.077892:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 20:00:03.601102:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 20:00:04.392545:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 20:00:13.647032:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 20:00:19.143981:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 20:00:23.591279:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 20:00:24.379490:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 20:00:33.433421:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 20:00:34.233849:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+
+Logs new start
+
+New error at 2021-06-24 20:00:55.670085:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 20:00:56.385278:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 20:01:05.677064:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 20:01:06.401038:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 20:01:15.599617:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 20:01:16.285237:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 20:01:25.527320:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 20:01:26.200120:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 20:01:35.711020:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 20:01:36.346854:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 20:01:45.652988:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 20:01:46.338052:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 20:01:55.717496:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 20:01:56.555798:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 20:02:05.500789:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 20:02:06.290424:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 20:02:15.755850:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 20:02:16.427949:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 20:02:25.927080:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 20:02:26.578762:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 20:02:35.893342:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 20:02:36.588300:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 20:02:45.738074:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 20:02:46.505737:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 20:02:55.722214:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 20:02:56.448126:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 20:03:05.806893:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 20:03:06.568844:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 20:03:15.753127:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 20:03:16.450540:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 20:03:25.769182:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 20:03:26.476237:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 20:03:35.909383:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 20:03:36.542858:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 20:03:45.713270:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 20:03:46.407109:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 20:03:55.834688:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 20:03:56.516805:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+
+Logs new start
+
+New error at 2021-06-24 20:04:23.448547:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 20:04:24.121723:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 20:04:33.496941:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 20:04:34.141040:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 20:04:43.353913:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 20:04:44.141020:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 20:04:53.273775:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 20:04:54.029981:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 20:05:03.470146:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 20:05:04.123527:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 20:05:13.370743:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 20:05:14.011911:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 20:05:23.520691:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 20:05:24.221506:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 20:05:33.405046:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 20:05:34.060911:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 20:05:43.365011:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+
+Logs new start
+
+New error at 2021-06-24 20:06:06.170985:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 20:06:06.878393:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+
+Logs new start
+
+New error at 2021-06-24 20:06:27.487649:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 20:06:28.178784:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 20:06:37.524143:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 20:06:38.165343:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 20:06:47.341217:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 20:06:48.027268:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 20:06:57.358578:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 20:06:57.998976:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 20:07:07.586016:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 20:07:08.310944:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 20:07:17.489977:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 20:07:18.139455:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 20:07:27.633734:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 20:07:28.298070:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 20:07:37.596611:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 20:07:38.198515:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 20:07:47.367400:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 20:07:48.013177:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 20:07:57.618762:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 20:07:58.249951:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 20:08:07.398816:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 20:08:08.012061:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 20:08:17.581960:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 20:08:18.195088:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 20:08:27.416997:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 20:08:28.028465:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 20:08:37.591375:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 20:08:38.229574:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+
+Logs new start
+
+New error at 2021-06-24 20:19:33.891995:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 20:19:34.657294:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 20:19:43.916247:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 20:19:44.592560:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 20:19:53.929432:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 20:19:54.625463:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 20:20:03.773080:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 20:20:04.457235:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 20:20:13.756588:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 20:20:14.395978:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 20:20:24.152368:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 20:20:24.799209:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 20:20:33.959358:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 20:20:34.705192:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 20:20:43.805014:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 20:20:44.443028:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 20:20:54.083122:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 20:20:54.762178:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 20:21:03.943698:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 20:21:04.614862:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 20:21:13.979126:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 20:21:14.625028:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 20:21:24.000998:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 20:21:24.633460:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 20:21:34.000284:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 20:21:34.657892:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+
+Logs new start
+
+New error at 2021-06-24 20:22:07.289088:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 20:22:08.030266:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 20:22:17.396438:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 20:22:18.024837:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 20:22:27.511116:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 20:22:28.215821:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 20:22:37.399806:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 20:22:38.065784:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 20:22:47.510260:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 20:22:48.220092:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+
+Logs new start
+
+New error at 2021-06-24 20:23:25.255038:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 20:23:25.931783:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 20:23:35.278725:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 20:23:36.144924:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 20:23:45.474263:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 20:23:46.195823:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 20:23:55.390066:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 20:23:56.155620:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 20:24:05.297286:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 20:24:05.958196:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 20:24:15.294212:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 20:24:15.964781:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+
+Logs new start
+
+New error at 2021-06-24 20:26:20.663920:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 20:26:21.454744:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+New error at 2021-06-24 20:26:30.700397:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 20:26:31.413246:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
+
+
+Logs new start
+
+New error at 2021-06-24 20:27:07.554130:
+type - <class 'discord.errors.HTTPException'>, name - autoRemoveRequest.py, line - 23, error - 400 Bad Request (error code: 50035): Invalid Form Body
+In embed.description: Must be 2048 or fewer in length.
+
+New error at 2021-06-24 20:27:08.315776:
+type - <class 'KeyError'>, name - autoRemoveRequest.py, line - 22, error - 'thumbnail'
