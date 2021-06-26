@@ -48,7 +48,10 @@ def setMessageEvent(self):
 
 
 
-            if message.channel.id == self.config['data'].getint('frameChannel') or message.channel.id == self.config['data'].getint('simpChannel') or message.channel.id == self.config['data'].getint('stoikaChannel'):
+            if (message.channel.id == self.config['data'].getint('frameChannel') or
+            message.channel.id == self.config['data'].getint('simpChannel') or
+            message.channel.id == self.config['data'].getint('stoikaChannel') or
+            message.channel.id == self.config['data'].getint('usualChannelId')):
                 for key in texts.keys():
                     if key in msg.lower():
                         await message.channel.send(texts[key])
