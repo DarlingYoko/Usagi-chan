@@ -10,7 +10,7 @@ async def createNewRole(self, message):
     member = message.author
     content = message.content.split('!роль')[1].strip().split(' ')
     color = int(content[-1], 16)
-    name = content[:-1]
+    name = ' '.join(content[:-1])
 
     role = await guild.create_role(name = name, colour=color, hoist = True)
     await member.add_roles(role)
