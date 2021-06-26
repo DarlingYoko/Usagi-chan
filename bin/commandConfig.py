@@ -39,12 +39,12 @@ commands = {
                 'delay': 1,
             },
             '!роль':{
-                'answer': 'Создала',
+                'answer': '',
                 'function': 'asyncio.run_coroutine_threadsafe(createNewRole(self, message), self.loop)',
                 'delay': None,
             },
             '!эмодзи':{
-                'answer': 'Создала',
+                'answer': '',
                 'function': 'asyncio.run_coroutine_threadsafe(createNewEmoji(self, message), self.loop)',
                 'delay': None,
             },

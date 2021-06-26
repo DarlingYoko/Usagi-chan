@@ -12,5 +12,10 @@ async def createNewRole(self, message):
     color = int(content[-1], 16)
     name = ' '.join(content[:-1])
 
-    role = await guild.create_role(name = name, colour=color, hoist = True)
-    await member.add_roles(role)
+    try:
+        role = await guild.create_role(name = name, colour=color, hoist = True)
+        await member.add_roles(role)
+        await member.channel.send('Создала')
+    except Exception as e:
+        await member.channel.send('Не получилось создать(')
+        print('При создании роли ошибка\n', e)
