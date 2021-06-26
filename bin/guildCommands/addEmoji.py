@@ -11,19 +11,17 @@ async def createNewEmoji(self, message):
         await message.delete()
         return
 
-    guild = await self.client.fetch_guild(self.config['data']['guildId'])
-    name = message.content.split('!эмодзи')[1].strip()
 
-
-
-    image = message.attachments[0]
 
     try:
+        guild = await self.client.fetch_guild(self.config['data']['guildId'])
+        name = message.content.split('!эмодзи')[1].strip()
+        image = message.attachments[0]
         async with aiohttp.ClientSession() as session:
             async with session.get(str(image)) as response:
                 img = await response.read()
                 await guild.create_custom_emoji(name = name, image = img)
-        await member.channel.send('Добавила')
+        await message.channel.send('Добавила')
     except Exception as e:
-        await member.channel.send('Не получилось создать(')
+        await message.channel.send('Не получилось создать(')
         print('При создании роли ошибка\n', e)
