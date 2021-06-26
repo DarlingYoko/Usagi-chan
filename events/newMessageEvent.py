@@ -6,6 +6,8 @@ from bin.guildCommands.helpValentine import helpValentine
 from bin.guildCommands.boostPot import boostPot
 from bin.guildCommands.manualRemoveRequest import manualRemoveRequest
 from bin.guildCommands.checkHistory import checkHistory
+from bin.guildCommands.newRole import createNewRole
+from bin.guildCommands.addEmoji import createNewEmoji
 from bin.privatCommands.updateShedule import updateShedule, removeSession
 from bin.privatCommands.createValentine import valentineCommand
 from bin.commandConfig import commands, texts
@@ -41,7 +43,6 @@ def setMessageEvent(self):
                 hug = self.client.get_emoji(810217025111719996)
                 await message.add_reaction(hug)
             '''
-
 
             msg = message.content
 
@@ -177,8 +178,9 @@ def setMessageEvent(self):
 
                     else:
                         await message.channel.send('<@{0}>, эта команда только для каналов'.format(UID), delete_after = 5)
-            except discord.errors.HTTPException:
-                pass
+            except Exception as e:
+                exc_type, exc_obj, exc_tb = sys.exc_info()
+                print('New error:\ntype - {0}, line - {1}, error - {2}\n'.format(exc_type, exc_tb.tb_lineno, e))
 
 
 

@@ -38,7 +38,16 @@ commands = {
                 'function': 'asyncio.run_coroutine_threadsafe(boostPot(self, message), self.loop)',
                 'delay': 1,
             },
-
+            '!роль':{
+                'answer': 'Создала',
+                'function': 'asyncio.run_coroutine_threadsafe(createNewRole(self, message), self.loop)',
+                'delay': None,
+            },
+            '!эмодзи':{
+                'answer': 'Создала',
+                'function': 'asyncio.run_coroutine_threadsafe(createNewEmoji(self, message), self.loop)',
+                'delay': None,
+            },
         },
         'music': {
             '!p':{
