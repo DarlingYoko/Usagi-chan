@@ -167,7 +167,7 @@ texts = {
     'траеры': '<a:solider:840549758581473290><a:solider:840549758581473290><a:solider:840549758581473290><a:solider:840549758581473290>',
     'скилфул': '<:peepoawesome:849713245640065074>',
     '!вебивент': '<:peepoawesome:849713245640065074>',
-    '!форум': 'Ссылка на форум - https://www.hoyolab.com/genshin/accountCenter/gameRecord?id=27288282\nСсылка на логин бонус - https://webstatic-sea.mihoyo.com/ys/event/signin-sea/index.html?act_id=e202102251931481&lang=ru-ru',
+    '!форум': 'Ссылка на форум - https://www.hoyolab.com\nСсылка на логин бонус - https://webstatic-sea.mihoyo.com/ys/event/signin-sea/index.html?act_id=e202102251931481&lang=ru-ru',
     '!карта': 'Интерактивная карта по Геншину: https://webstatic-sea.mihoyo.com/app/ys-map-sea/?lang=ru-ru',
     '!хх': 'https://genshin.honeyhunterworld.com',
     '!hh': 'https://genshin.honeyhunterworld.com',
