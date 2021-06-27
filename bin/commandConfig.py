@@ -171,6 +171,9 @@ texts = {
     '!карта': 'Интерактивная карта по Геншину: https://webstatic-sea.mihoyo.com/app/ys-map-sea/?lang=ru-ru',
     '!хх': 'https://genshin.honeyhunterworld.com',
     '!hh': 'https://genshin.honeyhunterworld.com',
+    '!паймон': 'https://paimon.moe/',
+    'эр': '<:pepoVovan:858129919195217961>',
+
 
 }
 #'': '',<::>
