@@ -29,23 +29,13 @@ def setMessageEvent(self):
             if message.author == self.client.user:
                 return
 
-            '''
-            if message.channel.id == 788546742677143552:
-                chtoList = ['что', 'почему', 'как', 'кому', 'зачем', 'кого', '?']
 
-                for chto in chtoList:
-                    if chto in message.content.lower():
-                        pasvitas = self.client.get_emoji(817877977412665345)
-                        await message.add_reaction(pasvitas)
-                        continue
-
-
-                hug = self.client.get_emoji(810217025111719996)
-                await message.add_reaction(hug)
-            '''
+            emojis = {858655225412845568: 858146250896572467, 858727806401904660: 858179418371784714}
+            if message.channel.id in emojis.keys() and message.attachments:
+                emoji = self.client.get_emoji(emojis[message.channel.id])
+                await message.add_reaction(emoji)
 
             msg = message.content
-
 
 
             if (message.channel.id == self.config['data'].getint('frameChannel') or
