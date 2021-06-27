@@ -147,7 +147,8 @@ texts = {
     'хиджи': '<:kaban:802117569296203796>',
     'ивка': 'Нет блин Вика',
     'вика': 'Нет блин Ивка',
-    'лисма': 'Пукма',
+    'лисма': 'Нет блин Пукма',
+    'пукма': 'Нет блин Лисма',
     'водинмекс': '<:EZY:771041695671648329>',
     'кеша': '<a:swing:836048490223108107>',
     'монополия': '<:diluc:836069264472670248>',
@@ -165,6 +166,11 @@ texts = {
     'голдас': '<:peepeSword:810192669913382913>',
     'траеры': '<a:solider:840549758581473290><a:solider:840549758581473290><a:solider:840549758581473290><a:solider:840549758581473290>',
     'скилфул': '<:peepoawesome:849713245640065074>',
+    '!вебивент': '<:peepoawesome:849713245640065074>',
+    '!форум': 'Ссылка на форум - https://www.hoyolab.com/genshin/accountCenter/gameRecord?id=27288282\nСсылка на логин бонус - https://webstatic-sea.mihoyo.com/ys/event/signin-sea/index.html?act_id=e202102251931481&lang=ru-ru',
+    '!карта': 'Интерактивная карта по Геншину: https://webstatic-sea.mihoyo.com/app/ys-map-sea/?lang=ru-ru',
+    '!хх': 'https://genshin.honeyhunterworld.com',
+    '!hh': 'https://genshin.honeyhunterworld.com',
 
 }
 #'': '',<::>
