@@ -6,7 +6,7 @@ from bin.guildCommands.helpValentine import helpValentine
 from bin.guildCommands.boostPot import boostPot
 from bin.guildCommands.manualRemoveRequest import manualRemoveRequest
 from bin.guildCommands.checkHistory import checkHistory
-from bin.guildCommands.newRole import createNewRole
+from bin.guildCommands.role import createNewRole
 from bin.guildCommands.addEmoji import createNewEmoji
 from bin.privatCommands.updateShedule import updateShedule, removeSession
 from bin.privatCommands.createValentine import valentineCommand
