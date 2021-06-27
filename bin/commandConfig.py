@@ -172,7 +172,7 @@ texts = {
     '!hh': 'https://genshin.honeyhunterworld.com',
     '!паймон': 'https://paimon.moe/',
     'эр': '<:pepoVovan:858129919195217961>',
-
+    'бананя': '<a:peepoTub:858754739968540702>',
 
 }
 #'': '',<::>
