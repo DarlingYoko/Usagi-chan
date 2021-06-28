@@ -54,7 +54,10 @@ async def createNewRole(self, message):
 
                 if content[2] == 'цвет':
                     try:
-                        await role.edit(colour = int(content[3], 16))
+                        color = content[3]
+                        if '#' in content[3]:
+                            color = color[1:]
+                        await role.edit(colour = int(color, 16))
                         await message.channel.send('Изменила цвет')
                         return
 
