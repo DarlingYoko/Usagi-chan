@@ -8,6 +8,7 @@ from bin.guildCommands.manualRemoveRequest import manualRemoveRequest
 from bin.guildCommands.checkHistory import checkHistory
 from bin.guildCommands.role import createNewRole
 from bin.guildCommands.addEmoji import createNewEmoji
+from bin.guildCommands.predictions import predict
 from bin.privatCommands.updateShedule import updateShedule, removeSession
 from bin.privatCommands.createValentine import valentineCommand
 from bin.commandConfig import commands, texts
@@ -111,13 +112,24 @@ def setMessageEvent(self):
                     if str(message.channel.type) == 'text':
                         answer = 'Тебе низя использовать эту команду'
                         command = msg.split()[0].lower()
-                        if command in commands['guild']['usual'].keys():
-                            if commands['guild']['usual'][command]['function']:
-                                eval(commands['guild']['usual'][command]['function'])
-                                answer = commands['guild']['usual'][command]['answer']
-                            else:
-                                answer = eval(commands['guild']['usual'][command]['answer'])
-                            delay = commands['guild']['usual'][command]['delay']
+                        if isCommand(msg, commands['guild']['usual'].keys()):
+                            com = False
+                            for cmd in commands['guild']['usual'].keys():
+                                if len(cmd.split()) > 1:
+                                    if msg.lower().startswith(cmd):
+                                        com = True
+                                        command = cmd
+                                else:
+                                    if cmd == command:
+                                        com = True
+                                        
+                            if com:
+                                if commands['guild']['usual'][command]['function']:
+                                    eval(commands['guild']['usual'][command]['function'])
+                                    answer = commands['guild']['usual'][command]['answer']
+                                else:
+                                    answer = eval(commands['guild']['usual'][command]['answer'])
+                                delay = commands['guild']['usual'][command]['delay']
 
 
                         if command in commands['guild']['music'].keys():

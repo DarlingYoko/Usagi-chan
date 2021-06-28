@@ -48,6 +48,11 @@ commands = {
                 'function': 'asyncio.run_coroutine_threadsafe(createNewEmoji(self, message), self.loop)',
                 'delay': None,
             },
+            'усаги, стоит ли':{
+                'answer': '',
+                'function': 'asyncio.run_coroutine_threadsafe(predict(self, message), self.loop)',
+                'delay': None,
+            },
         },
         'music': {
             '!p':{
