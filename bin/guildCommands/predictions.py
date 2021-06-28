@@ -8,7 +8,7 @@ async def predict(self, message):
             content = content[:-1]
 
         if randint(0, 1):
-            answer = '<@{0}> Я считаю, что {1} точно стоит, бака!'.format(message.author.id, content)
+            answer = '<@{0}> Я считаю, что {1} точно стоит!'.format(message.author.id, content)
         else:
             answer = '<@{0}> Я считаю, что {1} точно не стоит, бака!'.format(message.author.id, content)
 

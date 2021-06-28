@@ -122,7 +122,7 @@ def setMessageEvent(self):
                                 else:
                                     if cmd == command:
                                         com = True
-                                        
+
                             if com:
                                 if commands['guild']['usual'][command]['function']:
                                     eval(commands['guild']['usual'][command]['function'])
@@ -133,7 +133,7 @@ def setMessageEvent(self):
 
 
                         if command in commands['guild']['music'].keys():
-                            channel = await guild.fetch_channel(self.config['data'].getint('kadrovyChannel'))
+                            channel = guild.get_channel(self.config['data'].getint('kadrovyChannel'))
                             if message.author in channel.members:
                                 if commands['guild']['music'][command]['function']:
                                     eval(commands['guild']['music'][command]['function'])
