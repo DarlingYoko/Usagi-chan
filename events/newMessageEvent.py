@@ -129,6 +129,8 @@ def setMessageEvent(self):
                                 else:
                                     answer = eval(commands['guild']['music'][command]['answer'])
                                 delay = commands['guild']['music'][command]['delay']
+                            else:
+                                answer = 'Ты не находишься в войсе, бака!'
 
                         '''
                         if command in commands['guild']['token'].keys():
