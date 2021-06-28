@@ -53,6 +53,11 @@ commands = {
                 'function': 'asyncio.run_coroutine_threadsafe(predict(self, message), self.loop)',
                 'delay': None,
             },
+            '!purge':{
+                'answer': '',
+                'function': 'asyncio.run_coroutine_threadsafe(purge(self, message), self.loop)',
+                'delay': None,
+            },
         },
         'music': {
             '!p':{

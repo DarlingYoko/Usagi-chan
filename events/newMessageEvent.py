@@ -9,6 +9,7 @@ from bin.guildCommands.checkHistory import checkHistory
 from bin.guildCommands.role import createNewRole
 from bin.guildCommands.addEmoji import createNewEmoji
 from bin.guildCommands.predictions import predict
+from bin.guildCommands.purge import purge
 from bin.privatCommands.updateShedule import updateShedule, removeSession
 from bin.privatCommands.createValentine import valentineCommand
 from bin.commandConfig import commands, texts
@@ -133,7 +134,7 @@ def setMessageEvent(self):
 
 
                         if command in commands['guild']['music'].keys():
-                            channel = guild.get_channel(self.config['data'].getint('kadrovyChannel'))
+                            channel = await self.client.fetch_channel(self.config['data'].getint('kadrovyChannel'))
                             if message.author in channel.members:
                                 if commands['guild']['music'][command]['function']:
                                     eval(commands['guild']['music'][command]['function'])
@@ -143,6 +144,7 @@ def setMessageEvent(self):
                                 delay = commands['guild']['music'][command]['delay']
                             else:
                                 answer = 'Ты не находишься в войсе, бака!'
+                                delay = None
 
                         '''
                         if command in commands['guild']['token'].keys():
