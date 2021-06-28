@@ -30,6 +30,7 @@ def setMessageEvent(self):
                 return
 
 
+            guild = await self.client.fetch_guild(self.config['data']['guildId'])
             emojis = {858655225412845568: 858146250896572467, 858727806401904660: 858179418371784714}
             if message.channel.id in emojis.keys() and message.attachments:
                 emoji = self.client.get_emoji(emojis[message.channel.id])
@@ -120,8 +121,8 @@ def setMessageEvent(self):
 
 
                         if command in commands['guild']['music'].keys():
-                            await message.delete()
-                            if message.author.id in eval(self.config['audio']['accessList']):
+                            channel = await guild.fetch_channel(self.config['data'].getint('kadrovyChannel'))
+                            if message.author in channel.members:
                                 if commands['guild']['music'][command]['function']:
                                     eval(commands['guild']['music'][command]['function'])
                                     answer = commands['guild']['music'][command]['answer']

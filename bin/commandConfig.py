@@ -31,7 +31,7 @@ commands = {
             '!q':{
                 'answer': 'self.musicPlayer.query()',
                 'function': None,
-                'delay': 60,
+                'delay': None,
             },
             '!ч':{
                 'answer': '',
@@ -53,37 +53,37 @@ commands = {
             '!p':{
                 'answer': 'Добавила песенку в плейлист',
                 'function': 'self.musicPlayer.play(msg, command)',
-                'delay': 5,
+                'delay': None,
             },
             '!pause':{
                 'answer': 'Поставила на паузу',
                 'function': 'self.musicPlayer.pauseAudio()',
-                'delay': 5,
+                'delay': None,
             },
             '!r':{
                 'answer': 'Поставила дальше играть',
                 'function': 'self.musicPlayer.resume()',
-                'delay': 5,
+                'delay': None,
             },
             '!stop':{
                 'answer': 'Остановила и очистила',
                 'function': 'self.musicPlayer.stop()',
-                'delay': 5,
+                'delay': None,
             },
             '!shuffle':{
                 'answer': 'Перемешала',
                 'function': 'self.musicPlayer.shuffle()',
-                'delay': 5,
+                'delay': None,
             },
             '!s':{
                 'answer': 'self.musicPlayer.skip()',
                 'function': None,
-                'delay': 5,
+                'delay': None,
             },
             '!repeat':{
                 'answer': 'self.musicPlayer.repeat(msg, command)',
                 'function': None,
-                'delay': 5,
+                'delay': None,
             },
         },
         'token': {
