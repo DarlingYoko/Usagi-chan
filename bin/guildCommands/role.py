@@ -13,7 +13,9 @@ async def createNewRole(self, message):
 
 
     if content[0] == 'добавить':
-        color = int(content[-1], 16)
+        color = content[-1]
+        if '#' in color:
+            color = color[1:]
         name = ' '.join(content[1:-1])
         try:
             role = await guild.create_role(name = name, colour=color, hoist = True, mentionable = True)
@@ -55,7 +57,7 @@ async def createNewRole(self, message):
                 if content[2] == 'цвет':
                     try:
                         color = content[3]
-                        if '#' in content[3]:
+                        if '#' in color:
                             color = color[1:]
                         await role.edit(colour = int(color, 16))
                         await message.channel.send('Изменила цвет')
