@@ -1,6 +1,7 @@
 from datetime import datetime
 
 async def forum(self):
+    print(datetime.now().day, datetime.now().hour)
     if self.yesterday != datetime.now().day and datetime.now().hour > 19:
         self.yesterday = datetime.now().day
         channel = await self.client.fetch_channel(858053937008214018)
