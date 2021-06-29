@@ -1,4 +1,4 @@
-import discord, asyncio, time, shelve, datetime, sys, os, datetime
+import discord, asyncio, time, shelve, datetime, sys, os
 from threading import Thread
 from src.functions import newLog, loadConfig, getLogger
 from src.extraClasses.classMember import Members
@@ -6,6 +6,7 @@ from src.extraClasses.DB import Database
 from src.extraClasses.musicPlayer import MusicPlayer
 from src.extraClasses.Token import Token
 from bin.guildCommands.autoRemoveRequest import autoRemoveRequest
+from bin.guildCommands.forum import forum
 from bin.privatCommands.updateShedule import checkNotification
 from bin.commandConfig import commands
 from events.usersChangedEvents import reportSpam
@@ -42,11 +43,18 @@ async def checkSpam():
         time.sleep(3)
         asyncio.run_coroutine_threadsafe(reportSpam(usagi), usagi.loop)
 
+async def notificationForum():
+    time.sleep(10)
+    while True:
+        asyncio.run_coroutine_threadsafe(forum(usagi), usagi.loop)
+        time.sleep(60 * 30)
+
+
 
 class UsagiChan:
 
     def __init__(self):
-        self.config = loadConfig('src/config')
+        self.config = loadConfig('src/TESTconfig')
         self.loop = None
         self.spam = 0
         intents = discord.Intents.all()
@@ -58,6 +66,7 @@ class UsagiChan:
         #self.token = Token()
         self.lastTimeJoin = datetime.datetime.now()
         self.commnds = commands
+        self.yesterday = datetime.datetime.now().day - 1
         if not os.path.exists('files/Downloads'):
             os.mkdir('files/Downloads')
         os.chdir('files/Downloads')
@@ -95,10 +104,11 @@ usagi.setUsersChangedEvents()
 
 
 newLog('', '', '', '', new = 1)
-Thread(target = asyncio.run, args=(checkRequests(), )).start()
-Thread(target = asyncio.run, args=(checkShedule(), )).start()
+#Thread(target = asyncio.run, args=(checkRequests(), )).start()
+#Thread(target = asyncio.run, args=(checkShedule(), )).start()
 #Thread(target = asyncio.run, args=(checkTokens(), )).start()
-Thread(target = asyncio.run, args=(checkSpam(), )).start()
+#Thread(target = asyncio.run, args=(checkSpam(), )).start()
+Thread(target = asyncio.run, args=(notificationForum(), )).start()
 Thread(target = checkAudio).start()
 #Thread(target = restartDriver).start()
 usagi.run()
