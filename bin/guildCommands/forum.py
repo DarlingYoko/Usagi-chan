@@ -2,9 +2,7 @@ from datetime import datetime, timedelta
 from time import mktime
 
 async def forum(self):
-    print(datetime.now().hour, datetime.now().minute)
-    print(datetime.now().hour == 17 and (datetime.now().minute > 0 and datetime.now().minute < 30))
-    if datetime.now().hour == 17 and (datetime.now().minute > 0 and datetime.now().minute < 30):
+    if datetime.now().hour == 16:
         channel = await self.client.fetch_channel(858053937008214018)
         await channel.send('Не забываем забрать логин бонус!\nhttps://webstatic-sea.mihoyo.com/ys/event/signin-sea/index.html?act_id=e202102251931481&lang=ru-ru')
 

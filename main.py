@@ -53,7 +53,7 @@ async def checkTransformator():
     time.sleep(10)
     while True:
         asyncio.run_coroutine_threadsafe(checkTransform(usagi), usagi.loop)
-        time.sleep(60)
+        time.sleep(60 * 60)
 
 
 
