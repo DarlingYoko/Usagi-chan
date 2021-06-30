@@ -30,35 +30,40 @@ async def transform(self, message):
 
 
     content = message.content.split('!преобразователь')[1].strip().split()
-    answer = 'Неверная команда, бака!'
+    answer = '<@{0}> Неверная команда, бака!'
 
     #print(content, content[0], len(content), content and content[0] == 'добавить')
 
     if content and content[0] == 'добавить':
         #только что юз и кд неделя
         time = mktime(datetime.now().timetuple())
-        if len(content) == 1:
-            try:
-                self.db.insert('forum', message.author.id, time)
-                answer = 'Успешно добавлено, нья!'
-            except Exception as e:
-                print(e)
-                answer = 'Не получилось добавить'
 
         #имеется какое то время для отката
-        else:
-            pass
+        if len(content) != 1:
+            try:
+                delta = int(content[1])
+                time = mktime((datetime.now() - timedelta(hours = delta)).timetuple())
+            except Exception as e:
+                print(e)
+                answer = '<@{0}> Неправильный формат времени, бака!'
+
+        try:
+            self.db.insert('forum', message.author.id, time)
+            answer = '<@{0}> Успешно добавлено, нья!'
+        except Exception as e:
+            print(e)
+            answer = '<@{0}> Не получилось добавить'
 
     #удалить отслеживание пользователя
     elif content and content[0] == 'удалить':
         try:
             self.db.remove('forum', 'userID', message.author.id)
-            answer = 'Успешно удалено, нья!'
+            answer = '<@{0}> Успешно удалено, нья!'
         except Exception as e:
             print(e)
-            answer = 'Не получилось удалить'
+            answer = '<@{0}> Не получилось удалить'
 
-    await message.channel.send(answer)
+    await message.channel.send(answer.format(message.author.id))
 
 
     #time = mktime(datetime.now().timetuple())

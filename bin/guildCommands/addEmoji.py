@@ -2,12 +2,12 @@ import aiohttp, sys
 
 async def createNewEmoji(self, message):
     if message.channel.id != self.config['data'].getint('getEmojiChannel'):
-        await message.channel.send('Эта команда для канала <#{0}>'.format(self.config['data'].getint('getEmojiChannel')), delete_after = 30)
+        await message.channel.send('<@{1}> Эта команда для канала <#{0}>'.format(self.config['data'].getint('getEmojiChannel'), message.author.id), delete_after = 30)
         await message.delete()
         return
 
     if not message.attachments:
-        await message.channel.send('Ты не прикрепил аттачмет! Баака', delete_after = 30)
+        await message.channel.send('<@{0}> Ты не прикрепил аттачмет! Баака'.format(message.author.id), delete_after = 30)
         await message.delete()
         return
 
@@ -21,7 +21,7 @@ async def createNewEmoji(self, message):
             async with session.get(str(image)) as response:
                 img = await response.read()
                 await guild.create_custom_emoji(name = name, image = img)
-        await message.channel.send('Добавила')
+        await message.channel.send('<@{0}> Добавила'.format(message.author.id))
     except Exception as e:
-        await message.channel.send('Не получилось создать(')
+        await message.channel.send('<@{0}> Не получилось создать('.format(message.author.id))
         print('При создании роли ошибка\n', e)

@@ -21,10 +21,10 @@ async def createNewRole(self, message):
         try:
             role = await guild.create_role(name = name, colour=color, hoist = True, mentionable = True)
             await member.add_roles(role)
-            await message.channel.send('Создала')
+            await message.channel.send('<@{0}> Создала'.format(message.author.id))
             return
         except Exception as e:
-            await message.channel.send('Не получилось создать(')
+            await message.channel.send('<@{0}> Не получилось создать('.format(message.author.id))
             print('При создании роли ошибка\n', e)
             return
 
@@ -32,7 +32,7 @@ async def createNewRole(self, message):
         try:
             role = guild.get_role(int(content[1][3:-1]))
         except Exception as e:
-            await message.channel.send('Неверная роль')
+            await message.channel.send('<@{0}> Неверная роль'.format(message.author.id))
             print(e)
             return
 
@@ -40,18 +40,18 @@ async def createNewRole(self, message):
         if role in member.roles:
             if content[0] == 'удалить':
                 await role.delete()
-                await message.channel.send('Удалила')
+                await message.channel.send('<@{0}> Удалила'.format(message.author.id))
                 return
 
             if content[0] == 'изменить':
                 if content[2] == 'название':
                     try:
                         await role.edit(name = ' '.join(content[3:]))
-                        await message.channel.send('Изменила название')
+                        await message.channel.send('<@{0}> Изменила название'.format(message.author.id))
                         return
 
                     except Exception as e:
-                        await message.channel.send('Не получилось изменить название')
+                        await message.channel.send('<@{0}> Не получилось изменить название'.format(message.author.id))
                         print(e)
                         return
 
@@ -62,19 +62,19 @@ async def createNewRole(self, message):
                             color = color[1:]
                         color = int(color, 16)
                         await role.edit(colour = int(color, 16))
-                        await message.channel.send('Изменила цвет')
+                        await message.channel.send('<@{0}> Изменила цвет'.format(message.author.id))
                         return
 
                     except Exception as e:
-                        await message.channel.send('Не получилось изменить цвет')
+                        await message.channel.send('<@{0}> Не получилось изменить цвет'.format(message.author.id))
                         print(e)
                         return
 
         else:
-            await message.channel.send('Это не твоя роль, бака!')
+            await message.channel.send('<@{0}> Это не твоя роль, бака!'.format(message.author.id))
             return
 
-    await message.channel.send('Не получилось(')
+    await message.channel.send('<@{0}> Не получилось('.format(message.author.id))
 
 '''
 !роль добавить "название" "цвет"

@@ -93,3 +93,15 @@ Logs new start
 
 
 Logs new start
+
+
+Logs new start
+
+New error at 2021-06-30 18:45:26.225574:
+type - <class 'psycopg2.errors.InvalidSchemaName'>, name - DB.py, line - 24, error - schema "datetime" does not exist
+LINE 1: INSERT INTO forum VALUES (290166276796448768, datetime.datet...
+                                                      ^
+
+
+
+Logs new start
