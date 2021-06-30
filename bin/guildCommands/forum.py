@@ -12,7 +12,7 @@ async def checkTransform(self):
     for (userID, time) in usersList:
         time = datetime.fromtimestamp(float(time))
 
-        if datetime.now() - time >= timedelta(days = 7):
+        if datetime.now() - time >= timedelta(days = 6, hours = 22):
             channel = await self.client.fetch_channel(859772440195760178)
             await channel.send('<@{0}> Преобразователь готов, нья!'.format(userID))
             time = mktime(datetime.now().timetuple())
