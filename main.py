@@ -6,7 +6,7 @@ from src.extraClasses.DB import Database
 from src.extraClasses.musicPlayer import MusicPlayer
 from src.extraClasses.Token import Token
 from bin.guildCommands.autoRemoveRequest import autoRemoveRequest
-from bin.guildCommands.forum import forum
+from bin.guildCommands.forum import forum, checkTransform
 from bin.privatCommands.updateShedule import checkNotification
 from bin.commandConfig import commands
 from events.usersChangedEvents import reportSpam
@@ -48,6 +48,12 @@ async def notificationForum():
     while True:
         asyncio.run_coroutine_threadsafe(forum(usagi), usagi.loop)
         time.sleep(60 * 10)
+
+async def checkTransformator():
+    time.sleep(10)
+    while True:
+        asyncio.run_coroutine_threadsafe(checkTransform(usagi), usagi.loop)
+        time.sleep(60)
 
 
 
@@ -108,6 +114,7 @@ newLog('', '', '', '', new = 1)
 #Thread(target = asyncio.run, args=(checkTokens(), )).start()
 #Thread(target = asyncio.run, args=(checkSpam(), )).start()
 Thread(target = asyncio.run, args=(notificationForum(), )).start()
+Thread(target = asyncio.run, args=(checkTransformator(), )).start()
 Thread(target = checkAudio).start()
 #Thread(target = restartDriver).start()
 usagi.run()

@@ -58,6 +58,11 @@ commands = {
                 'function': 'asyncio.run_coroutine_threadsafe(purge(self, message), self.loop)',
                 'delay': None,
             },
+            '!преобразователь':{
+                'answer': '',
+                'function': 'asyncio.run_coroutine_threadsafe(transform(self, message), self.loop)',
+                'delay': None,
+            },
         },
         'music': {
             '!p':{
@@ -149,6 +154,7 @@ texts = {
     'трин': '<:Jebaited:827276677716770898>',
     'синг': '<a:peepoSadSwipe:858179554769895444>',
     'пепус': '<:lickDed:836220314118783046>',
+
     'яня': '<:peepoPANTIES:858179511447191582>',
     'саднёс': '<a:round:836226109191356427>',
     'саднес': '<a:round:836226109191356427>',
