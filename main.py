@@ -47,7 +47,7 @@ async def notificationForum():
     time.sleep(10)
     while True:
         asyncio.run_coroutine_threadsafe(forum(usagi), usagi.loop)
-        time.sleep(60 * 30)
+        time.sleep(60 * 10)
 
 
 
@@ -66,7 +66,6 @@ class UsagiChan:
         #self.token = Token()
         self.lastTimeJoin = datetime.datetime.now()
         self.commnds = commands
-        self.yesterday = datetime.datetime.now().day - 1
         if not os.path.exists('files/Downloads'):
             os.mkdir('files/Downloads')
         os.chdir('files/Downloads')
