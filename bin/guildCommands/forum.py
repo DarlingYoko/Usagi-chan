@@ -39,7 +39,7 @@ async def transform(self, message):
         #имеется какое то время для отката
         if len(content) != 1:
             try:
-                delta = int(content[1])
+                delta = 166 - int(content[1])
                 time = mktime((datetime.now() - timedelta(hours = delta)).timetuple())
             except Exception as e:
                 print(e)
