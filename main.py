@@ -47,13 +47,13 @@ async def notificationForum():
     time.sleep(10)
     while True:
         asyncio.run_coroutine_threadsafe(forum(usagi), usagi.loop)
-        time.sleep(60 * 10)
+        time.sleep(60 * 30)
 
 async def checkTransformator():
     time.sleep(10)
     while True:
         asyncio.run_coroutine_threadsafe(checkTransform(usagi), usagi.loop)
-        time.sleep(60 * 60)
+        time.sleep(60 * 10)
 
 
 
