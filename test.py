@@ -1,32 +1,14 @@
-
-a = input()
-nomer = int(input())
-
-listUpper = 'АБВГҐДЕЄЖЗИІЇЙКЛМНОПРСТУФХЦЧШЩЬЮЯ'
-listLower = 'абвгґдеєжзиіїйклмнопрстуфхцчшщьюя'
-
-dictUpperSymbols = {count:values for count, values in enumerate(listUpper)}
-dictLowerSymbols = {count:values for count, values in enumerate(listLower)}
-
-dictUpperValues = {values:count for count, values in enumerate(listUpper)}
-dictLowerValues = {values:count for count, values in enumerate(listLower)}
-
-string = ''
-
-for i in a:
-    if i in dictUpperSymbols.values():
-        count = (dictUpperValues[i] + nomer) % len(dictUpperSymbols.values())
-        string += dictUpperSymbols[count]
-
-    elif i in dictLowerSymbols.values():
-        count = (dictLowerValues[i] + nomer) % len(dictLowerSymbols.values())
-        string += dictLowerSymbols[count]
-
-    else:
-        string += i
-
-print(string)
+from datetime import datetime as dt
 
 
-# https://github.com/heroku/heroku-buildpack-chromedriver
-# https://github.com/heroku/heroku-buildpack-google-chrome
+now = dt.now()
+time = 1635653097.0
+time = dt.fromtimestamp(float(time))
+print(time)
+
+d = time - now
+hours = d.seconds // 3600
+minutes = (d.seconds - (hours * 3600)) // 60
+print(hours)
+print(d)
+print('{0} дней {1} часов {2} минуты'.format(d.days, hours, minutes))

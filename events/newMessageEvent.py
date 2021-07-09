@@ -11,6 +11,7 @@ from bin.guildCommands.addEmoji import createNewEmoji
 from bin.guildCommands.predictions import predict
 from bin.guildCommands.purge import purge
 from bin.guildCommands.forum import transform
+from bin.guildCommands.news import setTime
 from bin.privatCommands.updateShedule import updateShedule, removeSession
 from bin.privatCommands.createValentine import valentineCommand
 from bin.commandConfig import commands, texts
@@ -170,8 +171,7 @@ def setMessageEvent(self):
                                 delay = commands['guild']['moviegoers'][command]['delay']
 
 
-                        if command in commands['guild']['my'].keys():
-                            await message.delete()
+                        if command in commands['guild']['my'].keys():        
                             if message.author.id == self.config['usersIDs'].getint('yokoId'):
                                 if commands['guild']['my'][command]['function']:
                                     eval(commands['guild']['my'][command]['function'])

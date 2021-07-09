@@ -136,6 +136,11 @@ commands = {
                 'function': 'asyncio.run_coroutine_threadsafe(manualRemoveRequest(self, message, msg.split(command)[1].strip()), self.loop)',
                 'delay': 5,
             },
+            '!время':{
+                'answer': '',
+                'function': 'asyncio.run_coroutine_threadsafe(setTime(self, message), self.loop)',
+                'delay': None,
+            },
         }
 
     }
