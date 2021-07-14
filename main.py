@@ -60,7 +60,7 @@ async def checkTime():
     time.sleep(10)
     while True:
         asyncio.run_coroutine_threadsafe(postNews(usagi), usagi.loop)
-        time.sleep(60 * 10)
+        time.sleep(60 * 30)
 
 
 
