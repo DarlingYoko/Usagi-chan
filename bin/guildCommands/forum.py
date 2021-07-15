@@ -37,6 +37,15 @@ async def transform(self, message):
     if content and content[0] == 'добавить':
         #только что юз и кд неделя
         time = mktime(datetime.now().timetuple())
+        #спросить есть ли польз уже в базе
+        #если да, то просто изменить время
+        #если нет, то добавить
+        user = None
+        try:
+            user = self.db.getValue('forum', 'userid', 'userid', message.author.id)
+        except:
+            pass
+
 
         #имеется какое то время для отката
         if len(content) != 1:
@@ -48,8 +57,14 @@ async def transform(self, message):
                 answer = '<@{0}> Неправильный формат времени, бака!'
 
         try:
-            self.db.insert('forum', message.author.id, time)
-            answer = '<@{0}> Успешно добавлено, нья!'
+            if user:
+                self.db.update('forum', 'time', 'userid', time, user)
+                answer = '<@{0}> Успешно изменено, нья!'
+            else:
+                self.db.insert('forum', message.author.id, time)
+                answer = '<@{0}> Успешно добавлено, нья!'
+
+
         except Exception as e:
             print(e)
             answer = '<@{0}> Не получилось добавить'
