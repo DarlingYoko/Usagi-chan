@@ -1,6 +1,7 @@
 from datetime import datetime as dt
 
 async def postNews(self):
+    print(self.time)
     channel = await self.client.fetch_channel(863159302213337179)
 
     now = dt.now()
