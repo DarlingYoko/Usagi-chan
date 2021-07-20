@@ -1,14 +1,13 @@
 from datetime import datetime as dt
 
 
-now = dt.now()
-time = 1635653097.0
-time = dt.fromtimestamp(float(time))
-print(time)
+from src.extraClasses.classMember import Members
+from src.extraClasses.DB import Database
+from src.extraClasses.musicPlayer import MusicPlayer
+from src.extraClasses.Token import Token
+from bin.guildCommands.autoRemoveRequest import autoRemoveRequest
+from bin.guildCommands.forum import forum, checkTransform
+from bin.guildCommands.news import postNews
 
-d = time - now
-hours = d.seconds // 3600
-minutes = (d.seconds - (hours * 3600)) // 60
-print(hours)
-print(d)
-print('{0} дней {1} часов {2} минуты'.format(d.days, hours, minutes))
+
+for i in range(15):
