@@ -1,13 +1,15 @@
 from datetime import datetime as dt
+from time import mktime
 
 async def postNews(self):
-    print(self.time)
+    time = self.db.getValue('forum', 'time', 'userid', 1)
     channel = await self.client.fetch_channel(863159302213337179)
 
     now = dt.now()
-    if not self.time:
+    if not time:
         return
-    d = self.time - now
+    time = dt.fromtimestamp(float(time))
+    d = time - now
     hours = d.seconds // 3600
     minutes = (d.seconds - (hours * 3600)) // 60
 
@@ -31,7 +33,9 @@ async def setTime(self, message):
     answer = 'Не получилось установить время, бака!'
     try:
         content = message.content.split('!время')[1].strip()
-        self.time = dt.strptime(content, '%d.%m.%y %H:%M')
+        time = dt.strptime(content, '%d.%m.%y %H:%M')
+        time = mktime(time.timetuple())
+        self.db.update('forum', 'time', 'userid', time, 1)
         answer = 'Новое время утсановлено, нья!'
     except Exception as e:
         print(e)

@@ -60,7 +60,7 @@ async def checkTime():
     time.sleep(10)
     while True:
         asyncio.run_coroutine_threadsafe(postNews(usagi), usagi.loop)
-        time.sleep(60 * 30)
+        time.sleep(60 * 10)
 
 
 
@@ -79,7 +79,6 @@ class UsagiChan:
         #self.token = Token()
         self.lastTimeJoin = datetime.datetime.now()
         self.commnds = commands
-        self.time = None
         if not os.path.exists('files/Downloads'):
             os.mkdir('files/Downloads')
         os.chdir('files/Downloads')
