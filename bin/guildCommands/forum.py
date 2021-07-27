@@ -13,7 +13,7 @@ async def checkTransform(self):
     usersList = self.db.getAll(tableName = 'forum')
     for (userID, time) in usersList:
         if userID == 1:
-            return
+            continue
         time = datetime.fromtimestamp(float(time))
 
         if datetime.now() - time >= timedelta(days = 6, hours = 22):
