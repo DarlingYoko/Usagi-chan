@@ -186,6 +186,7 @@ texts = {
     'траеры': '<a:solider:840549758581473290><a:solider:840549758581473290><a:solider:840549758581473290><a:solider:840549758581473290>',
     'скилфул': '<:peepoawesome:849713245640065074>',
     '!вебивент': '<https://mhy.link/e182GFA6>',
+    '!примогемы': '<https://docs.google.com/spreadsheets/d/1DPJOtHTLB_y-MTcUheSBrMPFvV_EtBlcYA6Xy1F0R_c/edit?pli=1#gid=284498967>',
     '!форум': 'Ссылка на форум - <https://www.hoyolab.com>\nСсылка на логин бонус - <https://webstatic-sea.mihoyo.com/ys/event/signin-sea/index.html?act_id=e202102251931481&lang=ru-ru>',
     '!forum': 'Ссылка на форум - <https://www.hoyolab.com>\nСсылка на логин бонус - <https://webstatic-sea.mihoyo.com/ys/event/signin-sea/index.html?act_id=e202102251931481&lang=ru-ru>',
     '!карта': 'Интерактивная карта по Геншину: <https://webstatic-sea.mihoyo.com/app/ys-map-sea/?lang=ru-ru>',
