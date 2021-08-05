@@ -76,17 +76,15 @@ def setMessageEvent(self):
 
                                 answer = 'Успешно!'
 
-                        command = self.config['privateCommands']['simpleVoiceCommand']
-                        if msg.split()[0].lower() == command:
+                        if msg.split()[0].lower() == '!v':
                             if message.author.id == self.config['usersIDs'].getint('yokoId'):
                                 self.musicPlayer.simpleVoice(msg, command)
                                 answer = 'Проговорила'
 
-                        command = self.config['privateCommands']['simpleMessageCommand']
-                        if msg.split()[0].lower() == command:
+                        if msg.split()[0].lower() == '!m':
                             if message.author.id == self.config['usersIDs'].getint('yokoId'):
-                                channel = await self.client.fetch_channel(788546742677143552)
-                                await channel.send(msg.split(command)[1].strip())
+                                channel = await self.client.fetch_channel(msg.split()[1].strip())
+                                await channel.send(' '.join(msg.split()[2:]))
                                 answer = 'Написала'
 
                         if len(answer) >= 2000:
@@ -171,7 +169,7 @@ def setMessageEvent(self):
                                 delay = commands['guild']['moviegoers'][command]['delay']
 
 
-                        if command in commands['guild']['my'].keys():        
+                        if command in commands['guild']['my'].keys():
                             if message.author.id == self.config['usersIDs'].getint('yokoId'):
                                 if commands['guild']['my'][command]['function']:
                                     eval(commands['guild']['my'][command]['function'])

@@ -103,9 +103,18 @@ class MusicPlayer():
         self.reloadTracks()
 
     def downloadYoutube(self, URL):
-        with YoutubeDL(self.ydl_opts) as ydl:
-            ydl.download([URL])
-        self.reloadTracks()
+        ydl_opts = {'format': 'bestaudio'}
+        with YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info('https://www.youtube.com/watch?v=dVWlxP_Iu-4', download=False)
+            URL = info['formats'][0]['url']
+        #with YoutubeDL(self.ydl_opts) as ydl:
+            #ydl.download([URL])
+        #self.reloadTracks()
+        FFMPEG_OPTIONS = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
+        try:
+            self.vc.play(discord.FFmpegPCMAudio(URL, executable = 'C:/FFMPEG/ffmpeg.exe', **FFMPEG_OPTIONS))
+        except Exception as e:
+            print('ERROR - ', e)
 
     def simpleVoice(self, msg, command):
         file = '../audio/message.mp3'
