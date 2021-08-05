@@ -135,8 +135,8 @@ def setMessageEvent(self):
 
 
                         if command in commands['guild']['music'].keys():
-                            #channel = await self.client.fetch_channel(self.config['data'].getint('kadrovyChannel'))
-                            if True:#message.author in channel.members:
+                            channel = await self.client.fetch_channel(self.config['data'].getint('kadrovyChannel'))
+                            if message.author in channel.members:
                                 if commands['guild']['music'][command]['function']:
                                     eval(commands['guild']['music'][command]['function'])
                                     answer = commands['guild']['music'][command]['answer']
