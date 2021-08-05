@@ -112,7 +112,7 @@ usagi.setUsersChangedEvents()
 
 
 
-newLog('', '', '', '', new = 1)
+#newLog('', '', '', '', new = 1)
 #Thread(target = asyncio.run, args=(checkRequests(), )).start()
 #Thread(target = asyncio.run, args=(checkShedule(), )).start()
 #Thread(target = asyncio.run, args=(checkTokens(), )).start()
