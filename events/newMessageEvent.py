@@ -34,6 +34,7 @@ def setMessageEvent(self):
                 return
 
 
+
             guild = await self.client.fetch_guild(self.config['data']['guildId'])
             emojis = {858655225412845568: 859363980228427776, 858727806401904660: 858179418371784714}
             if message.channel.id in emojis.keys() and message.attachments:

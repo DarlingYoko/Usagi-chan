@@ -7,6 +7,7 @@ import spotipy
 import spotipy.oauth2 as oauth2
 from spotipy.oauth2 import SpotifyOAuth, SpotifyClientCredentials
 from youtube_search import YoutubeSearch
+from src.functions import createEmbed, getCurrentTime
 
 class MusicPlayer():
     def __init__(self):
@@ -17,6 +18,7 @@ class MusicPlayer():
         self.queryData = {}
         self.lastAudio = None
         self.count = 0
+        self.reacts = {1: '1️⃣', 2: '2️⃣', 3: '3️⃣', 4: '4️⃣', 5: '5️⃣', }
         CLIENT_ID = '118b5bcd3192449282a6618c19f70d50'
         CLIENT_SECRET = '6d3496fc16f54a1586036c06a813894a'
 
@@ -26,9 +28,10 @@ class MusicPlayer():
 
         self.sp = spotipy.Spotify(auth_manager = auth_manager)
 
-    def play(self, msg, command):
+    async def play(self, msg, command, message, client):
         URL = msg.split(command)[1].strip()
         answer = 'Не получилось добавить трек в очередь( Пипакрай'
+        channel = message.channel
         if 'youtube' in URL:
             answer = self.getYoutube(URL)
 
@@ -36,10 +39,43 @@ class MusicPlayer():
             answer = self.getSpoti(URL)
 
         else:
-            FFMPEG_OPTIONS = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
-            self.vc.play(discord.FFmpegPCMAudio(URL, **FFMPEG_OPTIONS))
+            title = 'Выбор трека'
+            results = YoutubeSearch(URL, max_results=5).to_dict()
+            description = '\n\n'.join(['{0}. {1} **[{2}]**'.format(i+1, results[i]['title'], results[i]['duration']) for i in range(5)])
+            footer = 'По МСК ' + getCurrentTime()
+            embed = createEmbed(title = title, description = description, footer = footer, color = 0xf08080)
+            question = await channel.send(embed = embed)
+            for i in range(len(self.reacts)):
+                await question.add_reaction(self.reacts[i + 1])
 
-        return answer
+            def check(reaction, user):
+                return user == message.author and str(reaction.emoji) in self.reacts.values()
+
+            try:
+                reaction, user = await client.wait_for('reaction_add', timeout=10.0, check=check)
+            except:
+                title = 'Ты не выбрал трек за отведённое время, бака!'
+                description = ''
+
+            else:
+                trackID = 0
+                for key, value in self.reacts.items():
+                    if value == str(reaction.emoji):
+                        trackID = key
+
+                title = 'Трек под номером {} был выбран и добавлен в очередь, нья!'.format(reaction)
+                description = '{0} **[{1}]**'.format(results[trackID]['title'], results[trackID]['duration'])
+                self.getYoutube('https://www.youtube.com' + results[trackID]['url_suffix'])
+                answer = ''
+
+
+            embed = createEmbed(title = title, description = description, footer = footer, color = 0xf08080)
+            await question.edit(embed = embed)
+            await question.clear_reactions()
+
+
+
+        await channel.send(answer)
 
     def pauseAudio(self):
         self.vc.pause()

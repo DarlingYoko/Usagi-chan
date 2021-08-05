@@ -66,8 +66,8 @@ commands = {
         },
         'music': {
             '!p':{
-                'answer': 'self.musicPlayer.play(msg, command)',
-                'function': None,
+                'answer': '',
+                'function': 'asyncio.run_coroutine_threadsafe(self.musicPlayer.play(msg, command, message, self.client), self.loop)',
                 'delay': None,
             },
             '!pause':{
