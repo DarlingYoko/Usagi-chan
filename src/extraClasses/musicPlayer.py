@@ -112,7 +112,7 @@ class MusicPlayer():
         #self.reloadTracks()
         FFMPEG_OPTIONS = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
         try:
-            self.vc.play(discord.FFmpegPCMAudio(URL, executable = 'C:/FFMPEG/ffmpeg.exe', **FFMPEG_OPTIONS))
+            self.vc.play(discord.FFmpegPCMAudio(URL, **FFMPEG_OPTIONS))
         except Exception as e:
             print('ERROR - ', e)
 
