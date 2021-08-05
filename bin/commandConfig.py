@@ -185,7 +185,7 @@ texts = {
     'голдас': '<:peepeSword:858146065069244447>',
     'траеры': '<a:solider:840549758581473290><a:solider:840549758581473290><a:solider:840549758581473290><a:solider:840549758581473290>',
     'скилфул': '<:peepoawesome:849713245640065074>',
-    '!вебивент': '<https://mhy.link/e182GFA6>',
+    '!вебивент': '<https://webstatic-sea.mihoyo.com/ys/event/e20210805-yoimiya/index.html?mhy_auth_required=true&mhy_presentation_style=fullscreen?utm_source=sns&utm_medium=vk&lang=ru-ru>',
     '!примогемы': '<https://docs.google.com/spreadsheets/d/1DPJOtHTLB_y-MTcUheSBrMPFvV_EtBlcYA6Xy1F0R_c/edit?pli=1#gid=284498967>',
     '!форум': 'Ссылка на форум - <https://www.hoyolab.com>\nСсылка на логин бонус - <https://webstatic-sea.mihoyo.com/ys/event/signin-sea/index.html?act_id=e202102251931481&lang=ru-ru>',
     '!forum': 'Ссылка на форум - <https://www.hoyolab.com>\nСсылка на логин бонус - <https://webstatic-sea.mihoyo.com/ys/event/signin-sea/index.html?act_id=e202102251931481&lang=ru-ru>',
