@@ -3,28 +3,43 @@ from youtube_dl import YoutubeDL
 from gtts import gTTS
 from threading import Thread
 from random import randint
-#from src.downloadSpoti import downloadSpoti as DS
+import spotipy
+import spotipy.oauth2 as oauth2
+from spotipy.oauth2 import SpotifyOAuth, SpotifyClientCredentials
+from youtube_search import YoutubeSearch
 
 class MusicPlayer():
     def __init__(self):
         self.vc = None
         self.repeat = None
         self.pause = None
-        self.audioList = []
+        self.queryList = []
+        self.queryData = {}
         self.lastAudio = None
-        self.ydl_opts = {
-                'format': 'bestaudio/best',
-                'outtmpl': '%(title)s.%(ext)s',
-                'output_extension': 'mp3',
-            }
+        self.count = 0
+        CLIENT_ID = '118b5bcd3192449282a6618c19f70d50'
+        CLIENT_SECRET = '6d3496fc16f54a1586036c06a813894a'
+
+        auth_manager = SpotifyClientCredentials(client_id = CLIENT_ID,
+                                                client_secret = CLIENT_SECRET)
+
+
+        self.sp = spotipy.Spotify(auth_manager = auth_manager)
 
     def play(self, msg, command):
         URL = msg.split(command)[1].strip()
-        if 'spotify' in URL:
-            Thread(target = self.downloadSpoti, args=(URL, )).start()
+        answer = 'Не получилось добавить трек в очередь( Пипакрай'
+        if 'youtube' in URL:
+            answer = self.getYoutube(URL)
+
+        elif 'spotify' in URL:
+            answer = self.getSpoti(URL)
 
         else:
-            Thread(target = self.downloadYoutube, args=(URL, )).start()
+            FFMPEG_OPTIONS = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
+            self.vc.play(discord.FFmpegPCMAudio(URL, executable = 'C:/FFMPEG/ffmpeg.exe', **FFMPEG_OPTIONS))
+
+        return answer
 
     def pauseAudio(self):
         self.vc.pause()
@@ -37,28 +52,25 @@ class MusicPlayer():
     def stop(self):
         self.vc.stop()
         self.repeat = None
-        self.audioList = []
+        self.queryList = []
         self.lastAudio = None
 
     def shuffle(self):
-        random.shuffle(self.audioList)
+        random.shuffle(self.queryList)
 
     def nowPlay(self):
         answer = 'Ничего не играет'
         if self.lastAudio:
-            answer = 'Сейчас играет - {0}'.format(self.lastAudio.split('/')[2].split('.')[0])
+            answer = 'Сейчас играет - {0}'.format(self.queryData[self.lastAudio]['title'])
         return answer
 
     def skip(self):
-        if len(self.audioList) > 0:
+        if len(self.queryList) > 0:
             if self.vc.is_playing():
                 self.vc.stop()
-                time.sleep(2)
-                os.remove(self.lastAudio)
+                del self.queryData[self.lastAudio]
 
-            self.lastAudio = self.audioList.pop(0)
-            self.vc.play(discord.FFmpegPCMAudio(source = self.lastAudio))
-            answer = 'Песенка скипнута\nСейчас играет - {0}'.format(self.lastAudio.split('/')[2].split('.')[0])
+            answer = 'Песенка скипнута\nСейчас играет - {0}'.format(self.queryData[self.queryList[0]]['title'])
         else:
             self.vc.stop()
             self.lastAudio = None
@@ -66,11 +78,11 @@ class MusicPlayer():
         return answer
 
     def query(self):
-        audioList = ['{0}. {1}'.format(i+1, self.audioList[i].split('/')[2].split('.')[0]) for i in range(len(self.audioList))]
-        if len(self.audioList) == 0 and not self.lastAudio:
+        queryList = ['{0}. {1}'.format(i+1, self.queryData[self.queryList[i]]['title']) for i in range(len(self.queryList))]
+        if len(self.queryList) == 0 and not self.lastAudio:
             answer = 'Пусто('
         else:
-            answer = 'Сейчас играет - {0}\n{1}'.format(self.lastAudio.split('/')[2].split('.')[0], '\n'.join(audioList))
+            answer = 'Сейчас играет - {0}\n{1}'.format(self.queryData[self.lastAudio]['title'], '\n'.join(queryList))
         return answer
 
     def repeat(self, msg, command):
@@ -86,35 +98,38 @@ class MusicPlayer():
         channel = await client.fetch_channel(msg.split(command)[1].strip())
         self.vc = await channel.connect()
 
-    def reloadTracks(self):
-        for file in os.listdir():
-            if file == 'Temp' or file == 'logs.txt':
-                continue
-            name = '../audio/' + file
-            try:
-                os.rename(file, name)
-            except:
-                os.remove(file)
-            print(name)
-            self.audioList.append(name)
+    def getSpoti(self, URL):
+        print(URL)
+        trackID = URL[31:54]
+        trackInfo = self.sp.track(trackID)
 
-    def downloadSpoti(self, URL):
-        DS(URL)
-        self.reloadTracks()
+        track = trackInfo['album']['artists'][0]['name'] + ' ' + trackInfo['album']['name']
 
-    def downloadYoutube(self, URL):
-        ydl_opts = {'format': 'bestaudio'}
-        with YoutubeDL(ydl_opts) as ydl:
-            info = ydl.extract_info('https://www.youtube.com/watch?v=dVWlxP_Iu-4', download=False)
+        results = YoutubeSearch(track, max_results=1).to_dict()
+
+        return self.getYoutube('https://www.youtube.com' + results[0]['url_suffix'])
+
+
+    def getYoutube(self, URL):
+        #ydl_opts = {'format': 'bestaudio'}
+        with YoutubeDL() as ydl:
+            info = ydl.extract_info(URL, download=False)
             URL = info['formats'][0]['url']
-        #with YoutubeDL(self.ydl_opts) as ydl:
-            #ydl.download([URL])
-        #self.reloadTracks()
-        FFMPEG_OPTIONS = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
-        try:
-            self.vc.play(discord.FFmpegPCMAudio(URL, **FFMPEG_OPTIONS))
-        except Exception as e:
-            print('ERROR - ', e)
+            title = info['title']
+            duration = info['duration']
+
+        track = 'Track {}'.format(self.count)
+        self.count += 1
+        self.queryList.append(track)
+        self.queryData[track] = {
+                            'title': title,
+                            'URL': URL,
+                            'duration': duration,
+                            }
+
+        return 'Добавила трек в очередь, Нья!'
+
+
 
     def simpleVoice(self, msg, command):
         file = '../audio/message.mp3'
@@ -128,16 +143,14 @@ class MusicPlayer():
             if not self.vc.is_playing() and self.repeat and self.lastAudio and not self.pause:
                 self.vc.play(discord.FFmpegPCMAudio(source = self.lastAudio))
 
-            elif not self.vc.is_playing() and not self.repeat and len(self.audioList) > 0 and not self.pause:
+            elif not self.vc.is_playing() and not self.repeat and len(self.queryList) > 0 and not self.pause:
                 if self.lastAudio:
-                    os.remove(self.lastAudio)
-                self.lastAudio = self.audioList.pop(0)
+                    del self.queryData[self.lastAudio]
+                self.lastAudio = self.queryList.pop(0)
                 print('начинаю играть')
-                try:
-                    self.vc.play(discord.FFmpegPCMAudio(source = self.lastAudio))
-                except Exception as e:
-                    print(e)
 
+                FFMPEG_OPTIONS = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
+                self.vc.play(discord.FFmpegPCMAudio(self.queryData[self.lastAudio]['URL'], executable = 'C:/FFMPEG/ffmpeg.exe', **FFMPEG_OPTIONS))
 
         except Exception as e:
             pass

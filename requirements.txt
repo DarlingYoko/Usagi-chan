@@ -18,3 +18,5 @@ spotipy
 async-timeout
 asyncio
 selenium
+spotipy
+youtube_search

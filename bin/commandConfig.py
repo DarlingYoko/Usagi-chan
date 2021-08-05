@@ -26,7 +26,7 @@ commands = {
             '!np':{
                 'answer': 'self.musicPlayer.nowPlay()',
                 'function': None,
-                'delay': 5,
+                'delay': None,
             },
             '!q':{
                 'answer': 'self.musicPlayer.query()',
@@ -66,8 +66,8 @@ commands = {
         },
         'music': {
             '!p':{
-                'answer': 'Добавила песенку в плейлист',
-                'function': 'self.musicPlayer.play(msg, command)',
+                'answer': 'self.musicPlayer.play(msg, command)',
+                'function': None,
                 'delay': None,
             },
             '!pause':{

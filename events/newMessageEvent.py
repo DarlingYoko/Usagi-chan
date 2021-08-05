@@ -134,8 +134,8 @@ def setMessageEvent(self):
 
 
                         if command in commands['guild']['music'].keys():
-                            channel = await self.client.fetch_channel(self.config['data'].getint('kadrovyChannel'))
-                            if message.author in channel.members:
+                            #channel = await self.client.fetch_channel(self.config['data'].getint('kadrovyChannel'))
+                            if True:#message.author in channel.members:
                                 if commands['guild']['music'][command]['function']:
                                     eval(commands['guild']['music'][command]['function'])
                                     answer = commands['guild']['music'][command]['answer']
@@ -190,9 +190,9 @@ def setMessageEvent(self):
 
             except discord.errors.HTTPException as e:
                 pass
-            except Exception as e:
-                exc_type, exc_obj, exc_tb = sys.exc_info()
-                print('New error:\ntype - {0}, line - {1}, error - {2}\n'.format(exc_type, exc_tb.tb_lineno, e))
+            #except Exception as e:
+                #exc_type, exc_obj, exc_tb = sys.exc_info()
+                #print('New error:\ntype - {0}, line - {1}, error - {2}\n'.format(exc_type, exc_tb.tb_lineno, exc_obj))
 
 
 

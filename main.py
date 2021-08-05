@@ -79,9 +79,6 @@ class UsagiChan:
         #self.token = Token()
         self.lastTimeJoin = datetime.datetime.now()
         self.commnds = commands
-        if not os.path.exists('files/Downloads'):
-            os.mkdir('files/Downloads')
-        os.chdir('files/Downloads')
 
     def checkConnection(self):
         @self.client.event
@@ -120,7 +117,7 @@ newLog('', '', '', '', new = 1)
 #Thread(target = asyncio.run, args=(checkShedule(), )).start()
 #Thread(target = asyncio.run, args=(checkTokens(), )).start()
 #Thread(target = asyncio.run, args=(checkSpam(), )).start()
-Thread(target = asyncio.run, args=(notificationForum(), )).start()
+#Thread(target = asyncio.run, args=(notificationForum(), )).start()
 Thread(target = asyncio.run, args=(checkTransformator(), )).start()
 Thread(target = asyncio.run, args=(checkTime(), )).start()
 Thread(target = checkAudio).start()
