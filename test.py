@@ -30,13 +30,45 @@ for track in track_info['items']:
         print(track['track']['name'])
 
     print()
-'''
+
 from youtube_dl import YoutubeDL
-a = ['https://www.youtube.com/watch?v=QTIkudYT3mg',
-    'https://www.youtube.com/watch?v=iVj5nLZZVN0',
-    'https://www.youtube.com/watch?v=ZZjnfWx0cvw',
-    'https://www.youtube.com/watch?v=hcAyxsR8DcU',]
+a = 'https://www.youtube.com/watch_videos?video_ids=QTIkudYT3mg,ZZjnfWx0cvw'
 with YoutubeDL() as ydl:
-    for track in a:
-        info = ydl.extract_info(track, download=False)
-        print(info)
+    info = ydl.extract_info(a, download=False)
+    print(info['entries'])
+'''
+
+from ytpy import YoutubeClient
+import asyncio
+import aiohttp
+
+async def ytSearch(loop):
+    session = aiohttp.ClientSession()
+
+    client = YoutubeClient(session)
+
+    response = await client.search('A$AP Rocky Fukk Sleep (feat. FKA twigs)')
+    print(response)
+
+    await session.close()
+
+loop = asyncio.get_event_loop()
+loop.run_until_complete(ytSearch(loop))
+'''
+def construct_youtube_get_video_info_url(video_id):
+    """
+    Construct a YouTube API url for the get_video_id endpoint from a video ID.
+    """
+    base_parsed_api_url = urlparse("https://www.youtube.com/get_video_info")
+    new_query = urlencode({"video_id": video_id})
+
+    # As documented in the core Python docs, ._replace() is not internal, the
+    # leading underscore is just to prevent name collisions with field names.
+    new_parsed_api_url = base_parsed_api_url._replace(query=new_query)
+    new_api_url = urlunparse(new_parsed_api_url)
+
+    return new_api_url
+
+
+print(construct_youtube_get_video_info_url('QTIkudYT3mg'))
+'''

@@ -1,4 +1,4 @@
-import sys, discord, os, subprocess, random, time
+import sys, discord, os, subprocess, random, time, asyncio, aiohttp
 from youtube_dl import YoutubeDL
 from gtts import gTTS
 from threading import Thread
@@ -8,6 +8,18 @@ import spotipy.oauth2 as oauth2
 from spotipy.oauth2 import SpotifyOAuth, SpotifyClientCredentials
 from youtube_search import YoutubeSearch
 from src.functions import createEmbed, getCurrentTime
+from ytpy import YoutubeClient
+
+async def youtubeSearch(name, max_results = 1):
+    session = aiohttp.ClientSession()
+
+    client = YoutubeClient(session)
+
+    response = await client.search(name, max_results = max_results)
+
+    await session.close()
+
+    return response
 
 class MusicPlayer():
     def __init__(self, client, config):
@@ -30,19 +42,28 @@ class MusicPlayer():
 
         self.sp = spotipy.Spotify(auth_manager = auth_manager)
 
-
     async def play(self, msg, command, message):
         URL = msg.split(command)[1].strip()
         user = message.author.name.split('#')[0]
         answer = 'Не получилось добавить трек в очередь( Пипакрай'
         channel = message.channel
+        loop = asyncio.get_running_loop()
+
+
         if 'youtube' in URL:
+            #await loop.run_in_executor(None, self.getYoutube(URL, user))
+            #self.client.loop.create_task(self.getYoutube(URL, user))
             await self.getYoutube(URL, user)
             answer = ''
 
+
         elif 'spotify' in URL:
+            #Thread(target = asyncio.run, args=(self.getSpoti(URL, user), )).start()
+            #await loop.run_in_executor(None, self.getSpoti(URL, user))
             await self.getSpoti(URL, user)
+            #self.client.loop.create_task(self.getSpoti(URL, user))
             answer = ''
+
 
         else:
             title = 'Выбор трека'
@@ -172,9 +193,11 @@ class MusicPlayer():
                     trackName = track['track']['name']
 
                 results = YoutubeSearch(trackName, max_results=1).to_dict()
-                res.append('https://www.youtube.com' + results[0]['url_suffix'])
+                print(results)
+                res.append(results[0]['url_suffix'].split('/watch?v=')[1])
 
-            await self.getYoutube(res, user, 1)
+            url = 'https://www.youtube.com/watch_videos?video_ids='
+            await self.getYoutube(url + ','.join(res), user, 1)
             answer = 'Добавила плейлист в очередь, Нья!'
             await message.edit(content = answer)
 
@@ -197,7 +220,7 @@ class MusicPlayer():
         mes = 'Начала добавлять трек , Нья!'
         answer = 'Добавила трек в очередь, Нья!'
 
-        if 'list' in URL or type(URL) == type([]):
+        if 'list' in URL:
             mes = 'Начала добавлять плейлист, Нья!'
             answer = 'Добавила плейлист в очередь, Нья!'
 
@@ -210,24 +233,15 @@ class MusicPlayer():
             'ignoreerrors': True,
         }
 
+        with YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(URL, download=False)
 
-        if 'list' in URL and type(URL) == type(''):
-            with YoutubeDL(ydl_opts) as ydl:
-                info = ydl.extract_info(URL, download=False)
-
+        if 'list' in URL or 'video_ids' in URL:
             for track in info['entries']:
                 self.getData(track, user)
 
-        elif type(URL) == type([]):
-            with YoutubeDL(ydl_opts) as ydl:
-                for track in URL:
-                    info = ydl.extract_info(track, download=False)
-                    self.getData(info, user)
-
         else:
-            with YoutubeDL(ydl_opts) as ydl:
-                info = ydl.extract_info(URL, download=False)
-                self.getData(info, user)
+            self.getData(info, user)
 
 
         if not question:
@@ -262,7 +276,7 @@ class MusicPlayer():
                 print('начинаю играть')
 
                 FFMPEG_OPTIONS = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
-                self.vc.play(discord.FFmpegPCMAudio(self.queryData[self.lastAudio]['URL'], **FFMPEG_OPTIONS))
+                self.vc.play(discord.FFmpegPCMAudio(self.queryData[self.lastAudio]['URL'], **FFMPEG_OPTIONS, executable = 'C:/FFMPEG/bin/ffmpeg.exe'))
 
         except Exception as e:
             pass

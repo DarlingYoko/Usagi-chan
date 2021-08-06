@@ -11,6 +11,7 @@ from bin.guildCommands.news import postNews
 from bin.privatCommands.updateShedule import checkNotification
 from bin.commandConfig import commands
 from events.usersChangedEvents import reportSpam
+from discord.ext import tasks
 
 async def checkRequests():
     while True:
@@ -26,7 +27,7 @@ async def checkShedule():
 def checkAudio():
     time.sleep(10)
     while True:
-        time.sleep(1)
+        time.sleep(5)
         usagi.musicPlayer.checkPlay()
 
 async def checkTokens():
@@ -65,7 +66,7 @@ async def checkTime():
 
 
 
-class UsagiChan:
+class UsagiChan(discord.Client):
 
     def __init__(self):
         self.config = loadConfig('src/config')
@@ -89,6 +90,10 @@ class UsagiChan:
             self.loop = asyncio.get_event_loop()
             await self.members.fillMembers(self.client)
             self.musicPlayer = MusicPlayer(self.client, self.config)
+            #self.my_background_task.start("ASDASDASD")
+            #self.my_background_task.stop()
+
+
 
 
     def run(self):
@@ -100,6 +105,11 @@ class UsagiChan:
     from events.newReactionEvent import setNewReactionEvent
     from events.removeReactionEvent import setRemoveReactionEvent
     from events.usersChangedEvents import setUsersChangedEvents
+
+
+    #@tasks.loop() # task runs every 60 seconds
+    #async def my_background_task(self, name):
+    #    print(name)
 
 
 
