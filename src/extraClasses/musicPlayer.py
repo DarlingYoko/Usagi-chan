@@ -8,18 +8,9 @@ import spotipy.oauth2 as oauth2
 from spotipy.oauth2 import SpotifyOAuth, SpotifyClientCredentials
 from youtube_search import YoutubeSearch
 from src.functions import createEmbed, getCurrentTime
-from ytpy import YoutubeClient
 
-async def youtubeSearch(name, max_results = 1):
-    session = aiohttp.ClientSession()
 
-    client = YoutubeClient(session)
 
-    response = await client.search(name, max_results = max_results)
-
-    await session.close()
-
-    return response
 
 class MusicPlayer():
     def __init__(self, client, config):
