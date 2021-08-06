@@ -24,8 +24,9 @@ async def checkShedule():
         asyncio.run_coroutine_threadsafe(checkNotification(usagi), usagi.loop)
 
 def checkAudio():
+    time.sleep(10)
     while True:
-        time.sleep(5)
+        time.sleep(1)
         usagi.musicPlayer.checkPlay()
 
 async def checkTokens():
@@ -75,7 +76,6 @@ class UsagiChan:
         self.LOGGER = getLogger()
         self.members = Members(self.config['data']['guildId'])
         self.db = Database(self)
-        self.musicPlayer = MusicPlayer()
         #self.token = Token()
         self.lastTimeJoin = datetime.datetime.now()
         self.commnds = commands
@@ -88,6 +88,7 @@ class UsagiChan:
             await self.client.change_presence(status=discord.Status.online, activity=discord.Game("ver 2.0 | Нья |"))
             self.loop = asyncio.get_event_loop()
             await self.members.fillMembers(self.client)
+            self.musicPlayer = MusicPlayer(self.client, self.config)
 
 
     def run(self):

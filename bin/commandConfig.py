@@ -67,7 +67,7 @@ commands = {
         'music': {
             '!p':{
                 'answer': '',
-                'function': 'asyncio.run_coroutine_threadsafe(self.musicPlayer.play(msg, command, message, self.client), self.loop)',
+                'function': 'asyncio.run_coroutine_threadsafe(self.musicPlayer.play(msg, command, message), self.loop)',
                 'delay': None,
             },
             '!pause':{
@@ -128,7 +128,7 @@ commands = {
         'my':{
             '!connect':{
                 'answer': 'Подключилась',
-                'function': 'asyncio.run_coroutine_threadsafe(self.musicPlayer.connect(self.client, msg, command), self.loop)',
+                'function': 'asyncio.run_coroutine_threadsafe(self.musicPlayer.connect(msg, command), self.loop)',
                 'delay': 5,
             },
             '!remove':{

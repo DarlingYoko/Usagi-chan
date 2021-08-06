@@ -10,7 +10,7 @@ from youtube_search import YoutubeSearch
 from src.functions import createEmbed, getCurrentTime
 
 class MusicPlayer():
-    def __init__(self):
+    def __init__(self, client, config):
         self.vc = None
         self.repeat = None
         self.pause = None
@@ -18,7 +18,9 @@ class MusicPlayer():
         self.queryData = {}
         self.lastAudio = None
         self.count = 0
-        self.reacts = {1: '1️⃣', 2: '2️⃣', 3: '3️⃣', 4: '4️⃣', 5: '5️⃣', }
+        self.client = client
+        self.config = config
+        self.reacts = {1: '1️⃣', 2: '2️⃣', 3: '3️⃣', 4: '4️⃣', 5: '5️⃣'}
         CLIENT_ID = '118b5bcd3192449282a6618c19f70d50'
         CLIENT_SECRET = '6d3496fc16f54a1586036c06a813894a'
 
@@ -28,18 +30,23 @@ class MusicPlayer():
 
         self.sp = spotipy.Spotify(auth_manager = auth_manager)
 
-    async def play(self, msg, command, message, client):
+
+    async def play(self, msg, command, message):
         URL = msg.split(command)[1].strip()
+        user = message.author.name.split('#')[0]
         answer = 'Не получилось добавить трек в очередь( Пипакрай'
         channel = message.channel
         if 'youtube' in URL:
-            answer = self.getYoutube(URL)
+            await self.getYoutube(URL, user)
+            answer = ''
 
         elif 'spotify' in URL:
-            answer = self.getSpoti(URL)
+            await self.getSpoti(URL, user)
+            answer = ''
 
         else:
             title = 'Выбор трека'
+            trackID = -1
             results = YoutubeSearch(URL, max_results=5).to_dict()
             description = '\n\n'.join(['{0}. {1} **[{2}]**'.format(i+1, results[i]['title'], results[i]['duration']) for i in range(5)])
             footer = 'По МСК ' + getCurrentTime()
@@ -52,26 +59,29 @@ class MusicPlayer():
                 return user == message.author and str(reaction.emoji) in self.reacts.values()
 
             try:
-                reaction, user = await client.wait_for('reaction_add', timeout=10.0, check=check)
+                reaction, user = await self.client.wait_for('reaction_add', timeout=60.0, check=check)
             except:
                 title = 'Ты не выбрал трек за отведённое время, бака!'
                 description = ''
 
             else:
-                trackID = 0
+
                 for key, value in self.reacts.items():
                     if value == str(reaction.emoji):
-                        trackID = key
+                        trackID = key - 1
 
-                title = 'Трек под номером {} был выбран и добавлен в очередь, нья!'.format(reaction)
+                title = 'Трек под номером {} добавляется в очередь, Нья!'.format(reaction)
                 description = '{0} **[{1}]**'.format(results[trackID]['title'], results[trackID]['duration'])
-                self.getYoutube('https://www.youtube.com' + results[trackID]['url_suffix'])
-                answer = ''
 
 
-            embed = createEmbed(title = title, description = description, footer = footer, color = 0xf08080)
+            answer = ''
+
+
+            embed = createEmbed(title = title, description = description, footer = footer, color = 0xe00000)
             await question.edit(embed = embed)
             await question.clear_reactions()
+            if trackID != -1:
+                await self.getYoutube('https://www.youtube.com' + results[trackID]['url_suffix'], user, question)
 
 
 
@@ -97,28 +107,38 @@ class MusicPlayer():
     def nowPlay(self):
         answer = 'Ничего не играет'
         if self.lastAudio:
-            answer = 'Сейчас играет - {0}'.format(self.queryData[self.lastAudio]['title'])
+            answer = 'Сейчас играет - **{0}**, добавил(-a) **{1}** `{2}`'.format(self.queryData[self.lastAudio]['title'],
+                                                                                self.queryData[self.lastAudio]['user'],
+                                                                                self.queryData[self.lastAudio]['duration'])
         return answer
 
     def skip(self):
         if len(self.queryList) > 0:
-            if self.vc.is_playing():
-                self.vc.stop()
-                del self.queryData[self.lastAudio]
+            self.vc.stop()
+            answer = 'Песенка скипнута\nСейчас играет - **{0}**, добавил(-a) **{1}** `{2}`'.format(self.queryData[self.queryList[0]]['title'],
+                                                                                                    self.queryData[self.queryList[0]]['user'],
+                                                                                                    self.queryData[self.queryList[0]]['duration'],)
 
-            answer = 'Песенка скипнута\nСейчас играет - {0}'.format(self.queryData[self.queryList[0]]['title'])
+
         else:
             self.vc.stop()
-            self.lastAudio = None
             answer = 'Больше песенок нет('
+            self.lastAudio = None
         return answer
 
     def query(self):
-        queryList = ['{0}. {1}'.format(i+1, self.queryData[self.queryList[i]]['title']) for i in range(len(self.queryList))]
+        queryList = ['`[{0}]` **{1}**, добавил(-a) **{2}** `{3}`'.format(i+1,
+                                                        self.queryData[self.queryList[i]]['title'],
+                                                        self.queryData[self.queryList[i]]['user'],
+                                                        self.queryData[self.queryList[i]]['duration'],)
+                                                    for i in range(len(self.queryList))]
         if len(self.queryList) == 0 and not self.lastAudio:
             answer = 'Пусто('
         else:
-            answer = 'Сейчас играет - {0}\n{1}'.format(self.queryData[self.lastAudio]['title'], '\n'.join(queryList))
+            answer = 'Сейчас играет - **{0}**, добавил(-a) **{2}** `{3}`\n{1}'.format(self.queryData[self.lastAudio]['title'],
+                                                                        '\n'.join(queryList),
+                                                                        self.queryData[self.lastAudio]['user'],
+                                                                        self.queryData[self.lastAudio]['duration'], )
         return answer
 
     def repeat(self, msg, command):
@@ -130,40 +150,95 @@ class MusicPlayer():
             answer = 'Больше не повторяю песню'
         return answer
 
-    async def connect(self, client, msg, command):
-        channel = await client.fetch_channel(msg.split(command)[1].strip())
+    async def connect(self, msg, command):
+        channel = await self.client.fetch_channel(msg.split(command)[1].strip())
         self.vc = await channel.connect()
 
-    def getSpoti(self, URL):
-        print(URL)
-        trackID = URL[31:54]
-        trackInfo = self.sp.track(trackID)
+    async def getSpoti(self, URL, user):
+        channel = await self.client.fetch_channel(858145829158912030)
 
-        track = trackInfo['album']['artists'][0]['name'] + ' ' + trackInfo['album']['name']
+        if 'playlist' in URL:
+            mes = 'Начала добавлять плейлист, Нья!'
+            message = await channel.send(mes)
+            playlistID = URL[34:56]
+            playlist_info = self.sp.playlist_tracks(playlistID)
+            res = []
+            for track in playlist_info['items']:
+                trackName = ''
+                if track['track']['id']:
+                    trackInfo = self.sp.track(track['track']['id'])
+                    trackName = trackInfo['album']['artists'][0]['name'] + ' ' + trackInfo['name']
+                else:
+                    trackName = track['track']['name']
 
-        results = YoutubeSearch(track, max_results=1).to_dict()
+                results = YoutubeSearch(trackName, max_results=1).to_dict()
+                res.append('https://www.youtube.com' + results[0]['url_suffix'])
 
-        return self.getYoutube('https://www.youtube.com' + results[0]['url_suffix'])
+            await self.getYoutube(res, user, 1)
+            answer = 'Добавила плейлист в очередь, Нья!'
+            await message.edit(content = answer)
 
 
-    def getYoutube(self, URL):
+        else:
+            trackID = URL[31:54]
+            trackInfo = self.sp.track(trackID)
+            track = trackInfo['album']['artists'][0]['name'] + ' ' + trackInfo['name']
+            results = YoutubeSearch(track, max_results=1).to_dict()
+            await self.getYoutube('https://www.youtube.com' + results[0]['url_suffix'], user)
+
+
+
+
+
+    async def getYoutube(self, URL, user, question = None):
+
+        channel = await self.client.fetch_channel(858145829158912030)
+
+        mes = 'Начала добавлять трек , Нья!'
+        answer = 'Добавила трек в очередь, Нья!'
+
+        if 'list' in URL or type(URL) == type([]):
+            mes = 'Начала добавлять плейлист, Нья!'
+            answer = 'Добавила плейлист в очередь, Нья!'
+
         #ydl_opts = {'format': 'bestaudio'}
-        with YoutubeDL() as ydl:
-            info = ydl.extract_info(URL, download=False)
-            URL = info['formats'][0]['url']
-            title = info['title']
-            duration = info['duration']
 
-        track = 'Track {}'.format(self.count)
-        self.count += 1
-        self.queryList.append(track)
-        self.queryData[track] = {
-                            'title': title,
-                            'URL': URL,
-                            'duration': duration,
-                            }
+        if not question:
+            message = await channel.send(mes)
 
-        return 'Добавила трек в очередь, Нья!'
+        ydl_opts = {
+            'ignoreerrors': True,
+        }
+
+
+        if 'list' in URL and type(URL) == type(''):
+            with YoutubeDL(ydl_opts) as ydl:
+                info = ydl.extract_info(URL, download=False)
+
+            for track in info['entries']:
+                self.getData(track, user)
+
+        elif type(URL) == type([]):
+            with YoutubeDL(ydl_opts) as ydl:
+                for track in URL:
+                    info = ydl.extract_info(track, download=False)
+                    self.getData(info, user)
+
+        else:
+            with YoutubeDL(ydl_opts) as ydl:
+                info = ydl.extract_info(URL, download=False)
+                self.getData(info, user)
+
+
+        if not question:
+            await message.edit(content = answer)
+        elif question != 1:
+            embed = question.embeds[0].to_dict()
+            embed = createEmbed(title = embed['title'][:8] + ' был выбран и добавлен в очередь, нья!',
+                                description = embed['description'],
+                                footer = embed['footer']['text'],
+                                color = 0xf08080)
+            await question.edit(embed = embed)
 
 
 
@@ -177,7 +252,8 @@ class MusicPlayer():
     def checkPlay(self):
         try:
             if not self.vc.is_playing() and self.repeat and self.lastAudio and not self.pause:
-                self.vc.play(discord.FFmpegPCMAudio(source = self.lastAudio))
+                FFMPEG_OPTIONS = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
+                self.vc.play(discord.FFmpegPCMAudio(source = self.lastAudio, **FFMPEG_OPTIONS))
 
             elif not self.vc.is_playing() and not self.repeat and len(self.queryList) > 0 and not self.pause:
                 if self.lastAudio:
@@ -190,3 +266,21 @@ class MusicPlayer():
 
         except Exception as e:
             pass
+
+
+    def addTrack(self, title, URL, duration, user):
+        track = 'Track {}'.format(self.count)
+        self.count += 1
+        self.queryList.append(track)
+        self.queryData[track] = {
+                            'title': title,
+                            'URL': URL,
+                            'duration': duration,
+                            'user': user,
+                            }
+
+    def getData(self, info, user):
+        URL = info['formats'][0]['url']
+        title = info['title']
+        duration = info['duration']
+        self.addTrack(title, URL, duration, user)
