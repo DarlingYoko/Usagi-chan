@@ -370,7 +370,7 @@ class MusicPlayer():
                 print('начинаю играть')
 
                 FFMPEG_OPTIONS = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
-                self.vc.play(discord.FFmpegPCMAudio(self.queryData[self.lastAudio]['URL'], **FFMPEG_OPTIONS, executable = 'C:/FFMPEG/bin/ffmpeg.exe'))
+                self.vc.play(discord.FFmpegPCMAudio(self.queryData[self.lastAudio]['URL'], **FFMPEG_OPTIONS))#, executable = 'C:/FFMPEG/bin/ffmpeg.exe'))
 
         except Exception as e:
             pass
