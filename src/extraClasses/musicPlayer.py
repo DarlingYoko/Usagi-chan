@@ -82,11 +82,11 @@ class MusicPlayer():
             emojiFive = self.client.get_emoji(873653970994888704)
 
 
-            btn1 = Button(style=ButtonStyle.gray, emoji = emojiOne, id = '1')
-            btn2 = Button(style=ButtonStyle.gray, emoji = emojiTwo, id = '2')
-            btn3 = Button(style=ButtonStyle.gray, emoji = emojiThree, id = '3')
-            btn4 = Button(style=ButtonStyle.gray, emoji = emojiFour, id = '4')
-            btn5 = Button(style=ButtonStyle.gray, emoji = emojiFive, id = '5')
+            btn1 = Button(style=ButtonStyle.gray, emoji = emojiOne, id = '0')
+            btn2 = Button(style=ButtonStyle.gray, emoji = emojiTwo, id = '1')
+            btn3 = Button(style=ButtonStyle.gray, emoji = emojiThree, id = '2')
+            btn4 = Button(style=ButtonStyle.gray, emoji = emojiFour, id = '3')
+            btn5 = Button(style=ButtonStyle.gray, emoji = emojiFive, id = '4')
             components=[[btn1, btn2, btn3, btn4, btn5,]]
 
             question = await channel.send(embed = embed, components = components)
