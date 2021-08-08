@@ -1,4 +1,4 @@
-import sys, discord, os, subprocess, random, time, asyncio
+import sys, discord, os, subprocess, random, time, asyncio, datetime
 from youtube_dl import YoutubeDL
 from gtts import gTTS
 from threading import Thread
@@ -9,6 +9,7 @@ from spotipy.oauth2 import SpotifyOAuth, SpotifyClientCredentials
 from youtube_search import YoutubeSearch
 from src.functions import createEmbed, getCurrentTime
 from discord_components import Button, ButtonStyle, InteractionType
+
 
 
 
@@ -103,7 +104,7 @@ class MusicPlayer():
 
             else:
                 trackID = int(res.component.id)
-                title = 'Трек под номером {} добавляется в очередь, Нья!'.format(trackID)
+                title = 'Трек под номером {} добавляется в очередь, Нья!'.format(trackID + 1)
                 description = '{0} **[{1}]**'.format(results[trackID]['title'], results[trackID]['duration'])
 
 
@@ -138,18 +139,20 @@ class MusicPlayer():
 
     def nowPlay(self):
         answer = 'Ничего не играет'
+        duration = self.getDuration(target = self.queryData[self.lastAudio])
         if self.lastAudio:
             answer = 'Сейчас играет - **{0}**, добавил(-a) **{1}** `{2}`'.format(self.queryData[self.lastAudio]['title'],
                                                                                 self.queryData[self.lastAudio]['user'],
-                                                                                self.queryData[self.lastAudio]['duration'])
+                                                                                duration)
         return answer
 
     def skip(self):
         if len(self.queryList) > 0:
             self.vc.stop()
+            duration = self.getDuration(target = self.queryData[self.queryList[0]])
             answer = 'Песенка скипнута\nСейчас играет - **{0}**, добавил(-a) **{1}** `{2}`'.format(self.queryData[self.queryList[0]]['title'],
                                                                                                     self.queryData[self.queryList[0]]['user'],
-                                                                                                    self.queryData[self.queryList[0]]['duration'],)
+                                                                                                    duration,)
 
 
         else:
@@ -187,13 +190,27 @@ class MusicPlayer():
         page = 0
 
 
+        duration = self.getDuration()
+
+
+
         if len(self.queryList) == 0 and not self.lastAudio:
             answer = 'Пусто('
             sticker = discord.File('files/photo/Emoji (33).png')
 
         else:
-            title = '`Сейчас играет` — ｢{0}｣ `добавил(-a)` ✎﹏*{1}*'.format(self.queryData[self.lastAudio]['title'], self.queryData[self.lastAudio]['user'])
-            description = '> \n{0}\n> ˗ˏˋ `Время проигрывания:` **｢03:00:36 ｣** ˎˊ˗ '.format('\n'.join(pages[page]),)
+            title = '`Сейчас играет` — ｢{0}｣ `добавил(-a)` ✎﹏*{1}*'.format(self.queryData[self.lastAudio]['title'],
+                                                                                self.queryData[self.lastAudio]['user']
+                                                                                )
+
+            if pages:
+                description = '> \n{0}\n> ˗ˏˋ `Время проигрывания:` **｢{3} ｣** ˎˊ˗ \n*Страница {1} из {2}*'.format('\n'.join(pages[page]),
+                                                                                                                    page + 1,
+                                                                                                                    len(pages),
+                                                                                                                    duration
+                                                                                                                    )
+            else:
+                description = ''
 
 
         print(111111111111111111111)
@@ -205,13 +222,14 @@ class MusicPlayer():
                     return res.channel ==channel and res.author == message.author and res.message.id == question.id
 
                 try:
-                    res = await self.client.wait_for("button_click", check = check, timeout = 10.0)
+                    res = await self.client.wait_for("button_click", check = check, timeout = 60.0)
                     print("УСПЕШНО ПОЛУЧИЛИ КНОПКУ")
 
                 except:
 
                     print("ОШИБКА КНОПКИ")
                     await question.delete()
+                    await message.delete()
 
                 else:
                     print("ЗАПОЛНЯЕМ КНОПКУ")
@@ -229,7 +247,11 @@ class MusicPlayer():
                     elif res.component.id == 'end':
                         page = len(pages) - 1
                     print("ИЗМЕНИЛИ СТРАНИЦУ")
-                    description = '> \n{0}\n> ˗ˏˋ `Время проигрывания:` **｢03:00:36 ｣** ˎˊ˗ '.format('\n'.join(pages[page]),)
+                    description = '> \n{0}\n> ˗ˏˋ `Время проигрывания:` **｢{3} ｣** ˎˊ˗ \n*Страница {1} из {2}*'.format('\n'.join(pages[page]),
+                                                                                                                                page + 1,
+                                                                                                                                len(pages),
+                                                                                                                                duration
+                                                                                                                                )
                     print("DISCRIPTION")
 
                     embed = createEmbed(title = title, description = description, color = 0xf08080)
@@ -278,7 +300,11 @@ class MusicPlayer():
                         trackName = track['track']['name']
                     results = YoutubeSearch(trackName, max_results=1).to_dict()
                     print(results)
-                    res.append(results[0]['url_suffix'].split('/watch?v=')[1])
+                    try:
+                        res.append(results[0]['url_suffix'].split('/watch?v=')[1])
+                    except Exception as e:
+                        print('Error in adding url from spoti track')
+
                 offset += 100
                 playlist_info = self.sp.playlist_tracks(playlistID, offset=offset)
 
@@ -395,3 +421,12 @@ class MusicPlayer():
             self.addTrack(title, URL, duration, user)
         except:
             print('Не получилось добавить трек - ', info)
+
+    def getDuration(self, target = None):
+        time = 0
+        if not target:
+            for track in self.queryData.values():
+                time += int(track['duration'])
+        else:
+            time = target['duration']
+        return str(datetime.timedelta(seconds=time))
