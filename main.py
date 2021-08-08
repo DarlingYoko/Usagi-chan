@@ -12,6 +12,7 @@ from bin.privatCommands.updateShedule import checkNotification
 from bin.commandConfig import commands
 from events.usersChangedEvents import reportSpam
 from discord.ext import tasks
+from discord_components import DiscordComponents
 
 async def checkRequests():
     while True:
@@ -66,7 +67,7 @@ async def checkTime():
 
 
 
-class UsagiChan(discord.Client):
+class UsagiChan:
 
     def __init__(self):
         self.config = loadConfig('src/config')
@@ -92,6 +93,7 @@ class UsagiChan(discord.Client):
             self.musicPlayer = MusicPlayer(self.client, self.config)
             #self.my_background_task.start("ASDASDASD")
             #self.my_background_task.stop()
+            DiscordComponents(self.client)
 
 
 
@@ -128,8 +130,8 @@ usagi.setUsersChangedEvents()
 #Thread(target = asyncio.run, args=(checkShedule(), )).start()
 #Thread(target = asyncio.run, args=(checkTokens(), )).start()
 #Thread(target = asyncio.run, args=(checkSpam(), )).start()
-Thread(target = asyncio.run, args=(notificationForum(), )).start()
-Thread(target = asyncio.run, args=(checkTransformator(), )).start()
+#Thread(target = asyncio.run, args=(notificationForum(), )).start()
+#Thread(target = asyncio.run, args=(checkTransformator(), )).start()
 Thread(target = asyncio.run, args=(checkTime(), )).start()
 Thread(target = checkAudio).start()
 #Thread(target = restartDriver).start()

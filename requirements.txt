@@ -20,3 +20,4 @@ asyncio
 selenium
 spotipy
 youtube_search
+discord_components

@@ -29,8 +29,8 @@ commands = {
                 'delay': None,
             },
             '!q':{
-                'answer': 'self.musicPlayer.query()',
-                'function': None,
+                'answer': '',
+                'function': 'asyncio.run_coroutine_threadsafe(self.musicPlayer.query(message), self.loop)',
                 'delay': None,
             },
             '!ч':{

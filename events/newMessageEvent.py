@@ -108,13 +108,13 @@ def setMessageEvent(self):
 
                 guildCommands = list(commands['guild']['usual'].keys()) + list(commands['guild']['music'].keys()) + list(commands['guild']['token'].keys()) + list(commands['guild']['moviegoers'].keys()) + list(commands['guild']['my'].keys())
 
-                if isCommand(msg, guildCommands):
+                if isCommand(msg.lower(), guildCommands):
                     #await message.delete()
                     delay = 10
                     if str(message.channel.type) == 'text':
                         answer = 'Тебе низя использовать эту команду'
                         command = msg.split()[0].lower()
-                        if isCommand(msg, commands['guild']['usual'].keys()):
+                        if isCommand(msg.lower(), commands['guild']['usual'].keys()):
                             com = False
                             for cmd in commands['guild']['usual'].keys():
                                 if len(cmd.split()) > 1:
@@ -137,7 +137,7 @@ def setMessageEvent(self):
                         if command in commands['guild']['music'].keys():
                             channel = await self.client.fetch_channel(self.config['data'].getint('kadrovyChannel'))
                             if message.author in channel.members:
-                                if commands['guild']['music'][command]['function']:                            
+                                if commands['guild']['music'][command]['function']:
                                     eval(commands['guild']['music'][command]['function'])
                                     answer = commands['guild']['music'][command]['answer']
                                 else:
@@ -193,7 +193,8 @@ def setMessageEvent(self):
                 pass
             except Exception as e:
                 exc_type, exc_obj, exc_tb = sys.exc_info()
-                print('New error:\ntype - {0}, line - {1}, error - {2}\n'.format(exc_type, exc_tb.tb_lineno, exc_obj))
+                fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+                print('New error:\ntype - {0}, line - {1}, error - {2}, file - {3}\n'.format(exc_type, exc_tb.tb_lineno, exc_obj, fname))
 
 
 

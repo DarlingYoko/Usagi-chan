@@ -1,4 +1,4 @@
-import sys, discord, os, subprocess, random, time, asyncio, aiohttp
+import sys, discord, os, subprocess, random, time, asyncio
 from youtube_dl import YoutubeDL
 from gtts import gTTS
 from threading import Thread
@@ -8,7 +8,7 @@ import spotipy.oauth2 as oauth2
 from spotipy.oauth2 import SpotifyOAuth, SpotifyClientCredentials
 from youtube_search import YoutubeSearch
 from src.functions import createEmbed, getCurrentTime
-
+from discord_components import Button, ButtonStyle, InteractionType
 
 
 
@@ -23,6 +23,7 @@ class MusicPlayer():
         self.count = 0
         self.client = client
         self.config = config
+        self.loop = asyncio.get_running_loop()
         self.reacts = {1: '1️⃣', 2: '2️⃣', 3: '3️⃣', 4: '4️⃣', 5: '5️⃣'}
         CLIENT_ID = '118b5bcd3192449282a6618c19f70d50'
         CLIENT_SECRET = '6d3496fc16f54a1586036c06a813894a'
@@ -34,24 +35,34 @@ class MusicPlayer():
         self.sp = spotipy.Spotify(auth_manager = auth_manager)
 
     async def play(self, msg, command, message):
-        URL = msg.split(command)[1].strip()
-        user = message.author.name.split('#')[0]
+        channel = await self.client.fetch_channel(self.config['data'].getint('mpChannel'))
+        if message.channel != channel:
+            return
+
+        URL = msg[2:].strip()
+        user = message.author.display_name.split('#')[0]
         answer = 'Не получилось добавить трек в очередь( Пипакрай'
-        channel = message.channel
-        loop = asyncio.get_running_loop()
+
+        mes = 'Начала добавлять трек , Нья!'
+
+        if 'list' in URL:
+            mes = 'Начала добавлять плейлист, Нья!'
+
 
 
         if 'youtube' in URL:
+            message = await channel.send(mes)
             #await loop.run_in_executor(None, self.getYoutube(URL, user))
             #self.client.loop.create_task(self.getYoutube(URL, user))
-            await self.getYoutube(URL, user)
+            Thread(target = asyncio.run, args=(self.getYoutube(URL, user, message = message), )).start()
             answer = ''
 
 
         elif 'spotify' in URL:
-            #Thread(target = asyncio.run, args=(self.getSpoti(URL, user), )).start()
+            message = await channel.send(mes)
+            Thread(target = asyncio.run, args=(self.getSpoti(URL, user, message), )).start()
             #await loop.run_in_executor(None, self.getSpoti(URL, user))
-            await self.getSpoti(URL, user)
+            #await self.getSpoti(URL, user)
             #self.client.loop.create_task(self.getSpoti(URL, user))
             answer = ''
 
@@ -63,37 +74,46 @@ class MusicPlayer():
             description = '\n\n'.join(['{0}. {1} **[{2}]**'.format(i+1, results[i]['title'], results[i]['duration']) for i in range(5)])
             footer = 'По МСК ' + getCurrentTime()
             embed = createEmbed(title = title, description = description, footer = footer, color = 0xf08080)
-            question = await channel.send(embed = embed)
-            for i in range(len(self.reacts)):
-                await question.add_reaction(self.reacts[i + 1])
 
-            def check(reaction, user):
-                return user == message.author and str(reaction.emoji) in self.reacts.values()
+            emojiOne = self.client.get_emoji(873719561562755143)
+            emojiTwo = self.client.get_emoji(873653970839674941)
+            emojiThree = self.client.get_emoji(873653970751602719)
+            emojiFour = self.client.get_emoji(873653970839670854)
+            emojiFive = self.client.get_emoji(873653970994888704)
+
+
+            btn1 = Button(style=ButtonStyle.gray, emoji = emojiOne, id = '1')
+            btn2 = Button(style=ButtonStyle.gray, emoji = emojiTwo, id = '2')
+            btn3 = Button(style=ButtonStyle.gray, emoji = emojiThree, id = '3')
+            btn4 = Button(style=ButtonStyle.gray, emoji = emojiFour, id = '4')
+            btn5 = Button(style=ButtonStyle.gray, emoji = emojiFive, id = '5')
+            components=[[btn1, btn2, btn3, btn4, btn5,]]
+
+            question = await channel.send(embed = embed, components = components)
+
+            def check(res):
+                return res.channel == message.channel and res.author == message.author and res.message.id == question.id
 
             try:
-                reaction, user = await self.client.wait_for('reaction_add', timeout=60.0, check=check)
+                res = await self.client.wait_for("button_click", check = check, timeout = 60.0)
+
             except:
                 title = 'Ты не выбрал трек за отведённое время, бака!'
                 description = ''
 
             else:
-
-                for key, value in self.reacts.items():
-                    if value == str(reaction.emoji):
-                        trackID = key - 1
-
-                title = 'Трек под номером {} добавляется в очередь, Нья!'.format(reaction)
+                trackID = int(res.component.id)
+                title = 'Трек под номером {} добавляется в очередь, Нья!'.format(trackID)
                 description = '{0} **[{1}]**'.format(results[trackID]['title'], results[trackID]['duration'])
 
 
+
             answer = ''
-
-
             embed = createEmbed(title = title, description = description, footer = footer, color = 0xe00000)
-            await question.edit(embed = embed)
-            await question.clear_reactions()
+            await question.edit(embed = embed, components = [])
+
             if trackID != -1:
-                await self.getYoutube('https://www.youtube.com' + results[trackID]['url_suffix'], user, question)
+                await self.getYoutube('https://www.youtube.com' + results[trackID]['url_suffix'], user, question = question, description = description)
 
 
 
@@ -138,20 +158,90 @@ class MusicPlayer():
             self.lastAudio = None
         return answer
 
-    def query(self):
-        queryList = ['`[{0}]` **{1}**, добавил(-a) **{2}** `{3}`'.format(i+1,
+    async def query(self, message):
+
+        channel = await self.client.fetch_channel(self.config['data'].getint('mpChannel'))
+
+        emojiStart = self.client.get_emoji(873646237964967936)
+        emojiPrevious = self.client.get_emoji(873646237889478676)
+        emojiNext = self.client.get_emoji(873646237935599646)
+        emojiEnd = self.client.get_emoji(873646237528764537)
+        btnStart = Button(style=ButtonStyle.gray, emoji = emojiStart, id = 'start')
+        btnPrevious = Button(style=ButtonStyle.gray, emoji = emojiPrevious, id = 'previuos')
+        btnNext = Button(style=ButtonStyle.gray, emoji = emojiNext, id = 'next')
+        btnEnd = Button(style=ButtonStyle.gray, emoji = emojiEnd, id = 'end')
+        components=[[btnStart, btnPrevious, btnNext, btnEnd,]]
+        sticker = ''
+        title = ''
+
+        if message.channel != channel:
+            return
+
+        queryList = ['> `{0}.` **｢{1}｣**\n> добавил(-a) ✎﹏{2}\n> _ _'.format(i + 1,
                                                         self.queryData[self.queryList[i]]['title'],
                                                         self.queryData[self.queryList[i]]['user'],
                                                         self.queryData[self.queryList[i]]['duration'],)
-                                                    for i in range(len(self.queryList))]
+                                                    for i in range(0, len(self.queryList))]
+
+        pages = [queryList[i:i+5] for i in range(0, len(queryList), 5)]
+        page = 0
+
+
         if len(self.queryList) == 0 and not self.lastAudio:
             answer = 'Пусто('
+            sticker = discord.File('files/photo/Emoji (33).png')
+
         else:
-            answer = 'Сейчас играет - **{0}**, добавил(-a) **{2}** `{3}`\n{1}'.format(self.queryData[self.lastAudio]['title'],
-                                                                        '\n'.join(queryList),
-                                                                        self.queryData[self.lastAudio]['user'],
-                                                                        self.queryData[self.lastAudio]['duration'], )
-        return answer
+            title = '`Сейчас играет` — ｢{0}｣ `добавил(-a)` ✎﹏*{1}*'.format(self.queryData[self.lastAudio]['title'], self.queryData[self.lastAudio]['user'])
+            description = '> \n{0}\n> ˗ˏˋ `Время проигрывания:` **｢03:00:36 ｣** ˎˊ˗ '.format('\n'.join(pages[page]),)
+
+
+        print(111111111111111111111)
+        if title:
+            embed = createEmbed(title = title, description = description, color = 0xf08080)
+            question = await channel.send(embed = embed, components = components)
+            while True:
+                def check(res):
+                    return res.channel ==channel and res.author == message.author and res.message.id == question.id
+
+                try:
+                    res = await self.client.wait_for("button_click", check = check, timeout = 10.0)
+                    print("УСПЕШНО ПОЛУЧИЛИ КНОПКУ")
+
+                except:
+
+                    print("ОШИБКА КНОПКИ")
+                    await question.delete()
+
+                else:
+                    print("ЗАПОЛНЯЕМ КНОПКУ")
+                    if res.component.id == 'start':
+                        page = 0
+
+                    elif res.component.id == 'previuos':
+                        if page != 0:
+                            page -= 1
+
+                    elif res.component.id == 'next':
+                        if page != len(pages) - 1:
+                            page += 1
+
+                    elif res.component.id == 'end':
+                        page = len(pages) - 1
+                    print("ИЗМЕНИЛИ СТРАНИЦУ")
+                    description = '> \n{0}\n> ˗ˏˋ `Время проигрывания:` **｢03:00:36 ｣** ˎˊ˗ '.format('\n'.join(pages[page]),)
+                    print("DISCRIPTION")
+
+                    embed = createEmbed(title = title, description = description, color = 0xf08080)
+                    print("СОЗДАЛИ НОВЫЙ ЕМБЕД")
+
+                    print("ОТПРАВЛЯЕМ НОВОЕ")
+
+                    await res.respond(type=7, embed = embed)#?????
+
+        else:
+            await channel.send(answer, file = sticker)
+
 
     def repeat(self, msg, command):
         if msg.split(command)[1].strip() == 'last':
@@ -166,31 +256,38 @@ class MusicPlayer():
         channel = await self.client.fetch_channel(msg.split(command)[1].strip())
         self.vc = await channel.connect()
 
-    async def getSpoti(self, URL, user):
-        channel = await self.client.fetch_channel(858145829158912030)
+    async def getSpoti(self, URL, user, message):
+        #channel = await self.client.fetch_channel(self.config['data'].getint('mpChannel'))
 
         if 'playlist' in URL:
-            mes = 'Начала добавлять плейлист, Нья!'
-            message = await channel.send(mes)
+            #mes = 'Начала добавлять плейлист, Нья!'
+            #asyncio.run_coroutine_threadsafe(channel.send(mes), self.loop)
+            #message = await channel.send(mes)
             playlistID = URL[34:56]
-            playlist_info = self.sp.playlist_tracks(playlistID)
-            res = []
-            for track in playlist_info['items']:
-                trackName = ''
-                if track['track']['id']:
-                    trackInfo = self.sp.track(track['track']['id'])
-                    trackName = trackInfo['album']['artists'][0]['name'] + ' ' + trackInfo['name']
-                else:
-                    trackName = track['track']['name']
 
-                results = YoutubeSearch(trackName, max_results=1).to_dict()
-                print(results)
-                res.append(results[0]['url_suffix'].split('/watch?v=')[1])
+            res = []
+            offset = 0
+            playlist_info = self.sp.playlist_tracks(playlistID, offset=offset)
+            while playlist_info['items']:
+                for track in playlist_info['items']:
+                    trackName = ''
+                    if track['track']['id']:
+                        trackInfo = self.sp.track(track['track']['id'])
+                        trackName = trackInfo['album']['artists'][0]['name'] + ' ' + trackInfo['name']
+                    else:
+                        trackName = track['track']['name']
+                    results = YoutubeSearch(trackName, max_results=1).to_dict()
+                    print(results)
+                    res.append(results[0]['url_suffix'].split('/watch?v=')[1])
+                offset += 100
+                playlist_info = self.sp.playlist_tracks(playlistID, offset=offset)
+
 
             url = 'https://www.youtube.com/watch_videos?video_ids='
-            await self.getYoutube(url + ','.join(res), user, 1)
-            answer = 'Добавила плейлист в очередь, Нья!'
-            await message.edit(content = answer)
+            await self.getYoutube([url + ','.join(res[i:i+50]) for i in range(0, len(res), 50)], user, message = message)
+            #answer = 'Добавила плейлист в очередь, Нья!'
+            #await message.edit(content = answer)
+            #asyncio.run_coroutine_threadsafe(message.edit(content = answer), self.loop)
 
 
         else:
@@ -198,52 +295,58 @@ class MusicPlayer():
             trackInfo = self.sp.track(trackID)
             track = trackInfo['album']['artists'][0]['name'] + ' ' + trackInfo['name']
             results = YoutubeSearch(track, max_results=1).to_dict()
-            await self.getYoutube('https://www.youtube.com' + results[0]['url_suffix'], user)
+            await self.getYoutube('https://www.youtube.com' + results[0]['url_suffix'], user, message = message)
 
 
 
 
 
-    async def getYoutube(self, URL, user, question = None):
+    async def getYoutube(self, URL, user, message = None, question = None, description = None):
 
-        channel = await self.client.fetch_channel(858145829158912030)
 
-        mes = 'Начала добавлять трек , Нья!'
         answer = 'Добавила трек в очередь, Нья!'
 
-        if 'list' in URL:
-            mes = 'Начала добавлять плейлист, Нья!'
+        if 'list' in URL or 'watch_videos' in URL or type(URL) == list:
             answer = 'Добавила плейлист в очередь, Нья!'
 
         #ydl_opts = {'format': 'bestaudio'}
 
-        if not question:
-            message = await channel.send(mes)
-
         ydl_opts = {
             'ignoreerrors': True,
+            'audio-format': 'mp3',
+            'yes-playlist': True,
         }
+        if URL:
 
-        with YoutubeDL(ydl_opts) as ydl:
-            info = ydl.extract_info(URL, download=False)
+            with YoutubeDL(ydl_opts) as ydl:
+                if type(URL) == list:
+                    links = []
+                    for urlik in URL:
+                        info = ydl.extract_info(urlik, download=False)
+                        for track in info['entries']:
+                            links.append(track)
 
-        if 'list' in URL or 'video_ids' in URL:
-            for track in info['entries']:
-                self.getData(track, user)
+                    for track in links:
+                        self.getData(track, user)
+                else:
+                    info = ydl.extract_info(URL, download=False)
 
-        else:
-            self.getData(info, user)
+            if type(URL) != list and ('list' in URL or 'video_ids' in URL):
+                for track in info['entries']:
+                    self.getData(track, user)
+
+            elif type(URL) != list:
+                self.getData(info, user)
 
 
-        if not question:
-            await message.edit(content = answer)
-        elif question != 1:
-            embed = question.embeds[0].to_dict()
-            embed = createEmbed(title = embed['title'][:8] + ' был выбран и добавлен в очередь, нья!',
-                                description = embed['description'],
-                                footer = embed['footer']['text'],
+        if message:
+            asyncio.run_coroutine_threadsafe(message.edit(content = answer), self.loop)
+        elif question:
+            embed = createEmbed(title = 'Трек был выбран и добавлен в очередь, нья!',
+                                description = description,
+                                footer = 'По МСК ' + getCurrentTime(),
                                 color = 0xf08080)
-            await question.edit(embed = embed)
+            asyncio.run_coroutine_threadsafe(question.edit(embed = embed), self.loop)
 
 
 
@@ -267,7 +370,7 @@ class MusicPlayer():
                 print('начинаю играть')
 
                 FFMPEG_OPTIONS = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
-                self.vc.play(discord.FFmpegPCMAudio(self.queryData[self.lastAudio]['URL'], **FFMPEG_OPTIONS))
+                self.vc.play(discord.FFmpegPCMAudio(self.queryData[self.lastAudio]['URL'], **FFMPEG_OPTIONS, executable = 'C:/FFMPEG/bin/ffmpeg.exe'))
 
         except Exception as e:
             pass
@@ -285,7 +388,10 @@ class MusicPlayer():
                             }
 
     def getData(self, info, user):
-        URL = info['formats'][0]['url']
-        title = info['title']
-        duration = info['duration']
-        self.addTrack(title, URL, duration, user)
+        try:
+            URL = info['formats'][0]['url']
+            title = info['title']
+            duration = info['duration']
+            self.addTrack(title, URL, duration, user)
+        except:
+            print('Не получилось добавить трек - ', info)
