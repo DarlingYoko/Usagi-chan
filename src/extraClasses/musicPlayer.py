@@ -162,10 +162,10 @@ class MusicPlayer():
 
         channel = await self.client.fetch_channel(self.config['data'].getint('mpChannel'))
 
-        emojiStart = self.client.get_emoji(873646237964967936)
-        emojiPrevious = self.client.get_emoji(873646237889478676)
-        emojiNext = self.client.get_emoji(873646237935599646)
-        emojiEnd = self.client.get_emoji(873646237528764537)
+        emojiStart = self.client.get_emoji(873921151896805487)
+        emojiPrevious = self.client.get_emoji(873921151372513312)
+        emojiNext = self.client.get_emoji(873921151716438016)
+        emojiEnd = self.client.get_emoji(873921151280234537)
         btnStart = Button(style=ButtonStyle.gray, emoji = emojiStart, id = 'start')
         btnPrevious = Button(style=ButtonStyle.gray, emoji = emojiPrevious, id = 'previuos')
         btnNext = Button(style=ButtonStyle.gray, emoji = emojiNext, id = 'next')
