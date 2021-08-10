@@ -91,11 +91,14 @@ auth_manager = SpotifyClientCredentials(client_id = CLIENT_ID,
 sp = spotipy.Spotify(auth_manager = auth_manager)
 
 def search():
-    playlistID = '2d5qwzhcKVNoJIYHMINpVG'
+
+    playlistID = '3oIFxDIo2fwuk4lwCmFZCx'
     offset = 0
-    playlist_info = sp.playlist_tracks(playlistID, offset=offset)
+    playlist_info = sp.album_tracks(playlistID, offset=offset, limit = 10)
+    print(playlist_info['items'][0]['artists'][0]['name'] + ' ' + playlist_info['items'][0]['name'])
+    return
     while playlist_info['items']:
-        print(len(playlist_info['items']))
+        print(playlist_info['items'])
         offset += 100
         playlist_info = sp.playlist_tracks(playlistID, offset=offset)
     return
@@ -146,6 +149,10 @@ while True:
     sleep(1)
     print(1111111111111111111)
 '''
+search()
+'''
 from youtube_dl import YoutubeDL
 with YoutubeDL() as ydl:
-    info = ydl.extract_info('', download=False)
+    info = ydl.extract_info('https://youtu.be/meD4fFX9jKQ', download=False)
+    print(info)
+'''

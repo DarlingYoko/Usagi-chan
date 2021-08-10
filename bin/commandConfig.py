@@ -91,7 +91,7 @@ commands = {
                 'delay': None,
             },
             '!s':{
-                'answer': 'self.musicPlayer.skip()',
+                'answer': 'self.musicPlayer.skip(msg)',
                 'function': None,
                 'delay': None,
             },

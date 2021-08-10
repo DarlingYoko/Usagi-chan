@@ -1,4 +1,4 @@
-import sys, discord, os, subprocess, random, time, asyncio, datetime
+import sys, discord, os, subprocess, random, time, asyncio, datetime, re
 from youtube_dl import YoutubeDL
 from gtts import gTTS
 from threading import Thread
@@ -44,14 +44,19 @@ class MusicPlayer():
         user = message.author.display_name.split('#')[0]
         answer = 'Не получилось добавить трек в очередь( Пипакрай'
 
-        mes = 'Начала добавлять трек , Нья!'
+        mes = 'Начала добавлять трек, Нья!'
+        regexYouTube = 'http(?:s?):\/\/(?:www\.)?youtu(?:be\.com\/watch\?v=|\.be\/)([\w\-\_]*)(&(amp;)?‌​[\w\?‌​=]*)?'
+        regexSpoti = 'spotify'
 
         if 'list' in URL:
             mes = 'Начала добавлять плейлист, Нья!'
 
+        elif 'album' in URL:
+            mes = 'Начала добавлять альбом, Нья!'
 
 
-        if 'youtube' in URL:
+
+        if re.search(regexYouTube, URL):
             message = await channel.send(mes)
             #await loop.run_in_executor(None, self.getYoutube(URL, user))
             #self.client.loop.create_task(self.getYoutube(URL, user))
@@ -59,7 +64,7 @@ class MusicPlayer():
             answer = ''
 
 
-        elif 'spotify' in URL:
+        elif re.search(regexSpoti, URL):
             message = await channel.send(mes)
             Thread(target = asyncio.run, args=(self.getSpoti(URL, user, message), )).start()
             #await loop.run_in_executor(None, self.getSpoti(URL, user))
@@ -141,24 +146,51 @@ class MusicPlayer():
         answer = 'Ничего не играет'
         duration = self.getDuration(target = self.queryData[self.lastAudio])
         if self.lastAudio:
-            answer = 'Сейчас играет - **{0}**, добавил(-a) **{1}** `{2}`'.format(self.queryData[self.lastAudio]['title'],
+            answer = 'Now playing - **{0}**, added by **{1}** `{2}`'.format(self.queryData[self.lastAudio]['title'],
                                                                                 self.queryData[self.lastAudio]['user'],
                                                                                 duration)
         return answer
 
-    def skip(self):
-        if len(self.queryList) > 0:
-            self.vc.stop()
-            duration = self.getDuration(target = self.queryData[self.queryList[0]])
-            answer = 'Песенка скипнута\nСейчас играет - **{0}**, добавил(-a) **{1}** `{2}`'.format(self.queryData[self.queryList[0]]['title'],
-                                                                                                    self.queryData[self.queryList[0]]['user'],
-                                                                                                    duration,)
+    def skip(self, content):
+        content = content.strip().split('!s')[1]
+        if '-' in content:
+            try:
+                content = content.split('-')
+                start = int(content[0])
+                end = int(content[1])
+            except IndexError:
+                answer = 'Не получилось скипнуть, проверь команду, бака!'
+            else:
+                for i in range(start - 1, end):
+                    del self.queryData[self.queryList.pop(start - 1)]
+
+                answer = 'Песни скипнуты'
+
+        elif content:
+            try:
+                content = [int(i) - 1 for i in content.split(',')]
+                content.sort()
+                for i in range(len(content)):
+                    del self.queryData[self.queryList.pop(content[i] - i)]
 
 
+            except IndexError:
+                answer = 'Не получилось скипнуть, проверь команду, бака!'
+            else:
+                answer = 'Песни скипнуты'
         else:
-            self.vc.stop()
-            answer = 'Больше песенок нет('
-            self.lastAudio = None
+            if len(self.queryList) > 0:
+                self.vc.stop()
+                duration = self.getDuration(target = self.queryData[self.queryList[0]])
+                answer = 'Песенка скипнута\nNow playing - **{0}**, added by **{1}** `{2}`'.format(self.queryData[self.queryList[0]]['title'],
+                                                                                                        self.queryData[self.queryList[0]]['user'],
+                                                                                                        duration,)
+
+
+            else:
+                self.vc.stop()
+                answer = 'Больше песенок нет('
+                self.lastAudio = None
         return answer
 
     async def query(self, message):
@@ -180,7 +212,7 @@ class MusicPlayer():
         if message.channel != channel:
             return
 
-        queryList = ['> `{0}.` **｢{1}｣**\n> добавил(-a) ✎﹏{2}\n> _ _'.format(i + 1,
+        queryList = ['> `{0}.` **｢{1}｣**\n> added by ✎﹏{2}\n> _ _'.format(i + 1,
                                                         self.queryData[self.queryList[i]]['title'],
                                                         self.queryData[self.queryList[i]]['user'],
                                                         self.queryData[self.queryList[i]]['duration'],)
@@ -195,16 +227,16 @@ class MusicPlayer():
 
 
         if len(self.queryList) == 0 and not self.lastAudio:
-            answer = 'Пусто('
+            answer = 'Empty('
             sticker = discord.File('files/photo/Emoji (33).png')
 
         else:
-            title = '`Сейчас играет` — ｢{0}｣ `добавил(-a)` ✎﹏*{1}*'.format(self.queryData[self.lastAudio]['title'],
+            title = '`Now playing` — ｢{0}｣ `added by` ✎﹏*{1}*'.format(self.queryData[self.lastAudio]['title'],
                                                                                 self.queryData[self.lastAudio]['user']
                                                                                 )
 
             if pages:
-                description = '> \n{0}\n> ˗ˏˋ `Время проигрывания:` **｢{3} ｣** ˎˊ˗ \n*Страница {1} из {2}*'.format('\n'.join(pages[page]),
+                description = '> \n{0}\n> ˗ˏˋ `Playing time:` **｢{3} ｣** ˎˊ˗ \n*|Page {1} of {2}|*'.format('\n'.join(pages[page]),
                                                                                                                     page + 1,
                                                                                                                     len(pages),
                                                                                                                     duration
@@ -247,7 +279,7 @@ class MusicPlayer():
                     elif res.component.id == 'end':
                         page = len(pages) - 1
                     print("ИЗМЕНИЛИ СТРАНИЦУ")
-                    description = '> \n{0}\n> ˗ˏˋ `Время проигрывания:` **｢{3} ｣** ˎˊ˗ \n*Страница {1} из {2}*'.format('\n'.join(pages[page]),
+                    description = '> \n{0}\n> ˗ˏˋ `Playing time:` **｢{3} ｣** ˎˊ˗ \n*|Page {1} of {2}|*'.format('\n'.join(pages[page]),
                                                                                                                                 page + 1,
                                                                                                                                 len(pages),
                                                                                                                                 duration
@@ -281,32 +313,54 @@ class MusicPlayer():
     async def getSpoti(self, URL, user, message):
         #channel = await self.client.fetch_channel(self.config['data'].getint('mpChannel'))
 
-        if 'playlist' in URL:
+        if 'playlist' in URL or 'album' in URL:
             #mes = 'Начала добавлять плейлист, Нья!'
             #asyncio.run_coroutine_threadsafe(channel.send(mes), self.loop)
             #message = await channel.send(mes)
-            playlistID = URL[34:56]
+
+            func = self.sp.playlist_tracks
+
+            if 'album' in URL:
+                func = self.sp.album_tracks
+
+            try:
+                playlistID = URL.split('/')[4].split('?si')[0]
+            except:
+                print('Error in getting ID from spoti')
+                exc_type, exc_obj, exc_tb = sys.exc_info()
+                fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+                print('New error:\ntype - {0}, line - {1}, error - {2}, file - {3}\n'.format(exc_type, exc_tb.tb_lineno, exc_obj, fname))
+                asyncio.run_coroutine_threadsafe(message.edit(content = 'Не получилось добавить('), self.loop)
+                return
+            #https://open.spotify.com/album/3oIFxDIo2fwuk4lwCmFZCx?si=20ebd7c4d1bf40d4 album
+            #https://open.spotify.com/playlist/5j11jguZ5azMB1M8Xn0xvs?si=1cdddd2d85774dc0 playlist
 
             res = []
             offset = 0
-            playlist_info = self.sp.playlist_tracks(playlistID, offset=offset)
+            playlist_info = func(playlistID, offset=offset)
             while playlist_info['items']:
                 for track in playlist_info['items']:
-                    trackName = ''
-                    if track['track']['id']:
-                        trackInfo = self.sp.track(track['track']['id'])
-                        trackName = trackInfo['album']['artists'][0]['name'] + ' ' + trackInfo['name']
-                    else:
-                        trackName = track['track']['name']
-                    results = YoutubeSearch(trackName, max_results=1).to_dict()
-                    print(results)
                     try:
+                        trackName = ''
+                        if 'playlist' in URL:
+                            if track['track']['id']:
+                                trackInfo = self.sp.track(track['track']['id'])
+                                trackName = trackInfo['album']['artists'][0]['name'] + ' ' + trackInfo['name']
+                            else:
+                                trackName = track['track']['name']
+                        if 'album' in URL:
+                            trackName = track['artists'][0]['name'] + ' ' + track['name']
+                        results = YoutubeSearch(trackName, max_results=1).to_dict()
+                        print(results)
                         res.append(results[0]['url_suffix'].split('/watch?v=')[1])
                     except Exception as e:
+                        exc_type, exc_obj, exc_tb = sys.exc_info()
+                        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+                        print('New error:\ntype - {0}, line - {1}, error - {2}, file - {3}\n'.format(exc_type, exc_tb.tb_lineno, exc_obj, fname))
                         print('Error in adding url from spoti track')
 
                 offset += 100
-                playlist_info = self.sp.playlist_tracks(playlistID, offset=offset)
+                playlist_info = func(playlistID, offset=offset)
 
 
             url = 'https://www.youtube.com/watch_videos?video_ids='
@@ -341,38 +395,44 @@ class MusicPlayer():
             'ignoreerrors': True,
             'audio-format': 'mp3',
             'yes-playlist': True,
+            'verbose': True,
         }
-        if URL:
+        try:
+            if URL:
+                with YoutubeDL(ydl_opts) as ydl:
+                    if type(URL) == list:
+                        links = []
+                        for urlik in URL:
+                            info = ydl.extract_info(urlik, download=False)
+                            for track in info['entries']:
+                                links.append(track)
 
-            with YoutubeDL(ydl_opts) as ydl:
-                if type(URL) == list:
-                    links = []
-                    for urlik in URL:
-                        info = ydl.extract_info(urlik, download=False)
-                        for track in info['entries']:
-                            links.append(track)
+                        for track in links:
+                            self.getData(track, user)
+                    else:
+                        info = ydl.extract_info(URL, download=False)
 
-                    for track in links:
+                if type(URL) != list and 'entries' in info.keys():
+                    for track in info['entries']:
                         self.getData(track, user)
-                else:
-                    info = ydl.extract_info(URL, download=False)
 
-            if type(URL) != list and ('list' in URL or 'video_ids' in URL):
-                for track in info['entries']:
-                    self.getData(track, user)
+                elif type(URL) != list:
+                    self.getData(info, user)
+        except Exception as e:
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            print('New error:\ntype - {0}, line - {1}, error - {2}, file - {3}\n'.format(exc_type, exc_tb.tb_lineno, exc_obj, fname))
+            asyncio.run_coroutine_threadsafe(message.edit(content = 'Не получилось добавить('), self.loop)
 
-            elif type(URL) != list:
-                self.getData(info, user)
-
-
-        if message:
-            asyncio.run_coroutine_threadsafe(message.edit(content = answer), self.loop)
-        elif question:
-            embed = createEmbed(title = 'Трек был выбран и добавлен в очередь, нья!',
-                                description = description,
-                                footer = 'По МСК ' + getCurrentTime(),
-                                color = 0xf08080)
-            asyncio.run_coroutine_threadsafe(question.edit(embed = embed), self.loop)
+        else:
+            if message:
+                asyncio.run_coroutine_threadsafe(message.edit(content = answer), self.loop)
+            elif question:
+                embed = createEmbed(title = 'Трек был выбран и добавлен в очередь, нья!',
+                                    description = description,
+                                    footer = 'По МСК ' + getCurrentTime(),
+                                    color = 0xf08080)
+                asyncio.run_coroutine_threadsafe(question.edit(embed = embed), self.loop)
 
 
 
@@ -421,6 +481,9 @@ class MusicPlayer():
             self.addTrack(title, URL, duration, user)
         except:
             print('Не получилось добавить трек - ', info)
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            print('New error:\ntype - {0}, line - {1}, error - {2}, file - {3}\n'.format(exc_type, exc_tb.tb_lineno, exc_obj, fname))
 
     def getDuration(self, target = None):
         time = 0
