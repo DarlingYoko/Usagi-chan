@@ -81,8 +81,8 @@ commands = {
                 'delay': None,
             },
             '!stop':{
-                'answer': 'Остановила и очистила',
-                'function': 'self.musicPlayer.stop()',
+                'answer': '',
+                'function': 'asyncio.run_coroutine_threadsafe(self.musicPlayer.stop(message), self.loop)',
                 'delay': None,
             },
             '!shuffle':{
@@ -91,8 +91,8 @@ commands = {
                 'delay': None,
             },
             '!s':{
-                'answer': 'self.musicPlayer.skip(msg)',
-                'function': None,
+                'answer': '',
+                'function': 'asyncio.run_coroutine_threadsafe(self.musicPlayer.skip(message), self.loop)',
                 'delay': None,
             },
             '!repeat':{

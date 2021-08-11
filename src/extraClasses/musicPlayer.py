@@ -24,8 +24,22 @@ class MusicPlayer():
         self.count = 0
         self.client = client
         self.config = config
+
+        self.emojiOne = self.client.get_emoji(873719561562755143)
+        self.emojiTwo = self.client.get_emoji(873653970839674941)
+        self.emojiThree = self.client.get_emoji(873653970751602719)
+        self.emojiFour = self.client.get_emoji(873653970839670854)
+        self.emojiFive = self.client.get_emoji(873653970994888704)
+
+        self.emojiGreenTick = self.client.get_emoji(874767321007276143)
+        self.emojiRedTick = self.client.get_emoji(874767320915005471)
+
+        self.emojiStart = self.client.get_emoji(873921151896805487)
+        self.emojiPrevious = self.client.get_emoji(873921151372513312)
+        self.emojiNext = self.client.get_emoji(873921151716438016)
+        self.emojiEnd = self.client.get_emoji(873921151280234537)
+
         self.loop = asyncio.get_running_loop()
-        self.reacts = {1: '1️⃣', 2: '2️⃣', 3: '3️⃣', 4: '4️⃣', 5: '5️⃣'}
         CLIENT_ID = '118b5bcd3192449282a6618c19f70d50'
         CLIENT_SECRET = '6d3496fc16f54a1586036c06a813894a'
 
@@ -81,18 +95,12 @@ class MusicPlayer():
             footer = 'По МСК ' + getCurrentTime()
             embed = createEmbed(title = title, description = description, footer = footer, color = 0xf08080)
 
-            emojiOne = self.client.get_emoji(873719561562755143)
-            emojiTwo = self.client.get_emoji(873653970839674941)
-            emojiThree = self.client.get_emoji(873653970751602719)
-            emojiFour = self.client.get_emoji(873653970839670854)
-            emojiFive = self.client.get_emoji(873653970994888704)
 
-
-            btn1 = Button(style=ButtonStyle.gray, emoji = emojiOne, id = '0')
-            btn2 = Button(style=ButtonStyle.gray, emoji = emojiTwo, id = '1')
-            btn3 = Button(style=ButtonStyle.gray, emoji = emojiThree, id = '2')
-            btn4 = Button(style=ButtonStyle.gray, emoji = emojiFour, id = '3')
-            btn5 = Button(style=ButtonStyle.gray, emoji = emojiFive, id = '4')
+            btn1 = Button(style=ButtonStyle.gray, emoji = self.emojiOne, id = '0')
+            btn2 = Button(style=ButtonStyle.gray, emoji = self.emojiTwo, id = '1')
+            btn3 = Button(style=ButtonStyle.gray, emoji = self.emojiThree, id = '2')
+            btn4 = Button(style=ButtonStyle.gray, emoji = self.emojiFour, id = '3')
+            btn5 = Button(style=ButtonStyle.gray, emoji = self.emojiFive, id = '4')
             components=[[btn1, btn2, btn3, btn4, btn5,]]
 
             question = await channel.send(embed = embed, components = components)
@@ -133,11 +141,32 @@ class MusicPlayer():
         self.vc.resume()
         self.pause = False
 
-    def stop(self):
-        self.vc.stop()
-        self.repeat = None
-        self.queryList = []
-        self.lastAudio = None
+    async def stop(self, message):
+        await message.add_reaction(self.emojiGreenTick)
+        await message.add_reaction(self.emojiRedTick)
+        await asyncio.sleep(20)
+
+        reacts = message.reactions
+
+        for react in reacts:
+            #print(react, str(react), str(self.emojiGreenTick), str(self.emojiRedTick))
+            if str(react) == str(self.emojiGreenTick):
+                greenReactCount = react.count
+
+            if str(react) == str(self.emojiRedTick):
+                redReactCount = react.count
+
+        if greenReactCount > redReactCount:
+            self.vc.stop()
+            self.repeat = None
+            self.queryList = []
+            self.lastAudio = None
+            answer = 'Остановила и очистила, Нья!'
+
+        else:
+            answer = 'Большинство проголосовало против стопа, Нья!'
+
+        await message.channel.send(answer)
 
     def shuffle(self):
         random.shuffle(self.queryList)
@@ -151,60 +180,75 @@ class MusicPlayer():
                                                                                 duration)
         return answer
 
-    def skip(self, content):
-        content = content.strip().split('!s')[1]
-        if '-' in content:
-            try:
-                content = content.split('-')
-                start = int(content[0])
-                end = int(content[1])
-            except IndexError:
-                answer = 'Не получилось скипнуть, проверь команду, бака!'
+    async def skip(self, message):
+        content = message.content.strip().split('!s')[1]
+
+        await message.add_reaction(self.emojiGreenTick)
+        await message.add_reaction(self.emojiRedTick)
+        await asyncio.sleep(20)
+
+        reacts = message.reactions
+
+        for react in reacts:
+            #print(react, str(react), str(self.emojiGreenTick), str(self.emojiRedTick))
+            if str(react) == str(self.emojiGreenTick):
+                greenReactCount = react.count
+
+            if str(react) == str(self.emojiRedTick):
+                redReactCount = react.count
+
+        if greenReactCount > redReactCount:
+            if '-' in content:
+                try:
+                    content = content.split('-')
+                    start = int(content[0])
+                    end = int(content[1])
+                except IndexError:
+                    answer = 'Не получилось скипнуть, проверь команду, бака!'
+                else:
+                    for i in range(start - 1, end):
+                        del self.queryData[self.queryList.pop(start - 1)]
+
+                    answer = 'Песни скипнуты'
+
+            elif content:
+                try:
+                    content = [int(i) - 1 for i in content.split(',')]
+                    content.sort()
+                    for i in range(len(content)):
+                        del self.queryData[self.queryList.pop(content[i] - i)]
+
+
+                except IndexError:
+                    answer = 'Не получилось скипнуть, проверь команду, бака!'
+                else:
+                    answer = 'Песни скипнуты'
             else:
-                for i in range(start - 1, end):
-                    del self.queryData[self.queryList.pop(start - 1)]
+                if len(self.queryList) > 0:
+                    self.vc.stop()
+                    duration = self.getDuration(target = self.queryData[self.queryList[0]])
+                    answer = 'Песенка скипнута\nNow playing - **{0}**, added by **{1}** `{2}`'.format(self.queryData[self.queryList[0]]['title'],
+                                                                                                            self.queryData[self.queryList[0]]['user'],
+                                                                                                            duration,)
+                else:
+                    self.vc.stop()
+                    answer = 'Больше песенок нет('
+                    self.lastAudio = None
 
-                answer = 'Песни скипнуты'
-
-        elif content:
-            try:
-                content = [int(i) - 1 for i in content.split(',')]
-                content.sort()
-                for i in range(len(content)):
-                    del self.queryData[self.queryList.pop(content[i] - i)]
-
-
-            except IndexError:
-                answer = 'Не получилось скипнуть, проверь команду, бака!'
-            else:
-                answer = 'Песни скипнуты'
         else:
-            if len(self.queryList) > 0:
-                self.vc.stop()
-                duration = self.getDuration(target = self.queryData[self.queryList[0]])
-                answer = 'Песенка скипнута\nNow playing - **{0}**, added by **{1}** `{2}`'.format(self.queryData[self.queryList[0]]['title'],
-                                                                                                        self.queryData[self.queryList[0]]['user'],
-                                                                                                        duration,)
+            answer = 'Большинство проголосовало против скипа, Нья!'
 
-
-            else:
-                self.vc.stop()
-                answer = 'Больше песенок нет('
-                self.lastAudio = None
-        return answer
+        await message.channel.send(answer)
 
     async def query(self, message):
 
         channel = await self.client.fetch_channel(self.config['data'].getint('mpChannel'))
 
-        emojiStart = self.client.get_emoji(873921151896805487)
-        emojiPrevious = self.client.get_emoji(873921151372513312)
-        emojiNext = self.client.get_emoji(873921151716438016)
-        emojiEnd = self.client.get_emoji(873921151280234537)
-        btnStart = Button(style=ButtonStyle.gray, emoji = emojiStart, id = 'start')
-        btnPrevious = Button(style=ButtonStyle.gray, emoji = emojiPrevious, id = 'previuos')
-        btnNext = Button(style=ButtonStyle.gray, emoji = emojiNext, id = 'next')
-        btnEnd = Button(style=ButtonStyle.gray, emoji = emojiEnd, id = 'end')
+
+        btnStart = Button(style=ButtonStyle.gray, emoji = self.emojiStart, id = 'start')
+        btnPrevious = Button(style=ButtonStyle.gray, emoji = self.emojiPrevious, id = 'previuos')
+        btnNext = Button(style=ButtonStyle.gray, emoji = self.emojiNext, id = 'next')
+        btnEnd = Button(style=ButtonStyle.gray, emoji = self.emojiEnd, id = 'end')
         components=[[btnStart, btnPrevious, btnNext, btnEnd,]]
         sticker = ''
         title = ''
