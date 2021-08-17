@@ -127,11 +127,11 @@ class MusicPlayer():
             await question.edit(embed = embed, components = [])
 
             if trackID != -1:
-                await self.getYoutube('https://www.youtube.com' + results[trackID]['url_suffix'], user, question = question, description = description)
-
-
+                URL = 'https://www.youtube.com' + results[trackID]['url_suffix']
+                Thread(target = asyncio.run, args=(self.getYoutube(URL, user, question = question, description = description), )).start()
 
         await channel.send(answer)
+
 
     def pauseAudio(self):
         self.vc.pause()
@@ -368,7 +368,7 @@ class MusicPlayer():
                 func = self.sp.album_tracks
 
             try:
-                playlistID = URL.split('/')[4].split('?si')[0]
+                playlistID = URL.split('/')[4].split('?')[0]
             except:
                 print('Error in getting ID from spoti')
                 exc_type, exc_obj, exc_tb = sys.exc_info()
