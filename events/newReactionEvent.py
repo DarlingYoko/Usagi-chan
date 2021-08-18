@@ -83,6 +83,13 @@ async def fillEmoji(self, payload):
         await pickColor(self, messageId, userId, emoji)
         return
 
+    if emoji.id == 872127853230174308 and messageId == 877522157498929243:
+        guild = await self.client.fetch_guild(self.config['data']['guildId'])
+        role = guild.get_role(877522465889353738)
+        user = await guild.fetch_member(userId)
+        await user.add_roles(role)
+        return
+
 
     try:
         if channelId != self.config['requestsData'].getint('channel'):

@@ -192,12 +192,9 @@ def setMessageEvent(self):
             except discord.errors.HTTPException as e:
                 pass
             except Exception as e:
-                exc_type, exc_obj, exc_tb = sys.exc_info()
-                fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-                print('New error:\ntype - {0}, line - {1}, error - {2}, file - {3}\n'.format(exc_type, exc_tb.tb_lineno, exc_obj, fname))
+                printError()
 
 
 
         #except Exception as e:
-            #exc_type, exc_obj, exc_tb = sys.exc_info()
-            #newLog(exc_type, exc_obj, exc_tb, e)
+            #printError()

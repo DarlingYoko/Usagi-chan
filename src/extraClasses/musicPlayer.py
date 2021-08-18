@@ -7,7 +7,7 @@ import spotipy
 import spotipy.oauth2 as oauth2
 from spotipy.oauth2 import SpotifyOAuth, SpotifyClientCredentials
 from youtube_search import YoutubeSearch
-from src.functions import createEmbed, getCurrentTime
+from src.functions import createEmbed, getCurrentTime, printError
 from discord_components import Button, ButtonStyle, InteractionType
 
 
@@ -306,6 +306,7 @@ class MusicPlayer():
                     print("ОШИБКА КНОПКИ")
                     await question.delete()
                     await message.delete()
+                    return
 
                 else:
                     print("ЗАПОЛНЯЕМ КНОПКУ")
@@ -335,7 +336,7 @@ class MusicPlayer():
 
                     print("ОТПРАВЛЯЕМ НОВОЕ")
 
-                    await res.respond(type=7, embed = embed)#?????
+                    await res.respond(type=7, embed = embed)
 
         else:
             await channel.send(answer, file = sticker)
@@ -370,10 +371,7 @@ class MusicPlayer():
             try:
                 playlistID = URL.split('/')[4].split('?')[0]
             except:
-                print('Error in getting ID from spoti')
-                exc_type, exc_obj, exc_tb = sys.exc_info()
-                fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-                print('New error:\ntype - {0}, line - {1}, error - {2}, file - {3}\n'.format(exc_type, exc_tb.tb_lineno, exc_obj, fname))
+                printError()
                 asyncio.run_coroutine_threadsafe(message.edit(content = 'Не получилось добавить('), self.loop)
                 return
             #https://open.spotify.com/album/3oIFxDIo2fwuk4lwCmFZCx?si=20ebd7c4d1bf40d4 album
@@ -398,10 +396,7 @@ class MusicPlayer():
                         print(results)
                         res.append(results[0]['url_suffix'].split('/watch?v=')[1])
                     except Exception as e:
-                        exc_type, exc_obj, exc_tb = sys.exc_info()
-                        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-                        print('New error:\ntype - {0}, line - {1}, error - {2}, file - {3}\n'.format(exc_type, exc_tb.tb_lineno, exc_obj, fname))
-                        print('Error in adding url from spoti track')
+                        printError()
 
                 offset += 100
                 playlist_info = func(playlistID, offset=offset)
@@ -463,9 +458,7 @@ class MusicPlayer():
                 elif type(URL) != list:
                     self.getData(info, user)
         except Exception as e:
-            exc_type, exc_obj, exc_tb = sys.exc_info()
-            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-            print('New error:\ntype - {0}, line - {1}, error - {2}, file - {3}\n'.format(exc_type, exc_tb.tb_lineno, exc_obj, fname))
+            printError()
             asyncio.run_coroutine_threadsafe(message.edit(content = 'Не получилось добавить('), self.loop)
 
         else:
@@ -525,9 +518,7 @@ class MusicPlayer():
             self.addTrack(title, URL, duration, user)
         except:
             print('Не получилось добавить трек - ', info)
-            exc_type, exc_obj, exc_tb = sys.exc_info()
-            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-            print('New error:\ntype - {0}, line - {1}, error - {2}, file - {3}\n'.format(exc_type, exc_tb.tb_lineno, exc_obj, fname))
+            printError()
 
     def getDuration(self, target = None):
         time = 0

@@ -2,7 +2,7 @@ import discord, pytz, logging.config, configparser
 from datetime import datetime
 import sys, os
 
-def createEmbed(title = None, description = None, color = 0x00ff00, urlImage = None, thumbnail = None, footer = None, authorName = None, authorIconURL = None):
+def createEmbed(title = None, description = None, color = 0xf08080, urlImage = None, thumbnail = None, footer = None, authorName = None, authorIconURL = None, fields = None):
     embed = discord.Embed(description = description, color = color)
     if urlImage:
         embed.set_image(url = urlImage)
@@ -18,6 +18,10 @@ def createEmbed(title = None, description = None, color = 0x00ff00, urlImage = N
 
     if title:
         embed.title = title
+
+    if fields:
+        for field in fields:
+            embed.add_field(name = field['name'], value = field['value'], inline=field['inline'])
 
 
     return embed
@@ -81,3 +85,9 @@ def getLogger():
     })
 
     return logging.getLogger()
+
+
+def printError():
+    exc_type, exc_obj, exc_tb = sys.exc_info()
+    fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+    print('New error:\ntype - {0}, line - {1}, error - {2}, file - {3}\n'.format(exc_type, exc_tb.tb_lineno, exc_obj, fname))
