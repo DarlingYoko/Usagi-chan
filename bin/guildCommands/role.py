@@ -29,6 +29,9 @@ async def createNewRole(self, message):
             return
 
     if content[0] == 'удалить' or content[0] == 'изменить':
+        if int(content[1][3:-1]) == 877522465889353738:
+            await message.channel.send('ЭТО КАРЫТО ОБЩЕЕ, КУДА ЛЕЗЕШЬ!')
+            return
         try:
             role = guild.get_role(int(content[1][3:-1]))
         except Exception as e:
