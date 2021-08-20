@@ -59,7 +59,7 @@ class MusicPlayer():
         answer = 'Не получилось добавить трек в очередь( Пипакрай'
 
         mes = 'Начала добавлять трек, Нья!'
-        regexYouTube = 'http(?:s?):\/\/(?:www\.)?youtu(?:be\.com\/watch\?v=|\.be\/)([\w\-\_]*)(&(amp;)?‌​[\w\?‌​=]*)?'
+        regexYouTube = 'http(?:s?):\/\/(?:www\.)?youtu(?:be\.com\/watch\?v=|\.be\/)?'
         regexSpoti = 'spotify'
 
         if 'list' in URL:
