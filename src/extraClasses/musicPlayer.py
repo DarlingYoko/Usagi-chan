@@ -123,7 +123,7 @@ class MusicPlayer():
 
 
             answer = ''
-            embed = createEmbed(title = title, description = description, footer = footer, color = 0xe00000)
+            embed = createEmbed(title = title, description = description, color = 0xe00000)
             await question.edit(embed = embed, components = [])
 
             if trackID != -1:
@@ -466,7 +466,7 @@ class MusicPlayer():
                 asyncio.run_coroutine_threadsafe(message.edit(content = answer), self.loop)
             elif question:
                 embed = createEmbed(title = 'Трек был выбран и добавлен в очередь, нья!',
-                                    description = description,                                    
+                                    description = description,
                                     color = 0xf08080)
                 asyncio.run_coroutine_threadsafe(question.edit(embed = embed), self.loop)
 
