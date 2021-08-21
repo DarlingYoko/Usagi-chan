@@ -25,11 +25,12 @@ class MusicPlayer():
         self.client = client
         self.config = config
 
-        self.emojiOne = self.client.get_emoji(873719561562755143)
-        self.emojiTwo = self.client.get_emoji(873653970839674941)
-        self.emojiThree = self.client.get_emoji(873653970751602719)
-        self.emojiFour = self.client.get_emoji(873653970839670854)
-        self.emojiFive = self.client.get_emoji(873653970994888704)
+
+        self.emojiOne = self.client.get_emoji(877562925253001297)
+        self.emojiTwo = self.client.get_emoji(877562925752139846)
+        self.emojiThree = self.client.get_emoji(877562925525639169)
+        self.emojiFour = self.client.get_emoji(877562925563408434)
+        self.emojiFive = self.client.get_emoji(877562925181714463)
 
         self.emojiGreenTick = self.client.get_emoji(874767321007276143)
         self.emojiRedTick = self.client.get_emoji(874767320915005471)
@@ -92,8 +93,7 @@ class MusicPlayer():
             trackID = -1
             results = YoutubeSearch(URL, max_results=5).to_dict()
             description = '\n\n'.join(['{0}. {1} **[{2}]**'.format(i+1, results[i]['title'], results[i]['duration']) for i in range(5)])
-            footer = 'По МСК ' + getCurrentTime()
-            embed = createEmbed(title = title, description = description, footer = footer, color = 0xf08080)
+            embed = createEmbed(title = title, description = description, color = 0xf08080)
 
 
             btn1 = Button(style=ButtonStyle.gray, emoji = self.emojiOne, id = '0')
@@ -466,8 +466,7 @@ class MusicPlayer():
                 asyncio.run_coroutine_threadsafe(message.edit(content = answer), self.loop)
             elif question:
                 embed = createEmbed(title = 'Трек был выбран и добавлен в очередь, нья!',
-                                    description = description,
-                                    footer = 'По МСК ' + getCurrentTime(),
+                                    description = description,                                    
                                     color = 0xf08080)
                 asyncio.run_coroutine_threadsafe(question.edit(embed = embed), self.loop)
 

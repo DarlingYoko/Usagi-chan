@@ -1,5 +1,5 @@
 import psycopg2, datetime, sys
-from src.functions import newLog
+from src.functions import printError
 
 class Database():
     def __init__(self, usagi):
@@ -15,8 +15,7 @@ class Database():
             self.cur = self.con.cursor()
 
         except Exception as e:
-            exc_type, exc_obj, exc_tb = sys.exc_info()
-            newLog(exc_type, exc_obj, exc_tb, e)
+            printError()
 
 
     def insert(self, tableName, *values):
@@ -25,8 +24,7 @@ class Database():
             self.con.commit()
             return 1
         except Exception as e:
-            exc_type, exc_obj, exc_tb = sys.exc_info()
-            newLog(exc_type, exc_obj, exc_tb, e)
+            printError()
             return 0
 
     def getValue(self, tableName, argument, selector, value):
@@ -34,7 +32,11 @@ class Database():
             self.cur.execute("SELECT {1} from {0} where {2} = \'{3}\';".format(tableName, argument, selector, value))
             self.con.commit()
             return self.cur.fetchall()[0][0]
+
+        except IndexError:
+            return 0
         except Exception as e:
+            printError()
             return 0
 
     def update(self, tableName, argument, selector, newValue, findValue):
@@ -43,8 +45,7 @@ class Database():
             self.con.commit()
             return 1
         except Exception as e:
-            exc_type, exc_obj, exc_tb = sys.exc_info()
-            newLog(exc_type, exc_obj, exc_tb, e)
+            printError()
             return 0
 
     def remove(self, tableName, selector, value):
@@ -53,8 +54,7 @@ class Database():
             self.con.commit()
             return 1
         except Exception as e:
-            exc_type, exc_obj, exc_tb = sys.exc_info()
-            newLog(exc_type, exc_obj, exc_tb, e)
+            printError()
             return 0
 
     def getAll(self, tableName):
@@ -63,8 +63,7 @@ class Database():
             self.con.commit()
             return self.cur.fetchall()
         except Exception as e:
-            exc_type, exc_obj, exc_tb = sys.exc_info()
-            newLog(exc_type, exc_obj, exc_tb, e)
+            printError()
             return 0
 
     def command(self, command):
@@ -73,6 +72,5 @@ class Database():
             self.con.commit()
             return self.cur.fetchall()
         except Exception as e:
-            exc_type, exc_obj, exc_tb = sys.exc_info()
-            newLog(exc_type, exc_obj, exc_tb, e)
+            printError()
             return 0
