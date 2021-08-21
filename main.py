@@ -4,6 +4,7 @@ from src.functions import newLog, loadConfig, getLogger
 from src.extraClasses.classMember import Members
 from src.extraClasses.DB import Database
 from src.extraClasses.musicPlayer import MusicPlayer
+from artifactsBin.artifacts import Artifacts
 from src.extraClasses.Token import Token
 from bin.guildCommands.autoRemoveRequest import autoRemoveRequest
 from bin.guildCommands.forum import forum, checkTransform
@@ -91,6 +92,7 @@ class UsagiChan:
             self.loop = asyncio.get_event_loop()
             await self.members.fillMembers(self.client)
             self.musicPlayer = MusicPlayer(self.client, self.config)
+            self.artifacts = Artifacts(self.client, self.config, self.db)
             #self.my_background_task.start("ASDASDASD")
             #self.my_background_task.stop()
             DiscordComponents(self.client)

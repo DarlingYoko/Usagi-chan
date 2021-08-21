@@ -63,6 +63,16 @@ commands = {
                 'function': 'asyncio.run_coroutine_threadsafe(transform(self, message), self.loop)',
                 'delay': None,
             },
+            '!арт':{
+                'answer': '',
+                'function': 'asyncio.run_coroutine_threadsafe(self.artifacts.addNewArtifact(message), self.loop)',
+                'delay': None,
+            },
+            '!показать':{
+                'answer': '',
+                'function': 'asyncio.run_coroutine_threadsafe(self.artifacts.showUserArtifacts(message), self.loop)',
+                'delay': None,
+            },
         },
         'music': {
             '!p':{

@@ -92,7 +92,7 @@ sp = spotipy.Spotify(auth_manager = auth_manager)
 
 def search():
 
-    playlistID = '3oIFxDIo2fwuk4lwCmFZCx'
+    playlistID = '4HlAmB7VZFZW5iPYapiqiz'
     offset = 0
     playlist_info = sp.album_tracks(playlistID, offset=offset, limit = 10)
     print(playlist_info['items'][0]['artists'][0]['name'] + ' ' + playlist_info['items'][0]['name'])
@@ -149,10 +149,52 @@ while True:
     sleep(1)
     print(1111111111111111111)
 '''
-search()
+#search()
 '''
 from youtube_dl import YoutubeDL
 with YoutubeDL() as ydl:
     info = ydl.extract_info('https://youtu.be/meD4fFX9jKQ', download=False)
     print(info)
+'''
+
+
+
+import psycopg2
+
+con = psycopg2.connect(
+                            database = 'yoko_bot_test',
+                            user = 'yoko_bot',
+                            password = 'yoko_password',
+                            host = '62.109.11.88',
+                            port = '5432',
+                            )
+
+cur = con.cursor()
+
+title = 'asd'
+part = 'ljkghmghjk'
+lvl = 100
+main = ["12", "345"]
+sub1 = ["2"]
+sub2 = ["1"]
+sub3 = ["34"]
+sub4 = ["457"]
+
+
+
+id = 5
+cur.execute(f'SELECT * from artifacts where id = {id};')
+con.commit()
+print(cur.fetchall()[0])
+
+range(0, 6, 2)
+
+'''
+with YoutubeDL(ydl_opts) as ydl:
+    if type(URL) == list:
+        links = []
+        for urlik in URL:
+            info = ydl.extract_info(urlik, download=False)
+            for track in info['entries']:
+                links.append(track)
 '''

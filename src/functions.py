@@ -2,7 +2,7 @@ import discord, pytz, logging.config, configparser
 from datetime import datetime
 import sys, os
 
-def createEmbed(title = None, description = None, color = 0xf08080, urlImage = None, thumbnail = None, footer = None, authorName = None, authorIconURL = None, fields = None):
+def createEmbed(title = '', description = '', color = 0xf08080, urlImage = None, thumbnail = None, footer = None, authorName = None, authorIconURL = None, fields = None):
     embed = discord.Embed(description = description, color = color)
     if urlImage:
         embed.set_image(url = urlImage)
@@ -11,7 +11,7 @@ def createEmbed(title = None, description = None, color = 0xf08080, urlImage = N
         embed.set_thumbnail(url = thumbnail)
 
     if footer:
-        embed.set_footer(text = footer)
+        embed.set_footer(text = footer[0], icon_url = footer[1])
 
     if authorName:
         embed.set_author(name = authorName, icon_url = authorIconURL)

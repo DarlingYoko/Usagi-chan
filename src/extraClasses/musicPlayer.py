@@ -113,7 +113,7 @@ class MusicPlayer():
 
             except:
                 title = 'Ты не выбрал трек за отведённое время, бака!'
-                description = ''
+                description = 'Бака бааака!'
 
             else:
                 trackID = int(res.component.id)
