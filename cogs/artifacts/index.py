@@ -63,7 +63,6 @@ config = get_config()
 class Artifacts(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.config = get_config()
         self.db = self.bot.get_cog('Database')
 
 

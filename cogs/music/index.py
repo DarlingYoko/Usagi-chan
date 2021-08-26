@@ -15,7 +15,6 @@ config = get_config()
 class Music_Player(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.config = get_config()
         self.play_url.start()
 
         self.vc = None
