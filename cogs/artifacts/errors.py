@@ -1,0 +1,4 @@
+
+
+class Exit(Exception):
+    pass

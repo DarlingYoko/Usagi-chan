@@ -1,18 +1,14 @@
 import discord
-import os
+import os, sys, traceback
 from discord.ext import commands
-from bin.functions import *
-
-async def isAdmin(ctx):
-    return ctx.author.id == 824521926416269312
-
+from bin.functions import get_config
+from discord_components import DiscordComponents
+from importlib import reload as reload_module
 
 
 
-
-
-
-bot = commands.Bot(command_prefix = '!')
+intents = discord.Intents().all()
+bot = commands.Bot(command_prefix = '!', intents = intents)
 
 config = get_config()
 
@@ -27,6 +23,7 @@ token = config['data'].get('token')
 @bot.event
 async def on_ready():
     print('Bot is up')
+    DiscordComponents(bot)
 
 @bot.event
 async def on_command_error(ctx, error):
@@ -36,20 +33,29 @@ async def on_command_error(ctx, error):
         print(error)
 
 @bot.command()
-@commands.check(isAdmin)
-async def load(ctx, arg):
+@commands.is_owner()
+async def load(ctx, arg: str):
     bot.load_extension(f'cogs.{arg}.index')
     await ctx.send('Успешно подключила ког.')
 
 @bot.command()
-@commands.check(isAdmin)
-async def unload(ctx, arg):
+@commands.is_owner()
+async def unload(ctx, arg: str):
     bot.unload_extension(f'cogs.{arg}.index')
     await ctx.send('Успешно отключила ког.')
 
 @bot.command()
-@commands.check(isAdmin)
-async def reload(ctx, arg):
+@commands.is_owner()
+async def reload(ctx, arg: str):
+    modules = list(sys.modules.values()).copy()
+    try:
+        for module in modules:
+            if f'cogs.{arg}' in module.__name__:
+                reload_module(module)
+                print(module.__name__)
+    except Exception as e:
+        print(traceback.format_exc())
+
     bot.reload_extension(f'cogs.{arg}.index')
     await ctx.send('Успешно перезагрузила ког.')
 
