@@ -1,7 +1,7 @@
 import discord
 import random
 from discord.ext import commands
-from bin.functions import UserConverter
+from bin.converters import *
 
 class Fun(commands.Cog):
     def __init__(self, bot):
@@ -16,7 +16,7 @@ class Fun(commands.Cog):
     async def joined(self, ctx, *, member: UserConverter = None):
         member = member or ctx.author
         time = member.joined_at.strftime("%m/%d/%Y, %H:%M")
-        await ctx.send('{0} joined on {1}'.format(member, time))
+        await ctx.send(f'{member} joined on {time}\n{member.avatar_url}')
 
     @joined.error
     async def joined_error(self, ctx, error):

@@ -32,6 +32,8 @@ async def on_command_error(ctx, error):
     else:
         print(error)
 
+
+
 @bot.command()
 @commands.is_owner()
 async def load(ctx, arg: str):

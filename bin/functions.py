@@ -20,14 +20,6 @@ def print_error():
     print('New error:\ntype - {0}, line - {1}, error - {2}, file - {3}\n'.format(exc_type, exc_tb.tb_lineno, exc_obj, fname))
 
 
-class UserConverter(commands.Converter):
-    async def convert(self, ctx, argument):
-        member = discord.utils.find(lambda m: m.display_name.lower().startswith(argument.lower()), ctx.guild.members)
-        if not member:
-            raise commands.BadArgument
-        return member
-
-
 def get_embed(embed = None, title = '', description = '', color = 0xf08080, urlImage = None, thumbnail = None, footer = None, authorName = None, authorIconURL = None, fields = None):
     if not embed:
         embed = discord.Embed()
