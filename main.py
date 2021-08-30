@@ -64,3 +64,6 @@ async def reload(ctx, arg: str):
 
 
 bot.run(token)
+
+
+#обновить все пакеты

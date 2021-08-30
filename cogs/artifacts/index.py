@@ -85,7 +85,7 @@ class Artifacts(commands.Cog):
             artifactsIDs = self.db.get_value(tableName = 'users_arts', argument = 'artifacts', selector = 'user_id', value = id)
             if not artifactsIDs:
                 answer = f'<@{ctx.author.id}>, У тебя нет артефактов, бааака!'
-                if len(splitter) > 1:
+                if member != ctx.author:
                     answer = f'<@{ctx.author.id}>, У этого пользователя нет артефактов, бааака!'
                 await ctx.send(answer)
                 return
