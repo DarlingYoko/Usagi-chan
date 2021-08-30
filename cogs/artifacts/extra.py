@@ -1,5 +1,5 @@
 import re
-from discord_components import Button, Select, ButtonStyle, InteractionType, SelectOption
+from discord_components import Button, Select, ButtonStyle, SelectOption
 
 
 def get_tasks(ctx, check):

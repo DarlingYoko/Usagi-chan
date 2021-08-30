@@ -2,7 +2,7 @@ import configparser, os, sys
 import discord
 from datetime import datetime
 from discord.ext import commands
-from discord_components import Button, Select, ButtonStyle, InteractionType, SelectOption
+from discord_components import Button, Select, ButtonStyle, SelectOption
 
 
 def get_config():

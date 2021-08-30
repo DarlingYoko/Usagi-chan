@@ -54,7 +54,7 @@ from discord.ext import commands
 from bin.functions import *
 from bin.checks import *
 from bin.converters import *
-from discord_components import Button, Select, ButtonStyle, InteractionType, SelectOption
+from discord_components import Button, Select, ButtonStyle, SelectOption
 from cogs.artifacts.extra import *
 from cogs.artifacts.blanks import *
 
