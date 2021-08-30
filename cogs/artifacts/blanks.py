@@ -98,7 +98,7 @@ async def generate_blank(ctx, set = None, lvl = None, part = None, main = None, 
                 for x in done:
                     res = x.result()
                     if res.custom_id == 'select':
-                        title = res.component[0].label
+                        title = res.values[0]
                         thumbnail = sets[title][part]
                         fields = generate_text(main = main, subs = [sub1, sub2, sub3, sub4])
                         embed = get_embed(embed = embed, title = title, thumbnail = thumbnail, fields = fields)
@@ -157,7 +157,7 @@ async def generate_blank(ctx, set = None, lvl = None, part = None, main = None, 
                     for x in done:
                         res = x.result()
                         if res.custom_id == 'select':
-                            main = [res.component[0].label, '—']
+                            main = [res.values[0], '—']
                             fields = generate_text(main = main, subs = [sub1, sub2, sub3, sub4])
                             embed = get_embed(embed = embed, fields = fields)
                             await res.respond(type=7, embed = embed)
@@ -220,7 +220,7 @@ async def generate_blank(ctx, set = None, lvl = None, part = None, main = None, 
                     for x in done:
                         res = x.result()
                         if res.custom_id == 'select':
-                            subs[i] = [res.component[0].label, '—']
+                            subs[i] = [res.values[0], '—']
                             fields = generate_text(main = main, subs = [subs[1], subs[2], subs[3], subs[4]])
                             embed = get_embed(embed = embed, fields = fields)
                             await res.respond(type=7, embed = embed)
