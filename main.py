@@ -4,11 +4,11 @@ from discord.ext import commands
 from bin.functions import get_config
 from discord_components import DiscordComponents
 from importlib import reload as reload_module
-
+from bin.helpCommand import CustomHelpCommand
 
 
 intents = discord.Intents().all()
-bot = commands.Bot(command_prefix = '!', intents = intents)
+bot = commands.Bot(command_prefix = '!', intents = intents, help_command = CustomHelpCommand())
 
 config = get_config()
 

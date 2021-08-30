@@ -2,6 +2,7 @@ import discord
 import random
 from discord.ext import commands
 from bin.converters import *
+from bin.functions import get_embed
 
 class Fun(commands.Cog):
     def __init__(self, bot):
@@ -24,16 +25,25 @@ class Fun(commands.Cog):
             await ctx.send('I could not find that member...')
 
     @commands.command(aliases=['число'], usage='<from>-<to>', description='Роллим гачу :AD:', brief='Рандом число <от>-<до>')
-    async def roll(self, ctx, *, args):
+    async def roll(self, ctx, *, args = None):
+        if args is None:
+            #raise commands.BadArgument
+            return await ctx.send_help('roll')
+
         args = args.split('-')
         if len(args) != 2 or not args[0].isdigit() or not args[1].isdigit():
             raise commands.BadArgument
-        await ctx.send(f'Yours roll is {random.randint(int(args[0]), int(args[1]))}')
+
+        try:
+            number = random.randint(int(args[0]), int(args[1]))
+        except ValueError:
+            raise commands.BadArgument
+        await ctx.send(f'Yours roll is {number}')
 
     @roll.error
     async def joined_error(self, ctx, error):
         if isinstance(error, commands.BadArgument):
-            await ctx.send('Wrong argumets')
+            await ctx.send('<:MonkaStop:837405113638977576>')
 
 
     @commands.group()
@@ -52,6 +62,12 @@ class Fun(commands.Cog):
         if channelId != None:
             channel = self.bot.get_channel(int(channelId))
             await channel.send("Hey! This is a message from me the bot. Bet you didn't see who ran the command?", delete_after=15)
+
+
+
+    #@commands.command()
+    #async def test(self, ctx, user: discord.Member, role: discord.Role):
+    #    return await user.add_roles(role)
 
 
 

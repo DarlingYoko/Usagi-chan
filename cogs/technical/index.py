@@ -23,7 +23,7 @@ class Technical(commands.Cog):
         self.db = self.bot.get_cog('Database')
 
 
-    @commands.command(name = 'эмодзи', brief='Добавление нового эмодзи')
+    @commands.command(name = 'эмодзи', brief='Добавление нового эмодзи', help = str(config['channel'].getint('emoji')))
     @is_channel(config['channel'].getint('emoji'))
     async def create_new_emoji(self, ctx, name: str):
 
@@ -84,15 +84,14 @@ class Technical(commands.Cog):
                 self.db.update('forum', 'time', 'userid', time, userID)
 
 
-    @commands.group(name = 'преобразователь', brief='Добавление/изменение преобразователя.')
+    @commands.group(name = 'преобразователь', brief='Добавление/изменение преобразователя.', help = str(config['channel'].getint('transformator')))
     @is_channel(config['channel'].getint('transformator'))
     async def transformator(self, ctx):
         if ctx.invoked_subcommand is None:
-            await ctx.send(f'{ctx.author.mention} Ты не указал что мне надо сделать, Баааака!')
+            return await ctx.send_help('преобразователь')
 
 
     @transformator.command(name = 'добавить')
-    @is_channel(config['channel'].getint('transformator'))
     async def transformator_add(self, ctx, time: int = None):
         request = f"SELECT EXISTS(SELECT * from forum where userid = {ctx.author.id});"
         user_in_db = self.db.custom_command(request)[0][0]
@@ -121,11 +120,10 @@ class Technical(commands.Cog):
     @transformator_add.error
     async def transformator_add_error(self, ctx, error):
         if isinstance(error, commands.BadArgument):
-            await ctx.send(f'<@{ctx.author.id}> Ты ввёл неверное вермя! Баака')
+            await ctx.send(f'<@{ctx.author.id}> Ты ввёл неверное время! Баака')
 
 
     @transformator.command(name = 'удалить')
-    @is_channel(config['channel'].getint('transformator'))
     async def transformator_remove(self, ctx):
         request = f"SELECT EXISTS(SELECT * from forum where userid = {ctx.author.id});"
         user_in_db = self.db.custom_command(request)[0][0]
@@ -197,56 +195,50 @@ class Technical(commands.Cog):
 
 
 
-    @commands.group(name = 'роль', brief='Настройка роли.', description='Обязательно указывайте название роли в "" (двойных кавычках :AD:)')
+    @commands.group(name = 'роль', brief='Настройка роли.', description='Обязательно указывайте название роли в "" (двойных кавычках :AD:)', help = str(config['channel'].getint('create_role')))
     @is_channel(config['channel'].getint('create_role'))
     async def role_settings(self, ctx):
         if ctx.invoked_subcommand is None:
-            await ctx.send(f'{ctx.author.mention}, ты не указал что мне надо сделать, Баааака!')
+            return await ctx.send_help('роль')
 
 
-    @role_settings.command(name = 'добавить')
-    @is_channel(config['channel'].getint('create_role'))
+    @role_settings.command(name = 'добавить', help = str(config['channel'].getint('create_role')))
     async def create_new_role(self, ctx, name, color: ColorConverter):
         role = await ctx.guild.create_role(name = name, colour = color, hoist = True, mentionable = True)
         await ctx.author.add_roles(role)
         await ctx.send(f'{ctx.author.mention} Создала новую роль')
 
     @role_settings.command(name = 'удалить')
-    @is_channel(config['channel'].getint('create_role'))
     async def remove_role(self, ctx, role: RoleConverter):
         await role.delete()
         await ctx.send(f'{ctx.author.mention}, Изменила название')
 
     @role_settings.group(name = 'изменить')
-    @is_channel(config['channel'].getint('create_role'))
     async def change_role(self, ctx):
         if ctx.invoked_subcommand is None:
             await ctx.send(f'{ctx.author.mention}, ты не указал что мне надо сделать, Баааака!')
 
     @change_role.command(name = 'название')
-    @is_channel(config['channel'].getint('create_role'))
     async def change_role_name(self, ctx, role: RoleConverter, name):
         await role.edit(name = name)
         await ctx.send(f'{ctx.author.mention}, Изменила название')
 
     @change_role.command(name = 'цвет')
-    @is_channel(config['channel'].getint('create_role'))
     async def change_role_color(self, ctx, role: RoleConverter, color: ColorConverter):
         await role.edit(colour = color)
         await ctx.send(f'{ctx.author.mention}, Изменила цвет')
 
 
-    @commands.Cog.listener()
-    async def on_command_error(self, ctx, error):
-        role_commands = ['добавить', 'удалить', 'название', 'цвет', 'роль']
-        if isinstance(error, commands.CheckFailure) and ctx.command.name in role_commands:
+    @role_settings.error
+    async def role_settings_error(self, ctx, error):
+        if isinstance(error, commands.CheckFailure):
             channel = config['channel'].getint('create_role')
             await ctx.send(f'{ctx.author.mention}, тебе низя использовать эту команду туть. Сюда <#{channel}>')
 
-        if isinstance(error, commands.BadArgument) and ctx.command.name in role_commands:
+        if isinstance(error, commands.BadArgument):
             await ctx.send(f'{ctx.author.mention}, ты ввёл неправильные аргументы, бааака!')
 
-        if isinstance(error, commands.MissingRequiredArgument) and ctx.command.name in role_commands:
+        if isinstance(error, commands.MissingRequiredArgument):
             await ctx.send(f'{ctx.author.mention}, ты ничего не ввёл, бааака!')
 
 

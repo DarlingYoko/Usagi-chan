@@ -166,19 +166,6 @@ def get_stats():
     return allStats, elements, mainStats
 
 
-def get_query_btns(ctx, page):
-    emojiStart = ctx.bot.get_emoji(873921151896805487)
-    emojiPrevious = ctx.bot.get_emoji(873921151372513312)
-    emojiNext = ctx.bot.get_emoji(873921151716438016)
-    emojiEnd = ctx.bot.get_emoji(873921151280234537)
-    btnStart = Button(style=ButtonStyle.gray, emoji = emojiStart, id = 'start')
-    btnPrevious = Button(style=ButtonStyle.gray, emoji = emojiPrevious, id = 'previuos')
-    btnNext = Button(style=ButtonStyle.gray, emoji = emojiNext, id = 'next')
-    btnEnd = Button(style=ButtonStyle.gray, emoji = emojiEnd, id = 'end')
-    page = Button(style=ButtonStyle.gray, label = page, id = 'page', disabled = True)
-    components=[[btnStart, btnPrevious, page, btnNext, btnEnd,]]
-    return components
-
 
 def generate_text(main = None, subs = [None, None, None, None]):
         result = []

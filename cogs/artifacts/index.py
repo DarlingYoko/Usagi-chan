@@ -114,7 +114,7 @@ class Artifacts(commands.Cog):
             pages = [fields[i:i+6] for i in range(0, len(fields), 6)]
             page = 0
 
-            components = get_query_btns(self, f'Page {page + 1}/{len(pages)}')
+            components = get_query_btns(ctx, f'Page {page + 1}/{len(pages)}')
             embed = get_embed(authorName = authorName, authorIconURL = authorIconURL, fields = pages[page])
             question = await ctx.send(embed = embed, components = components)
 
@@ -148,7 +148,7 @@ class Artifacts(commands.Cog):
                 elif res.component.id == 'end':
                     page = len(pages) - 1
 
-                components = get_query_btns(self, f'Page {page + 1}/{len(pages)}')
+                components = get_query_btns(ctx, f'Page {page + 1}/{len(pages)}')
                 embed = get_embed(embed = embed, fields = pages[page])
 
                 await res.respond(type=7, embed = embed, components = components)
@@ -159,7 +159,7 @@ class Artifacts(commands.Cog):
             await ctx.send('Не могу найти такого пользователя...')
 
 
-    @commands.command(name='new', aliases=['арт'], usage='<part> <lvl>|<image>', description='Добавление нового артефакта')
+    @commands.command(name='new', aliases=['арт'], usage='<part> <lvl>|<image>', description='Добавление нового артефакта', help = str(config['channel'].getint('artifact')))
     @is_channel(config['channel'].getint('artifact'))
     async def add_new_artifact(self, ctx, part: str = None, lvl: int = None):
         if part and lvl:

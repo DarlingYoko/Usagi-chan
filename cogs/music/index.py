@@ -37,7 +37,7 @@ class Music_Player(commands.Cog):
         self.sp = spotipy.Spotify(auth_manager = auth_manager)
 
 
-    @commands.command(aliases = ['p'], usage = '<URL>|text for search')
+    @commands.command(aliases = ['p'], usage = '<URL>|text for search', help = str(config['channel'].getint('mp')))
     @is_channel(config['channel'].getint('mp'))
     @commands.check(is_user_in_voice)
     async def play(self, ctx, URL: str):
@@ -124,7 +124,7 @@ class Music_Player(commands.Cog):
 
 
 
-    @commands.command(aliases=['пауза'])
+    @commands.command(aliases=['пауза'], help = str(config['channel'].getint('mp')))
     @is_channel(config['channel'].getint('mp'))
     @commands.check(is_user_in_voice)
     async def pause(self, ctx):
@@ -137,7 +137,7 @@ class Music_Player(commands.Cog):
         await ctx.send(answer)
 
 
-    @commands.command()
+    @commands.command(help = str(config['channel'].getint('mp')))
     @is_channel(config['channel'].getint('mp'))
     @commands.check(is_user_in_voice)
     async def resume(self, ctx):
@@ -149,7 +149,7 @@ class Music_Player(commands.Cog):
 
         await ctx.send(answer)
 
-    @commands.command()
+    @commands.command(help = str(config['channel'].getint('mp')))
     @is_channel(config['channel'].getint('mp'))
     @commands.check(is_user_in_voice)
     async def stop(self, ctx):
@@ -180,7 +180,7 @@ class Music_Player(commands.Cog):
 
         await ctx.send(answer)
 
-    @commands.command(aliases = ['s'])
+    @commands.command(aliases = ['s'], help = str(config['channel'].getint('mp')))
     @is_channel(config['channel'].getint('mp'))
     @commands.check(is_user_in_voice)
     async def skip(self, ctx, arg = None):
@@ -238,7 +238,7 @@ class Music_Player(commands.Cog):
         if answer:
             await ctx.send(answer)
 
-    @commands.command(aliases = ['q'])
+    @commands.command(aliases = ['q'], help = str(config['channel'].getint('mp')))
     @is_channel(config['channel'].getint('mp'))
     async def query(self, ctx):
 
@@ -326,7 +326,7 @@ class Music_Player(commands.Cog):
         else:
             await ctx.send(answer, file = sticker)
 
-    @commands.command(aliases = ['sh'])
+    @commands.command(aliases = ['sh'], help = str(config['channel'].getint('mp')))
     @is_channel(config['channel'].getint('mp'))
     @commands.check(is_user_in_voice)
     async def shuffle(self, ctx):
@@ -336,7 +336,7 @@ class Music_Player(commands.Cog):
             answer = 'Перемешала очередь, Нья!!'
         await ctx.send(answer)
 
-    @commands.command(aliases = ['np'])
+    @commands.command(aliases = ['np'], help = str(config['channel'].getint('mp')))
     @is_channel(config['channel'].getint('mp'))
     async def now_play(self, ctx):
         answer = 'Ничего не играет'

@@ -2,7 +2,7 @@ import configparser, os, sys
 import discord
 from datetime import datetime
 from discord.ext import commands
-
+from discord_components import Button, Select, ButtonStyle, InteractionType, SelectOption
 
 
 def get_config():
@@ -20,7 +20,7 @@ def print_error():
     print('New error:\ntype - {0}, line - {1}, error - {2}, file - {3}\n'.format(exc_type, exc_tb.tb_lineno, exc_obj, fname))
 
 
-def get_embed(embed = None, title = '', description = '', color = 0xf08080, urlImage = None, thumbnail = None, footer = None, authorName = None, authorIconURL = None, fields = None):
+def get_embed(embed = None, title = '', description = '', color = 0xf08080, url_image = None, thumbnail = None, footer = None, author_name = None, author_icon_URL = None, fields = None):
     if not embed:
         embed = discord.Embed()
 
@@ -32,8 +32,8 @@ def get_embed(embed = None, title = '', description = '', color = 0xf08080, urlI
     if description:
         embed.description = description
 
-    if urlImage:
-        embed.set_image(url = urlImage)
+    if url_image:
+        embed.set_image(url = url_image)
 
     if thumbnail:
         embed.set_thumbnail(url = thumbnail)
@@ -41,11 +41,11 @@ def get_embed(embed = None, title = '', description = '', color = 0xf08080, urlI
     if footer:
         embed.set_footer(text = footer[0], icon_url = footer[1])
 
-    if authorName:
-        embed.set_author(name = authorName)
+    if author_name:
+        embed.set_author(name = author_name)
 
-    if authorIconURL:
-        embed.set_author(name = embed.author.name, icon_url = authorIconURL)
+    if author_icon_URL:
+        embed.set_author(name = embed.author.name, icon_url = author_icon_URL)
 
     if title:
         embed.title = title
@@ -65,3 +65,17 @@ def check_str_in_list(str, list):
         if line in str:
             return 1
     return 0
+
+
+def get_query_btns(ctx, page):
+    emojiStart = ctx.bot.get_emoji(873921151896805487)
+    emojiPrevious = ctx.bot.get_emoji(873921151372513312)
+    emojiNext = ctx.bot.get_emoji(873921151716438016)
+    emojiEnd = ctx.bot.get_emoji(873921151280234537)
+    btnStart = Button(style=ButtonStyle.gray, emoji = emojiStart, id = 'start')
+    btnPrevious = Button(style=ButtonStyle.gray, emoji = emojiPrevious, id = 'previuos')
+    btnNext = Button(style=ButtonStyle.gray, emoji = emojiNext, id = 'next')
+    btnEnd = Button(style=ButtonStyle.gray, emoji = emojiEnd, id = 'end')
+    page = Button(style=ButtonStyle.gray, label = page, id = 'page', disabled = True)
+    components=[[btnStart, btnPrevious, page, btnNext, btnEnd,]]
+    return components
