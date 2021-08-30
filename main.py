@@ -23,6 +23,7 @@ token = config['data'].get('token')
 @bot.event
 async def on_ready():
     print('Bot is up')
+    await bot.change_presence(status=discord.Status.online, activity=discord.Game("!help | ver 3.0 | Beta-test |"))
     DiscordComponents(bot)
 
 @bot.event
