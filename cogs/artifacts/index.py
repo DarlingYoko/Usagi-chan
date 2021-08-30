@@ -91,8 +91,8 @@ class Artifacts(commands.Cog):
                 return
             artifactsIDs = eval(artifactsIDs)
             username = await self.bot.fetch_user(id)
-            authorName = 'Коллекция {}'.format(username.display_name)
-            authorIconURL = 'https://cdn.discordapp.com/attachments/813825744789569537/877565170258411550/user_account_person_avatar_icon_131248.png'
+            author_name = 'Коллекция {}'.format(username.display_name)
+            author_icon_URL = 'https://cdn.discordapp.com/attachments/813825744789569537/877565170258411550/user_account_person_avatar_icon_131248.png'
 
 
             fields = []
@@ -115,7 +115,7 @@ class Artifacts(commands.Cog):
             page = 0
 
             components = get_query_btns(ctx, f'Page {page + 1}/{len(pages)}')
-            embed = get_embed(authorName = authorName, authorIconURL = authorIconURL, fields = pages[page])
+            embed = get_embed(author_name = author_name, author_icon_URL = author_icon_URL, fields = pages[page])
             question = await ctx.send(embed = embed, components = components)
 
         while True:
@@ -170,11 +170,11 @@ class Artifacts(commands.Cog):
                 if res:
                     footer = ['ID ' + '0' * (5 - len(str(res))) + str(res),
                                 'https://cdn.discordapp.com/attachments/813825744789569537/877565862935150662/view_watch_eye_icon_131255.png']
-                    authorName = 'Артефакт усешно создан и добавлен'
-                    embed = get_embed(embed = embed, footer = footer, authorName = authorName)
+                    author_name = 'Артефакт усешно создан и добавлен'
+                    embed = get_embed(embed = embed, footer = footer, author_name = author_name)
                 else:
-                    authorName = 'Не удалось добавить артефакт...'
-                    embed = get_embed(embed = embed, authorName = authorName)
+                    author_name = 'Не удалось добавить артефакт...'
+                    embed = get_embed(embed = embed, author_name = author_name)
 
                 await question.edit(embed = embed, components = [])
                 # await ctx.send('Successfully created artifact')

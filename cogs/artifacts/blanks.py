@@ -58,8 +58,8 @@ async def generate_blank(ctx, set = None, lvl = None, part = None, main = None, 
 
         main_stat = main_stats[part]
 
-        authorName = 'Добавление нового артефакта'
-        authorIconURL = 'https://cdn.discordapp.com/attachments/813825744789569537/877650197122011166/icon-document_87920.png'
+        author_name = 'Добавление нового артефакта'
+        author_icon_URL = 'https://cdn.discordapp.com/attachments/813825744789569537/877650197122011166/icon-document_87920.png'
         thumbnail = parts[part][0]
 
         title = 'Сет не выбран'
@@ -68,7 +68,7 @@ async def generate_blank(ctx, set = None, lvl = None, part = None, main = None, 
         fields = generate_text(main = main, subs = [sub1, sub2, sub3, sub4])
 
 
-        embed = get_embed(title = title, description = description, authorName = authorName, authorIconURL = authorIconURL, thumbnail = thumbnail, fields = fields)
+        embed = get_embed(title = title, description = description, author_name = author_name, author_icon_URL = author_icon_URL, thumbnail = thumbnail, fields = fields)
 
         emojiAccept = ctx.bot.get_emoji(874767321007276143)
         emojiExit = ctx.bot.get_emoji(874767320915005471)
