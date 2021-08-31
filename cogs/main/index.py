@@ -29,6 +29,13 @@ class Main(commands.Cog):
         await ctx.send('Успешно подключилась')
 
 
+    @commands.command(name = 'помощь', aliases = ['хелп', 'хлеп'])
+    async def help(self, ctx, *, args = None):
+        if args:
+            await ctx.send_help(args)
+        else:
+            await ctx.send_help()
+
 
 
 

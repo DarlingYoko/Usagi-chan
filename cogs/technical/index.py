@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands, tasks
-from bin.functions import get_config
+from bin.functions import *
 from bin.checks import *
 from bin.converters import *
 from datetime import datetime, timedelta
@@ -183,6 +183,8 @@ class Technical(commands.Cog):
 
     @set_countdown.error
     async def set_countdown_error(self, ctx, error):
+        if isinstance(error, commands.CheckFailure):
+            return await ctx.send(f'{ctx.author.mention}, тебе низя использовать эту команду.')
         await ctx.send('Не получилось установить новое время')
 
 
