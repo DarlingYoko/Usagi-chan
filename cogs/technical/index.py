@@ -6,7 +6,9 @@ from bin.converters import *
 from datetime import datetime, timedelta
 from time import mktime
 
-config = get_config()
+emoji_channel = 880497584123285604
+transformator_channel = 880497614456500295
+role_channel = 880497550472380476
 
 
 class Technical(commands.Cog):
@@ -15,16 +17,10 @@ class Technical(commands.Cog):
         #self.notify_forum_login.start()
         #self.countdown_for_update.start()
         #self.notify_transformator.start()
-        self.db = self.bot.get_cog('Database')
 
 
-    @commands.Cog.listener()
-    async def on_ready(self):
-        self.db = self.bot.get_cog('Database')
-
-
-    @commands.command(name = 'эмодзи', brief='Добавление нового эмодзи', help = str(config['channel'].getint('emoji')))
-    @is_channel(config['channel'].getint('emoji'))
+    @commands.command(name = 'эмодзи', brief='Добавление нового эмодзи', help = str(emoji_channel))
+    @is_channel(emoji_channel)
     async def create_new_emoji(self, ctx, name: str):
 
         if not ctx.message.attachments:
@@ -54,7 +50,7 @@ class Technical(commands.Cog):
             await ctx.send(f'<@{ctx.author.id}> Ты не написал название эмодзи! Баака')
 
         if isinstance(error, commands.CheckFailure):
-            channel = config['channel'].getint('emoji')
+            channel = emoji_channel
             await ctx.send(f'Низя использовать эту команду туть. Тебе сюда <#{channel}>')
 
 
@@ -64,28 +60,28 @@ class Technical(commands.Cog):
     async def notify_forum_login(self):
         if datetime.now().hour == 16:
             message = 'Не забываем забрать логин бонус!\n<https://webstatic-sea.mihoyo.com/ys/event/signin-sea/index.html?act_id=e202102251931481&lang=ru-ru>'
-            channels_id = [config['channel'].getint('main'), config['channel'].getint('bar')]
+            channels_id = [self.bot.config['channel'].getint('main'), self.bot.config['channel'].getint('bar')]
             for channel_id in channels_id:
                 channel = await self.bot.fetch_channel(channel_id)
                 await channel.send(message)
 
     @tasks.loop(minutes=10.0)
     async def notify_transformator(self):
-        usersList = self.db.get_all(tableName = 'forum')
+        usersList = self.bot.db.get_all(tableName = 'forum')
         for (userID, time) in usersList:
             if userID == 1:
                 continue
             time = datetime.fromtimestamp(float(time))
 
             if datetime.now() - time >= timedelta(days = 6, hours = 22):
-                channel = await self.bot.fetch_channel(config['channel'].getint('transformator'))
+                channel = await self.bot.fetch_channel(self.bot.config['channel'].getint('transformator'))
                 await channel.send('<@{0}> Преобразователь готов, нья!'.format(userID))
                 time = mktime(datetime.now().timetuple())
-                self.db.update('forum', 'time', 'userid', time, userID)
+                self.bot.db.update('forum', 'time', 'userid', time, userID)
 
 
-    @commands.group(name = 'преобразователь', brief='Добавление/изменение преобразователя.', help = str(config['channel'].getint('transformator')))
-    @is_channel(config['channel'].getint('transformator'))
+    @commands.group(name = 'преобразователь', brief='Добавление/изменение преобразователя.', help = str(transformator_channel))
+    @is_channel(transformator_channel)
     async def transformator(self, ctx):
         if ctx.invoked_subcommand is None:
             return await ctx.send_help('преобразователь')
@@ -94,7 +90,7 @@ class Technical(commands.Cog):
     @transformator.command(name = 'добавить')
     async def transformator_add(self, ctx, time: int = None):
         request = f"SELECT EXISTS(SELECT * from forum where userid = {ctx.author.id});"
-        user_in_db = self.db.custom_command(request)[0][0]
+        user_in_db = self.bot.db.custom_command(request)[0][0]
 
         if time:
             delta = 166 - time
@@ -103,11 +99,11 @@ class Technical(commands.Cog):
             time = mktime(datetime.now().timetuple())
 
         if user_in_db:
-            response = self.db.update('forum', 'time', 'userid', time, ctx.author.id)
+            response = self.bot.db.update('forum', 'time', 'userid', time, ctx.author.id)
             if response:
                 answer = f'{ctx.author.mention} Успешно изменила, нья!'
         else:
-            response = self.db.insert('forum', ctx.author.id, time)
+            response = self.bot.db.insert('forum', ctx.author.id, time)
             if response:
                 answer = f'{ctx.author.mention} Успешно добавила, нья!'
 
@@ -126,10 +122,10 @@ class Technical(commands.Cog):
     @transformator.command(name = 'удалить')
     async def transformator_remove(self, ctx):
         request = f"SELECT EXISTS(SELECT * from forum where userid = {ctx.author.id});"
-        user_in_db = self.db.custom_command(request)[0][0]
+        user_in_db = self.bot.db.custom_command(request)[0][0]
 
         if user_in_db:
-            response = self.db.remove('forum', 'userid', ctx.author.id)
+            response = self.bot.db.remove('forum', 'userid', ctx.author.id)
             if response:
                 answer = f'{ctx.author.mention} Успешно удалено, нья!'
 
@@ -143,11 +139,11 @@ class Technical(commands.Cog):
 
     @tasks.loop(minutes=10.0)
     async def countdown_for_update(self):
-        time = self.db.get_value('forum', 'time', 'userid', 1)
+        time = self.bot.db.get_value('forum', 'time', 'userid', 1)
         if not time:
             return
 
-        channel = await self.bot.fetch_channel(config['channel'].getint('time'))
+        channel = await self.bot.fetch_channel(self.bot.config['channel'].getint('time'))
 
         now = datetime.now()
         if not time:
@@ -178,8 +174,8 @@ class Technical(commands.Cog):
 
         time = datetime.strptime(new_time, '%d.%m.%y %H:%M')
         time = mktime(time.timetuple())
-        self.db.update('forum', 'time', 'userid', time, 1)
-        await ctx.send('Новое время утсановлено, нья!')
+        self.bot.db.update('forum', 'time', 'userid', time, 1)
+        await ctx.send('Новое время установлено, нья!')
 
     @set_countdown.error
     async def set_countdown_error(self, ctx, error):
@@ -192,40 +188,66 @@ class Technical(commands.Cog):
     async def on_command_error(self, ctx, error):
         print(ctx.command.name)
         if isinstance(error, commands.CheckFailure) and 'преобразователь' in ctx.command.name:
-            channel = config['channel'].getint('transformator')
+            channel = self.bot.config['channel'].getint('transformator')
             await ctx.send(f'{ctx.author.mention}, тебе низя использовать эту команду туть. Сюда <#{channel}>')
 
 
 
-    @commands.group(name = 'роль', brief='Настройка роли.', description='Обязательно указывайте название роли в "" (двойных кавычках :AD:)', help = str(config['channel'].getint('create_role')))
-    @is_channel(config['channel'].getint('create_role'))
+    @commands.group(
+        name = 'роль',
+        brief='Настройка роли.',
+        description='Обязательно указывайте название роли в "" (двойных кавычках <:ad:812513742000619520>)',
+        help = str(role_channel)
+    )
+    @is_channel(role_channel)
     async def role_settings(self, ctx):
         if ctx.invoked_subcommand is None:
             return await ctx.send_help('роль')
 
 
-    @role_settings.command(name = 'добавить', help = str(config['channel'].getint('create_role')))
+    @role_settings.command(
+        name = 'добавить',
+        aliases = ['создать'],
+        usage = '<название роли> <цвет в 16ти>',
+        description = 'Добавление новой роли',
+        help = str(role_channel)
+    )
     async def create_new_role(self, ctx, name, color: ColorConverter):
         role = await ctx.guild.create_role(name = name, colour = color, hoist = True, mentionable = True)
         await ctx.author.add_roles(role)
         await ctx.send(f'{ctx.author.mention} Создала новую роль')
 
-    @role_settings.command(name = 'удалить')
+    @role_settings.command(
+        name = 'удалить',
+        usage = '<пинг роли>',
+        description = 'Ужадение ВАШЕЙ роли',
+    )
     async def remove_role(self, ctx, role: RoleConverter):
         await role.delete()
-        await ctx.send(f'{ctx.author.mention}, Изменила название')
+        await ctx.send(f'{ctx.author.mention}, Удалила роль')
 
-    @role_settings.group(name = 'изменить')
+    @role_settings.group(
+        name = 'изменить',
+        description = 'Изменение ВАШЕЙ роли',
+    )
     async def change_role(self, ctx):
         if ctx.invoked_subcommand is None:
             await ctx.send(f'{ctx.author.mention}, ты не указал что мне надо сделать, Баааака!')
 
-    @change_role.command(name = 'название')
+    @change_role.command(
+        name = 'название',
+        usage = '<пинг роли> <новое название>',
+        description = 'Изменение названия роли',
+    )
     async def change_role_name(self, ctx, role: RoleConverter, name):
         await role.edit(name = name)
         await ctx.send(f'{ctx.author.mention}, Изменила название')
 
-    @change_role.command(name = 'цвет')
+    @change_role.command(
+        name = 'цвет',
+        usage = '<пниг роли> <новый цвет в 16ти>',
+        description = 'Изменение цвета роли',
+    )
     async def change_role_color(self, ctx, role: RoleConverter, color: ColorConverter):
         await role.edit(colour = color)
         await ctx.send(f'{ctx.author.mention}, Изменила цвет')
@@ -234,7 +256,7 @@ class Technical(commands.Cog):
     @role_settings.error
     async def role_settings_error(self, ctx, error):
         if isinstance(error, commands.CheckFailure):
-            channel = config['channel'].getint('create_role')
+            channel = self.bot.config['channel'].getint('create_role')
             await ctx.send(f'{ctx.author.mention}, тебе низя использовать эту команду туть. Сюда <#{channel}>')
 
         if isinstance(error, commands.BadArgument):

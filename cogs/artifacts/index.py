@@ -58,22 +58,13 @@ from discord_components import Button, Select, ButtonStyle, SelectOption
 from cogs.artifacts.extra import *
 from cogs.artifacts.blanks import *
 
-config = get_config()
 
+arifact_channel = 880497360386535454
 
 class Artifacts(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.db = self.bot.get_cog('Database')
 
-
-
-
-
-
-    @commands.Cog.listener()
-    async def on_ready(self):
-        self.db = self.bot.get_cog('Database')
 
     @commands.command(name='show', aliases=['показать'], usage='<member name>|<member ID>|<Nothing for yours>', description='Показ артов себя/пользователя')
     async def show_user_artifacts(self, ctx, *, member: UserConverter = None):
@@ -82,7 +73,7 @@ class Artifacts(commands.Cog):
         id = member.id
 
         async with ctx.typing():
-            artifactsIDs = self.db.get_value(tableName = 'users_arts', argument = 'artifacts', selector = 'user_id', value = id)
+            artifactsIDs = self.bot.db.get_value(tableName = 'users_arts', argument = 'artifacts', selector = 'user_id', value = id)
             if not artifactsIDs:
                 answer = f'<@{ctx.author.id}>, У тебя нет артефактов, бааака!'
                 if member != ctx.author:
@@ -98,7 +89,7 @@ class Artifacts(commands.Cog):
             fields = []
 
             for art in artifactsIDs:
-                res = self.db.custom_command(f'SELECT * from artifacts where id = {int(art)};')[0]
+                res = self.bot.db.custom_command(f'SELECT * from artifacts where id = {int(art)};')[0]
                 name = f'{res[2]} {res[3]} lvl\n{res[1]}\n{res[4]}'
 
                 value = '**┏━━━━━┓**\n'
@@ -159,14 +150,14 @@ class Artifacts(commands.Cog):
             await ctx.send('Не могу найти такого пользователя...')
 
 
-    @commands.command(name='new', aliases=['арт'], usage='<part> <lvl>|<image>', description='Добавление нового артефакта', help = str(config['channel'].getint('artifact')))
-    @is_channel(config['channel'].getint('artifact'))
+    @commands.command(name='new', aliases=['арт'], usage='<part> <lvl>|<image>', description='Добавление нового артефакта', help = str(arifact_channel))
+    @is_channel(arifact_channel)
     async def add_new_artifact(self, ctx, part: str = None, lvl: int = None):
         if part and lvl:
             response = await generate_blank(ctx, lvl = lvl, part = part)
             if response:
                 new_artifact, embed, question = response
-                res = put_artifact_in_database(self.db, ctx.author, new_artifact)
+                res = put_artifact_in_database(self.bot.db, ctx.author, new_artifact)
                 if res:
                     footer = ['ID ' + '0' * (5 - len(str(res))) + str(res),
                                 'https://cdn.discordapp.com/attachments/813825744789569537/877565862935150662/view_watch_eye_icon_131255.png']
@@ -195,7 +186,7 @@ class Artifacts(commands.Cog):
             await ctx.send('Неверные аргументы, Баака!')
 
         elif isinstance(error, commands.CheckFailure):
-            channel = config['channel'].getint('artifact')
+            channel = self.arifact_channel
             await ctx.send(f'Низя использовать эту команду туть. Тебе сюда <#{channel}>')
         else:
             await ctx.send(error)

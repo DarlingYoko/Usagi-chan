@@ -24,7 +24,7 @@ class Fun(commands.Cog):
         if isinstance(error, commands.BadArgument):
             await ctx.send('I could not find that member...')
 
-    @commands.command(aliases=['число'], usage='<from>-<to>', description='Роллим гачу :AD:', brief='Рандом число <от>-<до>')
+    @commands.command(aliases=['число'], usage='<from>-<to>', description='Роллим гачу <:ad:812513742000619520>', brief='Рандом число <от>-<до>')
     async def roll(self, ctx, *, args = None):
         if args is None:
             #raise commands.BadArgument

@@ -1,21 +1,20 @@
 import discord
 import psycopg2, datetime, sys
 from discord.ext import commands
-from bin.functions import print_error, get_config
+from bin.functions import print_error
 
 class Database(commands.Cog):
     def __init__(self, bot):
 
         self.bot = bot
-        self.config = get_config()
 
         try:
             self.con = psycopg2.connect(
-                                        database = self.config['configDB']['database'],
-                                        user = self.config['configDB']['user'],
-                                        password = self.config['configDB']['password'],
-                                        host = self.config['configDB']['host'],
-                                        port = self.config['configDB']['port']
+                                        database = self.bot.config['configDB']['database'],
+                                        user = self.bot.config['configDB']['user'],
+                                        password = self.bot.config['configDB']['password'],
+                                        host = self.bot.config['configDB']['host'],
+                                        port = self.bot.config['configDB']['port']
                                         )
 
             self.cur = self.con.cursor()

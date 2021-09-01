@@ -10,7 +10,7 @@ from bin.helpCommand import CustomHelpCommand
 intents = discord.Intents().all()
 bot = commands.Bot(command_prefix = '!', intents = intents, help_command = CustomHelpCommand())
 
-config = get_config()
+bot.config = get_config()
 
 for dir in os.listdir('./cogs'):
     if 'index.py' in os.listdir(f'./cogs/{dir}'):
@@ -18,13 +18,14 @@ for dir in os.listdir('./cogs'):
 
 
 
-token = config['data'].get('token')
+token = bot.config['data'].get('token')
 
 @bot.event
 async def on_ready():
     print('Bot is up')
     await bot.change_presence(status=discord.Status.online, activity=discord.Game("!help | ver 3.0 | Beta-test |"))
     DiscordComponents(bot)
+    bot.db = bot.get_cog('Database')
 
 @bot.event
 async def on_command_error(ctx, error):

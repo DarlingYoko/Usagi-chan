@@ -1,9 +1,13 @@
 
 
-import requests
+
+class Test:
+    def __init__(self):
+        self.name = 'test'
 
 
 
-a = []
+bot = Test()
+bot.description = 'sdf'
 
-print('|' + '|'.join(a))
+print(bot.description)

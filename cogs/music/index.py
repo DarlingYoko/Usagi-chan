@@ -10,7 +10,8 @@ from youtube_search import YoutubeSearch
 from threading import Thread
 from datetime import timedelta
 
-config = get_config()
+
+mp_channel = 880497165141680148
 
 class Music_Player(commands.Cog):
     def __init__(self, bot):
@@ -37,8 +38,8 @@ class Music_Player(commands.Cog):
         self.sp = spotipy.Spotify(auth_manager = auth_manager)
 
 
-    @commands.command(aliases = ['p'], usage = '<URL>|text for search', help = str(config['channel'].getint('mp')))
-    @is_channel(config['channel'].getint('mp'))
+    @commands.command(aliases = ['p'], usage = '<URL>|text for search', help = str(mp_channel))
+    @is_channel(mp_channel)
     @commands.check(is_user_in_voice)
     async def play(self, ctx, URL: str):
 
@@ -124,8 +125,8 @@ class Music_Player(commands.Cog):
 
 
 
-    @commands.command(aliases=['пауза'], help = str(config['channel'].getint('mp')))
-    @is_channel(config['channel'].getint('mp'))
+    @commands.command(aliases=['пауза'], help = str(mp_channel))
+    @is_channel(mp_channel)
     @commands.check(is_user_in_voice)
     async def pause(self, ctx):
         vc = self.get_vc()
@@ -137,8 +138,8 @@ class Music_Player(commands.Cog):
         await ctx.send(answer)
 
 
-    @commands.command(help = str(config['channel'].getint('mp')))
-    @is_channel(config['channel'].getint('mp'))
+    @commands.command(help = str(mp_channel))
+    @is_channel(mp_channel)
     @commands.check(is_user_in_voice)
     async def resume(self, ctx):
         vc = self.get_vc()
@@ -149,8 +150,8 @@ class Music_Player(commands.Cog):
 
         await ctx.send(answer)
 
-    @commands.command(help = str(config['channel'].getint('mp')))
-    @is_channel(config['channel'].getint('mp'))
+    @commands.command(help = str(mp_channel))
+    @is_channel(mp_channel)
     @commands.check(is_user_in_voice)
     async def stop(self, ctx):
         vc = self.get_vc()
@@ -180,8 +181,8 @@ class Music_Player(commands.Cog):
 
         await ctx.send(answer)
 
-    @commands.command(aliases = ['s'], help = str(config['channel'].getint('mp')))
-    @is_channel(config['channel'].getint('mp'))
+    @commands.command(aliases = ['s'], help = str(mp_channel))
+    @is_channel(mp_channel)
     @commands.check(is_user_in_voice)
     async def skip(self, ctx, arg = None):
         vc = self.get_vc()
@@ -238,8 +239,8 @@ class Music_Player(commands.Cog):
         if answer:
             await ctx.send(answer)
 
-    @commands.command(aliases = ['q'], help = str(config['channel'].getint('mp')))
-    @is_channel(config['channel'].getint('mp'))
+    @commands.command(aliases = ['q'], help = str(mp_channel))
+    @is_channel(mp_channel)
     async def query(self, ctx):
 
         sticker = ''
@@ -326,8 +327,8 @@ class Music_Player(commands.Cog):
         else:
             await ctx.send(answer, file = sticker)
 
-    @commands.command(aliases = ['sh'], help = str(config['channel'].getint('mp')))
-    @is_channel(config['channel'].getint('mp'))
+    @commands.command(aliases = ['sh'], help = str(mp_channel))
+    @is_channel(mp_channel)
     @commands.check(is_user_in_voice)
     async def shuffle(self, ctx):
         answer = 'Очередь пуста, Бааака!'
@@ -336,8 +337,8 @@ class Music_Player(commands.Cog):
             answer = 'Перемешала очередь, Нья!!'
         await ctx.send(answer)
 
-    @commands.command(aliases = ['np'], help = str(config['channel'].getint('mp')))
-    @is_channel(config['channel'].getint('mp'))
+    @commands.command(aliases = ['np'], help = str(mp_channel))
+    @is_channel(mp_channel)
     async def now_play(self, ctx):
         answer = 'Ничего не играет'
 
@@ -353,8 +354,8 @@ class Music_Player(commands.Cog):
     async def on_command_error(self, ctx, error):
         music_commands = ['play', 'pause', 'resume', 'stop', 'skip', 'query', 'shuffle']
         if isinstance(error, commands.CheckFailure) and ctx.command.name in music_commands:
-            channel = config['channel'].getint('mp')
-            voice = config['channel'].getint('mp_voice')
+            channel = mp_channel
+            voice = self.bot.config['channel'].getint('mp_voice')
             await ctx.send(f'Низя использовать эту команду туть. Тебе сюда <#{channel}> и подключись к войсу <#{voice}>')
 
 
@@ -382,7 +383,7 @@ class Music_Player(commands.Cog):
                     self.lastAudio = None
 
             if URL:
-                channel = await self.bot.fetch_channel(config['channel'].getint('mp'))
+                channel = await self.bot.fetch_channel(mp_channel)
                 vc.play(discord.FFmpegPCMAudio(URL['formats'][0]['url'], **self.FFMPEG_OPTIONS))#, executable = 'C:/FFMPEG/bin/ffmpeg.exe'))
 
                 duration = self.get_duration(target = self.queryData[self.lastAudio])
@@ -429,7 +430,7 @@ class Music_Player(commands.Cog):
 
 
     async def get_spoti(self, URL, user_name, question):
-        #channel = await self.client.fetch_channel(self.config['data'].getint('mpChannel'))
+        #channel = await self.client.fetch_channel(self.self.bot.config['data'].getint('mpChannel'))
 
         answer = 'Добавила трек в очередь, Нья!'
 
@@ -500,7 +501,7 @@ class Music_Player(commands.Cog):
     def get_vc(self):
         vc = None
         for voice_client in self.bot.voice_clients:
-            if voice_client.channel.id == config['channel'].getint('mp_voice'):
+            if voice_client.channel.id == self.bot.config['channel'].getint('mp_voice'):
                 vc = voice_client
         return vc
 

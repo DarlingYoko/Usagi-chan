@@ -1,6 +1,5 @@
 import discord
 from discord.ext import commands
-from bin.functions import get_config
 
 
 class Main(commands.Cog):

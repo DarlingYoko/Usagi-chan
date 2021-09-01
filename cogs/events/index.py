@@ -1,9 +1,6 @@
 import discord
 from discord.ext import commands
-from bin.functions import get_config
 
-
-config = get_config()
 
 class Events(commands.Cog):
     def __init__(self, bot):
@@ -36,9 +33,9 @@ class Events(commands.Cog):
         emoji = payload.emoji
         channel_id = payload.channel_id
 
-        if str(emoji.id) in config['roles']:
+        if str(emoji.id) in self.bot.config['roles']:
             if message_id in [881687828482912286, 881687833922916363]:
-                return await self.give_role_to_user(user_id, config['roles'].getint(f'{emoji.id}'))
+                return await self.give_role_to_user(user_id, self.bot.config['roles'].getint(f'{emoji.id}'))
 
         # сейчас только два действия требуется отслеживать
         # 1. Выбор роли по цвету
@@ -55,9 +52,9 @@ class Events(commands.Cog):
         emoji = payload.emoji
         channel_id = payload.channel_id
 
-        if str(emoji.id) in config['roles']:
+        if str(emoji.id) in self.bot.config['roles']:
             if message_id in [881687828482912286, 881687833922916363]:
-                return await self.remove_role_from_user(user_id, config['roles'].getint(f'{emoji.id}'))
+                return await self.remove_role_from_user(user_id, self.bot.config['roles'].getint(f'{emoji.id}'))
 
     @commands.Cog.listener()
     async def on_member_join():
@@ -73,13 +70,13 @@ class Events(commands.Cog):
 
 
     async def give_role_to_user(self, user_id, role_id):
-        guild = await self.bot.fetch_guild(config['data']['guild_id'])
+        guild = await self.bot.fetch_guild(self.bot.config['data']['guild_id'])
         role = guild.get_role(role_id)
         user = await guild.fetch_member(user_id)
         return await user.add_roles(role)
 
     async def remove_role_from_user(self, user_id, role_id):
-        guild = await self.bot.fetch_guild(config['data']['guild_id'])
+        guild = await self.bot.fetch_guild(self.bot.self.bot.config['data']['guild_id'])
         role = guild.get_role(role_id)
         user = await guild.fetch_member(user_id)
         return await user.remove_roles(role)
