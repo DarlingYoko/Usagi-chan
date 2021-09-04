@@ -224,9 +224,9 @@ def get_buttons(ctx, zero = True, dot = True):
     btnInvisible = Button(style=ButtonStyle.gray, label = '-', disabled = True)
 
 
-    emojiClear = ctx.bot.get_emoji(873921151372513312)
+    emojiClear = Button(style=ButtonStyle.gray, label = 'C', id = 'C')
     emojiAccept = ctx.bot.get_emoji(874767321007276143)
-    emojiCleanEntry = '🔙'
+    emojiCleanEntry = Button(style=ButtonStyle.gray, label = 'CE', id = 'CE')
     emojiExit = ctx.bot.get_emoji(874767320915005471)
 
 

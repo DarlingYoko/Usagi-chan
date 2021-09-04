@@ -337,7 +337,7 @@ class Music_Player(commands.Cog):
 
                     embed = get_embed(embed = embed, description = description, color = 0xf08080)
                     components = get_query_btns(ctx, f'Page {page + 1}/{len(pages)}')
-                    await res.respond(type=7, embed = embed)
+                    await res.respond(type=7, embed = embed, components = components)
 
         else:
             await ctx.send(answer, file = sticker)
