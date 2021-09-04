@@ -48,7 +48,7 @@ class Music_Player(commands.Cog):
     @commands.check(is_user_in_voice)
     async def play(self, ctx, URL: str):
 
-        vc = self.get_vc()
+        vc = get_vc(self)
 
         if not vc:
             channel = await self.bot.fetch_channel(self.bot.config['channel']['mp_voice'])
@@ -139,7 +139,7 @@ class Music_Player(commands.Cog):
     @is_channel(mp_channel)
     @commands.check(is_user_in_voice)
     async def pause(self, ctx):
-        vc = self.get_vc()
+        vc = get_vc(self)
         answer = 'Я не нахожусь в войсе, бака!'
         if vc:
             answer = 'Поставила на паузу, Нья!!'
@@ -155,7 +155,7 @@ class Music_Player(commands.Cog):
     @is_channel(mp_channel)
     @commands.check(is_user_in_voice)
     async def resume(self, ctx):
-        vc = self.get_vc()
+        vc = get_vc(self)
         answer = 'Я не нахожусь в войсе, бака!'
         if vc:
             answer = 'Продолжаю играть, Нья!!'
@@ -170,7 +170,7 @@ class Music_Player(commands.Cog):
     @is_channel(mp_channel)
     @commands.check(is_user_in_voice)
     async def stop(self, ctx):
-        vc = self.get_vc()
+        vc = get_vc(self)
 
         if not vc:
             channel = await self.bot.fetch_channel(self.bot.config['channel']['mp_voice'])
@@ -207,7 +207,7 @@ class Music_Player(commands.Cog):
     @is_channel(mp_channel)
     @commands.check(is_user_in_voice)
     async def skip(self, ctx, arg = None):
-        vc = self.get_vc()
+        vc = get_vc(self)
 
         if not vc:
             channel = await self.bot.fetch_channel(self.bot.config['channel']['mp_voice'])
@@ -356,6 +356,30 @@ class Music_Player(commands.Cog):
         await ctx.send(answer)
 
     @commands.command(
+        aliases = ['репит'],
+        help = str(mp_channel),
+        description = 'Поставить на репит, пока только сингл',
+        usage = '<last|no>'
+    )
+    @is_channel(mp_channel)
+    @commands.check(is_user_in_voice)
+    async def repeat(self, ctx, arg: str):
+        if arg.lower() == 'last':
+            self.repeat = True
+            answer = 'Трек на репите, Нья!!'
+        elif arg.lower() == 'no':
+            self.repeat = False
+            answer = 'Репит отключен, Нья!!'
+        else:
+            raise commands.BadArgument
+        await ctx.send(answer)
+
+    @play.error
+    async def not_found_user(self, ctx, error):
+        if isinstance(error, commands.BadArgument):
+            await ctx.send('Такого я не могу')
+
+    @commands.command(
         aliases = ['np'],
         help = str(mp_channel),
         description = 'Посмотреть текущий трек'
@@ -383,7 +407,7 @@ class Music_Player(commands.Cog):
 
     @tasks.loop(seconds=5.0)
     async def play_url(self):
-        vc = self.get_vc()
+        vc = get_vc(self)
 
         if not vc:
             return
@@ -391,7 +415,7 @@ class Music_Player(commands.Cog):
         if not vc.is_playing() and not vc.is_paused():
             URL = ''
             if self.repeat and self.lastAudio:
-                URL = get_info_by_URL(self.lastAudio)
+                URL = get_info_by_URL(self.queryData[self.lastAudio]['URL'])
 
             elif len(self.queryList) > 0:
                 if self.lastAudio:
