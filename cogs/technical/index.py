@@ -19,7 +19,14 @@ class Technical(commands.Cog):
         #self.notify_transformator.start()
 
 
-    @commands.command(name = 'эмодзи', brief='Добавление нового эмодзи', help = str(emoji_channel))
+    @commands.command(
+        name = 'эмодзи',
+        brief='Добавление нового эмодзи',
+        help = str(emoji_channel),
+        usage = '<название эмодзи> <прикрепить картинку или гифку>',
+        description = 'Добавление новой эмодзи',
+
+    )
     @is_channel(emoji_channel)
     async def create_new_emoji(self, ctx, name: str):
 
@@ -80,17 +87,29 @@ class Technical(commands.Cog):
                 self.bot.db.update('forum', 'time', 'userid', time, userID)
 
 
-    @commands.group(name = 'преобразователь', brief='Добавление/изменение преобразователя.', help = str(transformator_channel))
+    @commands.group(
+        name = 'преобразователь',
+        brief='Добавление/изменение преобразователя.',
+        help = str(transformator_channel),
+        description = 'Настройка преобразователя',
+    )
     @is_channel(transformator_channel)
     async def transformator(self, ctx):
         if ctx.invoked_subcommand is None:
             return await ctx.send_help('преобразователь')
 
 
-    @transformator.command(name = 'добавить')
+    @transformator.command(
+        name = 'добавить',
+        usage = '<сколько времени до оповещения или пусто, если только что>',
+        description = 'Добавление вашего преобразователя',
+    )
     async def transformator_add(self, ctx, time: int = None):
         request = f"SELECT EXISTS(SELECT * from forum where userid = {ctx.author.id});"
         user_in_db = self.bot.db.custom_command(request)[0][0]
+
+        if time < 0:
+            raise commands.BadArgument
 
         if time:
             delta = 166 - time
@@ -100,14 +119,13 @@ class Technical(commands.Cog):
 
         if user_in_db:
             response = self.bot.db.update('forum', 'time', 'userid', time, ctx.author.id)
-            if response:
-                answer = f'{ctx.author.mention} Успешно изменила, нья!'
         else:
             response = self.bot.db.insert('forum', ctx.author.id, time)
-            if response:
-                answer = f'{ctx.author.mention} Успешно добавила, нья!'
 
-        if not response:
+
+        if response:
+            answer = f'{ctx.author.mention} Успешно добавила, нья!'
+        else:
             answer = f'{ctx.author.mention}  Не получилось тебя добавить, пластити!'
 
         await ctx.send(answer)
@@ -119,7 +137,11 @@ class Technical(commands.Cog):
             await ctx.send(f'<@{ctx.author.id}> Ты ввёл неверное время! Баака')
 
 
-    @transformator.command(name = 'удалить')
+    @transformator.command(
+        name = 'удалить',
+        usage = '',
+        description = 'Удаление вашего преобразователя',
+    )
     async def transformator_remove(self, ctx):
         request = f"SELECT EXISTS(SELECT * from forum where userid = {ctx.author.id});"
         user_in_db = self.bot.db.custom_command(request)[0][0]
@@ -220,7 +242,7 @@ class Technical(commands.Cog):
     @role_settings.command(
         name = 'удалить',
         usage = '<пинг роли>',
-        description = 'Ужадение ВАШЕЙ роли',
+        description = 'Удаление ВАШЕЙ роли',
     )
     async def remove_role(self, ctx, role: RoleConverter):
         await role.delete()

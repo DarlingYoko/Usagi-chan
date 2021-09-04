@@ -79,3 +79,11 @@ def get_query_btns(ctx, page):
     page = Button(style=ButtonStyle.gray, label = page, id = 'page', disabled = True)
     components=[[btnStart, btnPrevious, page, btnNext, btnEnd,]]
     return components
+
+
+def get_vc(self):
+    vc = None
+    for voice_client in self.bot.voice_clients:
+        if voice_client.channel.id == self.bot.config['channel'].getint('mp_voice'):
+            vc = voice_client
+    return vc

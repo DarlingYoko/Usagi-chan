@@ -7,6 +7,6 @@ def is_channel(channel_id):
     return commands.check(predicate)
 
 
-async def is_user_in_voice(self, ctx):
-    voice_channel = await ctx.bot.fetch_channel(858053937008214022)
+async def is_user_in_voice(ctx):
+    voice_channel = await ctx.bot.fetch_channel(733640826256752641)
     return ctx.author in voice_channel.members

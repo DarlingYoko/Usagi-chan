@@ -9,11 +9,21 @@ class Fun(commands.Cog):
         self.bot = bot
 
 
-    @commands.command(description = 'Проверка пинга', aliases = ['пинг'], brief='Проверка пинга')
+    @commands.command(
+        description = 'Проверка пинга',
+        aliases = ['пинг'],
+        brief='Проверка пинга'
+    )
     async def ping(self, ctx):
         await ctx.send(f'Pong! {round(ctx.bot.latency * 1000)} ms')
 
-    @commands.command(name = 'check', aliases = ['чек'], description = 'Поиск юзера', brief='Узнать когда юзер зашёл')
+    @commands.command(
+        name = 'check',
+        aliases = ['чек'],
+        description = 'Поиск юзера',
+        brief='Узнать когда юзер зашёл',
+        usage = '<имя пользователя>|<ID>'
+    )
     async def joined(self, ctx, *, member: UserConverter = None):
         member = member or ctx.author
         time = member.joined_at.strftime("%m/%d/%Y, %H:%M")
@@ -24,7 +34,12 @@ class Fun(commands.Cog):
         if isinstance(error, commands.BadArgument):
             await ctx.send('I could not find that member...')
 
-    @commands.command(aliases=['число'], usage='<from>-<to>', description='Роллим гачу <:ad:812513742000619520>', brief='Рандом число <от>-<до>')
+    @commands.command(
+        aliases=['число'],
+        usage='<from>-<to>',
+        description='Роллим гачу <:ad:812513742000619520>',
+        brief='Рандом число <от>-<до>'
+    )
     async def roll(self, ctx, *, args = None):
         if args is None:
             #raise commands.BadArgument

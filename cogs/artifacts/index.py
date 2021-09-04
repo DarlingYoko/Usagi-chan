@@ -66,7 +66,12 @@ class Artifacts(commands.Cog):
         self.bot = bot
 
 
-    @commands.command(name='show', aliases=['показать'], usage='<member name>|<member ID>|<Nothing for yours>', description='Показ артов себя/пользователя')
+    @commands.command(
+        name='show',
+        aliases=['показать'],
+        usage='<member name>|<member ID>|<Nothing for yours>',
+        description='Показ артов себя/пользователя'
+    )
     async def show_user_artifacts(self, ctx, *, member: UserConverter = None):
 
         member = member or ctx.author
@@ -122,7 +127,6 @@ class Artifacts(commands.Cog):
                 await question.delete(delay = 10)
                 await ctx.message.delete(delay = 10)
                 return
-                return
 
             else:
                 if res.component.id == 'start':
@@ -150,7 +154,13 @@ class Artifacts(commands.Cog):
             await ctx.send('Не могу найти такого пользователя...')
 
 
-    @commands.command(name='new', aliases=['арт'], usage='<part> <lvl>|<image>', description='Добавление нового артефакта', help = str(arifact_channel))
+    @commands.command(
+        name='new',
+        aliases=['арт'],
+        usage='<part> <lvl>|<image>',
+        description='Добавление нового артефакта, пока работает только ввод ручками',
+        help = str(arifact_channel)
+    )
     @is_channel(arifact_channel)
     async def add_new_artifact(self, ctx, part: str = None, lvl: int = None):
         if part and lvl:

@@ -38,7 +38,12 @@ class Music_Player(commands.Cog):
         self.sp = spotipy.Spotify(auth_manager = auth_manager)
 
 
-    @commands.command(aliases = ['p'], usage = '<URL>|text for search', help = str(mp_channel))
+    @commands.command(
+        aliases = ['p'],
+        usage = '<URL>|text for search',
+        help = str(mp_channel),
+        description = 'Добавить трек/лист в очередь'
+    )
     @is_channel(mp_channel)
     @commands.check(is_user_in_voice)
     async def play(self, ctx, URL: str):
@@ -46,8 +51,9 @@ class Music_Player(commands.Cog):
         vc = self.get_vc()
 
         if not vc:
-            await ctx.send('Я не нахожусь в войсе, бака!')
-            return
+            channel = await self.bot.fetch_channel(self.bot.config['channel']['mp_voice'])
+            main = self.bot.get_cog('Main')
+            await ctx.invoke(main.connect, channel_id = channel.id)
 
         channel = ctx.channel
         user_name = ctx.author.display_name.split('#')[0]
@@ -125,7 +131,11 @@ class Music_Player(commands.Cog):
 
 
 
-    @commands.command(aliases=['пауза'], help = str(mp_channel))
+    @commands.command(
+        aliases=['пауза'],
+        help = str(mp_channel),
+        description = 'Поставить на паузу'
+    )
     @is_channel(mp_channel)
     @commands.check(is_user_in_voice)
     async def pause(self, ctx):
@@ -138,7 +148,10 @@ class Music_Player(commands.Cog):
         await ctx.send(answer)
 
 
-    @commands.command(help = str(mp_channel))
+    @commands.command(
+        help = str(mp_channel),
+        description = 'Продолжить играть'
+    )
     @is_channel(mp_channel)
     @commands.check(is_user_in_voice)
     async def resume(self, ctx):
@@ -150,15 +163,19 @@ class Music_Player(commands.Cog):
 
         await ctx.send(answer)
 
-    @commands.command(help = str(mp_channel))
+    @commands.command(
+        help = str(mp_channel),
+        description = 'Остановить и очистить очередь'
+    )
     @is_channel(mp_channel)
     @commands.check(is_user_in_voice)
     async def stop(self, ctx):
         vc = self.get_vc()
 
         if not vc:
-            await ctx.send('Я не нахожусь в войсе, бака!')
-            return
+            channel = await self.bot.fetch_channel(self.bot.config['channel']['mp_voice'])
+            main = self.bot.get_cog('Main')
+            await ctx.invoke(main.connect, channel_id = channel.id)
 
         await ctx.message.add_reaction(self.emojiGreenTick)
         await ctx.message.add_reaction(self.emojiRedTick)
@@ -181,15 +198,21 @@ class Music_Player(commands.Cog):
 
         await ctx.send(answer)
 
-    @commands.command(aliases = ['s'], help = str(mp_channel))
+    @commands.command(
+        aliases = ['s'],
+        help = str(mp_channel),
+        description = 'Скипнуть треки/трек',
+        usage = '<ничего если текущий>|<1,2,3>|<1-4>'
+        )
     @is_channel(mp_channel)
     @commands.check(is_user_in_voice)
     async def skip(self, ctx, arg = None):
         vc = self.get_vc()
 
         if not vc:
-            await ctx.send('Я не нахожусь в войсе, бака!')
-            return
+            channel = await self.bot.fetch_channel(self.bot.config['channel']['mp_voice'])
+            main = self.bot.get_cog('Main')
+            await ctx.invoke(main.connect, channel_id = channel.id)
 
         await ctx.message.add_reaction(self.emojiGreenTick)
         await ctx.message.add_reaction(self.emojiRedTick)
@@ -239,7 +262,11 @@ class Music_Player(commands.Cog):
         if answer:
             await ctx.send(answer)
 
-    @commands.command(aliases = ['q'], help = str(mp_channel))
+    @commands.command(
+        aliases = ['q'],
+        help = str(mp_channel),
+        description = 'Показать очередь'
+    )
     @is_channel(mp_channel)
     async def query(self, ctx):
 
@@ -275,8 +302,6 @@ class Music_Player(commands.Cog):
             else:
                 description = ''
 
-
-        print(111111111111111111111)
         if title:
             async with ctx.typing():
                 embed = get_embed(title = title, description = description, color = 0xf08080)
@@ -288,17 +313,13 @@ class Music_Player(commands.Cog):
 
                 try:
                     res = await self.bot.wait_for("button_click", check = check, timeout = 60.0)
-                    print("УСПЕШНО ПОЛУЧИЛИ КНОПКУ")
 
                 except:
-
-                    print("ОШИБКА КНОПКИ")
                     await question.delete()
                     await ctx.message.delete()
                     return
 
                 else:
-                    print("ЗАПОЛНЯЕМ КНОПКУ")
                     if res.component.id == 'start':
                         page = 0
 
@@ -312,22 +333,19 @@ class Music_Player(commands.Cog):
 
                     elif res.component.id == 'end':
                         page = len(pages) - 1
-                    print("ИЗМЕНИЛИ СТРАНИЦУ")
                     description = '> \n{0}\n> ˗ˏˋ `Playing time:` **｢{1} ｣** ˎˊ˗ \n'.format('\n'.join(pages[page]), duration)
-                    print("DISCRIPTION")
 
                     embed = get_embed(embed = embed, description = description, color = 0xf08080)
                     components = get_query_btns(ctx, f'Page {page + 1}/{len(pages)}')
-                    print("СОЗДАЛИ НОВЫЙ ЕМБЕД")
-
-                    print("ОТПРАВЛЯЕМ НОВОЕ")
-
                     await res.respond(type=7, embed = embed)
 
         else:
             await ctx.send(answer, file = sticker)
 
-    @commands.command(aliases = ['sh'], help = str(mp_channel))
+    @commands.command(
+        aliases = ['sh'],
+        help = str(mp_channel),
+        description = 'Перемешать очередь')
     @is_channel(mp_channel)
     @commands.check(is_user_in_voice)
     async def shuffle(self, ctx):
@@ -337,7 +355,11 @@ class Music_Player(commands.Cog):
             answer = 'Перемешала очередь, Нья!!'
         await ctx.send(answer)
 
-    @commands.command(aliases = ['np'], help = str(mp_channel))
+    @commands.command(
+        aliases = ['np'],
+        help = str(mp_channel),
+        description = 'Посмотреть текущий трек'
+    )
     @is_channel(mp_channel)
     async def now_play(self, ctx):
         answer = 'Ничего не играет'

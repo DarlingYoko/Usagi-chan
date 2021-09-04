@@ -1,5 +1,6 @@
 import discord
 from discord.ext import commands
+from bin.functions import *
 
 
 class Events(commands.Cog):
@@ -32,10 +33,11 @@ class Events(commands.Cog):
         user_id = payload.user_id
         emoji = payload.emoji
         channel_id = payload.channel_id
+        guild_id = payload.guild_id
 
         if str(emoji.id) in self.bot.config['roles']:
-            if message_id in [881687828482912286, 881687833922916363]:
-                return await self.give_role_to_user(user_id, self.bot.config['roles'].getint(f'{emoji.id}'))
+            if message_id in [883425141256781824, 883425154896654386]:
+                return await self.give_role_to_user(user_id, self.bot.config['roles'].getint(f'{emoji.id}'), guild_id)
 
         # сейчас только два действия требуется отслеживать
         # 1. Выбор роли по цвету
@@ -51,32 +53,77 @@ class Events(commands.Cog):
         user_id = payload.user_id
         emoji = payload.emoji
         channel_id = payload.channel_id
+        guild_id = payload.guild_id
 
         if str(emoji.id) in self.bot.config['roles']:
-            if message_id in [881687828482912286, 881687833922916363]:
-                return await self.remove_role_from_user(user_id, self.bot.config['roles'].getint(f'{emoji.id}'))
+            if message_id in [883425141256781824, 883425154896654386]:
+                return await self.remove_role_from_user(user_id, self.bot.config['roles'].getint(f'{emoji.id}'), guild_id)
 
     @commands.Cog.listener()
-    async def on_member_join():
-        pass
+    async def on_member_join(self, member):
+        # проверить, есть ли пользователь в бд, и если да, то выдать его роли
+        request = f"SELECT EXISTS(SELECT * from user_stats where user_id = {member.id});"
+        user_in_db = self.bot.db.custom_command(request)[0][0]
+        if user_in_db:
+            response = self.bot.db.get_value('user_stats', 'roles', 'user_id', member.id)
+            if response:
+                guild = await self.bot.fetch_guild(self.bot.config['data']['guild_id'])
+                for role_id in eval(response):
+                    if role_id != self.bot.config['roles_id'].getint('everyone'):
+                        role = guild.get_role(role_id)
+                        await member.add_roles(role)
+                answer = f'{member.mention}, Вернула тебе твои роли, бааака!'
+            else:
+                answer = f'{member.mention}, Не получилось достать твои роли'
+        else:
+            answer = 'Новый пользователь'
+
+        channel = await self.bot.fetch_channel(self.bot.config['channel']['main'])
+        await channel.send(answer)
+
 
     @commands.Cog.listener()
-    async def on_member_remove():
-        pass
+    async def on_member_remove(self, member):
+        # сохранить все роли у юзера при выходе с серва
+        request = f"SELECT EXISTS(SELECT * from user_stats where user_id = {member.id});"
+        user_in_db = self.bot.db.custom_command(request)[0][0]
+        roles = str([i.id for i in member.roles])
+        if user_in_db:
+            response = self.bot.db.update('user_stats', 'roles', 'user_id', roles, member.id)
+        else:
+            response = self.bot.db.insert('user_stats', member.id, roles)
+
+        if response:
+            answer = f'Сохранила роли этого дэбила {member.mention}, нья!'
+        else:
+            answer = f'Не получилось засейвить этого долбаёба {member.mention}, бб аРольф!'
+
+        channel = await self.bot.fetch_channel(self.bot.config['channel']['main'])
+        await channel.send(answer)
 
     @commands.Cog.listener()
-    async def on_voice_state_update():
-        pass
+    async def on_voice_state_update(self, member, before, after):
+        voice_channel = self.bot.config['channel'].getint('mp_voice')
+        channel = before.channel or after.channel
+        vc = get_vc(self)
+
+        if before.channel and before.channel.id == voice_channel:
+            mp_voice = await self.bot.fetch_channel(voice_channel)
+            if len(mp_voice.members) == 1:
+                await vc.disconnect()
+
+        if after.channel and after.channel.id == voice_channel and not vc:
+            await after.channel.connect()
 
 
-    async def give_role_to_user(self, user_id, role_id):
-        guild = await self.bot.fetch_guild(self.bot.config['data']['guild_id'])
+    async def give_role_to_user(self, user_id, role_id, guild_id):
+        guild = await self.bot.fetch_guild(guild_id)
         role = guild.get_role(role_id)
         user = await guild.fetch_member(user_id)
         return await user.add_roles(role)
 
-    async def remove_role_from_user(self, user_id, role_id):
-        guild = await self.bot.fetch_guild(self.bot.self.bot.config['data']['guild_id'])
+    async def remove_role_from_user(self, user_id, role_id, guild_id):
+        guild = await self.bot.fetch_guild(guild_id)
         role = guild.get_role(role_id)
         user = await guild.fetch_member(user_id)
         return await user.remove_roles(role)
