@@ -46,7 +46,7 @@ class Music_Player(commands.Cog):
     )
     @is_channel(mp_channel)
     @commands.check(is_user_in_voice)
-    async def play(self, ctx, URL: str):
+    async def play(self, ctx, *, URL: str):
 
         vc = get_vc(self)
 
