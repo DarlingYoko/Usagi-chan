@@ -27,6 +27,13 @@ class Main(commands.Cog):
         await channel.connect()
         await ctx.send('Успешно подключилась')
 
+    @connect.error
+    async def connect_error(self, ctx, error):
+        if isinstance(error, commands.CheckFailure):
+            await ctx.send('Nothing to see here comrade.')
+        else:
+            print(error)
+
 
     @commands.command(name = 'помощь', aliases = ['хелп', 'хлеп'])
     async def help(self, ctx, *, args = None):

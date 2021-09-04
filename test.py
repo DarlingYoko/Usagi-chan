@@ -6,8 +6,5 @@ class Test:
         self.name = 'test'
 
 
-
-bot = Test()
-bot.description = 'sdf'
-
-print(bot.description)
+command = None
+a = ' '.join([i.name for i in command.parents]) if command else ''

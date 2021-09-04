@@ -198,8 +198,11 @@ class Artifacts(commands.Cog):
         elif isinstance(error, commands.CheckFailure):
             channel = self.arifact_channel
             await ctx.send(f'Низя использовать эту команду туть. Тебе сюда <#{channel}>')
+        elif isinstance(error, commands.MissingRequiredArgument):
+            return await ctx.send_help('new')
         else:
             await ctx.send(error)
+
 
 def setup(bot):
     bot.add_cog(Artifacts(bot))

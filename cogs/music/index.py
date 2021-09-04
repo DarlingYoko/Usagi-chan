@@ -374,10 +374,12 @@ class Music_Player(commands.Cog):
             raise commands.BadArgument
         await ctx.send(answer)
 
-    @play.error
-    async def not_found_user(self, ctx, error):
+    @repeat.error
+    async def repeat_error(self, ctx, error):
         if isinstance(error, commands.BadArgument):
-            await ctx.send('Такого я не могу')
+            return await ctx.send('Такого я не могу')
+        if isinstance(error, commands.MissingRequiredArgument):
+            return await ctx.send_help('repeat')
 
     @commands.command(
         aliases = ['np'],

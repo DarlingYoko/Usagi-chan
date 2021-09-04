@@ -89,7 +89,7 @@ class CustomHelpCommand(commands.HelpCommand):
 
         desc = f'{group.description}\n' if group.description else '_ _\n'
 
-        commands = '\n\t!'.join([f'{command.name} {command.brief if command.brief else ""}' for index, command in enumerate(group.commands)])
+        commands = '\n\t!'.join([f'{' '.join([i.name for i in command.parents.reverse()]) if command.parents else ''} {command.name} {command.brief if command.brief else ""}' for index, command in enumerate(group.commands)])
         key = f'[<#{group.help}>](https://ptb.discord.com/channels/733631069542416384/{group.help}/)' if group.help else '#All_channels'
         description = f'{desc}\n```ARM\nCommands\n\t!{commands}```╰➣{key}'
 
