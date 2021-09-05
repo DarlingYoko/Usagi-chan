@@ -206,7 +206,7 @@ class Music_Player(commands.Cog):
         )
     @is_channel(mp_channel)
     @commands.check(is_user_in_voice)
-    async def skip(self, ctx, arg = None):
+    async def skip(self, ctx, *, arg = None):
         vc = get_vc(self)
 
         if not vc:
@@ -226,8 +226,8 @@ class Music_Player(commands.Cog):
             if arg and '-' in arg:
                 try:
                     content = arg.split('-')
-                    start = int(content[0])
-                    end = int(content[1])
+                    start = int(content[0].strip())
+                    end = int(content[1].strip())
                 except IndexError:
                     answer = 'Не получилось скипнуть, проверь команду, бака!'
                 else:
@@ -238,7 +238,7 @@ class Music_Player(commands.Cog):
 
             elif arg:
                 try:
-                    content = [int(i) - 1 for i in arg.split(',')]
+                    content = [int(i.strip()) - 1 for i in arg.split(',')]
                     content.sort()
                     for i in range(len(content)):
                         del self.queryData[self.queryList.pop(content[i] - i)]
