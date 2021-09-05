@@ -57,6 +57,7 @@ from bin.converters import *
 from discord_components import Button, Select, ButtonStyle, SelectOption
 from cogs.artifacts.extra import *
 from cogs.artifacts.blanks import *
+from cogs.artifacts.pictures import create_pic_artifact
 
 
 arifact_channel = 880497360386535454
@@ -66,17 +67,25 @@ class Artifacts(commands.Cog):
         self.bot = bot
 
 
-    @commands.command(
+    @commands.group(
         name='show',
         aliases=['показать'],
+        description='Показ артов себя/пользователя'
+    )
+    async def show_user_artifact(self, ctx):
+        if ctx.invoked_subcommand is None:
+            return await ctx.send_help('show')
+
+
+    @show_user_artifact.command(
+        name='all',
+        aliases=['все'],
         usage='<member name>|<member ID>|<Nothing for yours>',
         description='Показ артов себя/пользователя'
     )
-    async def show_user_artifacts(self, ctx, *, member: UserConverter = None):
-
+    async def show_all_user_artifacts(self, ctx, *, member: UserConverter = None):
         member = member or ctx.author
         id = member.id
-
         async with ctx.typing():
             artifactsIDs = self.bot.db.get_value(tableName = 'users_arts', argument = 'artifacts', selector = 'user_id', value = id)
             if not artifactsIDs:
@@ -148,7 +157,40 @@ class Artifacts(commands.Cog):
 
                 await res.respond(type=7, embed = embed, components = components)
 
-    @show_user_artifacts.error
+
+    @show_user_artifact.command(
+        name='id',
+        usage='<artifact ID> <member name>|<member ID>|<Nothing for yours>',
+        description='Показ определённого арта себя/пользователя'
+    )
+    async def show_user_artifact_by_ID(self, ctx, artifact_id: int, *, member: UserConverter = None):
+        member = member or ctx.author
+        #await ctx.send(f'ID {artifact_id}\nMemeber {member}')
+
+        async with ctx.typing():
+            artifactsIDs = self.bot.db.get_value(tableName = 'users_arts', argument = 'artifacts', selector = 'user_id', value = member.id)
+            if not artifactsIDs:
+                answer = f'<@{ctx.author.id}>, У тебя нет артефактов, бааака!'
+                if member != ctx.author:
+                    answer = f'<@{ctx.author.id}>, У этого пользователя нет артефактов, бааака!'
+                return await ctx.send(answer)
+
+            elif artifact_id not in eval(artifactsIDs):
+                answer = f'<@{ctx.author.id}>, У тебя нет такого артефактов, бааака!'
+                if member != ctx.author:
+                    answer = f'<@{ctx.author.id}>, У этого пользователя нет этого артефактов, бааака!'
+                return await ctx.send(answer)
+
+            else:
+                artifact_data = self.bot.db.custom_command(f'SELECT * from artifacts where id = {artifact_id};')[0]
+                if not artifact_data:
+                    return await ctx.send(f'<@{ctx.author.id}>, Не получилось достать данные про этот артефакт, пластити(')                
+                artifact_picture = create_pic_artifact(member.name, artifact_data)
+
+            question = await ctx.send(file = artifact_picture)
+
+
+    @show_user_artifact.error
     async def not_found_user(self, ctx, error):
         if isinstance(error, commands.BadArgument):
             await ctx.send('Не могу найти такого пользователя...')
