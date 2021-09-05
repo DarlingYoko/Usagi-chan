@@ -243,14 +243,20 @@ class Technical(commands.Cog):
         name = 'удалить',
         usage = '<пинг роли>',
         description = 'Удаление ВАШЕЙ роли',
+        help = str(role_channel)
     )
-    async def remove_role(self, ctx, role: RoleConverter):
+    async def remove_role(self, ctx, role: RoleConverter = None):
+        if not role:
+            return await ctx.send_help('роль изменить название')
+        if str(role.id) in self.bot.config['roles'].values():
+            return await ctx.send(f'{ctx.author.mention}, ДУРАААК ЭТО ОБЩАЯ РОЛЬ!')
         await role.delete()
         await ctx.send(f'{ctx.author.mention}, Удалила роль')
 
     @role_settings.group(
         name = 'изменить',
         description = 'Изменение ВАШЕЙ роли',
+        help = str(role_channel)
     )
     async def change_role(self, ctx):
         if ctx.invoked_subcommand is None:
@@ -260,8 +266,13 @@ class Technical(commands.Cog):
         name = 'название',
         usage = '<пинг роли> <новое название>',
         description = 'Изменение названия роли',
+        help = str(role_channel)
     )
-    async def change_role_name(self, ctx, role: RoleConverter, name):
+    async def change_role_name(self, ctx, role: RoleConverter = None, name = None):
+        if not role or not name:
+            return await ctx.send_help('роль изменить название')
+        if str(role.id) in self.bot.config['roles'].values():
+            return await ctx.send(f'{ctx.author.mention}, ДУРАААК ЭТО ОБЩАЯ РОЛЬ!')
         await role.edit(name = name)
         await ctx.send(f'{ctx.author.mention}, Изменила название')
 
@@ -269,8 +280,13 @@ class Technical(commands.Cog):
         name = 'цвет',
         usage = '<пниг роли> <новый цвет в 16ти>',
         description = 'Изменение цвета роли',
+        help = str(role_channel)
     )
-    async def change_role_color(self, ctx, role: RoleConverter, color: ColorConverter):
+    async def change_role_color(self, ctx, role: RoleConverter = None, color: ColorConverter = None):
+        if not role or not color:
+            return await ctx.send_help('роль изменить цвет')
+        if str(role.id) in self.bot.config['roles'].values():
+            return await ctx.send(f'{ctx.author.mention}, ДУРАААК ЭТО ОБЩАЯ РОЛЬ!')
         await role.edit(colour = color)
         await ctx.send(f'{ctx.author.mention}, Изменила цвет')
 

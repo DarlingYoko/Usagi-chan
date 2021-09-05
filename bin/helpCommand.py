@@ -89,7 +89,7 @@ class CustomHelpCommand(commands.HelpCommand):
 
         desc = f'{group.description}\n' if group.description else '_ _\n'
 
-        commands = '\n\t!'.join([f'{" ".join([i.name for i in command.parents.reverse()]) if command.parents else ""} {command.name} {command.brief if command.brief else ""}' for index, command in enumerate(group.commands)])
+        commands = '\n\t!'.join([f'{get_parents(command)} {command.name} {command.brief if command.brief else ""}' for index, command in enumerate(group.commands)])
         key = f'[<#{group.help}>](https://ptb.discord.com/channels/733631069542416384/{group.help}/)' if group.help else '#All_channels'
         description = f'{desc}\n```ARM\nCommands\n\t!{commands}```╰➣{key}'
 
@@ -117,3 +117,12 @@ class CustomHelpCommand(commands.HelpCommand):
         embed = get_embed(title = f'｢{command.name} ｣', description = description, url_image = url_image, thumbnail = thumbnail)
         await ctx.send(embed = embed)
         #await self.get_destination().send(command.name)
+
+
+def get_parents(command):
+    if command.parents:
+        parents = command.parents.copy()
+        parents.reverse()
+        return ' '.join([i.name for i in parents])
+    else:
+        return ''
