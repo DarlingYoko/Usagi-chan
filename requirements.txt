@@ -9,3 +9,4 @@ youtube_search
 discord_components
 numpy
 PyNaCl
+easy_pil

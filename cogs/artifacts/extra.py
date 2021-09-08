@@ -1,5 +1,6 @@
 import re
 from discord_components import Button, Select, ButtonStyle, SelectOption
+from discord import File
 
 
 def get_tasks(ctx, check):
@@ -144,7 +145,7 @@ def get_stats():
                 'ATK%': {'max': 34.8},
                 'CRIT DMG': {16: 51.6, 20: 62.2, 'max': 46.7},
                 'CRIT RATE': {16: 25.8, 20: 31.1, 'max': 23.3},
-                'HP': {16: 3967, 20: 4780, 'max': 1794},
+                'HP': {16: 3967, 20: '4 780', 'max': 1794},
                 'HP%': {'max': 34.8},
                 'HEAL BONUS': {16: 29.8, 20: 35.9},
                 'DEF': {'max': 138},
@@ -224,15 +225,13 @@ def get_buttons(ctx, zero = True, dot = True):
     btnInvisible = Button(style=ButtonStyle.gray, label = '-', disabled = True)
 
 
-    emojiClear = Button(style=ButtonStyle.gray, label = 'C', id = 'C')
     emojiAccept = ctx.bot.get_emoji(874767321007276143)
-    emojiCleanEntry = Button(style=ButtonStyle.gray, label = 'CE', id = 'CE')
     emojiExit = ctx.bot.get_emoji(874767320915005471)
 
 
-    btnClear = Button(style=ButtonStyle.gray, emoji = emojiClear, id = 'clear')
+    btnClear = Button(style=ButtonStyle.gray, label = 'C', id = 'clear')
     btnAccept = Button(style=ButtonStyle.green, emoji = emojiAccept, id = 'accept')
-    btnCleanEntry = Button(style=ButtonStyle.red, emoji = emojiCleanEntry, id = 'clean entry')
+    btnCleanEntry = Button(style=ButtonStyle.gray, label = 'CE', id = 'clean entry')
     btnExit = Button(style=ButtonStyle.red, emoji = emojiExit, id = 'exit')
 
     components=[[btn1, btn2, btn3, btnClear], [btn4, btn5, btn6, btnCleanEntry], [btn7, btn8, btn9, btnAccept], [btnInvisible, btn0, btnDot, btnExit], ]
@@ -250,11 +249,12 @@ async def quit(ctx, question):
 
 def put_artifact_in_database(db, user, artifact):
     request = f"INSERT INTO artifacts VALUES(DEFAULT, \'{artifact.set}\', \'{artifact.part}\', {artifact.lvl}, \'{artifact.main[0]}\', \'{artifact.main[1]}\'"
+    #request = f"INSERT INTO artifacts VALUES(DEFAULT, \'{artifact}\'"
 
     for sub in artifact.subs:
         request += f", \'{sub[0]}\', \'{sub[1]}\'"
 
-    request += ") RETURNING id;"
+    request += f",\'{artifact.part_url}\') RETURNING id;"
     respond_put_artifact = db.custom_command(request)
 
     if respond_put_artifact != 0:
@@ -274,3 +274,19 @@ def put_artifact_in_database(db, user, artifact):
             return artifact_id
 
     return 0
+
+
+class Artifact:
+    def __init__(self, set = None, part = None, lvl = None, main = None, subs = [None, None, None, None], id = None):
+        self.set = set
+        self.part = part
+        self.lvl = lvl
+        self.main = main
+        self.subs = subs
+        self.id = id
+
+
+async def get_blank_url(channel, blank):
+    file = File(fp = blank.image_bytes, filename = "blank.png")
+    message = await channel.send(file = file, delete_after = 60)
+    return message.attachments[0].url

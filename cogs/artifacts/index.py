@@ -55,6 +55,7 @@ from bin.functions import *
 from bin.checks import *
 from bin.converters import *
 from discord_components import Button, Select, ButtonStyle, SelectOption
+from discord import File
 from cogs.artifacts.extra import *
 from cogs.artifacts.blanks import *
 from cogs.artifacts.pictures import create_pic_artifact
@@ -184,10 +185,22 @@ class Artifacts(commands.Cog):
             else:
                 artifact_data = self.bot.db.custom_command(f'SELECT * from artifacts where id = {artifact_id};')[0]
                 if not artifact_data:
-                    return await ctx.send(f'<@{ctx.author.id}>, Не получилось достать данные про этот артефакт, пластити(')                
-                artifact_picture = create_pic_artifact(member.name, artifact_data)
+                    return await ctx.send(f'<@{ctx.author.id}>, Не получилось достать данные про этот артефакт, пластити(')
 
-            question = await ctx.send(file = artifact_picture)
+                artifact = Artifact(
+                    set = artifact_data[1],
+                    part = artifact_data[2],
+                    lvl = artifact_data[3],
+                    main = [artifact_data[4], artifact_data[5]],
+                    subs = [[artifact_data[i], artifact_data[i+1]] for i in range(6, 14, 2)],
+                    id = artifact_data[0]
+                )
+                artifact.part_url = artifact_data[14]
+                artifact_picture = create_pic_artifact(artifact, 'iconUSAGIlook')
+                file = File(fp = artifact_picture.image_bytes, filename = "blank.png")
+                embed = get_embed(author_name=f'{member.display_name}', url_image = "attachment://blank.png")
+
+            question = await ctx.send(embed = embed, file = file)
 
 
     @show_user_artifact.error
@@ -208,16 +221,19 @@ class Artifacts(commands.Cog):
         if part and lvl:
             response = await generate_blank(ctx, lvl = lvl, part = part)
             if response:
-                new_artifact, embed, question = response
+                new_artifact, question = response
+                print(str(new_artifact))
                 res = put_artifact_in_database(self.bot.db, ctx.author, new_artifact)
                 if res:
-                    footer = ['ID ' + '0' * (5 - len(str(res))) + str(res),
-                                'https://cdn.discordapp.com/attachments/813825744789569537/877565862935150662/view_watch_eye_icon_131255.png']
+                    new_artifact.id = res
                     author_name = 'Артефакт усешно создан и добавлен'
-                    embed = get_embed(embed = embed, footer = footer, author_name = author_name)
+                    blank = create_pic_artifact(new_artifact, 'iconUSAGIlook')
+                    trash_channel = await ctx.bot.fetch_channel(884802734627377232)
+                    blank_url = await get_blank_url(trash_channel, blank)
+                    embed = get_embed(author_name = author_name, url_image = blank_url)
                 else:
                     author_name = 'Не удалось добавить артефакт...'
-                    embed = get_embed(embed = embed, author_name = author_name)
+                    embed = get_embed(author_name = author_name, url_image = 'https://cdn.discordapp.com/attachments/884802734627377232/884868744051052554/iconUSAGI_error.png')
 
                 await question.edit(embed = embed, components = [])
                 # await ctx.send('Successfully created artifact')
@@ -238,7 +254,7 @@ class Artifacts(commands.Cog):
             await ctx.send('Неверные аргументы, Баака!')
 
         elif isinstance(error, commands.CheckFailure):
-            channel = self.arifact_channel
+            channel = arifact_channel
             await ctx.send(f'Низя использовать эту команду туть. Тебе сюда <#{channel}>')
         elif isinstance(error, commands.MissingRequiredArgument):
             return await ctx.send_help('new')
