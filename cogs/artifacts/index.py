@@ -261,6 +261,40 @@ class Artifacts(commands.Cog):
         else:
             await ctx.send(error)
 
+    @commands.command(
+        name='remove',
+        aliases=['удалить'],
+        usage='<artifact ID>',
+        description='Удаление артефакта',
+        help = str(arifact_channel)
+    )
+    @is_channel(arifact_channel)
+    async def remove_artifact(self, ctx, artifact_id: int):
+        artifactsIDs = self.bot.db.get_value(tableName = 'users_arts', argument = 'artifacts', selector = 'user_id', value = ctx.author.id)
+        if not artifactsIDs:
+            return await ctx.send(f'<@{ctx.author.id}>, У тебя нет артефактов, бааака!')
+
+        artifactsIDs = eval(artifactsIDs)
+        if artifact_id not in artifactsIDs:
+            return await ctx.send(f'<@{ctx.author.id}>, Это не твой артефакт, бааака!')
+
+        response = self.bot.db.remove(tableName = 'artifacts', selector = 'id', value = artifact_id)
+        if not response:
+            return await ctx.send(f'<@{ctx.author.id}>, Не получилось удалить твой артефакт, пластити(')
+
+        artifactsIDs.remove(artifact_id)
+        response = self.bot.db.update(tableName = 'users_arts', argument = 'artifacts', selector = 'user_id', newValue = str(artifactsIDs), findValue = ctx.author.id)
+
+        if not response:
+            return await ctx.send(f'<@{ctx.author.id}>, Удалила артефакт, но у тебя его убрать не получилось, облатитесь к администрации.')
+        return await ctx.send(f'<@{ctx.author.id}>, Успешно удалила, Нья!')
+
+
+    @remove_artifact.error
+    async def remove_artifact_remove(self, ctx, error):
+        if isinstance(error, commands.MissingRequiredArgument):
+            return await ctx.send_help('remove')
+
 
 def setup(bot):
     bot.add_cog(Artifacts(bot))

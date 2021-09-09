@@ -60,7 +60,7 @@ async def generate_blank(ctx, set = None, lvl = None, part = None, main = None, 
 
     trash_channel = await ctx.bot.fetch_channel(884802734627377232)
     initial = 'iconUSAGINoted'
-    artifact = Artifact(lvl = lvl, part = parts[part][2])
+    artifact = Artifact(set = None, part = parts[part][2], lvl = lvl, main = None, subs = [None, None, None, None], id = None)
     artifact.part_url = parts[part][0]
 
     blank = create_pic_artifact(artifact, initial)
