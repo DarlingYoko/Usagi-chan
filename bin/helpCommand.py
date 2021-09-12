@@ -28,7 +28,7 @@ class CustomHelpCommand(commands.HelpCommand):
                             value_commands[command.help] += f' !{command.name}'
                         else:
                             value_commands[command.help] = f'!{command.name}'
-                        #value += f'`!{command.name}`\n╰➣[<#{command.help}>](https://ptb.discord.com/channels/733631069542416384/{command.help}/)\n'
+                        #value += f'`!{command.name}`\n╰➣[<#{command.help}>](https://ptb.discord.com/channels/858053936313008129/{command.help}/)\n'
                     else:
                         if '#All_channels' in value_commands.keys():
                             value_commands['#All_channels'] += f' !{command.name}'
@@ -39,7 +39,7 @@ class CustomHelpCommand(commands.HelpCommand):
                 value = ''
                 for key, item in value_commands.items():
                     if key != '#All_channels':
-                        value += f'`{item}`\n╰➣[<#{key}>](https://ptb.discord.com/channels/733631069542416384/{key}/)\n'
+                        value += f'`{item}`\n╰➣[<#{key}>](https://ptb.discord.com/channels/858053936313008129/{key}/)\n'
                     else:
                         value += f'`{item}`\n╰➣#All_channels\n'
 
@@ -75,7 +75,7 @@ class CustomHelpCommand(commands.HelpCommand):
         description = ''
         for key, item in value_commands.items():
             if key != '#All_channels':
-                description += f'`{item}`\n╰➣[<#{key}>](https://ptb.discord.com/channels/733631069542416384/{key}/)\n'
+                description += f'`{item}`\n╰➣[<#{key}>](https://ptb.discord.com/channels/858053936313008129/{key}/)\n'
             else:
                 description += f'`{item}`\n╰➣#All_channels\n'
 
@@ -90,7 +90,7 @@ class CustomHelpCommand(commands.HelpCommand):
         desc = f'{group.description}\n' if group.description else '_ _\n'
 
         commands = '\n\t!'.join([f'{get_parents(command)} {command.name} {command.brief if command.brief else ""}' for index, command in enumerate(group.commands)])
-        key = f'[<#{group.help}>](https://ptb.discord.com/channels/733631069542416384/{group.help}/)' if group.help else '#All_channels'
+        key = f'[<#{group.help}>](https://ptb.discord.com/channels/858053936313008129/{group.help}/)' if group.help else '#All_channels'
         description = f'{desc}\n```ARM\nCommands\n\t!{commands}```╰➣{key}'
 
         url_image = 'https://cdn.discordapp.com/attachments/690999933356081193/691029773392019506/divider.gif'
@@ -109,7 +109,7 @@ class CustomHelpCommand(commands.HelpCommand):
             aliases = f'[{command.qualified_name}]'
         usage = f'  {command.usage}' if command.usage else ''
 
-        key = f'[<#{command.help}>](https://ptb.discord.com/channels/733631069542416384/{command.help}/)' if command.help else '#All_channels'
+        key = f'[<#{command.help}>](https://ptb.discord.com/channels/858053936313008129/{command.help}/)' if command.help else '#All_channels'
         description = f'{desc}\n```!{aliases}{usage}```╰➣{key}'
 
         url_image = 'https://cdn.discordapp.com/attachments/690999933356081193/691029773392019506/divider.gif'

@@ -6,17 +6,17 @@ from bin.converters import *
 from datetime import datetime, timedelta
 from time import mktime
 
-emoji_channel = 880497584123285604
-transformator_channel = 880497614456500295
-role_channel = 880497550472380476
+emoji_channel = 858118256676831243
+transformator_channel = 859772440195760178
+role_channel = 858098333565976626
 
 
 class Technical(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        #self.notify_forum_login.start()
-        #self.countdown_for_update.start()
-        #self.notify_transformator.start()
+        self.notify_forum_login.start()
+        self.countdown_for_update.start()
+        self.notify_transformator.start()
 
 
     @commands.command(

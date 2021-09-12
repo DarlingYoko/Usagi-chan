@@ -61,7 +61,7 @@ from cogs.artifacts.blanks import *
 from cogs.artifacts.pictures import create_pic_artifact
 
 
-arifact_channel = 880497360386535454
+arifact_channel = 886693347941564457
 
 class Artifacts(commands.Cog):
     def __init__(self, bot):
@@ -223,7 +223,7 @@ class Artifacts(commands.Cog):
                     new_artifact.rate = f'{artifacts.index(result[0]) + 1}/{len(artifacts)}'
                     author_name = 'Артефакт успешно создан и добавлен'
                     blank = create_pic_artifact(new_artifact, 'iconUSAGIlook')
-                    trash_channel = await ctx.bot.fetch_channel(884802734627377232)
+                    trash_channel = await ctx.bot.fetch_channel(881532399467528222)
                     blank_url = await get_blank_url(trash_channel, blank)
                     embed = get_embed(author_name = author_name, url_image = blank_url)
                 else:

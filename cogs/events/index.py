@@ -36,7 +36,7 @@ class Events(commands.Cog):
         guild_id = payload.guild_id
 
         if str(emoji.id) in self.bot.config['roles']:
-            if message_id in [883425141256781824, 883425154896654386]:
+            if message_id in [858131920729931796, 877665594307125268]:
                 return await self.give_role_to_user(user_id, self.bot.config['roles'].getint(f'{emoji.id}'), guild_id)
 
         # сейчас только два действия требуется отслеживать
@@ -56,7 +56,7 @@ class Events(commands.Cog):
         guild_id = payload.guild_id
 
         if str(emoji.id) in self.bot.config['roles']:
-            if message_id in [883425141256781824, 883425154896654386]:
+            if message_id in [858131920729931796, 877665594307125268]:
                 return await self.remove_role_from_user(user_id, self.bot.config['roles'].getint(f'{emoji.id}'), guild_id)
 
     @commands.Cog.listener()

@@ -11,7 +11,7 @@ from threading import Thread
 from datetime import timedelta
 
 
-mp_channel = 880497165141680148
+mp_channel = 858145829158912030
 
 class Music_Player(commands.Cog):
     def __init__(self, bot):

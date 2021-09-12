@@ -58,7 +58,7 @@ async def generate_blank(ctx, set = None, lvl = None, part = None, main = None, 
     author_name = 'Добавление нового артефакта'
     author_icon_URL = 'https://cdn.discordapp.com/attachments/813825744789569537/877650197122011166/icon-document_87920.png'
 
-    trash_channel = await ctx.bot.fetch_channel(884802734627377232)
+    trash_channel = await ctx.bot.fetch_channel(881532399467528222)
     initial = 'iconUSAGINoted'
     artifact = Artifact(set = None, part = parts[part][2], lvl = lvl, main = None, subs = [None, None, None, None], id = None)
     artifact.part_url = parts[part][0]

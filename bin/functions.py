@@ -9,9 +9,9 @@ from discord_components import Button, Select, ButtonStyle, SelectOption
 def get_config():
     config = configparser.ConfigParser()
 
-    for filename in os.listdir('./test_config'):
+    for filename in os.listdir('./config'):
         if filename.endswith('.ini'):
-            config.read(f'./test_config/{filename}', encoding = 'UTF8')
+            config.read(f'./config/{filename}', encoding = 'UTF8')
     return config
 
 
