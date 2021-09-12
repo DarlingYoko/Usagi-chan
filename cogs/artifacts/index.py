@@ -169,9 +169,10 @@ class Artifacts(commands.Cog):
         #await ctx.send(f'ID {artifact_id}\nMemeber {member}')
 
         async with ctx.typing():
-            artifact_data = self.bot.db.custom_command(f'SELECT * from artifacts where id = {artifact_id};')[0]
+            artifact_data = self.bot.db.custom_command(f'SELECT * from artifacts where id = {artifact_id};')
             if not artifact_data:
                 return await ctx.send(f'<@{ctx.author.id}>, Нет такого артефакта.')
+            artifact_data = artifact_data[0]
             res = self.bot.db.get_all('artifacts')
             res = sorted(res, reverse=True, key=lambda item: item[15])
 
