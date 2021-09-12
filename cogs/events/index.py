@@ -69,7 +69,7 @@ class Events(commands.Cog):
             if response:
                 guild = await self.bot.fetch_guild(self.bot.config['data']['guild_id'])
                 for role_id in eval(response):
-                    if role_id != self.bot.config['roles_id'].getint('everyone'):
+                    if role_id not in [self.bot.config['roles_id'].getint('everyone'), 858190565752700958]:
                         role = guild.get_role(role_id)
                         await member.add_roles(role)
                 answer = f'{member.mention}, Вернула тебе твои роли, бааака!'
