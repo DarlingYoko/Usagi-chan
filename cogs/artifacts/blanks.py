@@ -327,7 +327,7 @@ async def generate_blank(ctx, set = None, lvl = None, part = None, main = None, 
                     await quit(ctx, question)
                     return
 
-                artifact.subs[i] = [state, number]
+                artifact.subs[i] = [state, int(number)]
                 blank = create_pic_artifact(artifact, initial)
                 blank_url = await get_blank_url(trash_channel, blank)
                 embed = get_embed(embed = embed, url_image = blank_url)
@@ -338,5 +338,5 @@ async def generate_blank(ctx, set = None, lvl = None, part = None, main = None, 
 
 
     # Успешно созаднный арт надо добавить в бд
-
+    artifact.rate()
     return artifact, question

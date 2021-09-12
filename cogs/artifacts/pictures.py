@@ -6,14 +6,14 @@ import requests
 
 
 def create_pic_artifact(artifact, initial):
-    blank = Editor('./files/photo/clear_blank5.png')
+    blank = Editor('./files/photo/clear_blank.png')
     usagi = Editor(f'./files/photo/{initial}.png').resize((150, 150))
     image = Image.open(requests.get(artifact.part_url, stream=True).raw).resize((220, 220))
 
     font_BIG = ImageFont.truetype(font = './files/fonts/genshin.ttf', size = 35)
     font_big = ImageFont.truetype(font = './files/fonts/genshin.ttf', size = 25)
     font_mid = ImageFont.truetype(font = './files/fonts/genshin.ttf', size = 20)
-    font_small = ImageFont.truetype(font = './files/fonts/genshin.ttf', size = 10)
+    font_small = ImageFont.truetype(font = './files/fonts/genshin.ttf', size = 17)
     percent = ['CRIT', '%', 'DMG', 'BONUS', 'ER']
 
     blank.paste(usagi, (350, 430))
@@ -46,6 +46,12 @@ def create_pic_artifact(artifact, initial):
     if artifact.id:
         zero = '0' * (5 - len(f'{artifact.id}'))
         blank.text((35, 538), f'Usagi ID {zero}{artifact.id}', font = font_mid, color = "white")
+
+    if 'gs' in dir(artifact):
+        blank.text((481, 310), f'GS: {artifact.gs} ({(artifact.gs * 100 / 1650):.2f}%)', font = font_small, color = "#39444f", align = 'right')
+        blank.text((435, 355), f'{artifact.rate}', font = font_small, color = "#39444f", align = 'right')
+
+
 
 
     return blank

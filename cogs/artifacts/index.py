@@ -161,44 +161,35 @@ class Artifacts(commands.Cog):
 
     @show_user_artifact.command(
         name='id',
-        usage='<artifact ID> <member name>|<member ID>|<Nothing for yours>',
+        usage='<artifact ID>',
         description='Показ определённого арта себя/пользователя'
     )
-    async def show_user_artifact_by_ID(self, ctx, artifact_id: int, *, member: UserConverter = None):
-        member = member or ctx.author
+    async def show_user_artifact_by_ID(self, ctx, artifact_id: int):
+        member = ctx.author
         #await ctx.send(f'ID {artifact_id}\nMemeber {member}')
 
         async with ctx.typing():
-            artifactsIDs = self.bot.db.get_value(tableName = 'users_arts', argument = 'artifacts', selector = 'user_id', value = member.id)
-            if not artifactsIDs:
-                answer = f'<@{ctx.author.id}>, У тебя нет артефактов, бааака!'
-                if member != ctx.author:
-                    answer = f'<@{ctx.author.id}>, У этого пользователя нет артефактов, бааака!'
-                return await ctx.send(answer)
+            artifact_data = self.bot.db.custom_command(f'SELECT * from artifacts where id = {artifact_id};')[0]
+            if not artifact_data:
+                return await ctx.send(f'<@{ctx.author.id}>, Нет такого артефакта.')
+            res = self.bot.db.get_all('artifacts')
+            res = sorted(res, reverse=True, key=lambda item: item[15])
 
-            elif artifact_id not in eval(artifactsIDs):
-                answer = f'<@{ctx.author.id}>, У тебя нет такого артефактов, бааака!'
-                if member != ctx.author:
-                    answer = f'<@{ctx.author.id}>, У этого пользователя нет этого артефактов, бааака!'
-                return await ctx.send(answer)
 
-            else:
-                artifact_data = self.bot.db.custom_command(f'SELECT * from artifacts where id = {artifact_id};')[0]
-                if not artifact_data:
-                    return await ctx.send(f'<@{ctx.author.id}>, Не получилось достать данные про этот артефакт, пластити(')
-
-                artifact = Artifact(
-                    set = artifact_data[1],
-                    part = artifact_data[2],
-                    lvl = artifact_data[3],
-                    main = [artifact_data[4], artifact_data[5]],
-                    subs = [[artifact_data[i], artifact_data[i+1]] for i in range(6, 14, 2)],
-                    id = artifact_data[0]
-                )
-                artifact.part_url = artifact_data[14]
-                artifact_picture = create_pic_artifact(artifact, 'iconUSAGIlook')
-                file = File(fp = artifact_picture.image_bytes, filename = "blank.png")
-                embed = get_embed(author_name=f'{member.display_name}', url_image = "attachment://blank.png")
+            artifact = Artifact(
+                set = artifact_data[1],
+                part = artifact_data[2],
+                lvl = artifact_data[3],
+                main = [artifact_data[4], artifact_data[5]],
+                subs = [[artifact_data[i], artifact_data[i+1]] for i in range(6, 14, 2)],
+                id = artifact_data[0]
+            )
+            artifact.part_url = artifact_data[14]
+            artifact.gs = artifact_data[15]
+            artifact.rate = f'{res.index(artifact_data) + 1}/{len(res)}'
+            artifact_picture = create_pic_artifact(artifact, 'iconUSAGIlook')
+            file = File(fp = artifact_picture.image_bytes, filename = "blank.png")
+            embed = get_embed(author_name=f'{member.display_name}', url_image = "attachment://blank.png")
 
             question = await ctx.send(embed = embed, file = file)
 
@@ -226,7 +217,11 @@ class Artifacts(commands.Cog):
                 res = put_artifact_in_database(self.bot.db, ctx.author, new_artifact)
                 if res:
                     new_artifact.id = res
-                    author_name = 'Артефакт усешно создан и добавлен'
+                    artifacts = self.bot.db.get_all('artifacts')
+                    artifacts = sorted(artifacts, reverse=True, key=lambda item: item[15])
+                    result = [x for x in artifacts if x[0] == res]
+                    new_artifact.rate = f'{artifacts.index(result[0]) + 1}/{len(artifacts)}'
+                    author_name = 'Артефакт успешно создан и добавлен'
                     blank = create_pic_artifact(new_artifact, 'iconUSAGIlook')
                     trash_channel = await ctx.bot.fetch_channel(884802734627377232)
                     blank_url = await get_blank_url(trash_channel, blank)

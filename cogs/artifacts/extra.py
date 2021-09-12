@@ -254,7 +254,7 @@ def put_artifact_in_database(db, user, artifact):
     for sub in artifact.subs:
         request += f", \'{sub[0]}\', \'{sub[1]}\'"
 
-    request += f",\'{artifact.part_url}\') RETURNING id;"
+    request += f",\'{artifact.part_url}\',\'{artifact.gs}\') RETURNING id;"
     respond_put_artifact = db.custom_command(request)
 
     if respond_put_artifact != 0:
@@ -284,6 +284,38 @@ class Artifact:
         self.main = main
         self.subs = subs
         self.id = id
+
+    def rate(self):
+        weights = {'HP': 0, 'ATK': 0.5, 'ATK%': 1, 'ER': 0.5, 'EM': 0.5,
+        			   'PHYSICAL DMG': 1, 'CRIT RATE': 1, 'CRIT DMG': 1, 'ELEM': 1,
+        			   'HP%': 0, 'DEF%': 0, 'DEF': 0, 'HEAL BONUS': 0}
+
+
+        max_mains = {'HP': 4780, 'ATK': 311.0, 'ATK%': 46.6, 'ER': 51.8, 'EM': 187.0,
+        				 'PHYSICAL DMG': 58.3,  'CRIT RATE': 31.1, 'CRIT DMG': 62.2, 'ELEM': 46.6,
+        				 'HP%': 46.6, 'DEF%': 58.3, 'HEAL BONUS': 35.9}
+
+
+        max_subs = {'ATK': 19.0, 'EM': 23.0, 'ER': 6.5, 'ATK%': 5.8,
+        				'CRIT RATE': 3.9, 'CRIT DMG': 7.8, 'DEF': 23.0, 'HP': 299.0, 'DEF%': 7.3, 'HP%': 5.8}
+
+        elements = ['ANEMO', 'HYDRO', 'GEO', 'PYRO', 'CRYO', 'ELECTRO']
+
+        sub_score = 0
+        main = self.main if not list_check_entry(self.main[0], elements) else ['ELEM', self.main[1]]
+        main_score = weights[main[0]] * 100 * (3 + self.lvl / 4)
+        main_score = main_score if main_score > 0 else 100
+
+
+        for key, value in self.subs:
+            sub_score += value/max_subs[key] * weights[key] * 100
+
+
+        score = main_score + sub_score
+        max = 1650
+        print(f'Gear score: {int(score)} ({(score * 100 / max):.2f}%)')
+
+        self.gs = int(score)
 
 
 async def get_blank_url(channel, blank):
