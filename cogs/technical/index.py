@@ -19,6 +19,8 @@ class Technical(commands.Cog):
         self.notify_transformator.start()
 
 
+
+
     @commands.command(
         name = 'эмодзи',
         brief='Добавление нового эмодзи',
@@ -72,6 +74,11 @@ class Technical(commands.Cog):
                 channel = await self.bot.fetch_channel(channel_id)
                 await channel.send(message)
 
+    @notify_forum_login.before_loop
+    async def before_notify_forum_login(self):
+        print('waiting...')
+        await self.bot.wait_until_ready()
+
     @tasks.loop(minutes=10.0)
     async def notify_transformator(self):
         usersList = self.bot.db.get_all(tableName = 'forum')
@@ -85,6 +92,11 @@ class Technical(commands.Cog):
                 await channel.send('<@{0}> Преобразователь готов, нья!'.format(userID))
                 time = mktime(datetime.now().timetuple())
                 self.bot.db.update('forum', 'time', 'userid', time, userID)
+
+    @notify_transformator.before_loop
+    async def before_notify_transformator(self):
+        print('waiting...')
+        await self.bot.wait_until_ready()
 
 
     @commands.group(
@@ -188,6 +200,11 @@ class Technical(commands.Cog):
             hoursStr = 'часа'
 
         await channel.edit(name = '{0} {3} {1} {4} {2} мин'.format(d.days, hours, minutes, daysStr, hoursStr))
+
+    @countdown_for_update.before_loop
+    async def before_countdown_for_update(self):
+        print('waiting...')
+        await self.bot.wait_until_ready()
 
 
     @commands.command(name = 'time')
