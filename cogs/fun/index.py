@@ -61,23 +61,37 @@ class Fun(commands.Cog):
             await ctx.send('<:MonkaStop:837405113638977576>')
 
 
-    @commands.group()
-    async def first(self, ctx):
-        if ctx.invoked_subcommand is None:
-            await ctx.send("This is the first command layer")
 
-    @first.group()
-    async def second(self, ctx):
-        print(ctx.invoked_subcommand)
-        if ctx.invoked_subcommand is None:
-            await ctx.message.author.send("Hey! Did this come through clearly?")
+    @commands.command(name = 'вебивент')
+    async def web_event_link(self, ctx):
+        return await ctx.send('<https://webstatic-sea.mihoyo.com/ys/event/e20210805-yoimiya/index.html?mhy_auth_required=true&mhy_presentation_style=fullscreen?utm_source=sns&utm_medium=vk&lang=ru-ru>')
 
-    @second.command()
-    async def third(self, ctx, channelId=None):
-        if channelId != None:
-            channel = self.bot.get_channel(int(channelId))
-            await channel.send("Hey! This is a message from me the bot. Bet you didn't see who ran the command?", delete_after=15)
+    @commands.command(name = 'примогемы')
+    async def primogems_link(self, ctx):
+        return await ctx.send('<https://docs.google.com/spreadsheets/d/1DPJOtHTLB_y-MTcUheSBrMPFvV_EtBlcYA6Xy1F0R_c/edit?pli=1#gid=284498967>')
 
+    @commands.command(name = 'форум', aliases = ['forum'])
+    async def forum_link(self, ctx):
+        return await ctx.send('Ссылка на форум - <https://www.hoyolab.com>\nСсылка на логин бонус - <https://webstatic-sea.mihoyo.com/ys/event/signin-sea/index.html?act_id=e202102251931481&lang=ru-ru>')
+
+    @commands.command(name = 'карта', aliases = ['map'])
+    async def map_link(self, ctx):
+        return await ctx.send('Интерактивная карта по Геншину: <https://webstatic-sea.mihoyo.com/app/ys-map-sea/?lang=ru-ru>')
+
+    @commands.command(name = 'хх', aliases = ['hh'])
+    async def hh_link(self, ctx):
+        return await ctx.send('<https://genshin.honeyhunterworld.com>')
+
+    @commands.command(name = 'паймон')
+    async def paimon_link(self, ctx):
+        return await ctx.send('https://paimon.moe/')
+
+    @commands.command(name = 'яишенка', aliases = ['глазунья'])
+    async def jaishenka(self, ctx):
+        answer = ('<a:read:859186021488525323> Ставишь сковороду на небольшую температуру, наливаешь немного масла, растираешь силиконовой кисточкой или салфеткой равномерно, чтобы не хлюпало, разбиваешь яйцо и ждёшь\n\n' +
+                    '<a:read:859186021488525323> Видишь, что нижний слой белка начинает белеть, а сверху вокруг желтка еще сопелька прозрачная, так вот, бери вилочку и под сопелькой в радиусе разлива яйца разрывай белок, чтобы слой вокруг желтка тип провалился к сковородке и стал одним целым со всем белком, посыпаешь приправами на вкус, ждешь, огонь сильно не добавляешь и готово\n\n' +
+                    '<a:peepoFAT:859363980228427776> Если любишь, чтобы желток внутри приготовился и был не жидкий, то накрываешь крышкой')
+        return await ctx.send(answer)
 
 
     #@commands.command()

@@ -38,12 +38,38 @@ max = 1650
 print(f'Gear score: {int(score)} ({(score * 100 / max):.2f}%)')
 '''
 
-a = [(20, 'Сердце глубин', 'Цветок жизни', 20, 'HP', '4780', 'HP%', '25.0', 'EM', '83', 'ATK%', '15.0', 'CRIT RATE', '23.0', 'https://cdn.discordapp.com/attachments/877981304644304926/877984345648951336/Item_Gilded_Corsage.png', 1650),
-	(44, 'Ступающий по лаве', 'Кубок пространства', 20, 'PYRO DMG', '46.6', 'CRIT RATE', '22.0', 'CRIT DMG', '7.8', 'ATK%', '5.4', 'ER', '6.5', 'https://cdn.discordapp.com/attachments/877981304644304926/877982655759650856/Item_Lavawalker27s_Epiphany.png', 1607),
-	(42, 'Конец гладиатора', 'Кубок пространства', 20, 'ANEMO DMG', '46.6', 'CRIT DMG', '21.6', 'CRIT RATE', '7.8', 'HP%', '3.0', 'ER', '25.0', 'https://cdn.discordapp.com/attachments/877981304644304926/877981486517747782/Item_Gladiator27s_Intoxication.png', 1520),
-	(43, 'Эмблема рассечённой судьбы', 'Перо смерти', 20, 'ATK', '311', 'CRIT RATE', '22.0', 'CRIT DMG', '7.8', 'ATK%', '5.4', 'ER', '6.5', 'https://cdn.discordapp.com/attachments/877981304644304926/877983794911666256/Item_Sundered_Feather.png', 1207),
-	(40, 'Рыцарь крови', 'Перо смерти', 20, 'ATK', '311', 'DEF%', '5.0', 'HP%', '4.0', 'EM', '7', 'DEF', '8', 'https://cdn.discordapp.com/attachments/877981304644304926/877982780796063864/Item_Bloodstained_Black_Plume.png', 7),
-	(39, 'Заблудший в метели', 'Корона разума', 20, 'HP%', '46.6', 'CRIT DMG', '1.0', 'CRIT RATE', '5.0', 'DEF', '1', 'EM', '9', 'https://cdn.discordapp.com/attachments/877981304644304926/877984370550526032/Item_Broken_Rime27s_Echo.png', 6),
-	(36, 'Рыцарь крови', 'Цветок жизни', 20, 'HP', '4 780', 'HP%', '8.0', 'DEF', '81', 'ER', '5.0', 'CRIT RATE', '9.0', 'https://cdn.discordapp.com/attachments/877981304644304926/877982786881998938/Item_Bloodstained_Flower_of_Iron.png', 2),
-	(35, 'Заблудший в метели', 'Корона разума', 20, 'CRIT DMG', '62.2', 'ATK%', '10.0', 'CRIT RATE', '10.5', 'EM', '25', 'ER', '5.2', 'https://cdn.discordapp.com/attachments/877981304644304926/877984370550526032/Item_Broken_Rime27s_Echo.png', 1)]
-print(a)
+import cv2
+import pytesseract
+
+# Путь для подключения tesseract
+pytesseract.pytesseract.tesseract_cmd = 'C:\\Users\\zarte\\AppData\\Local\\Programs\\Tesseract-OCR\\tesseract.exe'
+
+# Подключение фото
+img = cv2.imread('./files/photo/test1.png')
+img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+
+# Будет выведен весь текст с картинки
+config = r''#--oem 3 --psm 6'
+print(pytesseract.image_to_string(img, config=config, lang="eng"))
+
+# Делаем нечто более крутое!!!
+
+data = pytesseract.image_to_data(img, config=config, lang="eng")
+
+# Перебираем данные про текстовые надписи
+for i, el in enumerate(data.splitlines()):
+	if i == 0:
+		continue
+
+	el = el.split()
+	try:
+		# Создаем подписи на картинке
+		x, y, w, h = int(el[6]), int(el[7]), int(el[8]), int(el[9])
+		cv2.rectangle(img, (x, y), (w + x, h + y), (0, 0, 255), 1)
+		cv2.putText(img, el[11], (x, y), cv2.FONT_HERSHEY_COMPLEX, 1, (0, 0, 0), 1)
+	except IndexError:
+		print("Операция была пропущена")
+
+# Отображаем фото
+cv2.imshow('Result', img)
+cv2.waitKey(0)
