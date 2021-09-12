@@ -318,6 +318,8 @@ async def generate_blank(ctx, set = None, lvl = None, part = None, main = None, 
                         else:
                             if list_check_entry(state, percent):
                                 artifact.subs[i] = [state, float(number)]
+                            else:
+                                artifact.subs[i] = [state, int(number)]
                             break
                     else:
                         await res.respond(content = 'Саб стат {} не заполнен!'.format(i))
@@ -327,7 +329,7 @@ async def generate_blank(ctx, set = None, lvl = None, part = None, main = None, 
                     await quit(ctx, question)
                     return
 
-                artifact.subs[i] = [state, int(number)]
+                artifact.subs[i] = [state, number]
                 blank = create_pic_artifact(artifact, initial)
                 blank_url = await get_blank_url(trash_channel, blank)
                 embed = get_embed(embed = embed, url_image = blank_url)
