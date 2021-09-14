@@ -16,7 +16,7 @@ class Events(commands.Cog):
         if message.author == self.bot.user:
             return
 
-        emojis = {858655225412845568: 877301189102927892, 858727806401904660: 858179418371784714}
+        emojis = {858655225412845568: 877301189102927892, 858727806401904660: 860510879527207003}
         if message.channel.id in emojis.keys() and message.attachments:
             emoji = self.bot.get_emoji(emojis[message.channel.id])
             return await message.add_reaction(emoji)
