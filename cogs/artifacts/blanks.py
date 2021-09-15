@@ -3,13 +3,7 @@ from cogs.artifacts.extra import *
 from cogs.artifacts.errors import *
 from cogs.artifacts.pictures import create_pic_artifact
 from discord.ext import commands
-from bin.functions import get_embed, print_error
-from easy_pil import Editor, Canvas
-from PIL import Image, ImageFont
-from discord import File
-
-
-
+from bin.functions import get_embed
 
 
 

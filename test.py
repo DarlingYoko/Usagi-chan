@@ -37,7 +37,7 @@ score = main_score + sub_score
 max = 1650
 print(f'Gear score: {int(score)} ({(score * 100 / max):.2f}%)')
 '''
-
+'''
 import cv2
 import pytesseract
 
@@ -73,3 +73,26 @@ for i, el in enumerate(data.splitlines()):
 # Отображаем фото
 cv2.imshow('Result', img)
 cv2.waitKey(0)
+'''
+
+import configparser, os, sys
+config = configparser.ConfigParser()
+config_path = 'config'
+
+for filename in os.listdir(f'./{config_path}'):
+	if filename.endswith('.ini'):
+		config.read(f'./{config_path}/{filename}', encoding = 'UTF8')
+
+print('858655225412845568' in config['reacts'].keys())
+
+
+
+'''
+checkers
+
+1. Artifact
+2. Music Player
+3. Emoji
+4. Transformator
+5. Create role
+'''

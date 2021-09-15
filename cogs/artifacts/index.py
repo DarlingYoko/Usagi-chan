@@ -35,18 +35,19 @@
 1) выбор пользователя по ID
 2) через селекты можно выбрать тип и сет
 3) кнопки некст страницы
-4) на каждой странице по 4 арта со полной характеристикой и Id'шником
+4) на каждой странице по 6 артов со полной характеристикой и Id'шником
 
-или же просмотр определённого арта по его ID в 16-ти ричном формате
+или же просмотр определённого арта по его ID
 
 
 Сборка билдов попозже, но что то похожее на просмотр только с добавлением в бланк перса
 
 
-Планы на завтра:
-    1. Сделать добавление арта у юзера +
-    2. Начать делать показ
-    3. Плеер?
+План в порядке важности:
+    0. ПЕРЕНЕСТИ ВСЁ В КОНФИГ
+    1. Автор артефакта при поиске
+    2. Разные топы
+    3. Распознование картинки
 '''
 
 import discord
@@ -61,11 +62,10 @@ from cogs.artifacts.blanks import *
 from cogs.artifacts.pictures import create_pic_artifact
 
 
-arifact_channel = 886693347941564457
-
 class Artifacts(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.config = bot.config
 
 
     @commands.group(
@@ -206,9 +206,9 @@ class Artifacts(commands.Cog):
         aliases=['арт'],
         usage='<part> <lvl>|<image>',
         description='Добавление нового артефакта, пока работает только ввод ручками',
-        help = str(arifact_channel)
+        help = 'artifact'
     )
-    @is_channel(arifact_channel)
+    @commands.check(is_artifact_channel)
     async def add_new_artifact(self, ctx, part: str = None, lvl: int = None):
         if part and lvl:
             response = await generate_blank(ctx, lvl = lvl, part = part)
@@ -224,7 +224,7 @@ class Artifacts(commands.Cog):
                     new_artifact.rate = f'{artifacts.index(result[0]) + 1}/{len(artifacts)}'
                     author_name = 'Артефакт успешно создан и добавлен'
                     blank = create_pic_artifact(new_artifact, 'iconUSAGIlook')
-                    trash_channel = await ctx.bot.fetch_channel(881532399467528222)
+                    trash_channel = await ctx.bot.fetch_channel(self.config['channel']['trash_channel'])
                     blank_url = await get_blank_url(trash_channel, blank)
                     embed = get_embed(author_name = author_name, url_image = blank_url)
                 else:
@@ -250,7 +250,7 @@ class Artifacts(commands.Cog):
             await ctx.send('Неверные аргументы, Баака!')
 
         elif isinstance(error, commands.CheckFailure):
-            channel = arifact_channel
+            channel = self.config['channel']['artifact']
             await ctx.send(f'Низя использовать эту команду туть. Тебе сюда <#{channel}>')
         elif isinstance(error, commands.MissingRequiredArgument):
             return await ctx.send_help('new')
@@ -262,9 +262,9 @@ class Artifacts(commands.Cog):
         aliases=['удалить'],
         usage='<artifact ID>',
         description='Удаление артефакта',
-        help = str(arifact_channel)
+        help = 'artifact'
     )
-    @is_channel(arifact_channel)
+    @commands.check(is_artifact_channel)
     async def remove_artifact(self, ctx, artifact_id: int):
         artifactsIDs = self.bot.db.get_value(tableName = 'users_arts', argument = 'artifacts', selector = 'user_id', value = ctx.author.id)
         if not artifactsIDs:
@@ -287,7 +287,26 @@ class Artifacts(commands.Cog):
 
 
     @remove_artifact.error
-    async def remove_artifact_remove(self, ctx, error):
+    async def remove_artifact_error(self, ctx, error):
+        if isinstance(error, commands.MissingRequiredArgument):
+            return await ctx.send_help('remove')
+
+
+    @commands.group(
+        name='top',
+        aliases=['топ', 'рейтинг'],
+        usage='',
+        description='Рейтинг артефактов',
+        help = 'artifact'
+    )
+    @commands.check(is_artifact_channel)
+    async def top_artifact(self, ctx):
+        pass
+
+
+
+    @top_artifact.error
+    async def top_artifact_error(self, ctx, error):
         if isinstance(error, commands.MissingRequiredArgument):
             return await ctx.send_help('remove')
 

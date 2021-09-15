@@ -3,9 +3,11 @@ from discord.ext import commands
 from bin.functions import *
 
 
+
 class Events(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.config = bot.config
 
 
     @commands.Cog.listener()
@@ -16,8 +18,8 @@ class Events(commands.Cog):
         if message.author == self.bot.user:
             return
 
-        emojis = {858655225412845568: 877301189102927892, 858727806401904660: 860510879527207003}
-        if message.channel.id in emojis.keys() and message.attachments:
+        emojis = self.config['reacts']
+        if str(message.channel.id) in emojis.keys() and message.attachments:
             emoji = self.bot.get_emoji(emojis[message.channel.id])
             return await message.add_reaction(emoji)
 
@@ -35,9 +37,9 @@ class Events(commands.Cog):
         channel_id = payload.channel_id
         guild_id = payload.guild_id
 
-        if str(emoji.id) in self.bot.config['roles']:
+        if str(emoji.id) in self.config['roles'].keys():
             if message_id in [858131920729931796, 877665594307125268]:
-                return await self.give_role_to_user(user_id, self.bot.config['roles'].getint(f'{emoji.id}'), guild_id)
+                return await self.give_role_to_user(user_id, self.config['roles'].getint(f'{emoji.id}'), guild_id)
 
         # сейчас только два действия требуется отслеживать
         # 1. Выбор роли по цвету
@@ -55,9 +57,9 @@ class Events(commands.Cog):
         channel_id = payload.channel_id
         guild_id = payload.guild_id
 
-        if str(emoji.id) in self.bot.config['roles']:
+        if str(emoji.id) in self.config['roles'].keys():
             if message_id in [858131920729931796, 877665594307125268]:
-                return await self.remove_role_from_user(user_id, self.bot.config['roles'].getint(f'{emoji.id}'), guild_id)
+                return await self.remove_role_from_user(user_id, self.config['roles'].getint(f'{emoji.id}'), guild_id)
 
     @commands.Cog.listener()
     async def on_member_join(self, member):
@@ -67,9 +69,9 @@ class Events(commands.Cog):
         if user_in_db:
             response = self.bot.db.get_value('user_stats', 'roles', 'user_id', member.id)
             if response:
-                guild = await self.bot.fetch_guild(self.bot.config['data']['guild_id'])
+                guild = await self.bot.fetch_guild(self.config['data']['guild_id'])
                 for role_id in eval(response):
-                    if role_id not in [self.bot.config['roles_id'].getint('everyone'), 858190565752700958]:
+                    if role_id not in [self.config['roles_id'].getint('everyone'), self.config['roles_id'].getint('server_buster')]:
                         role = guild.get_role(role_id)
                         await member.add_roles(role)
                 answer = f'{member.mention}, Вернула тебе твои роли, бааака!'
@@ -78,7 +80,7 @@ class Events(commands.Cog):
         else:
             answer = 'Новый пользователь'
 
-        channel = await self.bot.fetch_channel(self.bot.config['channel']['main'])
+        channel = await self.bot.fetch_channel(self.config['channel']['main'])
         await channel.send(answer)
 
 
@@ -98,12 +100,12 @@ class Events(commands.Cog):
         else:
             answer = f'Не получилось засейвить этого долбаёба {member.mention}, бб аРольф!'
 
-        channel = await self.bot.fetch_channel(self.bot.config['channel']['main'])
+        channel = await self.bot.fetch_channel(self.config['channel']['main'])
         await channel.send(answer)
 
     @commands.Cog.listener()
     async def on_voice_state_update(self, member, before, after):
-        voice_channel = self.bot.config['channel'].getint('mp_voice')
+        voice_channel = self.config['channel'].getint('mp_voice')
         channel = before.channel or after.channel
         vc = get_vc(self)
 

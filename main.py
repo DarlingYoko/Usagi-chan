@@ -10,7 +10,7 @@ from bin.helpCommand import CustomHelpCommand
 intents = discord.Intents().all()
 bot = commands.Bot(command_prefix = '!', intents = intents, help_command = CustomHelpCommand())
 
-bot.config = get_config()
+bot.config = get_config('config')
 
 for dir in os.listdir('./cogs'):
     if 'index.py' in os.listdir(f'./cogs/{dir}'):

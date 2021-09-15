@@ -6,12 +6,12 @@ from discord_components import Button, Select, ButtonStyle, SelectOption
 
 
 
-def get_config():
+def get_config(config_path):
     config = configparser.ConfigParser()
 
-    for filename in os.listdir('./config'):
+    for filename in os.listdir(f'./{config_path}'):
         if filename.endswith('.ini'):
-            config.read(f'./config/{filename}', encoding = 'UTF8')
+            config.read(f'./{config_path}/{filename}', encoding = 'UTF8')
     return config
 
 
