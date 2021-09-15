@@ -94,8 +94,8 @@ class CustomHelpCommand(commands.HelpCommand):
         desc = f'{group.description}\n' if group.description else '_ _\n'
 
         commands = '\n\t!'.join([f'{get_parents(command)} {command.name} {command.brief if command.brief else ""}' for index, command in enumerate(group.commands)])
-        key = f'[<#{group.help}>](https://ptb.discord.com/channels/{config["data"]["guild_id"]}/{group.help}/)' if group.help else '#All_channels'
-        description = f'{desc}\n```ARM\nCommands\n\t!{commands}```╰➣{config["channel"][key]}'
+        key = f'[<#{config["channel"][group.help]}>](https://ptb.discord.com/channels/{config["data"]["guild_id"]}/{config["channel"][group.help]}/)' if group.help else '#All_channels'
+        description = f'{desc}\n```ARM\nCommands\n\t!{commands}```╰➣{key}'
 
         url_image = 'https://cdn.discordapp.com/attachments/690999933356081193/691029773392019506/divider.gif'
         thumbnail = 'https://cdn.discordapp.com/attachments/813825744789569537/881690163120599050/iconUSAGI.png'
@@ -112,9 +112,8 @@ class CustomHelpCommand(commands.HelpCommand):
         else:
             aliases = f'[{command.qualified_name}]'
         usage = f'  {command.usage}' if command.usage else ''
-
-        key = f'[<#{command.help}>](https://ptb.discord.com/channels/{config["data"]["guild_id"]}/{command.help}/)' if command.help else '#All_channels'
-        description = f'{desc}\n```!{aliases}{usage}```╰➣{config["channel"][key]}'
+        key = f'[<#{config["channel"][command.help]}>](https://ptb.discord.com/channels/{config["data"]["guild_id"]}/{config["channel"][command.help]}/)' if command.help else '#All_channels'
+        description = f'{desc}\n```!{aliases}{usage}```╰➣{key}'
 
         url_image = 'https://cdn.discordapp.com/attachments/690999933356081193/691029773392019506/divider.gif'
         thumbnail = 'https://cdn.discordapp.com/attachments/813825744789569537/881690163120599050/iconUSAGI.png'

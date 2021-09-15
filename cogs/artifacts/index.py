@@ -44,10 +44,11 @@
 
 
 План в порядке важности:
-    0. ПЕРЕНЕСТИ ВСЁ В КОНФИГ
-    1. Автор артефакта при поиске
-    2. Разные топы
-    3. Распознование картинки
+    0. ПЕРЕНЕСТИ ВСЁ В КОНФИГ  +
+    1. Автор артефакта при поиске +
+    2. Разные топы  (общий топ, топ по части, топ по сету)
+    3. Поменять веса статов
+    4. Распознование картинки
 '''
 
 import discord
@@ -190,7 +191,17 @@ class Artifacts(commands.Cog):
             artifact.rate = f'{res.index(artifact_data) + 1}/{len(res)}'
             artifact_picture = create_pic_artifact(artifact, 'iconUSAGIlook')
             file = File(fp = artifact_picture.image_bytes, filename = "blank.png")
-            embed = get_embed(author_name=f'{member.display_name}', url_image = "attachment://blank.png")
+            users_data = self.bot.db.get_all('users_arts')
+            author = None
+            for user in users_data:
+                if user[1]:
+                    if artifact.id in eval(user[1]):
+                        id = user[0]
+                        author = await self.bot.fetch_user(user[0])
+            embed = get_embed(
+                        author_name=f'© {author.display_name}',
+                        url_image = "attachment://blank.png",
+                        author_icon_URL = author.avatar_url)
 
             question = await ctx.send(embed = embed, file = file)
 
@@ -301,7 +312,31 @@ class Artifacts(commands.Cog):
     )
     @commands.check(is_artifact_channel)
     async def top_artifact(self, ctx):
-        pass
+        res = self.bot.db.get_all('artifacts')
+        artifactsIDs = sorted(res, reverse=True, key=lambda item: item[15])[:6]
+        author_name = 'Топ всех артефактов'
+        author_icon_URL = 'https://cdn.discordapp.com/attachments/813825744789569537/877565170258411550/user_account_person_avatar_icon_131248.png'
+
+
+        fields = []
+
+        for artifact in artifactsIDs:
+            name = f'{artifact[2]} {artifact[3]} lvl\n{artifact[1]}\n{artifact[4]}'
+
+            value = '**┏━━━━━┓**\n'
+            for i in range(0, 8, 2):
+                space = ' ' * (14 - len(artifact[6 + i]) - len(artifact[7  + i]))
+                value += f'`{artifact[6 + i]}{space}{artifact[7 + i]}`\n'
+            value += '**┗━━━━━┛**\n'
+
+            zero = '0' * (5 - len(str(artifact[0])))
+            value += f'   ID {zero}{artifact[0]}'
+            fields.append({'name': name, 'value': value, 'inline': True})
+
+
+        embed = get_embed(author_name = author_name, author_icon_URL = author_icon_URL, fields = fields)
+        question = await ctx.send(embed = embed)
+
 
 
 

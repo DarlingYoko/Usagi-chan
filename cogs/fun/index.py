@@ -94,6 +94,12 @@ class Fun(commands.Cog):
         return await ctx.send(answer)
 
 
+    @commands.command(aliases = ['арольф', 'арофл'])
+    async def arolf(self, ctx):
+        arolf_file = discord.File('files/photo/aRolf.png')
+        return await ctx.send(file = arolf_file)
+
+
     #@commands.command()
     #async def test(self, ctx, user: discord.Member, role: discord.Role):
     #    return await user.add_roles(role)
