@@ -20,9 +20,8 @@ class Events(commands.Cog):
 
         emojis = self.config['reacts']
         if str(message.channel.id) in emojis.keys() and message.attachments:
-            emoji = self.bot.get_emoji(emojis[str(message.channel.id)])
+            emoji = self.bot.get_emoji(emojis.getint(str(message.channel.id)))
             return await message.add_reaction(emoji)
-
 
 
 
