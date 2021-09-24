@@ -320,5 +320,5 @@ class Artifact:
 
 async def get_blank_url(channel, blank):
     file = File(fp = blank.image_bytes, filename = "blank.png")
-    message = await channel.send(file = file, delete_after = 60)
+    message = await channel.send(file = file)
     return message.attachments[0].url
