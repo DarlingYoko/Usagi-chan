@@ -27,7 +27,12 @@ class Fun(commands.Cog):
     async def joined(self, ctx, *, member: UserConverter = None):
         member = member or ctx.author
         time = member.joined_at.strftime("%m/%d/%Y, %H:%M")
-        await ctx.send(f'{member} joined on {time}\n{member.avatar_url}')
+        req = await self.bot.http.request(discord.http.Route("GET", "/users/{uid}", uid=member.id))
+        banner_id = req["banner"]
+        banner_url = ''
+        if banner_id:
+            banner_url = f"https://cdn.discordapp.com/banners/{member.id}/{banner_id}?size=1024"
+        await ctx.send(f'{member} joined on {time}\n{member.avatar_url}\n{banner_url}')
 
     @joined.error
     async def joined_error(self, ctx, error):
