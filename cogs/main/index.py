@@ -13,6 +13,12 @@ class Main(commands.Cog):
         await ctx.channel.purge(limit = limit + 1)
         await ctx.send('Успешно удалила', delete_after = 10)
 
+    @commands.command()
+    @commands.is_owner()
+    async def send(self, ctx, channel_id: int, *, message: str):
+        channel = await ctx.bot.fetch_channel(channel_id)
+        await channel.send(message)
+
     @purge.error
     async def purge_error(self, ctx, error):
         if isinstance(error, commands.CheckFailure):
