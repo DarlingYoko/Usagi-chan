@@ -9,3 +9,4 @@ discord_components
 numpy
 PyNaCl
 easy_pil
+git+git://github.com/Rapptz/discord.py
