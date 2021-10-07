@@ -1,5 +1,4 @@
 discord
-discord.py==2.0.0a3575+g45d498c1
 psycopg2-binary
 youtube-dl
 spotdl
