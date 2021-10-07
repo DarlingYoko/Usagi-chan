@@ -7,6 +7,8 @@ from importlib import reload as reload_module
 from bin.helpCommand import CustomHelpCommand
 
 
+print(discord.__version__)
+
 intents = discord.Intents().all()
 bot = commands.Bot(command_prefix = '!', intents = intents, help_command = CustomHelpCommand())
 

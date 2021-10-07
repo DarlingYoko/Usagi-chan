@@ -5,6 +5,7 @@ from discord.ext import commands
 class Main(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.config = bot.config
 
 
     @commands.command()
@@ -16,7 +17,11 @@ class Main(commands.Cog):
     @commands.command()
     @commands.is_owner()
     async def send(self, ctx, channel_id: int, *, message: str):
-        channel = await ctx.bot.fetch_channel(channel_id)
+        try:
+            channel = await ctx.bot.fetch_channel(channel_id)
+        except:
+            guild = await ctx.bot.fetch_guild(self.config['data']['guild_id'])
+            channel = guild.get_thread(channel_id)
         await channel.send(message)
 
     @purge.error
