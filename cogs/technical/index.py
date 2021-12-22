@@ -68,7 +68,7 @@ class Technical(commands.Cog):
     async def notify_forum_login(self):
         if datetime.now().hour == 16:
             message = 'Не забываем забрать логин бонус!\n<https://webstatic-sea.mihoyo.com/ys/event/signin-sea/index.html?act_id=e202102251931481&lang=ru-ru>'
-            channels_id = [self.config['channel'].getint('main'), self.config['channel'].getint('bar')]
+            channels_id = [self.config['channel'].getint('main'), self.config['channel'].getint('bar'), 290166276796448768]
             for channel_id in channels_id:
                 channel = await self.bot.fetch_channel(channel_id)
                 await channel.send(message)
@@ -136,6 +136,8 @@ class Technical(commands.Cog):
 
         if response:
             answer = f'{ctx.author.mention} Успешно добавила, нья!'
+        elif response and user_in_db:
+            answer = f'{ctx.author.mention} Успешно обновила, нья!'
         else:
             answer = f'{ctx.author.mention}  Не получилось тебя добавить, пластити!'
 
