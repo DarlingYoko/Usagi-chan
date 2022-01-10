@@ -8,7 +8,7 @@ class Events(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.config = bot.config
-        self.tg_bot = telebot.TeleBot('5080341472:AAGRRMfyO68ys333warKu97C5iepRH7IC3Q', parse_mode="MarkdownV2")
+        self.tg_bot = telebot.TeleBot('5080341472:AAGRRMfyO68ys333warKu97C5iepRH7IC3Q')
 
 
     @commands.Cog.listener()
@@ -27,9 +27,17 @@ class Events(commands.Cog):
             return await message.add_reaction(emoji)
 
         if message.channel.id in [807349536321175582, 930076834350133288] and self.bot.redirect:
-            answer = f'*{message.author.display_name}*\ send:\n{message.content}'
+            answer = f'{message.author.display_name} send:\n{message.content}'
             ls = 317513731
             chat = -712264970
+
+            if message.attachments:
+                for attachment in message.attachments:
+                    if 'image' in attachment.content_type:
+                    # print(attachment.url)
+                        self.tg_bot.send_photo(chat, attachment.url, caption = answer)
+                        return
+
             self.tg_bot.send_message(chat, answer)
 
 
@@ -47,6 +55,8 @@ class Events(commands.Cog):
         if str(emoji.id) in self.config['roles'].keys():
             if message_id in [858131920729931796, 877665594307125268]:
                 return await self.give_role_to_user(user_id, self.config['roles'].getint(f'{emoji.id}'), guild_id)
+
+
 
         # сейчас только два действия требуется отслеживать
         # 1. Выбор роли по цвету
