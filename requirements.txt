@@ -10,3 +10,4 @@ numpy
 PyNaCl
 easy_pil
 discord.py
+pyTelegramBotAPI

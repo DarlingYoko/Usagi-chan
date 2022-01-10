@@ -1,4 +1,4 @@
-import discord
+import discord, telebot
 from discord.ext import commands
 from bin.functions import *
 
@@ -8,6 +8,7 @@ class Events(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.config = bot.config
+        self.tg_bot = telebot.TeleBot('5080341472:AAGRRMfyO68ys333warKu97C5iepRH7IC3Q', parse_mode="MarkdownV2")
 
 
     @commands.Cog.listener()
@@ -23,6 +24,9 @@ class Events(commands.Cog):
             emoji = self.bot.get_emoji(emojis.getint(str(message.channel.id)))
             return await message.add_reaction(emoji)
 
+        if message.channel.id in [858053937008214018, 807349536321175582]:
+            answer = f'*{message.author.display_name}*\ написал:\n{message.content}'
+            self.tg_bot.send_message(-712264970, answer)
 
 
     @commands.Cog.listener()
@@ -77,7 +81,7 @@ class Events(commands.Cog):
             else:
                 answer = f'{member.mention}, Не получилось достать твои роли'
         else:
-            answer = 'Новый пользователь'
+            answer = f'Новый пользователь\n Пивет пивет на нашем сервере {member.mention} <:HmmFlower:861241411805642782>'
 
         channel = await self.bot.fetch_channel(self.config['channel']['main'])
         await channel.send(answer)
