@@ -16,8 +16,10 @@ class Events(commands.Cog):
         if str(message.type) == 'MessageType.pins_add':
                 return await message.delete()
 
-        if message.author == self.bot.user:
+        if message.author == self.bot.user or message.author.bot:
             return
+
+
 
         emojis = self.config['reacts']
         if str(message.channel.id) in emojis.keys() and message.attachments:
