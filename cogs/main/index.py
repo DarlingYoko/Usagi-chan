@@ -57,10 +57,10 @@ class Main(commands.Cog):
     @commands.is_owner()
     async def redirect(self, ctx, switch: str):
         if switch == 'on':
-            self.bot.redirection = True
+            self.bot.redirect = True
             answer = 'Включила переадресацию'
         elif switch == 'off':
-            self.bot.redirection = False
+            self.bot.redirect = False
             answer = 'Выключила переадресацию'
         await ctx.send(answer)
 

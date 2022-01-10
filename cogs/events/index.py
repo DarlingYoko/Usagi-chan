@@ -24,9 +24,11 @@ class Events(commands.Cog):
             emoji = self.bot.get_emoji(emojis.getint(str(message.channel.id)))
             return await message.add_reaction(emoji)
 
-        # if message.channel.id in [858053937008214018, 807349536321175582]:
-        #     answer = f'*{message.author.display_name}*\ написал:\n{message.content}'
-        #     self.tg_bot.send_message(-712264970, answer)
+        if message.channel.id in [807349536321175582, 930076834350133288] and self.bot.redirect:
+            answer = f'*{message.author.display_name}*\ send:\n{message.content}'
+            ls = 317513731
+            chat = -712264970
+            self.tg_bot.send_message(chat, answer)
 
 
     @commands.Cog.listener()
