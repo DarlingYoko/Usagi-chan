@@ -24,9 +24,9 @@ class Events(commands.Cog):
             emoji = self.bot.get_emoji(emojis.getint(str(message.channel.id)))
             return await message.add_reaction(emoji)
 
-        if message.channel.id in [858053937008214018, 807349536321175582]:
-            answer = f'*{message.author.display_name}*\ написал:\n{message.content}'
-            self.tg_bot.send_message(-712264970, answer)
+        # if message.channel.id in [858053937008214018, 807349536321175582]:
+        #     answer = f'*{message.author.display_name}*\ написал:\n{message.content}'
+        #     self.tg_bot.send_message(-712264970, answer)
 
 
     @commands.Cog.listener()
