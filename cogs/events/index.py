@@ -27,7 +27,7 @@ class Events(commands.Cog):
             return await message.add_reaction(emoji)
 
         if message.channel.id in [807349536321175582, 930076834350133288] and self.bot.redirect:
-            answer = f'{message.author.display_name} send:\n{message.content}'
+            answer = f'{message.author.name} send:\n{message.content}'
             ls = 317513731
             chat = -712264970
 
