@@ -11,3 +11,4 @@ PyNaCl
 easy_pil
 discord.py
 pyTelegramBotAPI
+twitchAPI
