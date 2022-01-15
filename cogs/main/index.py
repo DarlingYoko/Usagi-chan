@@ -69,7 +69,7 @@ class Main(commands.Cog):
             answer = 'Выключила переадресацию'
         await ctx.send(answer)
 
-    @tasks.loop(seconds=10)
+    @tasks.loop(minutes=1)
     async def check_twitch_online(self):
         client_id = 'ytl8amzfrreo3hf413ywaua8jd7of8'
         client_secret = 'keiz535fdh87qb5a0h2to0vjz7ndi9'
@@ -82,7 +82,7 @@ class Main(commands.Cog):
             for user in status['data']:
 
                 name = user['user_name']
-                print(name)
+                # print(name)
                 game = user['game_name']
                 link = f'<https://www.twitch.tv/{user["user_login"]}>'
                 text = f'**{name}** start stream!\n{link}'
