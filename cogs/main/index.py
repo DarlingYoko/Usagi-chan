@@ -74,7 +74,7 @@ class Main(commands.Cog):
         client_id = 'ytl8amzfrreo3hf413ywaua8jd7of8'
         client_secret = 'keiz535fdh87qb5a0h2to0vjz7ndi9'
         twitch = Twitch(client_id, client_secret)
-        status = twitch.get_streams(user_login=['yoko_o0', 'tunnelkin', 'stepustk', 'hyver', 'uselessmouth', 'kegebe88'])
+        status = twitch.get_streams(user_login=[])#'yoko_o0', 'tunnelkin', 'stepustk', 'hyver', 'uselessmouth', 'kegebe88'])
 
         if 'data' in status.keys() and status['data']:
             channel = await self.bot.fetch_channel(858053937008214018)
