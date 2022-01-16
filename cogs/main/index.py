@@ -87,7 +87,7 @@ class Main(commands.Cog):
                 link = f'<https://www.twitch.tv/{user["user_login"]}>'
                 text = f'**{name}** start stream!\n{link}'
                 posted = False
-                async for message in channel.history(limit=3000):
+                async for message in channel.history(limit=1000):
                     if text in message.content:
                         posted = True
                         break
