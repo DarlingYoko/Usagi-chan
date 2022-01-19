@@ -75,7 +75,7 @@ class Events(commands.Cog):
         guild_id = payload.guild_id
 
         if str(emoji.id) in self.config['roles'].keys():
-            if message_id in [858131920729931796, 877665594307125268]:
+            if message_id in [858131920729931796, 877665594307125268, 933409260874903602]:
                 return await self.remove_role_from_user(user_id, self.config['roles'].getint(f'{emoji.id}'), guild_id)
 
     @commands.Cog.listener()
