@@ -12,3 +12,4 @@ easy_pil
 discord.py
 pyTelegramBotAPI
 twitchAPI
+git+https://github.com/Rapptz/discord.py
