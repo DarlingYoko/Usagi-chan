@@ -104,6 +104,10 @@ class Fun(commands.Cog):
         arolf_file = discord.File('files/photo/aRolf.png')
         return await ctx.send(file = arolf_file)
 
+    @commands.command(aliases = ['токсины', 'toxic'])
+    async def toxic(self, ctx):
+        return await ctx.send(f'Уровень токсинов в чате {random.randint(1, 100)} <:peepoSitStarege:933802101824430201>')
+
 
     #@commands.command()
     #async def test(self, ctx, user: discord.Member, role: discord.Role):
