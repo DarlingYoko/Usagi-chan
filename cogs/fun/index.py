@@ -106,7 +106,7 @@ class Fun(commands.Cog):
 
     @commands.command(aliases = ['токсины'])
     async def toxic(self, ctx):
-        return await ctx.send(f'Уровень токсинов в чате {random.randint(1, 100)} <:peepoSitStarege:933802101824430201>')
+        return await ctx.send(f'Уровень токсинов в чате {random.randint(1, 100)}% <:peepoSitStarege:933802101824430201>')
 
 
     #@commands.command()
