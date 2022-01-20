@@ -19,6 +19,8 @@ class Events(commands.Cog):
         if message.author == self.bot.user or message.author.bot:
             return
 
+        # print(message.content)
+
 
 
         emojis = self.config['reacts']
@@ -26,7 +28,7 @@ class Events(commands.Cog):
             emoji = self.bot.get_emoji(emojis.getint(str(message.channel.id)))
             return await message.add_reaction(emoji)
 
-        if message.channel.id in [807349536321175582, 930076834350133288] and self.bot.redirect:
+        if message.channel.id in [930076834350133288] and self.bot.redirect:
             answer = f'{message.author.name} send:\n{message.content}'
             ls = 317513731
             chat = -712264970
