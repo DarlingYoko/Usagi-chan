@@ -82,7 +82,7 @@ class Technical(commands.Cog):
     async def notify_transformator(self):
         usersList = self.bot.db.get_all(tableName = 'forum')
         for (userID, time) in usersList:
-            if userID == 1:
+            if userID in [1, 2]:
                 continue
             time = datetime.fromtimestamp(float(time))
 

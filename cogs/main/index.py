@@ -1,13 +1,15 @@
-import discord
+import discord, pytz, copy
 from discord.ext import commands, tasks
 from twitchAPI.twitch import Twitch
 from .utils import gen_pic
+from datetime import datetime
 
 class Main(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.config = bot.config
         self.check_twitch_online.start()
+        self.test_loop.start()
 
 
     @commands.command()
@@ -125,6 +127,74 @@ class Main(commands.Cog):
             answer += f'{user[0]}\n'
 
         await ctx.send(answer)
+
+
+    @tasks.loop(minutes=1)
+    async def test_loop(self):
+        timezone = pytz.timezone("Europe/Moscow")
+        time = datetime.now(timezone)
+        if time.hour == 23 and time.minute == 0:
+            # print('Testing')
+
+        # self.bot.db.update('forum', 'time', 'userid', time, 2)
+        #
+        # self.bot.db.update('forum', 'time', 'userid', '933469504174981161', 2)
+            message_id = self.bot.db.get_value('forum', 'time', 'userid', 2)
+            # print(message_id)
+            channel = await self.bot.fetch_channel(932628946443468841)
+            message_after = discord.Object(id = message_id)
+            top_ru = {
+                '1/6': [],
+                '2/6': [],
+                '3/6': [],
+                '4/6': [],
+                '5/6': [],
+                '6/6': [],
+                'x/6': [],
+            }
+            top_eng = copy.deepcopy(top_ru)
+            top_ru_day = ''
+            top_eng_day = ''
+
+            async for message in channel.history(after=message_after):
+                text = message.content.lower()
+                if 'wordle' in text:
+                    text_split = text.split()
+                    # print(message.author.name, text)
+                    try:
+                        if '(ru)' in text:
+                            rating = text_split[text_split.index('wordle') + 4]
+                            top_ru[rating].append(message.author.name)
+                            top_ru_day = text_split[text_split.index('wordle') + 3]
+                        else:
+                            rating = text_split[text_split.index('wordle') + 2]
+                            top_eng[rating].append(message.author.name)
+                            top_eng_day = text_split[text_split.index('wordle') + 1]
+                    except:
+                        pass
+            # print(top_eng)
+            # print(top_ru)
+            answer = f'```cs\n# Wordle (RU) День {top_ru_day}\n'
+            for key, value in top_ru.items():
+                answer += key + ' ' + '; '.join(value) + '\n'
+            answer += '```'
+            await channel.send(answer)
+
+            answer = f'```cs\n# Wordle (ENG) Day #{top_eng_day}\n'
+            for key, value in top_eng.items():
+                answer += key + ' ' + '; '.join(value) + '\n'
+            answer += '```'
+            message = await channel.send(answer)
+            self.bot.db.update('forum', 'time', 'userid', message.id, 2)
+
+
+
+
+    @test_loop.before_loop
+    async def before_test_loop(self):
+        print('waiting...')
+        await self.bot.wait_until_ready()
+
 
 
 
