@@ -32,7 +32,7 @@ class Fun(commands.Cog):
         banner_url = ''
         if banner_id:
             banner_url = f"https://cdn.discordapp.com/banners/{member.id}/{banner_id}?size=1024"
-        await ctx.send(f'{member} joined on {time}\n{member.avatar_url}\n{banner_url}')
+        await ctx.send(f'{member} joined on {time}\n{member.avatar}\n{banner_url}')
 
     @joined.error
     async def joined_error(self, ctx, error):
