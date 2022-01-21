@@ -43,7 +43,7 @@ class Games(commands.Cog):
 
     @commands.command(help = 'dm')
     @commands.dm_only()
-    @commands.cooldown(per=30)
+    @commands.cooldown(per=30, rate=1)
     async def create_game(self, ctx, word: str):
         last_id = self.bot.db.get_value('wordle', 'winner_id', 'id', 0) + 1
         channel = await self.bot.fetch_channel(self.config['channel']['wordle'])
