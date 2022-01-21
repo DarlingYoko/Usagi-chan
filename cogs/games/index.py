@@ -47,7 +47,7 @@ class Games(commands.Cog):
         lives = len(word) + 1
         thread = await channel.create_thread(name=thread_name, type=type, auto_archive_duration=60)
         await thread.send(message)
-        await thread.send(f'Общее число жизней для этого слова - {lives} ❤️\nСлово из {len(word)} букв.')
+        await thread.send(f'Общее число жизней для этого слова - {lives} ❤️\nСлово из {len(word)} букв.\nСлово загадал {ctx.author.name}')
         await ctx.send(f'Ваша игра создана -> {thread.mention}')
         await thread.add_user(ctx.author)
 
