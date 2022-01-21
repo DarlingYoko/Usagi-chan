@@ -75,7 +75,7 @@ class Main(commands.Cog):
         twitch = Twitch(client_id, client_secret)
         users = self.bot.db.get_all('twitch')
         # status = twitch.get_streams(user_login=['yoko_o0', 'tunnelkin', 'stepustk', 'hyver', 'uselessmouth', 'kegebe88'])
-        print(users)
+        # print(users)
         channel = await self.bot.fetch_channel(858053937008214018)
         for user in users:
             name = user[0]
@@ -133,7 +133,7 @@ class Main(commands.Cog):
     async def test_loop(self):
         timezone = pytz.timezone("Europe/Moscow")
         time = datetime.now(timezone)
-        if time.hour == 23 and time.minute == 0:
+        if time.hour == 23 and time.minute == 7:
             # print('Testing')
 
         # self.bot.db.update('forum', 'time', 'userid', time, 2)

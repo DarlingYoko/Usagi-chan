@@ -42,8 +42,12 @@ class CustomHelpCommand(commands.HelpCommand):
                         #value += f'`!{command.name}`\n╰➣#All_channels\n'
                 value = ''
                 for key, item in value_commands.items():
+                    # print(key)
                     if key != '#All_channels':
-                        value += f'`{item}`\n╰➣[<#{config["channel"][key]}>](https://ptb.discord.com/channels/{config["data"]["guild_id"]}/{config["channel"][key]}/)\n'
+                        if key == 'dm':
+                            value += f'`{item}`\n╰➣#DM_only\n'
+                        else:
+                            value += f'`{item}`\n╰➣[<#{config["channel"][key]}>](https://ptb.discord.com/channels/{config["data"]["guild_id"]}/{config["channel"][key]}/)\n'
                     else:
                         value += f'`{item}`\n╰➣#All_channels\n'
 
@@ -79,7 +83,10 @@ class CustomHelpCommand(commands.HelpCommand):
         description = ''
         for key, item in value_commands.items():
             if key != '#All_channels':
-                description += f'`{item}`\n╰➣[<#{config["channel"][key]}>](https://ptb.discord.com/channels/{config["data"]["guild_id"]}/{config["channel"][key]}/)\n'
+                if key == 'dm':
+                    description += f'`{item}`\n╰➣#DM_only\n'
+                else:
+                    description += f'`{item}`\n╰➣[<#{config["channel"][key]}>](https://ptb.discord.com/channels/{config["data"]["guild_id"]}/{config["channel"][key]}/)\n'
             else:
                 description += f'`{item}`\n╰➣#All_channels\n'
 
@@ -112,7 +119,14 @@ class CustomHelpCommand(commands.HelpCommand):
         else:
             aliases = f'[{command.qualified_name}]'
         usage = f'  {command.usage}' if command.usage else ''
-        key = f'[<#{config["channel"][command.help]}>](https://ptb.discord.com/channels/{config["data"]["guild_id"]}/{config["channel"][command.help]}/)' if command.help else '#All_channels'
+
+        if command.help:
+            if key == 'dm':
+                key += f'`{item}`\n╰➣#DM_only\n'
+            else:
+                key = f'[<#{config["channel"][command.help]}>](https://ptb.discord.com/channels/{config["data"]["guild_id"]}/{config["channel"][command.help]}/)'
+        else:
+            key = '#All_channels'
         description = f'{desc}\n```!{aliases}{usage}```╰➣{key}'
 
         url_image = 'https://cdn.discordapp.com/attachments/690999933356081193/691029773392019506/divider.gif'
