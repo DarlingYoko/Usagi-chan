@@ -24,7 +24,7 @@ from .utils import create_pic_from_word
 # Слово из 5 букв -> 6 попыток -> макс поинты = 6
 # 1\6 слово - 6 поинтов
 # ...
-
+# ты можешь по юникоду букв узнавать это ру или англ и дописывать к усаги
 
 
 
@@ -122,7 +122,7 @@ class Games(commands.Cog):
             if game_id == 0:
                 continue
             winner_id = wordle[1]
-            winner = ctx.guild.get_member(winner_id)
+            winner = await ctx.guild.fetch_member(winner_id)
             points = wordle[2]
             if winner in winners.keys():
                 winners[winner] += points
@@ -133,6 +133,7 @@ class Games(commands.Cog):
         counter = 1
         winners = {k: v for k, v in sorted(winners.items(), key=lambda item: item[1], reverse=True)}
         for key, value in winners.items():
+            # print(key)
             answer += f'{counter}. {key.name} ---- {value} Очков.\n'
             counter += 1
         answer += '```'
