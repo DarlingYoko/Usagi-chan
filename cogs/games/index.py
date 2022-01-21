@@ -139,6 +139,9 @@ class Games(commands.Cog):
         await ctx.send(answer)
 
 
+    @commands.command(aliases = ['правила'])
+    async def rules(self, ctx, word: str):
+        await ctx.send(f'Все правила расписанны туть -> https://ptb.discord.com/channels/858053936313008129/934086248245637212/934186880323424366')
 
 
 
