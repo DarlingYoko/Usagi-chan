@@ -133,7 +133,7 @@ class Main(commands.Cog):
     async def test_loop(self):
         timezone = pytz.timezone("Europe/Moscow")
         time = datetime.now(timezone)
-        if time.hour == 23 and time.minute == 11:
+        if time.hour == 23 and time.minute == 24:
             # print('Testing')
 
         # self.bot.db.update('forum', 'time', 'userid', time, 2)
@@ -155,9 +155,9 @@ class Main(commands.Cog):
             top_eng = copy.deepcopy(top_ru)
             top_ru_day = ''
             top_eng_day = ''
-
-            async for message in channel.history(after=message_after):
+            async for message in channel.history(after=message_after, limit=None):
                 text = message.content.lower()
+                # print(text)
                 if 'wordle' in text:
                     text_split = text.split()
                     # print(message.author.name, text)
@@ -172,8 +172,8 @@ class Main(commands.Cog):
                             top_eng_day = text_split[text_split.index('wordle') + 1]
                     except:
                         pass
-            print(top_eng)
-            print(top_ru)
+            # print(top_eng)
+            # print(top_ru)
             answer = f'```cs\n# Wordle (RU) День {top_ru_day}\n'
             for key, value in top_ru.items():
                 answer += key + ' ' + '; '.join(value) + '\n'
