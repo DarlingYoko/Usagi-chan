@@ -25,8 +25,14 @@ from .utils import create_pic_from_word
 # 1\6 слово - 6 поинтов
 # ...
 # ты можешь по юникоду букв узнавать это ру или англ и дописывать к усаги
+# вопрос повторяющихся буков удалять когда нахожу букву чтобы не было некст буквы
 
+# надо команду для закрытия.
+# ограничение кол-ва букв до 7
+# просто тегать создателя а не писать
+# + по другому оформление хп
 
+# из улучшений можно после завершения игры писать сюда резалт, а то листать до треда который создан давно неудобно
 
 
 
@@ -37,6 +43,7 @@ class Games(commands.Cog):
 
     @commands.command(help = 'dm')
     @commands.dm_only()
+    @commands.cooldown(per=30)
     async def create_game(self, ctx, word: str):
         last_id = self.bot.db.get_value('wordle', 'winner_id', 'id', 0) + 1
         channel = await self.bot.fetch_channel(self.config['channel']['wordle'])
@@ -153,6 +160,8 @@ class Games(commands.Cog):
             await ctx.send(f'{ctx.author.mention} Эта команда только для лс! Баака')
         if isinstance(error, commands.MissingRequiredArgument):
             await ctx.send(f'{ctx.author.mention} Ты не ввёл слово для игры.')
+        if isinstance(error, commands.CommandOnCooldown)
+            await ctx.send(f'{ctx.author.mention} Пока рано для создания новой игры, подожди чуток.')
 
 
 
