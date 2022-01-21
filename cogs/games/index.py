@@ -160,7 +160,7 @@ class Games(commands.Cog):
             await ctx.send(f'{ctx.author.mention} Эта команда только для лс! Баака')
         if isinstance(error, commands.MissingRequiredArgument):
             await ctx.send(f'{ctx.author.mention} Ты не ввёл слово для игры.')
-        if isinstance(error, commands.CommandOnCooldown)
+        if isinstance(error, commands.CommandOnCooldown):
             await ctx.send(f'{ctx.author.mention} Пока рано для создания новой игры, подожди чуток.')
 
 
