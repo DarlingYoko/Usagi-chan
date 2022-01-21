@@ -133,7 +133,7 @@ class Main(commands.Cog):
     async def test_loop(self):
         timezone = pytz.timezone("Europe/Moscow")
         time = datetime.now(timezone)
-        if time.hour == 23 and time.minute == 7:
+        if time.hour == 23 and time.minute == 11:
             # print('Testing')
 
         # self.bot.db.update('forum', 'time', 'userid', time, 2)
@@ -172,8 +172,8 @@ class Main(commands.Cog):
                             top_eng_day = text_split[text_split.index('wordle') + 1]
                     except:
                         pass
-            # print(top_eng)
-            # print(top_ru)
+            print(top_eng)
+            print(top_ru)
             answer = f'```cs\n# Wordle (RU) День {top_ru_day}\n'
             for key, value in top_ru.items():
                 answer += key + ' ' + '; '.join(value) + '\n'
