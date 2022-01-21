@@ -133,7 +133,7 @@ class Main(commands.Cog):
     async def test_loop(self):
         timezone = pytz.timezone("Europe/Moscow")
         time = datetime.now(timezone)
-        if time.hour == 23 and time.minute == 24:
+        if time.hour == 23 and time.minute == 0:
             # print('Testing')
 
         # self.bot.db.update('forum', 'time', 'userid', time, 2)
