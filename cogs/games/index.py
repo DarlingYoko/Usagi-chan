@@ -122,7 +122,8 @@ class Games(commands.Cog):
             if game_id == 0:
                 continue
             winner_id = wordle[1]
-            winner = await ctx.guild.fetch_member(winner_id)
+            guild = await ctx.guild.fetch_guild(858053936313008129)
+            winner = await guild.fetch_member(winner_id)
             points = wordle[2]
             if winner in winners.keys():
                 winners[winner] += points
