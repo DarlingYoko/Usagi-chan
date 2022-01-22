@@ -41,6 +41,8 @@ from .utils import create_pic_from_word, get_ban_words_keybord
 # eng upper 65-90
 # ru upper 1040-1071
 
+# разобраться с выделением буков
+
 
 class Games(commands.Cog):
     def __init__(self, bot):

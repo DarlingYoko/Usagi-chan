@@ -38,6 +38,8 @@ def get_ban_words_keybord(ban_words, white_words, lang):
     keyboard = ru_keyboard.upper() if lang == 'ru' else en_keyboard.upper()
 
     for word in ban_words:
+        if word in white_words:
+            continue
         keyboard = keyboard.replace(word, f'||{word}||')
 
     for word in white_words:
