@@ -113,7 +113,7 @@ class Games(commands.Cog):
     @commands.cooldown(per=10, rate=1, type=commands.BucketType.channel)
     async def answer(self, ctx, try_word: str):
         try_word = list(try_word.upper())
-        command = f'SELECT word,lives,owner_id,channel_id,ban_words,white_words from wordle where channel_id = {ctx.channel.id};'
+        command = f'SELECT word,lives,owner_id,lang,ban_words,white_words from wordle where channel_id = {ctx.channel.id};'
         # word = self.bot.db.get_value('wordle', 'word', 'channel_id', ctx.channel.id)
         # lives = self.bot.db.get_value('wordle', 'lives', 'channel_id', ctx.channel.id)
         # author_id = self.bot.db.get_value('wordle', 'owner_id', 'channel_id', ctx.channel.id)
