@@ -157,13 +157,13 @@ class Games(commands.Cog):
                 blocks[i] = true_pos
                 word_copy.remove(try_word[i])
                 counter += 1
-                white_words.append(word[i])
+                white_words.append(try_word[i])
 
         for i in range(len(word)):
             if try_word[i] in word_copy and i not in blocks.keys():
                 blocks[i] = false_pos
                 word_copy.remove(try_word[i])
-                white_words.append(word[i])
+                white_words.append(try_word[i])
 
         for i in range(len(word)):
             if i not in blocks.keys():
