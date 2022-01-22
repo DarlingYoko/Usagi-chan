@@ -1,4 +1,4 @@
-import discord
+import discord, requests, asyncio
 from discord.ext import commands, tasks
 from bin.converters import *
 from bin.functions import get_embed
@@ -23,6 +23,7 @@ from .utils import create_pic_from_word
 # За победу юзер получает кол-во очков в зависимости от количества слов.
 # Слово из 5 букв -> 6 попыток -> макс поинты = 6
 # 1\6 слово - 6 поинтов
+# топ по количеству отгаданых слов
 # ...
 # ты можешь по юникоду букв узнавать это ру или англ и дописывать к усаги
 # вопрос повторяющихся буков удалять когда нахожу букву чтобы не было некст буквы
@@ -37,6 +38,10 @@ from .utils import create_pic_from_word
 # два варика игор
 # как то фиксануть одновременный ответ
 
+# eng upper 65-90
+# ru upper 1040-1071
+
+
 class Games(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -46,17 +51,57 @@ class Games(commands.Cog):
     @commands.dm_only()
     @commands.cooldown(per=30, rate=1)
     async def create_game(self, ctx, word: str):
-        return await ctx.send(f'Игры временно приостановленны, пока идёт оптимизация.')
+        token = 'dict.1.1.20220122T123122Z.47e058e705292d75.744c1f19b19a4e0f60f785e76931856d74b3c1b5'
+        # return await ctx.send(f'Игры временно приостановленны, пока идёт оптимизация.')
+        word = word.upper()
+        type = 'расширенная'
+        # проверка на реальность слова
+        lang = ''
+        first_letter = ord(word[0])
+        if first_letter >= 65 and first_letter <= 90:
+            lang = 'en'
+        elif first_letter >= 1040 and first_letter <= 1071:
+            lang = 'ru'
+        url = f'https://dictionary.yandex.net/api/v1/dicservice.json/lookup?key={token}&lang={lang}-{lang}&text='
+        r = requests.get(url + word)
+
+        data = r.json()
+        if 'def' in data.keys() and data['def']:
+            if data['def'][0]['text'].upper() == word:
+                if len(word) <= 7 and len(word) >= 2:
+                    type = 'обычная'
+
+        if type == 'расширенная':
+            await ctx.send('Я не нашла это слово в словарике или оно больше 7 буков, хочешь создать расширенную версию игры?\nДа/Нет (Yes/No)')
+            def check(res):
+                return res.channel == ctx.channel and res.author == ctx.author
+
+            try:
+                message = await ctx.bot.wait_for('message', check=check, timeout=60)
+            except asyncio.TimeoutError:
+                return await ctx.send('Ты не успел ответить за отведённое время. БЫБЫ')
+
+            answer = message.content
+            if answer.lower() in ['нет', 'н', 'no', 'n']:
+                return await ctx.send('Хорошо, тогда выбери другое слово для игры, мяу.')
+
+            if answer.lower() in ['да', 'д', 'yes', 'y']:
+                await ctx.send('Хорошо, создаю расширенную версию игры.')
+
+
+        lang = 'русских' if lang == 'ru' else 'английских'
         last_id = self.bot.db.get_value('wordle', 'winner_id', 'id', 0) + 1
         channel = await self.bot.fetch_channel(self.config['channel']['wordle'])
         thread_name = f'Wordle Game #{last_id}'
-        message = 'New Game Starts!\n'+ '⬜' * len(word) + '\nGL HF!'
+        message = f'''#Новая __**{type}**__ игра от {ctx.author.mention}. <a:BasedgePooPoo:933131389526757476>
+Слово состоит из **{len(word)}** {lang} буковок. <:StaregeNoted:860038779070447667>
+
+У вас только **{len(word) + 1}** попыток, пришло время их тратить! <a:sparkles:934435764564013076>'''
         type = discord.ChannelType.public_thread
-        word = word.upper()
         lives = len(word) + 1
         thread = await channel.create_thread(name=thread_name, type=type, auto_archive_duration=60)
+
         await thread.send(message)
-        await thread.send(f'Общее число жизней для этого слова - {lives} ❤️\nСлово из {len(word)} букв.\nСлово загадал {ctx.author.name}')
         await ctx.send(f'Ваша игра создана -> {thread.mention}')
         await thread.add_user(ctx.author)
 
@@ -65,14 +110,18 @@ class Games(commands.Cog):
 
 
     @commands.command(aliases = ['ответ'])
+    @commands.cooldown(per=10, rate=1, type=commands.BucketType.channel)
     async def answer(self, ctx, try_word: str):
-        try_word = try_word.upper()
+        try_word = list(try_word.upper())
         word = self.bot.db.get_value('wordle', 'word', 'channel_id', ctx.channel.id)
         lives = self.bot.db.get_value('wordle', 'lives', 'channel_id', ctx.channel.id)
         author_id = self.bot.db.get_value('wordle', 'owner_id', 'channel_id', ctx.channel.id)
+        wordle_channel_id = self.config['channel'].getint('wordle')
+        wordle_channel = await ctx.bot.fetch_channel(wordle_channel_id)
         if not word:
             # wrong channel
             return await ctx.send(f'{ctx.author.mention}, В этом канале не играють.')
+        word = list(word)
 
         if ctx.author.id == author_id:
             # owner answered
@@ -82,38 +131,49 @@ class Games(commands.Cog):
             # wrong length
             return await ctx.send(f'{ctx.author.mention}, Дурак? Длина слова другая!')
 
-        blocks = []
+        blocks = {}
+        word_copy = word.copy()
         false_pos = 'yellow_block'
         not_exist = 'black_block'
         true_pos = 'green_block'
 
         for i in range(len(word)):
             if try_word[i] == word[i]:
-                blocks.append(true_pos)
-            elif try_word[i] in word:
-                blocks.append(false_pos)
-            else:
-                blocks.append(not_exist)
+                blocks[i] = true_pos
+                word_copy.remove(try_word[i])
+
+        for i in range(len(word)):
+            if try_word[i] in word_copy and i not in blocks.keys():
+                blocks[i] = false_pos
+                word_copy.remove(try_word[i])
+
+        for i in range(len(word)):
+            if i not in blocks.keys():
+                blocks[i] = not_exist
 
         file = create_pic_from_word(blocks, try_word)
 
         await ctx.send(f'{ctx.author.mention}', file=file)
 
-        if try_word == word:
+        if not word_copy:
             # win!
+            word = ''.join(word)
             await ctx.send(f'Ула Ула ты победил!')
             self.bot.db.update('wordle', 'winner_id', 'channel_id', ctx.author.id, ctx.channel.id)
             self.bot.db.update('wordle', 'points', 'channel_id', lives, ctx.channel.id)
+            await wordle_channel.send(f"<@{author_id}>\n```cs\n# {ctx.channel.name} закончена.\nПобедитель — {ctx.author.name}\nСлово — '{word}'```")
             return await ctx.channel.edit(archived=True, locked=True)
 
         lives -= 1
         if lives == 0:
             # end game
+            word = ''.join(word)
             await ctx.send(f'Слово никто не угадал(\nПравильное слово было - **{word}**')
+            await wordle_channel.send(f"<@{author_id}>\n```cs\n# {ctx.channel.name} закончена.\nНикто не отгадал слово '{word}'```")
             return await ctx.channel.edit(archived=True, locked=True)
 
 
-        await ctx.send(f'Ваше текущее количество жизней - {lives} ❤️')
+        await ctx.send(f'Ваше текущее количество попыток - {lives}.')
 
         self.bot.db.update('wordle', 'lives', 'channel_id', lives, ctx.channel.id)
 
@@ -121,6 +181,7 @@ class Games(commands.Cog):
     @commands.command(aliases = ['вордли_топ', 'вордле_топ', 'топ_вордле', 'топ_вордли', 'top_wordle'],
                         help='wordle',
                         )
+    @commands.cooldown(per=60, rate=1)
     async def wordle_top(self, ctx):
         all_wordle = self.bot.db.get_all('wordle')
 
@@ -163,6 +224,11 @@ class Games(commands.Cog):
             await ctx.send(f'{ctx.author.mention} Ты не ввёл слово для игры.')
         if isinstance(error, commands.CommandOnCooldown):
             await ctx.send(f'{ctx.author.mention} Пока рано для создания новой игры, подожди чуток.')
+
+    @answer.error
+    async def answer_errors(self, ctx, error):
+        if isinstance(error, commands.CommandOnCooldown):
+            await ctx.send(f'{ctx.author.mention} Пока рано для ответа, подожди чуток.')
 
 
 
