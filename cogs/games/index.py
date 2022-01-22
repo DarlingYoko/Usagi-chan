@@ -113,11 +113,22 @@ class Games(commands.Cog):
     @commands.cooldown(per=10, rate=1, type=commands.BucketType.channel)
     async def answer(self, ctx, try_word: str):
         try_word = list(try_word.upper())
-        word = self.bot.db.get_value('wordle', 'word', 'channel_id', ctx.channel.id)
-        lives = self.bot.db.get_value('wordle', 'lives', 'channel_id', ctx.channel.id)
-        author_id = self.bot.db.get_value('wordle', 'owner_id', 'channel_id', ctx.channel.id)
-        lang = self.bot.db.get_value('wordle', 'lang', 'channel_id', ctx.channel.id)
-        ban_words_db = self.bot.db.get_value('wordle', 'ban_words', 'channel_id', ctx.channel.id)
+        command = f'SELECT word,lives,owner_id,channel_id,ban_words,white_words from wordle where channel_id = {ctx.channel.id};'
+        # word = self.bot.db.get_value('wordle', 'word', 'channel_id', ctx.channel.id)
+        # lives = self.bot.db.get_value('wordle', 'lives', 'channel_id', ctx.channel.id)
+        # author_id = self.bot.db.get_value('wordle', 'owner_id', 'channel_id', ctx.channel.id)
+        # lang = self.bot.db.get_value('wordle', 'lang', 'channel_id', ctx.channel.id)
+        # ban_words_db = self.bot.db.get_value('wordle', 'ban_words', 'channel_id', ctx.channel.id)
+        result = self.bot.db.custom_command(command)
+        if not result:
+            return
+        result = result[0]
+        word = result[0]
+        lives = result[1]
+        author_id = result[2]
+        lang = result[3]
+        ban_words_db = result[4]
+        white_words_db = result[5]
         wordle_channel_id = self.config['channel'].getint('wordle')
         wordle_channel = await ctx.bot.fetch_channel(wordle_channel_id)
         if not word:
@@ -139,17 +150,20 @@ class Games(commands.Cog):
         not_exist = 'black_block'
         true_pos = 'green_block'
         ban_words = []
+        white_words = []
         counter = 0
         for i in range(len(word)):
             if try_word[i] == word[i]:
                 blocks[i] = true_pos
                 word_copy.remove(try_word[i])
                 counter += 1
+                white_words.append(word[i])
 
         for i in range(len(word)):
             if try_word[i] in word_copy and i not in blocks.keys():
                 blocks[i] = false_pos
                 word_copy.remove(try_word[i])
+                white_words.append(word[i])
 
         for i in range(len(word)):
             if i not in blocks.keys():
@@ -162,7 +176,13 @@ class Games(commands.Cog):
             ban_words_db = ban_words_db.split(',')
         else:
             ban_words_db = []
+
+        if white_words_db:
+            white_words_db = white_words_db.split(',')
+        else:
+            white_words_db = []
         ban_words = list(set(ban_words + ban_words_db))
+        white_words = list(set(white_words + white_words_db))
 
         await ctx.send(f'{ctx.author.mention}', file=file)
 
@@ -184,10 +204,11 @@ class Games(commands.Cog):
             return await ctx.channel.edit(archived=True, locked=True)
 
 
-        await ctx.send(f'Ваше текущее количество попыток - {lives}.\n' + get_ban_words_keybord(ban_words, lang))
+        await ctx.send(f'Ваше текущее количество попыток - {lives}.\n' + get_ban_words_keybord(ban_words, white_words, lang))
 
         self.bot.db.update('wordle', 'lives', 'channel_id', lives, ctx.channel.id)
         self.bot.db.update('wordle', 'ban_words', 'channel_id', ','.join(ban_words), ctx.channel.id)
+        self.bot.db.update('wordle', 'white_words', 'channel_id', ','.join(white_words), ctx.channel.id)
 
 
     @commands.command(aliases = ['вордли_топ', 'вордле_топ', 'топ_вордле', 'топ_вордли', 'top_wordle'],

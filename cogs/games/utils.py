@@ -27,7 +27,7 @@ def create_pic_from_word(blocks, try_word):
     return file
 
 
-def get_ban_words_keybord(words, lang):
+def get_ban_words_keybord(ban_words, white_words, lang):
     ru_keyboard = '''> й ц у к е н г ш щ з х ъ
 > ф ы в а п р о л д ж э
 > я ч с м и т ь б ю'''
@@ -37,7 +37,10 @@ def get_ban_words_keybord(words, lang):
 
     keyboard = ru_keyboard.upper() if lang == 'ru' else en_keyboard.upper()
 
-    for word in words:
+    for word in ban_words:
         keyboard = keyboard.replace(word, f'||{word}||')
+
+    for word in white_words:
+        keyboard = keyboard.replace(word, f'**{word}**')
 
     return keyboard
