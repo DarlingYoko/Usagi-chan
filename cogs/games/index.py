@@ -34,7 +34,8 @@ from .utils import create_pic_from_word
 
 # из улучшений можно после завершения игры писать сюда резалт, а то листать до треда который создан давно неудобно
 # проверка циферок
-
+# два варика игор
+# как то фиксануть одновременный ответ
 
 class Games(commands.Cog):
     def __init__(self, bot):
@@ -127,11 +128,10 @@ class Games(commands.Cog):
 
         for wordle in all_wordle:
             game_id = wordle[0]
-            if game_id == 0:
-                continue
             winner_id = wordle[1]
-            guild = await ctx.bot.fetch_guild(858053936313008129)
-            winner = await guild.fetch_member(winner_id)
+            if game_id == 0 or winner_id == 0:
+                continue
+            winner = ctx.guild.get_member(winner_id)
             points = wordle[2]
             if winner in winners.keys():
                 winners[winner] += points
