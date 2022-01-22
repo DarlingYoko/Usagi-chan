@@ -60,7 +60,7 @@ class Games(commands.Cog):
         first_letter = ord(word[0])
         if first_letter >= 65 and first_letter <= 90:
             lang = 'en'
-        elif first_letter >= 1040 and first_letter <= 1071:
+        if first_letter >= 1040 and first_letter <= 1071:
             lang = 'ru'
         url = f'https://dictionary.yandex.net/api/v1/dicservice.json/lookup?key={token}&lang={lang}-{lang}&text='
         r = requests.get(url + word)
@@ -136,11 +136,12 @@ class Games(commands.Cog):
         false_pos = 'yellow_block'
         not_exist = 'black_block'
         true_pos = 'green_block'
-
+        counter = 0
         for i in range(len(word)):
             if try_word[i] == word[i]:
                 blocks[i] = true_pos
                 word_copy.remove(try_word[i])
+                counter += 1
 
         for i in range(len(word)):
             if try_word[i] in word_copy and i not in blocks.keys():
@@ -155,7 +156,7 @@ class Games(commands.Cog):
 
         await ctx.send(f'{ctx.author.mention}', file=file)
 
-        if not word_copy:
+        if counter == len(word):
             # win!
             word = ''.join(word)
             await ctx.send(f'Ула Ула ты победил!')
