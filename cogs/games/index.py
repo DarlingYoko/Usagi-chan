@@ -2,7 +2,7 @@ import discord, requests, asyncio
 from discord.ext import commands, tasks
 from bin.converters import *
 from bin.functions import get_embed
-from .utils import create_pic_from_word
+from .utils import create_pic_from_word, get_ban_words_keybord
 
 
 # !create_game <word> ?
@@ -89,12 +89,12 @@ class Games(commands.Cog):
                 await ctx.send('Хорошо, создаю расширенную версию игры.')
 
 
-        lang = 'русских' if lang == 'ru' else 'английских'
+        language = 'русских' if lang == 'ru' else 'английских'
         last_id = self.bot.db.get_value('wordle', 'winner_id', 'id', 0) + 1
         channel = await self.bot.fetch_channel(self.config['channel']['wordle'])
         thread_name = f'Wordle Game #{last_id}'
         message = f'''#Новая __**{type}**__ игра от {ctx.author.mention}. <a:BasedgePooPoo:933131389526757476>
-Слово состоит из **{len(word)}** {lang} буковок. <:StaregeNoted:860038779070447667>
+Слово состоит из **{len(word)}** {language} буковок. <:StaregeNoted:860038779070447667>
 
 У вас только **{len(word) + 1}** попыток, пришло время их тратить! <a:sparkles:934435764564013076>'''
         type = discord.ChannelType.public_thread
@@ -105,7 +105,7 @@ class Games(commands.Cog):
         await ctx.send(f'Ваша игра создана -> {thread.mention}')
         await thread.add_user(ctx.author)
 
-        self.bot.db.insert('wordle', last_id, 0, 0, thread.id, word, lives, ctx.author.id)
+        self.bot.db.insert('wordle', last_id, 0, 0, thread.id, word, lives, ctx.author.id, '', lang)
         self.bot.db.update('wordle', 'winner_id', 'id', last_id, 0)
 
 
@@ -116,6 +116,8 @@ class Games(commands.Cog):
         word = self.bot.db.get_value('wordle', 'word', 'channel_id', ctx.channel.id)
         lives = self.bot.db.get_value('wordle', 'lives', 'channel_id', ctx.channel.id)
         author_id = self.bot.db.get_value('wordle', 'owner_id', 'channel_id', ctx.channel.id)
+        lang = self.bot.db.get_value('wordle', 'lang', 'channel_id', ctx.channel.id)
+        ban_words_db = self.bot.db.get_value('wordle', 'ban_words', 'channel_id', ctx.channel.id)
         wordle_channel_id = self.config['channel'].getint('wordle')
         wordle_channel = await ctx.bot.fetch_channel(wordle_channel_id)
         if not word:
@@ -136,6 +138,7 @@ class Games(commands.Cog):
         false_pos = 'yellow_block'
         not_exist = 'black_block'
         true_pos = 'green_block'
+        ban_words = []
         counter = 0
         for i in range(len(word)):
             if try_word[i] == word[i]:
@@ -151,8 +154,15 @@ class Games(commands.Cog):
         for i in range(len(word)):
             if i not in blocks.keys():
                 blocks[i] = not_exist
+                ban_words.append(try_word[i])
 
         file = create_pic_from_word(blocks, try_word)
+
+        if ban_words_db:
+            ban_words_db = ban_words_db.split(',')
+        else:
+            ban_words_db = []
+        ban_words = list(set(ban_words + ban_words_db))
 
         await ctx.send(f'{ctx.author.mention}', file=file)
 
@@ -174,9 +184,10 @@ class Games(commands.Cog):
             return await ctx.channel.edit(archived=True, locked=True)
 
 
-        await ctx.send(f'Ваше текущее количество попыток - {lives}.')
+        await ctx.send(f'Ваше текущее количество попыток - {lives}.\n' + get_ban_words_keybord(ban_words, lang))
 
         self.bot.db.update('wordle', 'lives', 'channel_id', lives, ctx.channel.id)
+        self.bot.db.update('wordle', 'ban_words', 'channel_id', ','.join(ban_words), ctx.channel.id)
 
 
     @commands.command(aliases = ['вордли_топ', 'вордле_топ', 'топ_вордле', 'топ_вордли', 'top_wordle'],
