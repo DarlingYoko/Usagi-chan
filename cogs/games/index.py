@@ -33,7 +33,7 @@ from .utils import create_pic_from_word
 # + по другому оформление хп
 
 # из улучшений можно после завершения игры писать сюда резалт, а то листать до треда который создан давно неудобно
-
+# проверка циферок
 
 
 class Games(commands.Cog):
@@ -45,6 +45,7 @@ class Games(commands.Cog):
     @commands.dm_only()
     @commands.cooldown(per=30, rate=1)
     async def create_game(self, ctx, word: str):
+        return await ctx.send(f'Игры временно приостановленны, пока идёт оптимизация.')
         last_id = self.bot.db.get_value('wordle', 'winner_id', 'id', 0) + 1
         channel = await self.bot.fetch_channel(self.config['channel']['wordle'])
         thread_name = f'Wordle Game #{last_id}'
@@ -129,7 +130,7 @@ class Games(commands.Cog):
             if game_id == 0:
                 continue
             winner_id = wordle[1]
-            guild = await ctx.guild.fetch_guild(858053936313008129)
+            guild = await ctx.bot.fetch_guild(858053936313008129)
             winner = await guild.fetch_member(winner_id)
             points = wordle[2]
             if winner in winners.keys():
