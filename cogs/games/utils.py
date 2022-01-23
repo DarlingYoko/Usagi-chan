@@ -1,6 +1,9 @@
+import requests
 from easy_pil import Editor, Canvas
 from PIL import Image, ImageFont, ImageOps
 from discord import File
+from random import randint
+from bs4 import BeautifulSoup
 
 
 def create_pic_from_word(blocks, try_word):
@@ -69,3 +72,35 @@ def get_words_keybord(ban_words, white_words, try_words, lang):
 
     file = File(fp = blank.image_bytes, filename = "background.png")
     return file
+
+
+
+def get_word(count_of_letters):
+
+    url = f'https://vfrsute.ru/сканворд/слово-из-{count_of_letters}-букв/'
+    base_url = f'https://vfrsute.ru/сканворд/{count_of_letters}-букв-первая-'
+
+
+    try:
+        page = requests.get(url)
+        soup = BeautifulSoup(page.text, 'html.parser')
+
+        words = soup.find_all('div', class_='words_group')
+        letter = randint(1, len(words))
+        word = words[letter]
+
+        link = word.find('a').text[1]
+
+        page = requests.get(base_url + link)
+
+        soup = BeautifulSoup(page.text, 'html.parser')
+
+        words = soup.find_all('li', class_='words_group-item')
+        letter = randint(1, len(words))
+        word = words[letter]
+        word = word.find('a').text
+
+    except:
+        word = get_word(count_of_letters)
+
+    return word.upper()

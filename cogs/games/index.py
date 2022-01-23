@@ -2,7 +2,7 @@ import discord, requests, asyncio
 from discord.ext import commands, tasks
 from bin.converters import *
 from bin.functions import get_embed
-from .utils import create_pic_from_word, get_words_keybord
+from .utils import create_pic_from_word, get_words_keybord, get_word
 
 
 # !create_game <word> ?
@@ -251,6 +251,7 @@ class Games(commands.Cog):
         await ctx.send(f'Все правила расписанны туть -> https://ptb.discord.com/channels/858053936313008129/934086248245637212/934186880323424366')
 
 
+    @commands.cooldown(per=60, rate=1)
     @commands.command(aliases = ['топ_слов'])
     async def dif_top(self, ctx):
         all_wordle = self.bot.db.get_all('wordle')
@@ -279,6 +280,31 @@ class Games(commands.Cog):
             counter += 1
         answer += '```'
         await ctx.send(answer)
+
+    @commands.command(help = 'wordle', aliases = ['авто_игра'])
+    @commands.cooldown(per=30, rate=1)
+    async def auto_game(self, ctx, count_of_letters: int):
+        if count_of_letters < 2 or count_of_letters > 22:
+            await ctx.send(f'{ctx.author.mention}, Столько буковок не могу найти!')
+        word = get_word(count_of_letters)
+
+        language = 'русских'
+        last_id = self.bot.db.get_value('wordle', 'winner_id', 'id', 0) + 1
+        channel = await self.bot.fetch_channel(self.config['channel']['wordle'])
+        thread_name = f'Wordle Game #{last_id}'
+        message = f'''#Новая __**обычная**__ игра от Меня для {ctx.author.mention}. <a:BasedgePooPoo:933131389526757476>
+Слово состоит из **{len(word)}** русских буковок. <:StaregeNoted:860038779070447667>
+
+У вас только **{len(word) + 1}** попыток, пришло время их тратить! <a:sparkles:934435764564013076>'''
+        type = discord.ChannelType.public_thread
+        lives = len(word) + 1
+        thread = await channel.create_thread(name=thread_name, type=type, auto_archive_duration=60)
+
+        await thread.send(message)
+        await ctx.send(f'Ваша игра создана -> {thread.mention}')
+
+        self.bot.db.insert('wordle', last_id, 0, 0, thread.id, word, lives, 801153197552304129, '', 'ru')
+        self.bot.db.update('wordle', 'winner_id', 'id', last_id, 0)
 
     @create_game.error
     async def create_game_errors(self, ctx, error):
