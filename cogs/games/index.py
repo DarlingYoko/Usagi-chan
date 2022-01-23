@@ -84,11 +84,13 @@ class Games(commands.Cog):
                 return await ctx.send('Ты не успел ответить за отведённое время. БЫБЫ')
 
             answer = message.content
-            if answer.lower() in ['нет', 'н', 'no', 'n']:
-                return await ctx.send('Хорошо, тогда выбери другое слово для игры, мяу.')
+
 
             if answer.lower() in ['да', 'д', 'yes', 'y']:
                 await ctx.send('Хорошо, создаю расширенную версию игры.')
+
+            else:
+                return await ctx.send('Хорошо, тогда выбери другое слово для игры, мяу.')
 
 
         language = 'русских' if lang == 'ru' else 'английских'
