@@ -37,7 +37,12 @@ def get_words_keybord(ban_words, white_words, try_words, lang):
     ru_keyboard = 'й ц у к е н г ш щ з х ъ,ф ы в а п р о л д ж э,я ч с м и т ь б ю'
     en_keyboard = 'q w e r t y u i o p,a s d f g h j k l,z x c v b n m'
 
-    keyboard = ru_keyboard.upper() if lang == 'ru' else en_keyboard.upper()
+    if lang == 'ru':
+        keyboard = ru_keyboard.upper()
+        blank = Editor('./files/photo/clear_keyboard.png')
+    else:
+        keyboard = en_keyboard.upper()
+        blank = Editor('./files/photo/clear_keyboard_en.png')
 
     layer_counter = 0
     layer_counter_place = {0: 0, 1:1, 2:3}
