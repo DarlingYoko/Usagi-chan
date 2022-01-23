@@ -153,6 +153,7 @@ class Games(commands.Cog):
         true_pos = 'green_block'
         ban_words = []
         white_words = []
+        try_words = []
         counter = 0
         for i in range(len(word)):
             if try_word[i] == word[i]:
@@ -165,7 +166,7 @@ class Games(commands.Cog):
             if try_word[i] in word_copy and i not in blocks.keys():
                 blocks[i] = false_pos
                 word_copy.remove(try_word[i])
-                white_words.append(try_word[i])
+                try_words.append(try_word[i])
 
         for i in range(len(word)):
             if i not in blocks.keys():
@@ -206,9 +207,9 @@ class Games(commands.Cog):
             return await ctx.channel.edit(archived=True, locked=True)
 
 
-        await ctx.send(f'Ваше текущее количество попыток - {lives}.', file=get_words_keybord(ban_words, white_words, lang))
+        await ctx.send(f'Ваше текущее количество попыток - {lives}.', file=get_words_keybord(ban_words, white_words, try_words, lang))
 
-        self.bot.db.update('wordle', 'lives', 'channel_id', lives, ctx.channel.id)
+        # self.bot.db.update('wordle', 'lives', 'channel_id', lives, ctx.channel.id)
         self.bot.db.update('wordle', 'ban_words', 'channel_id', ','.join(ban_words), ctx.channel.id)
         self.bot.db.update('wordle', 'white_words', 'channel_id', ','.join(white_words), ctx.channel.id)
 

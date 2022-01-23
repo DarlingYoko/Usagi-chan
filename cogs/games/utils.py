@@ -27,9 +27,10 @@ def create_pic_from_word(blocks, try_word):
     return file
 
 
-def get_words_keybord(ban_words, white_words, lang):
+def get_words_keybord(ban_words, white_words, try_words, lang):
     font = ImageFont.truetype(font = './files/fonts/genshin.ttf', size = 60)
     green_block = Image.open('./files/photo/green_block.png')
+    yellow_block = Image.open('./files/photo/yellow_block.png')
     black_block = Image.open('./files/photo/black_block.png')
     blank = Editor('./files/photo/clear_keyboard.png')
 
@@ -47,6 +48,8 @@ def get_words_keybord(ban_words, white_words, lang):
             color = '#fff'
             if word in white_words:
                 block = green_block
+            elif word in try_words:
+                block = yellow_block
             elif word in ban_words:
                 block = black_block
                 color = '#818384'
