@@ -314,17 +314,17 @@ class Games(commands.Cog):
         if isinstance(error, commands.MissingRequiredArgument):
             await ctx.send(f'{ctx.author.mention} Ты не ввёл слово для игры.')
         if isinstance(error, commands.CommandOnCooldown):
-            await ctx.send(f'{ctx.author.mention} Пока рано для создания новой игры, подожди чуток.\n' + error)
+            await ctx.send(f'{ctx.author.mention} Пока рано для создания новой игры, подожди чуток.\n' + str(error))
 
     @answer.error
     async def answer_errors(self, ctx, error):
         if isinstance(error, commands.CommandOnCooldown):
-            await ctx.send(f'{ctx.author.mention} Пока рано для ответа, подожди чуток.\n' + error)
+            await ctx.send(f'{ctx.author.mention} Пока рано для ответа, подожди чуток.\n' + str(error))
 
     @auto_game.error
     async def auto_game_errors(self, ctx, error):
         if isinstance(error, commands.CommandOnCooldown):
-            await ctx.send(f'{ctx.author.mention} Пока рано для ответа, подожди чуток.\n' + error)
+            await ctx.send(f'{ctx.author.mention} Пока рано для ответа, подожди чуток.\n' + str(error))
 
 
 
