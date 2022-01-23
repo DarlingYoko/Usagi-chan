@@ -251,6 +251,34 @@ class Games(commands.Cog):
         await ctx.send(f'Все правила расписанны туть -> https://ptb.discord.com/channels/858053936313008129/934086248245637212/934186880323424366')
 
 
+    @commands.command(aliases = ['топ_слов'])
+    async def dif_top(self, ctx):
+        all_wordle = self.bot.db.get_all('wordle')
+
+        winners = {}
+
+        for wordle in all_wordle:
+            game_id = wordle[0]
+            winner_id = wordle[1]
+            if game_id == 0 or winner_id == 0:
+                continue
+            winner = ctx.guild.get_member(winner_id)
+            points = wordle[2]
+            if points:
+                if winner in winners.keys():
+                    winners[winner] += 1
+                else:
+                    winners[winner] = 1
+
+        answer = f'```cs\n# Топ игроков в Wordle Usagi-chan edition\n'
+        counter = 1
+        winners = {k: v for k, v in sorted(winners.items(), key=lambda item: item[1], reverse=True)}
+        for key, value in winners.items():
+            # print(key)
+            answer += f'{counter}. {key.name} ---- {value} слов.\n'
+            counter += 1
+        answer += '```'
+        await ctx.send(answer)
 
     @create_game.error
     async def create_game_errors(self, ctx, error):
