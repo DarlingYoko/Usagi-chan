@@ -101,6 +101,6 @@ def get_word(count_of_letters):
         word = word.find('a').text
 
     except:
-        word = get_word(count_of_letters)
+        return None
 
     return word.upper()

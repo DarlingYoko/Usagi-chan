@@ -284,10 +284,11 @@ class Games(commands.Cog):
     @commands.command(help = 'wordle', aliases = ['авто_игра'])
     @commands.cooldown(per=30, rate=1)
     async def auto_game(self, ctx, count_of_letters: int):
-        if count_of_letters < 2 or count_of_letters > 22:
+        if count_of_letters < 2 or count_of_letters > 12:
             await ctx.send(f'{ctx.author.mention}, Столько буковок не могу найти!')
         word = get_word(count_of_letters)
-
+        if not word:
+            await ctx.send(f'{ctx.author.mention}, Не получилось найти слово, попробуй ещё раз!')
         language = 'русских'
         last_id = self.bot.db.get_value('wordle', 'winner_id', 'id', 0) + 1
         channel = await self.bot.fetch_channel(self.config['channel']['wordle'])
@@ -313,12 +314,17 @@ class Games(commands.Cog):
         if isinstance(error, commands.MissingRequiredArgument):
             await ctx.send(f'{ctx.author.mention} Ты не ввёл слово для игры.')
         if isinstance(error, commands.CommandOnCooldown):
-            await ctx.send(f'{ctx.author.mention} Пока рано для создания новой игры, подожди чуток.')
+            await ctx.send(f'{ctx.author.mention} Пока рано для создания новой игры, подожди чуток.\n' + error)
 
     @answer.error
     async def answer_errors(self, ctx, error):
         if isinstance(error, commands.CommandOnCooldown):
-            await ctx.send(f'{ctx.author.mention} Пока рано для ответа, подожди чуток.')
+            await ctx.send(f'{ctx.author.mention} Пока рано для ответа, подожди чуток.\n' + error)
+
+    @auto_game.error
+    async def auto_game_errors(self, ctx, error):
+        if isinstance(error, commands.CommandOnCooldown):
+            await ctx.send(f'{ctx.author.mention} Пока рано для ответа, подожди чуток.\n' + error)
 
 
 
