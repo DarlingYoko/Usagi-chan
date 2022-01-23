@@ -209,7 +209,7 @@ class Games(commands.Cog):
 
         await ctx.send(f'Ваше текущее количество попыток - {lives}.', file=get_words_keybord(ban_words, white_words, try_words, lang))
 
-        # self.bot.db.update('wordle', 'lives', 'channel_id', lives, ctx.channel.id)
+        self.bot.db.update('wordle', 'lives', 'channel_id', lives, ctx.channel.id)
         self.bot.db.update('wordle', 'ban_words', 'channel_id', ','.join(ban_words), ctx.channel.id)
         self.bot.db.update('wordle', 'white_words', 'channel_id', ','.join(white_words), ctx.channel.id)
 
