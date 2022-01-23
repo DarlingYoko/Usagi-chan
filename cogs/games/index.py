@@ -2,7 +2,7 @@ import discord, requests, asyncio
 from discord.ext import commands, tasks
 from bin.converters import *
 from bin.functions import get_embed
-from .utils import create_pic_from_word, get_ban_words_keybord
+from .utils import create_pic_from_word, get_words_keybord
 
 
 # !create_game <word> ?
@@ -206,7 +206,7 @@ class Games(commands.Cog):
             return await ctx.channel.edit(archived=True, locked=True)
 
 
-        await ctx.send(f'Ваше текущее количество попыток - {lives}.\n' + get_ban_words_keybord(ban_words, white_words, lang))
+        await ctx.send(f'Ваше текущее количество попыток - {lives}.', file=get_words_keybord(ban_words, white_words, lang))
 
         self.bot.db.update('wordle', 'lives', 'channel_id', lives, ctx.channel.id)
         self.bot.db.update('wordle', 'ban_words', 'channel_id', ','.join(ban_words), ctx.channel.id)
