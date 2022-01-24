@@ -103,7 +103,7 @@ class Games(commands.Cog):
 У вас только **{len(word) + 1}** попыток, пришло время их тратить! <a:sparkles:934435764564013076>'''
         type = discord.ChannelType.public_thread
         lives = len(word) + 1
-        thread = await channel.create_thread(name=thread_name, type=type, auto_archive_duration=60)
+        thread = await channel.create_thread(name=thread_name, type=type, auto_archive_duration=60*6)
 
         await thread.send(message)
         await ctx.send(f'Ваша игра создана -> {thread.mention}')
