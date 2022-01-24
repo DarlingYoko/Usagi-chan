@@ -77,28 +77,29 @@ def get_words_keybord(ban_words, white_words, try_words, lang):
 
 def get_word(count_of_letters):
 
-    url = f'https://vfrsute.ru/сканворд/слово-из-{count_of_letters}-букв/'
-    base_url = f'https://vfrsute.ru/сканворд/{count_of_letters}-букв-первая-'
-
-
     try:
+        count_of_letters -= 2
+        url = 'http://poiskslov.com/by-length/'
+
+
+        lenght = length - 2
         page = requests.get(url)
         soup = BeautifulSoup(page.text, 'html.parser')
+        table = soup.find('ul', {"id": "zoom-hover"})
+        words = table.find_all('li')
+        letters = words[lenght].find_all('a')
 
-        words = soup.find_all('div', class_='words_group')
-        letter = randint(1, len(words))
-        word = words[letter]
+        letter_id = randint(1, len(letters))
+        letter = letters[letter_id]
+        words_url = letter['href']
 
-        link = word.find('a').text[1]
-
-        page = requests.get(base_url + link)
-
+        page = requests.get(words_url)
         soup = BeautifulSoup(page.text, 'html.parser')
 
-        words = soup.find_all('li', class_='words_group-item')
-        letter = randint(1, len(words))
-        word = words[letter]
-        word = word.find('a').text
+        words = soup.find_all('li')
+
+        words_id = randint(1, len(words))
+        word = words[words_id].text
 
     except:
         return None
