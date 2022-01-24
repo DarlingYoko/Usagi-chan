@@ -295,7 +295,7 @@ class Games(commands.Cog):
     @commands.cooldown(per=30, rate=1)
     async def auto_game(self, ctx, count_of_letters: int):
         if count_of_letters < 2 or count_of_letters > 12:
-            return await ctx.send(f'{ctx.author.mention}, Столько буковок не могу найти!')
+            await ctx.send(f'{ctx.author.mention}, Ищу рандомное слово, ы. Dababy')
         word = get_word(count_of_letters)
         if not word:
             return await ctx.send(f'{ctx.author.mention}, Не получилось найти слово, попробуй ещё раз!')
