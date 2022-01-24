@@ -82,12 +82,11 @@ def get_word(count_of_letters):
         url = 'http://poiskslov.com/by-length/'
 
 
-        lenght = length - 2
         page = requests.get(url)
         soup = BeautifulSoup(page.text, 'html.parser')
         table = soup.find('ul', {"id": "zoom-hover"})
         words = table.find_all('li')
-        letters = words[lenght].find_all('a')
+        letters = words[count_of_letters].find_all('a')
 
         letter_id = randint(1, len(letters))
         letter = letters[letter_id]
