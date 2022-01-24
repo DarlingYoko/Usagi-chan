@@ -117,7 +117,7 @@ class Games(commands.Cog):
     @commands.cooldown(per=10, rate=1, type=commands.BucketType.channel)
     async def answer(self, ctx, try_word: str):
         try_word = list(try_word.upper())
-        command = f'SELECT word,lives,owner_id,lang,ban_words,white_words from wordle where channel_id = {ctx.channel.id};'
+        command = f'SELECT word,lives,owner_id,lang,ban_words,white_words,try_words from wordle where channel_id = {ctx.channel.id};'
         # word = self.bot.db.get_value('wordle', 'word', 'channel_id', ctx.channel.id)
         # lives = self.bot.db.get_value('wordle', 'lives', 'channel_id', ctx.channel.id)
         # author_id = self.bot.db.get_value('wordle', 'owner_id', 'channel_id', ctx.channel.id)
@@ -133,6 +133,7 @@ class Games(commands.Cog):
         lang = result[3]
         ban_words_db = result[4]
         white_words_db = result[5]
+        try_words_db = result[6]
         wordle_channel_id = self.config['channel'].getint('wordle')
         wordle_channel = await ctx.bot.fetch_channel(wordle_channel_id)
         if not word:
@@ -186,8 +187,14 @@ class Games(commands.Cog):
             white_words_db = white_words_db.split(',')
         else:
             white_words_db = []
+
+        if try_words_db:
+            try_words_db = try_words_db.split(',')
+        else:
+            try_words_db = []
         ban_words = list(set(ban_words + ban_words_db))
         white_words = list(set(white_words + white_words_db))
+        try_words = list(set(try_words + try_words_db))
 
         await ctx.send(f'{ctx.author.mention}', file=file)
 
@@ -214,6 +221,7 @@ class Games(commands.Cog):
         self.bot.db.update('wordle', 'lives', 'channel_id', lives, ctx.channel.id)
         self.bot.db.update('wordle', 'ban_words', 'channel_id', ','.join(ban_words), ctx.channel.id)
         self.bot.db.update('wordle', 'white_words', 'channel_id', ','.join(white_words), ctx.channel.id)
+        self.bot.db.update('wordle', 'try_words', 'channel_id', ','.join(try_words), ctx.channel.id)
 
 
     @commands.command(aliases = ['вордли_топ', 'вордле_топ', 'топ_вордле', 'топ_вордли', 'top_wordle'],
