@@ -84,13 +84,13 @@ def get_word(length):
     headers = {'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.71 Safari/537.36'}
 
     page = requests.get(url, headers=headers)
-    # print(page.status_code)
+    print(page.status_code)
     soup = BeautifulSoup(page.text, 'html.parser')
     table = soup.find('nav')
     letters = table.find_all('li')
     letter_id = randint(0, len(letters))
     letter_url = letters[letter_id].find('a')['href']
-    # print(letter_url)
+    print(letter_url)
 
     page = requests.get(base_url + letter_url, headers=headers)
 
