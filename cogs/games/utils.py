@@ -4,6 +4,7 @@ from PIL import Image, ImageFont, ImageOps
 from discord import File
 from random import randint
 from bs4 import BeautifulSoup
+from requests import Session
 
 
 def create_pic_from_word(blocks, try_word):
@@ -81,9 +82,11 @@ def get_word(length):
     url = 'https://lexicography.online/explanatory/ozhegov/'
     base_url = 'https://lexicography.online'
 
-    headers = {'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.71 Safari/537.36'}
+    headers = {'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36',
+                'accept-language': 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7,sk;q=0.6,pt;q=0.5'}
 
-    page = requests.get(url, headers=headers)
+    s = Session()
+    page = s.get(url, headers=headers)
     print(page.status_code)
     soup = BeautifulSoup(page.text, 'html.parser')
     table = soup.find('nav')
@@ -92,7 +95,7 @@ def get_word(length):
     letter_url = letters[letter_id].find('a')['href']
     print(letter_url)
 
-    page = requests.get(base_url + letter_url, headers=headers)
+    page = s.get(base_url + letter_url, headers=headers)
 
     soup = BeautifulSoup(page.text, 'html.parser')
 
