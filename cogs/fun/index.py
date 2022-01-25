@@ -108,6 +108,9 @@ class Fun(commands.Cog):
     async def toxic(self, ctx):
         return await ctx.send(f'Уровень токсинов в чате {random.randint(1, 100)}% <:peepoSitStarege:933802101824430201>')
 
+    @commands.command(aliases = ['ссылочки', 'круточки'])
+    async def link(self, ctx):
+        return await ctx.send('Запись стримов и круточек - <https://www.twitch.tv/yoko_o0>\nВесь материальчик по кадровому <https://www.youtube.com/channel/UCgis0wZn_m5mFNQHzvqyf8w>')
 
     #@commands.command()
     #async def test(self, ctx, user: discord.Member, role: discord.Role):
