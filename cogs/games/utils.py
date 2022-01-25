@@ -75,30 +75,35 @@ def get_words_keybord(ban_words, white_words, try_words, lang):
 
 
 
-def get_word(count_of_letters):
+def get_word(length):
 
     try:
-        count_of_letters -= 2
-        url = 'http://poiskslov.com/by-length/'
+        url = 'https://lexicography.online/explanatory/ozhegov/'
+        base_url = 'https://lexicography.online'
 
+        headers = {'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.71 Safari/537.36'}
 
-        page = requests.get(url)
+        page = requests.get(url, headers=headers)
+        # print(page.status_code)
         soup = BeautifulSoup(page.text, 'html.parser')
-        table = soup.find('ul', {"id": "zoom-hover"})
-        words = table.find_all('li')
-        letters = words[count_of_letters].find_all('a')
+        table = soup.find('nav')
+        letters = table.find_all('li')
+        letter_id = randint(0, len(letters))
+        letter_url = letters[letter_id].find('a')['href']
+        # print(letter_url)
 
-        letter_id = randint(1, len(letters))
-        letter = letters[letter_id]
-        words_url = letter['href']
+        page = requests.get(base_url + letter_url, headers=headers)
 
-        page = requests.get(words_url)
         soup = BeautifulSoup(page.text, 'html.parser')
 
-        words = soup.find_all('li')
+        words = soup.find('section', class_ = 'a-list').find_all('a')
+        words = [i.text for i in words]
+        words = list(filter(lambda x: x.isalpha(), words))
+        words = list(filter(lambda x: len(x) == length, words))
 
-        words_id = randint(1, len(words))
-        word = words[words_id].text
+        word_id = randint(0, len(words))
+        word = words[word_id]
+        word.replace('ё', 'е')
 
     except:
         return None
