@@ -87,6 +87,7 @@ def get_word(length):
 
     s = Session()
     page = s.get(url, headers=headers)
+    page.raise_for_status()
     print(page.status_code)
     soup = BeautifulSoup(page.text, 'html.parser')
     table = soup.find('nav')
@@ -96,7 +97,7 @@ def get_word(length):
     print(letter_url)
 
     page = s.get(base_url + letter_url, headers=headers)
-
+    page.raise_for_status()
     soup = BeautifulSoup(page.text, 'html.parser')
 
     words = soup.find('section', class_ = 'a-list').find_all('a')
