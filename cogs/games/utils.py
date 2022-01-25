@@ -77,35 +77,35 @@ def get_words_keybord(ban_words, white_words, try_words, lang):
 
 def get_word(length):
 
-    try:
-        url = 'https://lexicography.online/explanatory/ozhegov/'
-        base_url = 'https://lexicography.online'
+    # try:
+    url = 'https://lexicography.online/explanatory/ozhegov/'
+    base_url = 'https://lexicography.online'
 
-        headers = {'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.71 Safari/537.36'}
+    headers = {'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.71 Safari/537.36'}
 
-        page = requests.get(url, headers=headers)
-        # print(page.status_code)
-        soup = BeautifulSoup(page.text, 'html.parser')
-        table = soup.find('nav')
-        letters = table.find_all('li')
-        letter_id = randint(0, len(letters))
-        letter_url = letters[letter_id].find('a')['href']
-        # print(letter_url)
+    page = requests.get(url, headers=headers)
+    # print(page.status_code)
+    soup = BeautifulSoup(page.text, 'html.parser')
+    table = soup.find('nav')
+    letters = table.find_all('li')
+    letter_id = randint(0, len(letters))
+    letter_url = letters[letter_id].find('a')['href']
+    # print(letter_url)
 
-        page = requests.get(base_url + letter_url, headers=headers)
+    page = requests.get(base_url + letter_url, headers=headers)
 
-        soup = BeautifulSoup(page.text, 'html.parser')
+    soup = BeautifulSoup(page.text, 'html.parser')
 
-        words = soup.find('section', class_ = 'a-list').find_all('a')
-        words = [i.text for i in words]
-        words = list(filter(lambda x: x.isalpha(), words))
-        words = list(filter(lambda x: len(x) == length, words))
+    words = soup.find('section', class_ = 'a-list').find_all('a')
+    words = [i.text for i in words]
+    words = list(filter(lambda x: x.isalpha(), words))
+    words = list(filter(lambda x: len(x) == length, words))
 
-        word_id = randint(0, len(words))
-        word = words[word_id]
-        word.replace('ё', 'е')
+    word_id = randint(0, len(words))
+    word = words[word_id]
+    word.replace('ё', 'е')
 
-    except:
-        return None
+    # except:
+    #     return None
 
     return word.upper()
