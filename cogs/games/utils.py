@@ -79,35 +79,14 @@ def get_words_keybord(ban_words, white_words, try_words, lang):
 def get_word(length):
 
     # try:
-    url = 'https://lexicography.online/explanatory/ozhegov/'
-    base_url = 'https://lexicography.online'
+    with open('./files/russian.txt', 'r') as f:
+        words = f.readline().split(',')
 
-    headers = {'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36',
-                'accept-language': 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7,sk;q=0.6,pt;q=0.5'}
 
-    s = Session()
-    page = s.get(url, headers=headers)
-    page.raise_for_status()
-    print(page.status_code)
-    soup = BeautifulSoup(page.text, 'html.parser')
-    table = soup.find('nav')
-    letters = table.find_all('li')
-    letter_id = randint(0, len(letters))
-    letter_url = letters[letter_id].find('a')['href']
-    print(letter_url)
-
-    page = s.get(base_url + letter_url, headers=headers)
-    page.raise_for_status()
-    soup = BeautifulSoup(page.text, 'html.parser')
-
-    words = soup.find('section', class_ = 'a-list').find_all('a')
-    words = [i.text for i in words]
-    words = list(filter(lambda x: x.isalpha(), words))
     words = list(filter(lambda x: len(x) == length, words))
-
-    word_id = randint(0, len(words))
-    word = words[word_id]
-    word.replace('ё', 'е')
+    if not words:
+        return None
+    word = words[randint(0, len(words))]
 
     # except:
     #     return None

@@ -1,4 +1,4 @@
-import discord, requests, asyncio
+import discord, requests, asyncio, random
 from discord.ext import commands, tasks
 from bin.converters import *
 from bin.functions import get_embed
@@ -293,7 +293,7 @@ class Games(commands.Cog):
 
     @commands.command(help = 'wordle', aliases = ['авто_игра'])
     @commands.cooldown(per=30, rate=1)
-    async def auto_game(self, ctx, count_of_letters: int):
+    async def auto_game(self, ctx, count_of_letters: int = random.randint(3, 12)):
         if count_of_letters < 2 or count_of_letters > 12:
             await ctx.send(f'{ctx.author.mention}, Ищу рандомное слово, ы. Dababy')
         word = get_word(count_of_letters)
