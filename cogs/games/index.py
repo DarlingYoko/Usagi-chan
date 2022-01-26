@@ -304,7 +304,7 @@ class Games(commands.Cog):
 
         if not count_of_letters or count_of_letters < 4 or count_of_letters > 12:
             await ctx.send(f'{ctx.author.mention}, Ищу рандомное слово, ы. Dababy')
-        count_of_letters = random.randint(4, 12)
+            count_of_letters = random.randint(4, 12)
         word = get_word(count_of_letters)
         if not word:
             return await ctx.send(f'{ctx.author.mention}, Не получилось найти слово, попробуй ещё раз!')
