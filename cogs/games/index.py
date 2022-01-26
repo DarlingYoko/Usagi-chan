@@ -293,9 +293,11 @@ class Games(commands.Cog):
 
     @commands.command(help = 'wordle', aliases = ['авто_игра'])
     @commands.cooldown(per=30, rate=1)
-    async def auto_game(self, ctx, count_of_letters: int = random.randint(3, 12)):
-        if count_of_letters < 2 or count_of_letters > 12:
+    async def auto_game(self, ctx, count_of_letters: int = None):
+
+        if not count_of_letters or count_of_letters < 4 or count_of_letters > 12:
             await ctx.send(f'{ctx.author.mention}, Ищу рандомное слово, ы. Dababy')
+        count_of_letters = random.randint(4, 12)
         word = get_word(count_of_letters)
         if not word:
             return await ctx.send(f'{ctx.author.mention}, Не получилось найти слово, попробуй ещё раз!')
