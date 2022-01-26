@@ -232,25 +232,28 @@ class Games(commands.Cog):
         all_wordle = self.bot.db.get_all('wordle')
 
         winners = {}
-
         for wordle in all_wordle:
             game_id = wordle[0]
             winner_id = wordle[1]
             if game_id == 0 or winner_id == 0:
                 continue
-            winner = await ctx.bot.fetch_user(winner_id)
+            winner = ctx.guild.get_member(winner_id)
             points = wordle[2]
-            if winner in winners.keys():
-                winners[winner] += points
+            if not winner:
+                name = f'<@{winner_id}>'
             else:
-                winners[winner] = points
+                name = winner.name
+            if name in winners.keys():
+                winners[name] += points
+            else:
+                winners[name] = points
 
         answer = f'```cs\n# Топ игроков в Wordle Usagi-chan edition\n'
         counter = 1
         winners = {k: v for k, v in sorted(winners.items(), key=lambda item: item[1], reverse=True)}
         for key, value in winners.items():
             # print(key)
-            answer += f'{counter}. {key.name} ---- {value} Очков.\n'
+            answer += f'{counter}. {key} ---- {value} Очков.\n'
             counter += 1
         answer += '```'
         await ctx.send(answer)
@@ -273,20 +276,24 @@ class Games(commands.Cog):
             winner_id = wordle[1]
             if game_id == 0 or winner_id == 0:
                 continue
-            winner = await ctx.bot.fetch_user(winner_id)
+            winner = ctx.guild.get_member(winner_id)
             points = wordle[2]
+            if not winner:
+                name = f'<@{winner_id}>'
+            else:
+                name = winner.name
             if points:
-                if winner in winners.keys():
-                    winners[winner] += 1
+                if name in winners.keys():
+                    winners[name] += 1
                 else:
-                    winners[winner] = 1
+                    winners[name] = 1
 
         answer = f'```cs\n# Топ игроков в Wordle Usagi-chan edition\n'
         counter = 1
         winners = {k: v for k, v in sorted(winners.items(), key=lambda item: item[1], reverse=True)}
         for key, value in winners.items():
             # print(key)
-            answer += f'{counter}. {key.name} ---- {value} слов.\n'
+            answer += f'{counter}. {key} ---- {value} слов.\n'
             counter += 1
         answer += '```'
         await ctx.send(answer)
@@ -338,7 +345,10 @@ class Games(commands.Cog):
         if isinstance(error, commands.CommandOnCooldown):
             await ctx.send(f'{ctx.author.mention} Пока рано для ответа, подожди чуток.\n' + str(error))
 
-
+    @wordle_top.error
+    async def wordle_top_errors(self, ctx, error):
+        if isinstance(error, commands.CommandOnCooldown):
+            await ctx.send(f'{ctx.author.mention} Пока рано для ответа, подожди чуток.\n' + str(error))
 
 
 def setup(bot):
