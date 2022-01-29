@@ -67,9 +67,9 @@ class Fun(commands.Cog):
 
 
 
-    @commands.command(name = 'вебивент')
+    @commands.command(name = 'вебивент', aliases = ['веб', 'ивент'])
     async def web_event_link(self, ctx):
-        return await ctx.send('<https://webstatic-sea.mihoyo.com/ys/event/e20210805-yoimiya/index.html?mhy_auth_required=true&mhy_presentation_style=fullscreen?utm_source=sns&utm_medium=vk&lang=ru-ru>')
+        return await ctx.send('<https://webstatic-sea.mihoyo.com/ys/event/e20220128lantern/index.html>')
 
     @commands.command(name = 'примогемы')
     async def primogems_link(self, ctx):
@@ -115,6 +115,8 @@ class Fun(commands.Cog):
     #@commands.command()
     #async def test(self, ctx, user: discord.Member, role: discord.Role):
     #    return await user.add_roles(role)
+
+
 
 
 
