@@ -69,7 +69,7 @@ class Fun(commands.Cog):
 
     @commands.command(name = 'вебивент', aliases = ['веб', 'ивент'])
     async def web_event_link(self, ctx):
-        return await ctx.send('<https://webstatic-sea.mihoyo.com/ys/event/e20220128lantern/index.html>')
+        return await ctx.send('<https://webstatic-sea.mihoyo.com/ys/event/e20220128lantern/index.html>\n<https://webstatic-sea.mihoyo.com/ys/event/e20220129-postcard/index.html>')
 
     @commands.command(name = 'примогемы')
     async def primogems_link(self, ctx):
