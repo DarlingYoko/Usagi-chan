@@ -2,7 +2,6 @@ import discord
 import os, sys, traceback
 from discord.ext import commands
 from bin.functions import get_config
-from discord_components import DiscordComponents
 from importlib import reload as reload_module
 from bin.helpCommand import CustomHelpCommand
 
@@ -13,7 +12,9 @@ intents = discord.Intents().all()
 bot = commands.Bot(command_prefix = '!', intents = intents, help_command = CustomHelpCommand())
 
 bot.config = get_config('config')
-bot.redirect = False
+bot.redirect = True
+# bot.players = ['290166276796448768', '224812444462088194']#, '224812444462088194', '249874183943749632', '575338259031392276', '357540566843523073']
+# bot.table =[]
 
 for dir in os.listdir('./cogs'):
     if 'index.py' in os.listdir(f'./cogs/{dir}'):
@@ -27,7 +28,6 @@ token = bot.config['data'].get('token')
 async def on_ready():
     print('Bot is up')
     await bot.change_presence(status=discord.Status.online, activity=discord.Game("!help | ver 3.0 | Beta-test |"))
-    DiscordComponents(bot)
     bot.db = bot.get_cog('Database')
 
 @bot.event

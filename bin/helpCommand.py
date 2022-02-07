@@ -1,6 +1,5 @@
 import discord
 from discord.ext import commands
-from discord_components import DiscordComponents
 from bin.functions import *
 import itertools
 
