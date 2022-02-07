@@ -2,7 +2,8 @@ import discord
 import itertools
 from discord.ext import commands
 from youtube_dl import YoutubeDL
-from discord_components import Button, Select, ButtonStyle
+from discord.ui import Button, Select
+from discord import ButtonStyle, SelectOption
 
 
 def get_search_btns(ctx):

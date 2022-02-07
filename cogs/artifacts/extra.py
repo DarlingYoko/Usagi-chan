@@ -1,6 +1,6 @@
 import re
-from discord_components import Button, Select, ButtonStyle, SelectOption
-from discord import File
+from discord.ui import Button, Select
+from discord import File, ButtonStyle, SelectOption
 
 
 def get_tasks(ctx, check):

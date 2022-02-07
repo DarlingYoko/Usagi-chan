@@ -44,7 +44,7 @@ from .utils import create_pic_from_word, get_words_keybord, get_word
 # разобраться с выделением буков
 
 
-class Games(commands.Cog):
+class Wordle(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.config = bot.config
@@ -352,4 +352,4 @@ class Games(commands.Cog):
 
 
 def setup(bot):
-    bot.add_cog(Games(bot))
+    bot.add_cog(Wordle(bot))

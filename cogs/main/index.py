@@ -9,7 +9,7 @@ class Main(commands.Cog):
         self.bot = bot
         self.config = bot.config
         self.check_twitch_online.start()
-        self.test_loop.start()
+        self.wordle_results.start()
 
 
     @commands.command()
@@ -130,7 +130,7 @@ class Main(commands.Cog):
 
 
     @tasks.loop(minutes=1)
-    async def test_loop(self):
+    async def wordle_results(self):
         timezone = pytz.timezone("Europe/Moscow")
         time = datetime.now(timezone)
         if time.hour == 23 and time.minute == 0:
@@ -190,8 +190,8 @@ class Main(commands.Cog):
 
 
 
-    @test_loop.before_loop
-    async def before_test_loop(self):
+    @wordle_results.before_loop
+    async def before_wordle_results(self):
         print('waiting...')
         await self.bot.wait_until_ready()
 

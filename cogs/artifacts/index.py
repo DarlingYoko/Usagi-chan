@@ -44,6 +44,7 @@
 
 
 План в порядке важности:
+    -1. Документация по артам для глупиков
     0. ПЕРЕНЕСТИ ВСЁ В КОНФИГ  +
     1. Автор артефакта при поиске +
     2. Разные топы  (общий топ, топ по части, топ по сету)
@@ -56,8 +57,8 @@ from discord.ext import commands
 from bin.functions import *
 from bin.checks import *
 from bin.converters import *
-from discord_components import Button, Select, ButtonStyle, SelectOption
-from discord import File
+from discord.ui import Button, Select
+from discord import File, ButtonStyle, SelectOption
 from cogs.artifacts.extra import *
 from cogs.artifacts.blanks import *
 from cogs.artifacts.pictures import create_pic_artifact

@@ -5,8 +5,9 @@ from cogs.artifacts.extra import get_sets, list_check_entry
 import requests
 
 
-def create_pic_artifact(artifact, initial):
-    blank = Editor('./files/photo/clear_blank.png')
+
+def generate_top_image(artifact_1, artifact_2, artifact_3):
+    blank = Editor('./files/photo/clear_top_blank.png')
     usagi = Editor(f'./files/photo/{initial}.png').resize((150, 150))
     image = Image.open(requests.get(artifact.part_url, stream=True).raw).resize((220, 220))
 
