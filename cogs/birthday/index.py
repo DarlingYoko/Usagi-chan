@@ -22,7 +22,7 @@ class Birthday(commands.Cog):
     async def birthdays_notify(self):
         timezone = pytz.timezone("Europe/Moscow")
         time = datetime.now(timezone)
-        if time.hour == 10 and time.minute == 0:
+        if time.hour == 11 and time.minute == 25:
 
 
             download = downloadShedule()
