@@ -22,12 +22,12 @@ class Birthday(commands.Cog):
     async def birthdays_notify(self):
         timezone = pytz.timezone("Europe/Moscow")
         time = datetime.now(timezone)
-        if time.hour == 11 and time.minute == 25:
+        if time.hour == 12 and time.minute == 0:
 
 
-            download = downloadShedule()
-            if not download:
-                print("Download failed")
+            # download = downloadShedule()
+            # if not download:
+            #     print("Download failed")
             wb = load_workbook('cogs/birthday/birthdays.xlsx')
             path = './files/photo/birthday/'
             sheet = wb['Лист1']
