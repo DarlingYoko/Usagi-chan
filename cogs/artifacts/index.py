@@ -202,7 +202,7 @@ class Artifacts(commands.Cog):
             embed = get_embed(
                         author_name=f'© {author.display_name}',
                         url_image = "attachment://blank.png",
-                        author_icon_URL = author.avatar_url)
+                        author_icon_URL = author.avatar)
 
             question = await ctx.send(embed = embed, file = file)
 
