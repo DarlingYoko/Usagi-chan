@@ -44,14 +44,14 @@ class TicTacToeButton(discord.ui.Button["TicTacToe"]):
         if state in (view.X, view.O):
             return
 
-        if view.current_player == view.X and interaction.user.id == view.player_1.id:
+        if view.current_player == view.X:# and interaction.user.id == view.player_1.id:
             self.style = discord.ButtonStyle.danger
             self.label = "X"
             self.disabled = True
             view.board[self.y][self.x] = view.X
             view.current_player = view.O
             content = f'Сейчас ход {view.player_2.name}'
-        elif view.current_player == view.O and interaction.user.id == view.player_2.id:
+        elif view.current_player == view.O:# and interaction.user.id == view.player_2.id:
             self.style = discord.ButtonStyle.success
             self.label = "O"
             self.disabled = True
@@ -66,10 +66,13 @@ class TicTacToeButton(discord.ui.Button["TicTacToe"]):
         if winner is not None:
             if winner == view.X:
                 content = "X won!"
+                view.winner = view.player_1.name
             elif winner == view.O:
                 content = "O won!"
+                view.winner = view.player_2.name
             else:
                 content = "It's a tie!"
+                view.winner = ''
 
             for child in view.children:
                 child.disabled = True
@@ -99,6 +102,7 @@ class TicTacToe(discord.ui.View):
 
         self.player_1 = player_1
         self.player_2 = player_2
+        self.winner = None
 
 
         # Our board is made up of 3 by 3 TicTacToeButtons
@@ -151,30 +155,59 @@ class Tic_tac_toe(commands.Cog):
 
 
     @commands.command()
+    @commands.is_owner()
     async def game(self, ctx):
-        # for game in self.bot.table:
-        player_1 = await ctx.bot.fetch_user(self.bot.table[0][0])
-        player_2 = await ctx.bot.fetch_user(self.bot.table[0][1])
-        await ctx.send(f'Первая игра между {player_1.name} и {player_2.name}')
-        players = [player_1, player_2]
-        player_1 = choice(players)
-        players.remove(player_1)
-        player_2 = players[0]
-        await ctx.send(f'Первым ходит {player_1.name} -- **Х**', view=TicTacToe(player_1, player_2))
+        game_counter = 1
+        result = {}
+        games_name = {1: 'Первая', 2: 'Вторая', 3: 'Третья', 4: 'Четвёртая', 5: 'Пятая', 6: 'Шестая', 7: 'Седьмая', }
+        rounds_name = {1: 'первый', 2: 'второй', 3: 'третий', 4: 'четвёртый', 5: 'пятый'}
+        for game in self.bot.table:
+            player_1 = await ctx.bot.fetch_user(game[0])
+            player_2 = await ctx.bot.fetch_user(game[1])
+            game_name = games_name[game_counter]
+            await ctx.send(f'{game_name} игра между {player_1.name} и {player_2.name}')
+            for i in range(1, 4):
+                round = rounds_name[i]
+                await ctx.send(f'Рануд {round}')
+                players = [player_1, player_2]
+                player_1 = choice(players)
+                players.remove(player_1)
+                player_2 = players[0]
+                game_table = TicTacToe(player_1, player_2)
+                await ctx.send(f'Первым ходит {player_1.name} -- **Х**', view=game_table)
+
+                result_game = await game_table.wait()
+                if not result_game:
+                    text = 'Ничья!'
+                    if game_table.winner:
+                        text = f'Игра закончилась успешно, победитель - {game_table.winner}'
+                        if game_table.winner in result.keys():
+                            result[game_table.winner] += 1
+                        else:
+                            result[game_table.winner] = 1
+                    await ctx.send(text)
+                else:
+                    await ctx.send(f'Игра завершилась раньше времени, хотите повторить?')
+
+            game_counter += 1
+        await ctx.send(f'Результаты турнира - {result}')
 
 
 
     @commands.command(aliases = ['регистрация'])
+    @commands.is_owner()
     async def reg(self, ctx, name: str):
         self.bot.players.append(name)
         await ctx.send('Записала тебя!')
 
     @commands.command(name = 'игроки')
+    @commands.is_owner()
     async def players(self, ctx):
         await ctx.send(self.bot.players)
 
 
     @commands.command(aliases = ['таблица'])
+    @commands.is_owner()
     async def table(self, ctx):
         table = []
         players_copy = self.bot.players.copy()
@@ -193,6 +226,7 @@ class Tic_tac_toe(commands.Cog):
         await ctx.send(table)
 
     @commands.command()
+    @commands.is_owner()
     async def show_table(self, ctx):
         if not self.bot.table:
             return await ctx.send('Таблица ещё не была создана!')
@@ -203,6 +237,68 @@ class Tic_tac_toe(commands.Cog):
             player_2 = await ctx.bot.fetch_user(game[1])
             answer += f'{player_1.name} + {player_2.name}\n'
         await ctx.send(answer)
+
+    @commands.command()
+    @commands.is_owner()
+    async def messages(self, ctx):
+        guild = await ctx.bot.fetch_guild(858053936313008129)
+        channels = await guild.fetch_channels()
+        data = {}
+        users = {}
+        emojis = {}
+        for channel in channels:
+            if str(channel.type) == 'text':
+                print(f'обрабатываю {channel}')
+                async for message in channel.history(limit=None):
+                    if message.author.name in users.keys():
+                        users[message.author.name] += 1
+                    else:
+                        users[message.author.name] = 1
+
+                    for word in message.content.split(' '):
+                        if word.startswith('<:') and word.endswith('>'):
+                            if word in emojis.keys():
+                                emojis[word] += 1
+                            else:
+                                emojis[word] = 1
+                        else:
+                            if word in data.keys():
+                                data[word] += 1
+                            else:
+                                data[word] = 1
+
+        users = {k: v for k, v in sorted(users.items(), key=lambda item: item[1], reverse=True)}
+        users = list(users.items())[:20]
+        data = {k: v for k, v in sorted(data.items(), key=lambda item: item[1], reverse=True)}
+        data = list(data.items())[:40]
+        emojis = {k: v for k, v in sorted(emojis.items(), key=lambda item: item[1], reverse=True)}
+        emojis = list(emojis.items())[:20]
+        users = f'Топ кол-ва сообщений {users}'
+        messages = f'Топ слов {data}'
+        emojis = f'Топ эмоджиков{emojis}'
+
+        if len(users) >= 2000:
+            for i in range(0, len(users), 2000):
+                await ctx.send(users[i:i+2000])
+        else:
+            await ctx.send(users)
+
+        if len(messages) >= 2000:
+            for i in range(0, len(messages), 2000):
+                await ctx.send(messages[i:i+2000])
+        else:
+            await ctx.send(messages)
+
+        if len(emojis) >= 2000:
+            for i in range(0, len(emojis), 2000):
+                await ctx.send(emojis[i:i+2000])
+        else:
+            await ctx.send(emojis)
+
+
+
+
+
 
 
 
