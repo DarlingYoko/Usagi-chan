@@ -240,32 +240,35 @@ class Tic_tac_toe(commands.Cog):
 
     @commands.command()
     @commands.is_owner()
-    async def messages(self, ctx):
+    async def messages(self, ctx, channel_id: int):
         guild = await ctx.bot.fetch_guild(858053936313008129)
-        channels = await guild.fetch_channels()
+        channel = await guild.fetch_channel(channel_id)
         data = {}
         users = {}
         emojis = {}
-        for channel in channels:
-            if str(channel.type) == 'text':
-                print(f'обрабатываю {channel}')
-                async for message in channel.history(limit=None):
-                    if message.author.name in users.keys():
-                        users[message.author.name] += 1
-                    else:
-                        users[message.author.name] = 1
+        print(f'обрабатываю {channel}')
+        # async for message in channel.history(limit=None):
+        messages = await channel.history(limit=None).flatten()
+        print(len(messages))
+        for message in messages:
+            if message.author.bot: 
+                continue
+            if message.author.name in users.keys():
+                users[message.author.name] += 1
+            else:
+                users[message.author.name] = 1
 
-                    for word in message.content.split(' '):
-                        if word.startswith('<:') and word.endswith('>'):
-                            if word in emojis.keys():
-                                emojis[word] += 1
-                            else:
-                                emojis[word] = 1
-                        else:
-                            if word in data.keys():
-                                data[word] += 1
-                            else:
-                                data[word] = 1
+            for word in message.content.split(' '):
+                if word.startswith('<:') and word.endswith('>'):
+                    if word in emojis.keys():
+                        emojis[word] += 1
+                    else:
+                        emojis[word] = 1
+                else:
+                    if word in data.keys():
+                        data[word] += 1
+                    else:
+                        data[word] = 1
 
         users = {k: v for k, v in sorted(users.items(), key=lambda item: item[1], reverse=True)}
         users = list(users.items())[:20]
