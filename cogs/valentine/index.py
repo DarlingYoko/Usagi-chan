@@ -23,13 +23,16 @@ class Valentine(commands.Cog):
     @commands.dm_only()
     # @commands.cooldown(per=30, rate=1)
     async def create_valentine(self, ctx, name: str, from_: str, *, text: str):
-        guild = await ctx.bot.fetch_guild(733631069542416384)
+        guild = await ctx.bot.fetch_guild(858053936313008129)
         members = await guild.fetch_members(limit=None).flatten()
         name = name.lower()
         channel = ctx.channel
-        member = discord.utils.find(lambda m: m.name.lower() == name 
-                                    or m.display_name.lower() == name 
-                                    or m.id == name, members)
+        user = ctx.author.id
+        member = discord.utils.find(lambda m: name in m.name.lower() 
+                                    or name in m.display_name.lower() , members)
+            
+        if not member and name.isalnum():
+            member = discord.utils.find(lambda m: m.id == int(name), members)
 
         if not member:
             return await ctx.send('У меня не получилось найти такого пользователя, попробуй по-другому.')
@@ -37,7 +40,7 @@ class Valentine(commands.Cog):
         await ctx.send(f'Пользователь, которого я нашла - {member.mention}, верно? да/нет')
 
         def check(m):
-            return m.channel == channel
+            return m.channel == channel and m.author.id == user
 
         try:
             message = await ctx.bot.wait_for('message', check=check)
@@ -57,7 +60,7 @@ class Valentine(commands.Cog):
         if from_ not in ['анон', 'неанон']:
             return await ctx.send('Такого варианта у меня нет( Попробуй ещё раз. (Варианты - анон/неанон)')
 
-        channel = await guild.fetch_channel(807349536321175582)
+        channel = await guild.fetch_channel(942452515163766805)
 
         thumbnails = ['https://cdn.discordapp.com/attachments/807349536321175582/942441560291807232/iconUSAGI_heart.png',
                     'https://cdn.discordapp.com/attachments/817507955573915658/942436825744674816/FIN2iATXIAIFzUL.png',
@@ -76,11 +79,19 @@ class Valentine(commands.Cog):
             from_ = f'Валентинка от {ctx.message.author.name}'
         else:
             pass
+        image = None
+        if ctx.message.attachments:
+            for attachment in ctx.message.attachments:
+                if 'image' in attachment.content_type:
+                    image = attachment.url
+                else:
+                    print(attachment.content_type)
 
         embed = get_embed(
                         description=text,
                         author_name=from_,
-                        thumbnail=thumbnail)
+                        thumbnail=thumbnail,
+                        url_image=image)
         
         await channel.send(f'Валентинка для {member.mention}', embed=embed)
         await ctx.send('Отправила твою валентинку!')
@@ -101,7 +112,7 @@ class Valentine(commands.Cog):
 
     @commands.command(name='купидон')
     async def help_valentine(self, ctx):
-        text = 'Чтобы создать свою валентинку, надо перейти в лс к Усаги и написать ей команду вида:\n`!валентинка <Имя/Ник/ID пользователя для кого валентинка> анон/неанон текст валентинки.`\nВсе данные вводить без кавычек, скобочек и тд <:ad:858128511209308190>'
+        text = 'Чтобы создать свою валентинку, надо перейти в лс к Усаги и написать ей команду вида:\n`!валентинка <Имя/Ник/ID пользователя для кого валентинка> анон/неанон текст валентинки.`\nВы также можете прикрепить к своей валентинке картинку или гифку!\nВсе данные вводить без кавычек, скобочек и тд <:ad:858128511209308190>'
         await ctx.send(text)
         
 
