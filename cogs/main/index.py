@@ -153,8 +153,10 @@ class Main(commands.Cog):
                 'x/6': [],
             }
             top_eng = copy.deepcopy(top_ru)
+            top_math = copy.deepcopy(top_ru)
             top_ru_day = ''
             top_eng_day = ''
+            top_math_day = ''
             async for message in channel.history(after=message_after, limit=None):
                 text = message.content.lower()
                 # print(text)
@@ -172,6 +174,15 @@ class Main(commands.Cog):
                             top_eng_day = text_split[text_split.index('wordle') + 1]
                     except:
                         pass
+                if 'mathler.com' in text:
+                    text_split = text.split()
+                    try:
+                        rating = text_split[text_split.index('mathler.com') + 2]
+                        top_math[rating].append(message.author.name)
+                        top_math_day = text_split[text_split.index('mathler.com') + 1]
+                    except:
+                        pass
+
             # print(top_eng)
             # print(top_ru)
             answer = f'```cs\n# Wordle (RU) День {top_ru_day}\n'
@@ -184,6 +195,12 @@ class Main(commands.Cog):
             for key, value in top_eng.items():
                 answer += key + ' ' + '; '.join(value) + '\n'
             answer += '```'
+
+            answer = f'```cs\n# Math Wordle Day #{top_math_day}\n'
+            for key, value in top_math.items():
+                answer += key + ' ' + '; '.join(value) + '\n'
+            answer += '```'
+
             message = await channel.send(answer)
             self.bot.db.update('forum', 'time', 'userid', message.id, 2)
 
