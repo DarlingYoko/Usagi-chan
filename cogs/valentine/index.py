@@ -23,6 +23,7 @@ class Valentine(commands.Cog):
     @commands.dm_only()
     # @commands.cooldown(per=30, rate=1)
     async def create_valentine(self, ctx, name: str, from_: str, *, text: str):
+        return await ctx.send('14 февраля прошло! Бааака. Жди некст года)')
         guild = await ctx.bot.fetch_guild(858053936313008129)
         members = await guild.fetch_members(limit=None).flatten()
         name = name.lower()
@@ -112,6 +113,7 @@ class Valentine(commands.Cog):
 
     @commands.command(name='купидон')
     async def help_valentine(self, ctx):
+        return await ctx.send('14 февраля прошло! Бааака. Жди некст года)')
         text = 'Чтобы создать свою валентинку, надо перейти в лс к Усаги и написать ей команду вида:\n`!валентинка <Имя/Ник/ID пользователя для кого валентинка> анон/неанон текст валентинки.`\nВы также можете прикрепить к своей валентинке картинку или гифку!\nВсе данные вводить без кавычек, скобочек и тд <:ad:858128511209308190>\nПрикреплять картинку и гифку надо не ссылкой!! А именно прикрепить ручками!\nТакже Усаги не понимает имена больше одного слова, так что ищите по одному слову либо по ID!'
         await ctx.send(text)
         
