@@ -28,19 +28,23 @@ class Events(commands.Cog):
             emoji = self.bot.get_emoji(emojis.getint(str(message.channel.id)))
             return await message.add_reaction(emoji)
 
-        if message.channel.id in [930076834350133288] and self.bot.redirect:
-            answer = f'{message.author.name} send:\n{message.content}'
-            ls = 317513731
-            chat = -712264970
+        if message.channel.id == 942169382124134410:
+            emoji = self.bot.get_emoji(897821614312394793)
+            return await message.add_reaction(emoji)
 
-            if message.attachments:
-                for attachment in message.attachments:
-                    if 'image' in attachment.content_type:
-                    # print(attachment.url)
-                        self.tg_bot.send_photo(chat, attachment.url, caption = answer)
-                        return
+        # if message.channel.id in [930076834350133288] and self.bot.redirect:
+        #     answer = f'{message.author.name} send:\n{message.content}'
+        #     ls = 317513731
+        #     chat = -712264970
 
-            self.tg_bot.send_message(chat, answer)
+        #     if message.attachments:
+        #         for attachment in message.attachments:
+        #             if 'image' in attachment.content_type:
+        #             # print(attachment.url)
+        #                 self.tg_bot.send_photo(chat, attachment.url, caption = answer)
+        #                 return
+
+            # self.tg_bot.send_message(chat, answer)
 
 
     @commands.Cog.listener()
