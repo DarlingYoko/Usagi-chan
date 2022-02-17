@@ -16,6 +16,10 @@ class Events(commands.Cog):
         if str(message.type) == 'MessageType.pins_add':
                 return await message.delete()
 
+        if message.channel.id == 942169382124134410:
+            emoji = self.bot.get_emoji(897821614312394793)
+            return await message.add_reaction(emoji)
+
         if message.author == self.bot.user or message.author.bot:
             return
 
@@ -28,9 +32,7 @@ class Events(commands.Cog):
             emoji = self.bot.get_emoji(emojis.getint(str(message.channel.id)))
             return await message.add_reaction(emoji)
 
-        if message.channel.id == 942169382124134410:
-            emoji = self.bot.get_emoji(897821614312394793)
-            return await message.add_reaction(emoji)
+        
 
         # if message.channel.id in [930076834350133288] and self.bot.redirect:
         #     answer = f'{message.author.name} send:\n{message.content}'
