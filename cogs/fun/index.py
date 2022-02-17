@@ -112,6 +112,48 @@ class Fun(commands.Cog):
     async def link(self, ctx):
         return await ctx.send('Запись стримов и круточек - <https://www.twitch.tv/yoko_o0>\nВесь материальчик по кадровому <https://www.youtube.com/channel/UCgis0wZn_m5mFNQHzvqyf8w>')
 
+    @commands.command(aliases = ['база'])
+    async def base_message(self, ctx, message_link=None):
+        channel = await ctx.bot.fetch_channel(942169382124134410)
+        if ctx.message.attachments:
+            files = None
+            file_ = None
+            if len(ctx.message.attachments) > 1:
+                files = []
+                for file in ctx.message.attachments:
+                    file = await file.to_file()
+                    files.append(file)
+            else:
+                file_ = await ctx.message.attachments[0].to_file()
+            await channel.send(content=f'База от {ctx.message.author.mention}',
+                               files=files,
+                               file=file_
+                               )
+            await ctx.send('Добавила базу <:BASEDHM:897821614312394793>')
+            return None
+        try:
+            message_id = message_link.split('/')[6]
+            channel_id = message_link.split('/')[5]
+            mes_channel = await ctx.bot.fetch_channel(channel_id)
+            message = await mes_channel.fetch_message(message_id)
+        except:
+            return await ctx.send('Не нашла базу(')
+        files = None
+        file_ = None
+        if message.attachments:
+            if len(message.attachments) > 1:
+                files = []
+                for file in message.attachments:
+                    file = await file.to_file()
+                    files.append(file)
+            else:
+                file_ = await message.attachments[0].to_file()
+        await channel.send(content=f'База от {message.author.mention}\n{message.content}',
+                           files=files,
+                           file=file_,
+                           embeds=message.embeds,
+                           )
+        await ctx.send('Добавила базу <:BASEDHM:897821614312394793>')
     #@commands.command()
     #async def test(self, ctx, user: discord.Member, role: discord.Role):
     #    return await user.add_roles(role)
