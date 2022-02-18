@@ -254,7 +254,7 @@ class Tic_tac_toe(commands.Cog):
 
 
 
-    @commands.command(aliases = ['регистрация'])
+    @commands.command(aliases = ['регистрация', 'go'])
     # @commands.is_owner()
     async def reg(self, ctx):
         text = 'Не удалось записать тебя на турнир, попробуй позже'
@@ -264,7 +264,7 @@ class Tic_tac_toe(commands.Cog):
             text = 'Записала тебя!'
         await ctx.send(content=text)
 
-    @commands.command(aliases = ['выйти'])
+    @commands.command(aliases = ['выйти', 'out'])
     # @commands.is_owner()
     async def quit_reg(self, ctx):
         text = 'Не удалось удалить тебя, попробуй позже'
@@ -274,7 +274,7 @@ class Tic_tac_toe(commands.Cog):
             text = 'Удалила тебя!'
         await ctx.send(content=text)
 
-    @commands.command(name = 'игроки')
+    @commands.command(aliases = ['игроки'])
     async def players(self, ctx):
         players = self.bot.db.get_all('tictac')
         text = '```cs\n# Сейчас записаны следующие люди:\n'
