@@ -48,14 +48,14 @@ class TicTacToeButton(discord.ui.Button["TicTacToe"]):
         if state in (view.X, view.O):
             return
 
-        if view.current_player == view.X:# and interaction.user.id == view.player_1.id:
+        if view.current_player == view.X and interaction.user.id == view.player_1.id:
             self.style = discord.ButtonStyle.danger
             self.label = "X"
             self.disabled = True
             view.board[self.y][self.x] = view.X
             view.current_player = view.O
             content = f'Сейчас ход {view.player_2.name} ― 🟢'
-        elif view.current_player == view.O:# and interaction.user.id == view.player_2.id:
+        elif view.current_player == view.O and interaction.user.id == view.player_2.id:
             self.style = discord.ButtonStyle.success
             self.label = "O"
             self.disabled = True
@@ -165,20 +165,29 @@ class Tic_tac_toe(commands.Cog):
         tournament_result = {}
         games_name = {1: 'Первая', 2: 'Вторая', 3: 'Третья', 4: 'Четвёртая', 5: 'Пятая', 6: 'Шестая', 7: 'Седьмая', }
         rounds_name = {1: 'первый', 2: 'второй', 3: 'третий', 4: 'четвёртый', 5: 'пятый'}
-        table = self.gen_table(self.bot.players) # get players from DB
+        players = list(map(lambda x: x[0], self.bot.db.get_all('tictac')))
+        # print(players)
+        table = self.gen_table(players) # get players from DB
         game_counter = 1
-        print(table)
-        await ctx.send('Начинаем наш турнир по крестикам-ноликам! Юююхууу!!\nИ перед вашими глазами турнирная таблица на сегодняшний вечер:')
+        # print(table)
+        greetings = '''> 🎏 Да начнётся нереальная битва гениалычей в самой интеллектуальной игре всех веков и народов 
+>  🏆 **"Крестики нолики"**!!!!🎉  ~*Звуки трубы и барабонов*~🎶 
+
+📢 `ВСЕ ПРАВИЛА УЧАСТИЯ, ИГРЫ И ТОГО КАК ПОСРАТЬ ВЫ НАЙДЁТЕ В ЗАКРЕПЕ!`
+
+<:iconUSAGI_heart:887007858867208254> Буду рада поприветствовать вместе с вами наших сегодняшних *участников* вот они слева на право:'''
+        await ctx.send(greetings)
+        big_counter = 1
         while table:
-            view_table = '```cs\n# ――――――――――\n'
+            view_table = f'Турнирная сетка для игры №{big_counter}```cs\n# ――――――――――――――――――――――――――――――\n'
             counter = 1
             for game in table:
                 player_1 = await ctx.bot.fetch_user(game[0])
                 if game[1] != None:
                     player_2 = await ctx.bot.fetch_user(game[1])
-                    view_table += f'{counter}. {player_1.name} "VS" {player_2.name}\n# ――――――――――\n'
+                    view_table += f'{counter}. {player_1.name} "VS" {player_2.name}\n# ――――――――――――――――――――――――――――――\n'
                 else:
-                    view_table += f'{counter}. {player_1.name} "VS" Нет противника\n# ――――――――――\n'
+                    view_table += f'{counter}. {player_1.name} "VS" Нет противника\n# ――――――――――――――――――――――――――――――\n'
                 counter += 1
             view_table += '```'
             await ctx.send(content=view_table)
@@ -197,10 +206,9 @@ class Tic_tac_toe(commands.Cog):
                     tournament_result[player_1.id] = 0
                 if player_2.id not in tournament_result.keys():
                     tournament_result[player_2.id] = 0
-                    if game_counter < 5:
-                        game_name = games_name[game_counter]
-                    else:
-                        game_name = 'Хуй знает какая'
+                    # if game_counter < 5:
+                    game_name = games_name[game_counter]
+                    
 
                 result = {player_1.id: 0, player_2.id: 0}
                 await ctx.send(f'**{game_name} игра**```prolog\n"{player_1.name}" VS "{player_2.name}"\n```')
@@ -227,9 +235,10 @@ class Tic_tac_toe(commands.Cog):
                     round_counter += 1
                 if res_1 > res_2:
                     new_players.append(player_1.id)
+                    await ctx.send(f'Победитель этого игры - {player_1.mention} Грац Грац. Ожидай некст игры')
                 else:
                     new_players.append(player_2.id)
-
+                    await ctx.send(f'Победитель этого игры - {player_2.mention} Грац Грац. Ожидай некст игры')
                 for key, item in result.items():
                     # print(tournament_result, key, item)
                     tournament_result[key] += item
@@ -239,6 +248,7 @@ class Tic_tac_toe(commands.Cog):
                 await ctx.send(f'Турнир окончен, победитель - <@{new_players[0]}>')
                 break
             table = self.gen_table(new_players)
+            big_counter += 1
 
         winner = await ctx.bot.fetch_user(new_players[0])
         results = f'```cs\n# Полные результаты турнира:\n1. {winner.name} - {tournament_result[new_players[0]]} Очков\n'
@@ -289,17 +299,19 @@ class Tic_tac_toe(commands.Cog):
 
     def gen_table(self, players: list) -> list[int]:
         table = []
+        copy_players = players.copy()
         for player in players:
             # print(players)
             if check_players(player, table):
                 continue
-
-            players.remove(player)
-            sec_player = choice(players)
+            if len(copy_players) == 1:
+                table.append([copy_players[-1], None])
+                break
+            copy_players.remove(player)
+            sec_player = choice(copy_players)
             table.append([player, sec_player])
-            players.remove(sec_player)
-        if len(players) == 1:
-            table.append([players[-1], None])
+            copy_players.remove(sec_player)
+        
         return table
 
 
