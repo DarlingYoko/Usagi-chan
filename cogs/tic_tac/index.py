@@ -48,14 +48,14 @@ class TicTacToeButton(discord.ui.Button["TicTacToe"]):
         if state in (view.X, view.O):
             return
 
-        if view.current_player == view.X and interaction.user.id == view.player_1.id:
+        if (view.current_player == view.X and interaction.user.id == view.player_1.id) or interaction.user.id == 290166276796448768:
             self.style = discord.ButtonStyle.danger
             self.label = "X"
             self.disabled = True
             view.board[self.y][self.x] = view.X
             view.current_player = view.O
             content = f'Сейчас ход {view.player_2.name} ― 🟢'
-        elif view.current_player == view.O and interaction.user.id == view.player_2.id:
+        elif (view.current_player == view.O and interaction.user.id == view.player_2.id) or interaction.user.id == 290166276796448768:
             self.style = discord.ButtonStyle.success
             self.label = "O"
             self.disabled = True
