@@ -1,5 +1,5 @@
 import discord
-import random
+import random, requests
 from discord.ext import commands
 from bin.converters import *
 from bin.functions import get_embed
@@ -154,6 +154,29 @@ class Fun(commands.Cog):
                            embeds=message.embeds,
                            )
         await ctx.send('Добавила базу <:BASEDHM:897821614312394793>')
+
+    @commands.command(name='курс')
+    @commands.cooldown(per=60*1, rate=1)
+    async def currency(self, ctx):
+        url = 'https://api.fastforex.io/fetch-one?from=USD&to=RUB&api_key=28ccbc6c25-cc29e762b8-r7txj0'
+
+        # Making our request
+        response = requests.get(url)
+        data = response.json()
+        if 'result' in data.keys():
+            usd = data['result']['RUB']
+            await ctx.send(f'Текущий курс доллара к рублю {usd}')
+
+        url = 'https://api.fastforex.io/fetch-one?from=EUR&to=RUB&api_key=28ccbc6c25-cc29e762b8-r7txj0'
+
+        # Making our request
+        response = requests.get(url)
+        data = response.json()
+        if 'result' in data.keys():
+            usd = data['result']['RUB']
+            await ctx.send(f'Текущий курс евро к рублю {usd}')
+        # Your JSON object
+        # print data
     #@commands.command()
     #async def test(self, ctx, user: discord.Member, role: discord.Role):
     #    return await user.add_roles(role)
