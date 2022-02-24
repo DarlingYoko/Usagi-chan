@@ -182,7 +182,7 @@ class Fun(commands.Cog):
         response = requests.get(url)
         data = response.json()
         if 'result' in data.keys():
-            usd = data['result']['USD']
+            usd = data['result']['KZT']
             await ctx.send(f'Текущий курс великой валюты (теньхе) к usd {usd}')
 
         url = 'https://api.fastforex.io/fetch-one?from=USD&to=UAH&api_key=28ccbc6c25-cc29e762b8-r7txj0'
@@ -191,7 +191,7 @@ class Fun(commands.Cog):
         response = requests.get(url)
         data = response.json()
         if 'result' in data.keys():
-            usd = data['result']['USD']
+            usd = data['result']['UAH']
             await ctx.send(f'Текущий курс гривни к usd {usd}')
         # Your JSON object
         # print data
