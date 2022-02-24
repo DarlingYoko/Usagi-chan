@@ -176,7 +176,7 @@ class Fun(commands.Cog):
             usd = data['result']['RUB']
             await ctx.send(f'Текущий курс евро к рублю {usd}')
 
-        url = 'https://api.fastforex.io/fetch-one?from=KZT&to=USD&api_key=28ccbc6c25-cc29e762b8-r7txj0'
+        url = 'https://api.fastforex.io/fetch-one?from=USD&to=KZT&api_key=28ccbc6c25-cc29e762b8-r7txj0'
 
         # Making our request
         response = requests.get(url)
@@ -185,7 +185,7 @@ class Fun(commands.Cog):
             usd = data['result']['USD']
             await ctx.send(f'Текущий курс великой валюты (теньхе) к usd {usd}')
 
-        url = 'https://api.fastforex.io/fetch-one?from=UAH&to=USD&api_key=28ccbc6c25-cc29e762b8-r7txj0'
+        url = 'https://api.fastforex.io/fetch-one?from=USD&to=UAH&api_key=28ccbc6c25-cc29e762b8-r7txj0'
 
         # Making our request
         response = requests.get(url)
