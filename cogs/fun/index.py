@@ -163,13 +163,43 @@ class Fun(commands.Cog):
         # Making our request
         response = requests.get(url)
         data = response.json()
+        try:
+            if self.bot.currencys:
+                pass
+        except:
+            self.bot.currencys = {'rub': 0, 'kzt': 0, 'uah': 0}
         if 'results' in data.keys():
             rub = data['results']['RUB']
             kzt = data['results']['KZT']
             uah = data['results']['UAH']
+            
             # byr = data['results']['BYR']
-            await ctx.send(f'Текущий курс доллара к \n- рублю {rub}\n- теньхе {kzt}\n- гривни {uah}')
+            if rub > self.bot.currencys['rub']:
+                change_rub = f'+{(rub - self.bot.currencys["rub"]):.{2}f}'
+            else:
+                change_rub = f'-{(self.bot.currencys["rub"] - rub):.{2}f}'
 
+            if kzt > self.bot.currencys['kzt']:
+                change_kzt = f'+{(kzt - self.bot.currencys["kzt"]):.{2}f}'
+            else:
+                change_kzt = f'-{(self.bot.currencys["kzt"] - kzt):.{2}f}'
+
+            if uah > self.bot.currencys['uah']:
+                change_uah = f'+{(uah - self.bot.currencys["uah"]):.{2}f}'
+            else:
+                change_uah = f'-{(self.bot.currencys["uah"] - uah):.{2}f}'
+
+            # f"{numObj:.{digits}f}"
+            text = f'''```diff
+Сводка курса на данный момент:
+
+1. Рубль {rub:.{2}f} ({change_rub})
+2. Теньхе {kzt:.{2}f} ({change_kzt})
+3. Гривня {uah:.{2}f} ({change_uah})
+```
+'''
+            await ctx.send(content=text)
+            self.bot.currencys = {'rub': rub, 'kzt': kzt, 'uah': uah}
         # Your JSON object
         # print data
     #@commands.command()
