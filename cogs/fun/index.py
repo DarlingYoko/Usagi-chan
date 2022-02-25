@@ -164,9 +164,9 @@ class Fun(commands.Cog):
         response = requests.get(url)
         data = response.json()
         if 'results' in data.keys():
-            rub = data['result']['RUB']
-            kzt = data['result']['KZT']
-            uah = data['result']['UAH']
+            rub = data['results']['RUB']
+            kzt = data['results']['KZT']
+            uah = data['results']['UAH']
             await ctx.send(f'Текущий курс доллара к рублю {rub}\nТекущий курс доллара к теньхе {kzt}\nТекущий курс доллара к гривни {uah}')
 
         # Your JSON object
