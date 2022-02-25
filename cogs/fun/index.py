@@ -158,41 +158,17 @@ class Fun(commands.Cog):
     @commands.command(name='курс')
     @commands.cooldown(per=60*1, rate=1)
     async def currency(self, ctx):
-        url = 'https://api.fastforex.io/fetch-one?from=USD&to=RUB&api_key=28ccbc6c25-cc29e762b8-r7txj0'
+        url = 'https://api.fastforex.io/fetch-all?from=USD&api_key=28ccbc6c25-cc29e762b8-r7txj0'
 
         # Making our request
         response = requests.get(url)
         data = response.json()
-        if 'result' in data.keys():
-            usd = data['result']['RUB']
-            await ctx.send(f'Текущий курс доллара к рублю {usd}')
+        if 'results' in data.keys():
+            rub = data['result']['RUB']
+            kzt = data['result']['KZT']
+            uah = data['result']['UAH']
+            await ctx.send(f'Текущий курс доллара к рублю {rub}\nТекущий курс доллара к теньхе {kzt}\nТекущий курс доллара к гривни {uah}')
 
-        url = 'https://api.fastforex.io/fetch-one?from=EUR&to=RUB&api_key=28ccbc6c25-cc29e762b8-r7txj0'
-
-        # Making our request
-        response = requests.get(url)
-        data = response.json()
-        if 'result' in data.keys():
-            usd = data['result']['RUB']
-            await ctx.send(f'Текущий курс евро к рублю {usd}')
-
-        url = 'https://api.fastforex.io/fetch-one?from=USD&to=KZT&api_key=28ccbc6c25-cc29e762b8-r7txj0'
-
-        # Making our request
-        response = requests.get(url)
-        data = response.json()
-        if 'result' in data.keys():
-            usd = data['result']['KZT']
-            await ctx.send(f'Текущий курс великой валюты (теньхе) к usd {usd}')
-
-        url = 'https://api.fastforex.io/fetch-one?from=USD&to=UAH&api_key=28ccbc6c25-cc29e762b8-r7txj0'
-
-        # Making our request
-        response = requests.get(url)
-        data = response.json()
-        if 'result' in data.keys():
-            usd = data['result']['UAH']
-            await ctx.send(f'Текущий курс гривни к usd {usd}')
         # Your JSON object
         # print data
     #@commands.command()
