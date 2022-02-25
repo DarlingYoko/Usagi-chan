@@ -167,8 +167,8 @@ class Fun(commands.Cog):
             rub = data['results']['RUB']
             kzt = data['results']['KZT']
             uah = data['results']['UAH']
-            byr = data['results']['BYR']
-            await ctx.send(f'Текущий курс доллара к \n- рублю {rub}\n- теньхе {kzt}\n- гривни {uah}\n- бел рубль {byr}')
+            # byr = data['results']['BYR']
+            await ctx.send(f'Текущий курс доллара к \n- рублю {rub}\n- теньхе {kzt}\n- гривни {uah}')
 
         # Your JSON object
         # print data
