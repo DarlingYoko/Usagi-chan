@@ -190,7 +190,7 @@ class Fun(commands.Cog):
                 change_uah = f'-{(self.bot.currencys["uah"] - uah):.{2}f}'
 
             # f"{numObj:.{digits}f}"
-            text = f'''```diff
+            text = f'''```autohotkey
 Сводка курса на данный момент:
 
 1. Рубль {rub:.{2}f} ({change_rub})
