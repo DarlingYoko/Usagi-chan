@@ -158,20 +158,24 @@ class Fun(commands.Cog):
     @commands.command(name='курс')
     @commands.cooldown(per=60*1, rate=1)
     async def currency(self, ctx):
-        url = 'https://api.fastforex.io/fetch-all?from=USD&api_key=28ccbc6c25-cc29e762b8-r7txj0'
+        url = 'https://freecurrencyapi.net/api/v2/latest'
 
-        # Making our request
-        response = requests.get(url)
+        params = {
+            'base_currency': 'USD',
+            'apikey': '16561240-973a-11ec-81aa-6964c48be11e'
+        }
+
+        response = requests.get(url, params=params)
         data = response.json()
         try:
             if self.bot.currencys:
                 pass
         except:
             self.bot.currencys = {'rub': 0, 'kzt': 0, 'uah': 0}
-        if 'results' in data.keys():
-            rub = data['results']['RUB']
-            kzt = data['results']['KZT']
-            uah = data['results']['UAH']
+        if 'data' in data.keys():
+            rub = data['data']['RUB']
+            kzt = data['data']['KZT']
+            uah = data['data']['UAH']
             
             # byr = data['results']['BYR']
             if rub > self.bot.currencys['rub']:
