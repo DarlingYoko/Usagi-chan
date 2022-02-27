@@ -3,6 +3,7 @@ import random, requests
 from discord.ext import commands
 from bin.converters import *
 from bin.functions import get_embed
+from bs4 import BeautifulSoup
 
 class Fun(commands.Cog):
     def __init__(self, bot):
@@ -158,52 +159,36 @@ class Fun(commands.Cog):
     @commands.command(name='курс')
     @commands.cooldown(per=60*1, rate=1)
     async def currency(self, ctx):
-        url = 'https://freecurrencyapi.net/api/v2/latest'
+        url = 'https://ru.tradingview.com/markets/currencies/rates-europe/'
 
-        params = {
-            'base_currency': 'USD',
-            'apikey': '16561240-973a-11ec-81aa-6964c48be11e'
-        }
+        r = requests.get(url)
+        soup = BeautifulSoup(r.text, 'html.parser')
+        table = soup.find_all('tr')[1:]
+        # print(len(table))
+        currency = {}
+        for currency in table:
+            name = currency.find('a').text
+            # print()
+            if name in ['USDRUB', 'USDUAH', 'USDBYN']:
+                value = currency.find_all('td')[1].text
+                change = currency.find_all('td')[3].text
+                print(name, value, change)
+                currency[name] = {'value': value, 'change': change}
 
-        response = requests.get(url, params=params)
-        data = response.json()
-        try:
-            if self.bot.currencys:
-                pass
-        except:
-            self.bot.currencys = {'rub': 0, 'kzt': 0, 'uah': 0}
-        if 'data' in data.keys():
-            rub = data['data']['RUB']
-            kzt = data['data']['KZT']
-            uah = data['data']['UAH']
-            
-            # byr = data['results']['BYR']
-            if rub > self.bot.currencys['rub']:
-                change_rub = f'+{(rub - self.bot.currencys["rub"]):.{2}f}'
-            else:
-                change_rub = f'-{(self.bot.currencys["rub"] - rub):.{2}f}'
-
-            if kzt > self.bot.currencys['kzt']:
-                change_kzt = f'+{(kzt - self.bot.currencys["kzt"]):.{2}f}'
-            else:
-                change_kzt = f'-{(self.bot.currencys["kzt"] - kzt):.{2}f}'
-
-            if uah > self.bot.currencys['uah']:
-                change_uah = f'+{(uah - self.bot.currencys["uah"]):.{2}f}'
-            else:
-                change_uah = f'-{(self.bot.currencys["uah"] - uah):.{2}f}'
+        
+       
 
             # f"{numObj:.{digits}f}"
             text = f'''```autohotkey
 Сводка курса на данный момент:
 
-1. Рубль {rub:.{2}f} ({change_rub})
-2. Теньхе {kzt:.{2}f} ({change_kzt})
-3. Гривня {uah:.{2}f} ({change_uah})
+1. Рубль {currency["USDRUB"]["value"]} ({currency["USDRUB"]["change"]})
+2. Бел рубль {currency["USDBYN"]["value"]} ({currency["USDBYN"]["value"]})
+3. Гривня {currency["USDUAH"]["value"]} ({currency["USDUAH"]["value"]})
 ```
 '''
             await ctx.send(content=text)
-            self.bot.currencys = {'rub': rub, 'kzt': kzt, 'uah': uah}
+
         # Your JSON object
         # print data
     #@commands.command()
