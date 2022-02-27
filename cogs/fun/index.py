@@ -158,36 +158,54 @@ class Fun(commands.Cog):
 
     @commands.command(name='курс')
     @commands.cooldown(per=60*1, rate=1)
-    async def currency(self, ctx):
+    async def get_currency(self, ctx):
         url = 'https://ru.tradingview.com/markets/currencies/rates-europe/'
+
+        r = requests.get(url)
+        # print(r)
+        soup = BeautifulSoup(r.text, 'html.parser')
+        # print(soup)
+        table = soup.find_all('tr')[1:]
+        # print(len(table))
+        currencys = {}
+        for currency in table:
+            name = currency.find('a').text
+            # print(currency)
+            if name in ['USDRUB', 'USDUAH', 'USDBYN']:
+                value = currency.find_all('td')[1].text
+                change = currency.find_all('td')[3].text
+                # print(name, value, change)
+                currencys[name] = {'value': value, 'change': change}
+        url = 'https://ru.tradingview.com/markets/currencies/rates-asia/'
 
         r = requests.get(url)
         soup = BeautifulSoup(r.text, 'html.parser')
         table = soup.find_all('tr')[1:]
         # print(len(table))
-        currency = {}
         for currency in table:
             name = currency.find('a').text
             # print()
-            if name in ['USDRUB', 'USDUAH', 'USDBYN']:
+            if name == 'USDKZT':
                 value = currency.find_all('td')[1].text
                 change = currency.find_all('td')[3].text
-                print(name, value, change)
-                currency[name] = {'value': value, 'change': change}
+                currencys[name] = {'value': value, 'change': change}
+                break
 
         
        
 
             # f"{numObj:.{digits}f}"
-            text = f'''```autohotkey
+        # print(currencys)
+        text = f'''```autohotkey
 Сводка курса на данный момент:
 
-1. Рубль {currency["USDRUB"]["value"]} ({currency["USDRUB"]["change"]})
-2. Бел рубль {currency["USDBYN"]["value"]} ({currency["USDBYN"]["value"]})
-3. Гривня {currency["USDUAH"]["value"]} ({currency["USDUAH"]["value"]})
+1. Рубль {currencys["USDRUB"]["value"]} ({currencys["USDRUB"]["change"]})
+2. Бел рубль {currencys["USDBYN"]["value"]} ({currencys["USDBYN"]["change"]})
+3. Гривня {currencys["USDUAH"]["value"]} ({currencys["USDUAH"]["change"]})
+4. Теньхе {currencys["USDKZT"]["value"]} ({currencys["USDKZT"]["change"]})
 ```
 '''
-            await ctx.send(content=text)
+        await ctx.send(content=text)
 
         # Your JSON object
         # print data
