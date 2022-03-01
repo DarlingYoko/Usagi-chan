@@ -212,6 +212,42 @@ class Fun(commands.Cog):
     #@commands.command()
     #async def test(self, ctx, user: discord.Member, role: discord.Role):
     #    return await user.add_roles(role)
+    @commands.command(name='теги')
+    # @commands.cooldown(per=60*1, rate=1)
+    async def get_tags(self, ctx, id):
+        url = f'https://nhentai.net/g/{id}/'
+
+        r = requests.get(url)
+        if r.status_code != 200:
+            return await ctx.send('Такого нет палучается')
+        soup = BeautifulSoup(r.text, 'html.parser')
+
+        tags_div = soup.find('section', {'id': 'tags'}).find_all('div')
+
+        for tag_div in tags_div:
+            if 'Tags:' in tag_div.text:
+                field = tag_div.find('span', {'class': 'tags'})
+                tags = field.find_all('a')
+                tags_info = {}
+                for tag in tags:
+                    
+                    name = tag.find('span', {'class': 'name'}).text
+                    count = tag.find('span', {'class': 'count'}).text
+                    # print(name, count)
+                    tags_info[name] = count
+                break
+
+
+        print(tags_info)
+
+        text = '```autohotkey\n'
+        counter = 1
+        for key, value in tags_info.items():
+            text += f'{counter}. {key}:{value}\n'
+            counter += 1
+        text += '```'
+
+        await ctx.send(content=text)
 
 
 
