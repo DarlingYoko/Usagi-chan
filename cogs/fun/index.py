@@ -245,7 +245,8 @@ class Fun(commands.Cog):
         for key, value in tags_info.items():
             text += f'{counter}. {key}:{value}\n'
             counter += 1
-        text += '```'
+        text += '```\n'
+        text += f'Ссылка - <{url}>'
 
         await ctx.send(content=text)
 
