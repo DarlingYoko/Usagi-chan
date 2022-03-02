@@ -250,8 +250,8 @@ class Fun(commands.Cog):
 
         await ctx.send(content=text)
 
-    @commands.command(name='iq')
-    @commands.cooldown(per=60*60*24, rate=1, type=commands.BucketType.user)
+    @commands.command(name='iq', help='toxic')
+    @commands.cooldown(per=60*1, rate=1, type=commands.BucketType.user)
     async def get_iq(self, ctx):
         iq = random.randint(1, 200)
         text = f'{ctx.message.author.mention} Твой iq = {iq}\n'
