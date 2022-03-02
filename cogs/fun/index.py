@@ -275,10 +275,10 @@ class Fun(commands.Cog):
             retry_after = float(error.retry_after)
             await ctx.send(f'{ctx.author.mention} Пока рано для определения твоего IQ, подожди {retry_after:.2f} секунд')
 
-    @commands.command(name='пиво', aliases=['пыво', 'beer', 'пивко'])
-    @commands.cooldown(per=60*1, rate=1, type=commands.BucketType.user)
-    async def get_iq(self, ctx):
-        pass
+    # @commands.command(name='пиво', aliases=['пыво', 'beer', 'пивко'])
+    # @commands.cooldown(per=60*1, rate=1, type=commands.BucketType.user)
+    # async def get_iq(self, ctx):
+    #     pass
 
 
 
