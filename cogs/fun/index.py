@@ -250,6 +250,25 @@ class Fun(commands.Cog):
 
         await ctx.send(content=text)
 
+    @commands.command(name='iq')
+    @commands.cooldown(per=60*1, rate=1, type=commands.BucketType.user)
+    async def get_iq(self, ctx):
+        iq = random.randint(1, 200)
+        text = f'Твой iq = {iq}\n'
+        if iq <= 110 and iq >= 90:
+            text += 'Не ну ты чисто очередняря'
+        elif iq == 1:
+            text += 'ПЧЕЛ ТЫЫЫ НУЛИНА, соболезную чатерсам'
+        elif iq == 200:
+            text += 'А ты хорош, я бы даже сказала МЕГАХАРОШ'
+        await ctx.send(content=text)
+
+    @get_iq.error
+    async def wordle_top_errors(self, ctx, error):
+        if isinstance(error, commands.CommandOnCooldown):
+            retry_after = float(error.retry_after)
+            await ctx.send(f'{ctx.author.mention} Пока рано для ответа, подожди {retry_after:.2f} секунд')
+
 
 
 
