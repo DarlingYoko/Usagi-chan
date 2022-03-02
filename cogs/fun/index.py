@@ -257,6 +257,8 @@ class Fun(commands.Cog):
         text = f'{ctx.message.author.mention} Твой iq = {iq}\n'
         if iq <= 110 and iq >= 90:
             text += 'Не ну ты чисто очередняря'
+        if iq <= 200 and iq >= 170:
+            text += 'Пчел пытается быть умным aRolf'
         elif iq == 1:
             text += 'ПЧЕЛ ТЫЫЫ НУЛИНА, соболезную чатерсам'
         elif iq == 200:
@@ -271,7 +273,7 @@ class Fun(commands.Cog):
     async def wordle_top_errors(self, ctx, error):
         if isinstance(error, commands.CommandOnCooldown):
             retry_after = float(error.retry_after)
-            await ctx.send(f'{ctx.author.mention} Пока рано для ответа, подожди {retry_after:.2f} секунд')
+            await ctx.send(f'{ctx.author.mention} Пока рано для определения твоего IQ, подожди {retry_after:.2f} секунд')
 
 
 
