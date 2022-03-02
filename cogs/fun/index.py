@@ -251,7 +251,7 @@ class Fun(commands.Cog):
         await ctx.send(content=text)
 
     @commands.command(name='iq')
-    @commands.cooldown(per=60*1, rate=1, type=commands.BucketType.user)
+    @commands.cooldown(per=60*60*24, rate=1, type=commands.BucketType.user)
     async def get_iq(self, ctx):
         iq = random.randint(1, 200)
         text = f'{ctx.message.author.mention} Твой iq = {iq}\n'
@@ -274,6 +274,11 @@ class Fun(commands.Cog):
         if isinstance(error, commands.CommandOnCooldown):
             retry_after = float(error.retry_after)
             await ctx.send(f'{ctx.author.mention} Пока рано для определения твоего IQ, подожди {retry_after:.2f} секунд')
+
+    @commands.command(name='пиво', aliases=['пыво', 'beer', 'пивко'])
+    @commands.cooldown(per=60*1, rate=1, type=commands.BucketType.user)
+    async def get_iq(self, ctx):
+        pass
 
 
 
