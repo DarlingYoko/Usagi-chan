@@ -257,7 +257,7 @@ class Fun(commands.Cog):
         text = f'{ctx.message.author.mention} Твой iq = {iq}\n'
         if iq <= 110 and iq >= 90:
             text += 'Не ну ты чисто очередняря'
-        if iq <= 200 and iq >= 170:
+        if iq < 200 and iq >= 170:
             text += 'Пчел пытается быть умным aRolf'
         elif iq == 1:
             text += 'ПЧЕЛ ТЫЫЫ НУЛИНА, соболезную чатерсам'
