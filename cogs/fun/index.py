@@ -253,7 +253,7 @@ class Fun(commands.Cog):
     @commands.command(name='iq', help='toxic')
     @commands.cooldown(per=60*1, rate=1, type=commands.BucketType.user)
     async def get_iq(self, ctx):
-        iq = random.randint(1, 200)
+        iq = random.randint(1, 201)
         text = f'{ctx.message.author.mention} Твой iq = {iq}\n'
         if iq <= 110 and iq >= 90:
             text += 'Не ну ты чисто очередняря'
