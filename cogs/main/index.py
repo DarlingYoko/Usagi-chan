@@ -71,7 +71,7 @@ class Main(commands.Cog):
     @tasks.loop(minutes=1)
     async def check_twitch_online(self):
         client_id = 'ytl8amzfrreo3hf413ywaua8jd7of8'
-        client_secret = 'keiz535fdh87qb5a0h2to0vjz7ndi9'
+        client_secret = 'lvv20p0ffl5fukbz6mqe6m1p3rc1zg'
         twitch = Twitch(client_id, client_secret)
         users = self.bot.db.get_all('twitch')
         # status = twitch.get_streams(user_login=['yoko_o0', 'tunnelkin', 'stepustk', 'hyver', 'uselessmouth', 'kegebe88'])
@@ -91,7 +91,7 @@ class Main(commands.Cog):
 
     @check_twitch_online.before_loop
     async def before_check_twitch_online(self):
-        print('waiting...')
+        print('waiting check twitch online')
         await self.bot.wait_until_ready()
 
 
@@ -209,7 +209,7 @@ class Main(commands.Cog):
 
     @wordle_results.before_loop
     async def before_wordle_results(self):
-        print('waiting...')
+        print('waiting wordle results')
         await self.bot.wait_until_ready()
 
 
