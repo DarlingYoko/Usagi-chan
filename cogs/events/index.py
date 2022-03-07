@@ -25,6 +25,16 @@ class Events(commands.Cog):
 
         # print(message.content)
 
+        if 'dababy' in message.content.lower():
+            
+            money = self.bot.db.get_value('pivo', 'money', 'user_id', message.author.id)
+            if money < 1:
+                await message.channel.send(f'{message.author.mention}, У тебя не хватает <:dababy:949712395385843782> на счету для использования!')
+                await message.delete()
+            else:
+                money -= 1
+                self.bot.db.update('pivo', 'money', 'user_id', money, message.author.id)
+
 
 
         emojis = self.config['reacts']
@@ -63,6 +73,19 @@ class Events(commands.Cog):
         if str(emoji.id) in self.config['roles'].keys():
             if message_id in [858131920729931796, 877665594307125268, 933409260874903602]:
                 return await self.give_role_to_user(user_id, self.config['roles'].getint(f'{emoji.id}'), guild_id)
+
+        if 'dababy' in emoji.name.lower():
+            guild = await self.bot.fetch_guild(guild_id)
+            channel = await self.bot.fetch_channel(channel_id)
+            message = await channel.fetch_message(message_id)
+            member = await guild.fetch_member(user_id)
+            money = self.bot.db.get_value('pivo', 'money', 'user_id', user_id)
+            if money < 1:
+                await channel.send(f'{member.mention}, У тебя не хватает <:dababy:949712395385843782> на счету для использования!')
+                await message.remove_reaction(emoji, member)
+            else:
+                money -= 1
+                self.bot.db.update('pivo', 'money', 'user_id', money, user_id)
 
 
 
