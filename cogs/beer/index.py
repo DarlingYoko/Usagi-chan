@@ -1,4 +1,4 @@
-import discord, pytz
+import discord, pytz, asyncio
 import twitchAPI
 from datetime import datetime
 from discord.ext import commands, tasks
@@ -259,6 +259,7 @@ class Beer(commands.Cog):
 
     @tasks.loop(minutes=1)
     async def check_rewards_twitch(self):
+        await asyncio.sleep(2)
         reward_ids = [
             'af417b2f-0332-4265-8512-8814d05e4b60',
             '81665d97-6eec-412b-b511-cd50d22e336d',
