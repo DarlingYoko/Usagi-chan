@@ -28,6 +28,11 @@ from copy import deepcopy
 
 # Документация и покупка больше 1 позиции
 # Функционал коллекторов 
+# новые награды
+# купить буст
+# изменить что то на сервере
+# оценка персонажа от Усаги
+# игра в вордли раз в 4 часа
 
 class Beer(commands.Cog):
     def __init__(self, bot):
@@ -324,7 +329,7 @@ class Beer(commands.Cog):
         print('waiting for twitch rewards')
         await self.bot.wait_until_ready()
 
-    @commands.command(name='кэш', aliases=['кошелёк', 'кошелек', 'wallet', 'кеш', 'бабло', 'мани', 'зелень', 'капуста'], description = 'Посмотреть свой кэш')
+    @commands.command(name='кэш', aliases=['кошелёк', 'кошелек', 'wallet', 'кеш', 'бабло', 'мани', 'зелень', 'капуста', 'cash', 'баланс'], description = 'Посмотреть свой кэш')
     async def get_user_wallet(self, ctx):
         money = self.bot.db.get_value('pivo', 'money', 'user_id', ctx.author.id)
         await ctx.send(content=f'{ctx.author.mention}, На твоём кошельке сейчас {money} <:dababy:949712395385843782>')
