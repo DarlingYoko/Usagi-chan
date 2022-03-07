@@ -329,6 +329,7 @@ class Beer(commands.Cog):
         money = self.bot.db.get_value('pivo', 'money', 'user_id', ctx.author.id)
         await ctx.send(content=f'{ctx.author.mention}, На твоём кошельке сейчас {money} <:dababy:949712395385843782>')
 
+    @commands.cooldown(per=60*5, rate=1)
     @commands.command(name = 'топ_трат', description='Посмотреть на богатейших людей и самых больших транжир.')
     async def spend_top(self, ctx):
         pivo_table = self.bot.db.get_all('pivo')
@@ -394,6 +395,13 @@ class Beer(commands.Cog):
         ]
         embed = get_embed(title='Топ топов', fields=fields)
         await ctx.send(content='Нья!', embed=embed)
+
+    @spend_top.error
+    async def spend_top_errors(self, ctx, error):
+        if isinstance(error, commands.CommandOnCooldown):
+            retry_after = error.retry_after
+            time = format_time(retry_after)
+            await ctx.send(f'{ctx.author.mention}, Рановато для получения топа, я же недавно показывала его вам, бака! Попробуй через {time}')
         
 
     
