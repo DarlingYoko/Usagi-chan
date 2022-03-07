@@ -110,13 +110,13 @@ class Beer(commands.Cog):
             
             if last_time:
                 diff = int(time - last_time)
-                diff = 86400 - diff # если больше 0, то кд, если меньше нуля, но не меньше чем -86400, то день юза, если меньше чем -86400, то факап
+                diff = 84600 - diff # если больше 0, то кд, если меньше нуля, но не меньше чем -86400, то день юза, если меньше чем -86400, то факап
                 # diff = 0
                 if diff > 0:
                     # user on cooldown
                     time = format_time(diff)
                     return await ctx.send(f'{ctx.author.mention}, Ты сможешь работать через {time}')
-                elif diff <= 0 and diff > -86400:
+                elif diff <= 0 and diff > -84600:
                     # new work day
                     extra = ''
                     streak += 1
