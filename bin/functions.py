@@ -89,3 +89,33 @@ def get_vc(self):
         if voice_client.channel.id == self.bot.config['channel'].getint('mp_voice'):
             vc = voice_client
     return vc
+
+
+def format_time(time):
+    time = time % (24 * 3600)
+    hour = int(time // 3600)
+    time %= 3600
+    minutes = int(time // 60)
+    time %= 60
+    seconds = time
+    formatted_time = ''
+    if hour:
+        formatted_time += f'{hour} ч. '
+    if minutes:
+        formatted_time += f'{minutes} мин. '
+    if seconds:
+        formatted_time += f'{seconds:.1f} сек. '
+    return formatted_time
+
+
+async def get_member_by_all(self, user_data):
+    guild = await self.bot.fetch_guild(self.bot.config['data']['guild_id'])
+    members = await guild.fetch_members(limit=None).flatten()
+    user_data = user_data.lower()
+    user = discord.utils.find(lambda m: user_data in m.name.lower() 
+                                or user_data in m.display_name.lower() , members)
+    
+    if not user and user_data.isdecimal():
+        user = discord.utils.find(lambda m: m.id == int(user_data), members)
+
+    return user

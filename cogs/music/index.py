@@ -443,7 +443,7 @@ class Music_Player(commands.Cog):
 
     @play_url.before_loop
     async def before_play_url(self):
-        print('waiting...')
+        print('waiting music')
         await self.bot.wait_until_ready()
         self.loop = asyncio.get_event_loop()
         self.emojiGreenTick = self.bot.get_emoji(874767321007276143)

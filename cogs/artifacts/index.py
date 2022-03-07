@@ -307,7 +307,6 @@ class Artifacts(commands.Cog):
     @commands.group(
         name='top',
         aliases=['топ', 'рейтинг'],
-        usage='',
         description='Рейтинг артефактов',
         help = 'artifact'
     )

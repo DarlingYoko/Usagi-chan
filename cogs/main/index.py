@@ -70,9 +70,6 @@ class Main(commands.Cog):
 
     @tasks.loop(minutes=1)
     async def check_twitch_online(self):
-        client_id = 'ytl8amzfrreo3hf413ywaua8jd7of8'
-        client_secret = 'lvv20p0ffl5fukbz6mqe6m1p3rc1zg'
-        twitch = Twitch(client_id, client_secret)
         users = self.bot.db.get_all('twitch')
         # status = twitch.get_streams(user_login=['yoko_o0', 'tunnelkin', 'stepustk', 'hyver', 'uselessmouth', 'kegebe88'])
         # print(users)
@@ -80,12 +77,12 @@ class Main(commands.Cog):
         for user in users:
             name = user[0]
             time = user[1]
-            status = twitch.get_streams(user_login=[name])
+            status = self.bot.twitch.get_streams(user_login=[name])
             if status['data']:
                 user = status['data'][0]
                 new_time = user['started_at']
                 if new_time != time:
-                    text, file = gen_pic(user, twitch)
+                    text, file = gen_pic(user, self.bot.twitch)
                     await channel.send(text, file = file)
                     self.bot.db.update('twitch', 'time', 'username', new_time, name)
 

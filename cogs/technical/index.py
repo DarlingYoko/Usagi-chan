@@ -75,7 +75,7 @@ class Technical(commands.Cog):
 
     @notify_forum_login.before_loop
     async def before_notify_forum_login(self):
-        print('waiting...')
+        print('waiting for notify forum')
         await self.bot.wait_until_ready()
 
     @tasks.loop(minutes=10.0)
@@ -94,7 +94,7 @@ class Technical(commands.Cog):
 
     @notify_transformator.before_loop
     async def before_notify_transformator(self):
-        print('waiting...')
+        print('waiting for notify transformator')
         await self.bot.wait_until_ready()
 
 
@@ -204,7 +204,7 @@ class Technical(commands.Cog):
 
     @countdown_for_update.before_loop
     async def before_countdown_for_update(self):
-        print('waiting...')
+        print('waiting for countdown update')
         await self.bot.wait_until_ready()
 
 

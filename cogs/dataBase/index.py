@@ -60,7 +60,10 @@ class Database(commands.Cog):
             con, cur = self.connect()
             cur.execute("UPDATE {0} set {1} = \'{3}\' where {2} = \'{4}\';".format(tableName, argument, selector, newValue, findValue))
             con.commit()
+            message = cur.statusmessage
             self.disconnect(cur)
+            if message == 'UPDATE 0':
+                return 0
             return 1
         except Exception as e:
             print_error()
@@ -97,6 +100,8 @@ class Database(commands.Cog):
             data = cur.fetchall()
             self.disconnect(cur)
             return data
+        except psycopg2.ProgrammingError:
+            return 1
         except Exception as e:
             print_error()
             return 0
