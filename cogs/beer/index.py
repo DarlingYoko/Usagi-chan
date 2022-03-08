@@ -360,11 +360,12 @@ class Beer(commands.Cog):
         pivo_table = self.bot.db.get_all('pivo')
         table = []
         for user in pivo_table:
-            member = await ctx.guild.fetch_member(user[0])
-            if member:
+            try:
+                member = await ctx.guild.fetch_member(user[0])
                 member_name = member.name
-            else:
-                member_name = f'<@{user[0]}>'
+            except:
+                continue
+            
             table.append([member_name, user[1], user[4], user[5], user[6]])
         top_money = sorted(table, key=lambda x: x[1], reverse=True)
         top_spend = sorted(table, key=lambda x: x[2], reverse=True)
