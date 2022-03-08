@@ -5,6 +5,7 @@ from discord.ext import commands, tasks
 from time import mktime
 from random import randint, choice
 from bin.functions import format_time, get_member_by_all, get_embed
+from cogs.beer.extra import *
 from twitchAPI.twitch import Twitch
 from twitchAPI.types import AuthScope
 from pprint import pprint
@@ -33,6 +34,12 @@ from copy import deepcopy
 # изменить что то на сервере
 # оценка персонажа от Усаги
 # игра в вордли раз в 4 часа
+# за определенное кол во валюты можно давать какую нибудь роль, 
+# которую можно всем тегать или что то типо того @ПИДОРАС 
+# либ самим покупать и придумывать роль человеку
+# а соц пакет у нас будет? зп по выходным без работы например
+# лимит упоминаний +
+# рулетка на бан за 6666
 
 class Beer(commands.Cog):
     def __init__(self, bot):
@@ -58,6 +65,14 @@ class Beer(commands.Cog):
             'Чипсеки': [200, 300],
             'Кыр сосичка': [0, 100],
         }
+        self.extras = {
+            'Забить яблочко': [400, 600, buy_based_apple],
+            'Послать Весдоса нахуй': [20, 50, send_wesdos_nahui],
+            'Сервер буст': [5000, 5000, buy_server_boost],
+            # 'Жаренный арахис': [50, 200],
+            # 'Чипсеки': [200, 300],
+            # 'Кыр сосичка': [0, 100],
+        }
         self.generate_menu.start()
         self.twitch_auth.start()
         self.check_rewards_twitch.start()
@@ -77,7 +92,7 @@ class Beer(commands.Cog):
         prices = deepcopy(self.prices)
         additionals = deepcopy(self.additionals)
 
-        menu = {'drinks':[], 'snacks': [], 'extra': ['Забить яблочко']}
+        menu = {'drinks':[], 'snacks': [], 'extra': ['Забить яблочко', 'Послать Весдоса нахуй', 'Сервер буст']}
 
         for i in range(3):
             pos = choice(list(prices.keys()))
@@ -172,7 +187,8 @@ class Beer(commands.Cog):
             text_snacks += f'{counter}. {key}\n'
             counter += 1
         for key in self.menu['extra']:
-            text_extra += f'{counter}. {key}\n'
+            range_ = self.extras[key]
+            text_extra += f'{counter}. {key} {range_[0]}-{range_[1]}\n'
             counter += 1
         fields = [
                 {'name': 'Напитки', 
@@ -184,7 +200,7 @@ class Beer(commands.Cog):
                 {'name': 'Закуски', 
                     'value': text_snacks,
                     'inline': True},
-                {'name': 'Экстра', 
+                {'name': 'Доп Услуги', 
                     'value': text_extra,
                     'inline': True},
         ]
@@ -217,10 +233,11 @@ class Beer(commands.Cog):
             product = self.menu['snacks'][pos]
             price = self.additionals[product]
             answer = f'Ты взял закусочки {product}'
-        elif pos == 5:
-            product = self.menu['extra'][0]
-            price = [400, 600]
-            answer = f'БАХНУЛ БАЗОВОГО ЯБЛОЧКА НА ТРОИХ'
+        elif pos >= 5 and pos <= 5 + len(self.extras):
+            pos -= 5
+            product = self.menu['extra'][pos]
+            price = self.extras[product]
+            answer = price[2]
         else:
             return await ctx.send(f'{ctx.author.mention}, Такого мы не продаём!')
         # await ctx.send(content=text_menu)
@@ -240,6 +257,8 @@ class Beer(commands.Cog):
         money, spend, count_of_purchases, count_of_purchases_for_user = values[0], values[1], values[2], values[3] 
         if money < 1:
             return await ctx.send(f'{ctx.author.mention}, У тебя не хватает <:dababy:949712395385843782> на покупку!')
+        if money < 1 or (money - sell_count < 0 and product == 'Сервер буст'):
+            return await ctx.send(f'{ctx.author.mention}, Пчел, ты хочешь купить буст, но делаешь это без <:dababy:949712395385843782>. Иди работай негодяй!')
         spend += sell_count
         if for_user_name and member:
             count_of_purchases_for_user += 1
@@ -248,6 +267,7 @@ class Beer(commands.Cog):
         money -= sell_count
         r = self.bot.db.custom_command(f'UPDATE pivo set money = {money}, spend = {spend}, count_of_purchases = {count_of_purchases}, count_of_purchases_for_user = {count_of_purchases_for_user} where user_id = {ctx.author.id};')
         if r == 1:
+            answer = await answer(ctx)
             if for_user_name != None and member:
                 answer = f'{answer} для {member.mention}'
             await ctx.send(f'{ctx.author.mention}, {answer} за {sell_count} <:dababy:949712395385843782>\nУ тебя осталось {money} <:dababy:949712395385843782>')
