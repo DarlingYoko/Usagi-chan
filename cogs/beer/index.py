@@ -228,6 +228,7 @@ class Beer(commands.Cog):
     async def buy_beer(self, ctx, pos: int, *, for_user_name = None):
         pos -= 1
         answer = ''
+        member = None
         if pos >= 0 and pos <= 2:
             product = self.menu['drinks'][pos]
             price = self.prices[product]
