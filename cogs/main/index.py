@@ -135,7 +135,7 @@ class Main(commands.Cog):
         await ctx.send(answer)
 
     @commands.command(name = 'подписаться', aliases=['follow'])
-    async def follow_streamer(self, ctx, streamer_name: str):
+    async def follow_streamer(self, ctx, *, streamer_name: str):
         followers = self.bot.db.get_value('twitch', 'followers', 'username', streamer_name)
         if followers == 0:
             return await ctx.send(f'{ctx.author.mention}, Такого стримера нет, добавь его сначала !stream_add <ник стримера>')
@@ -153,7 +153,7 @@ class Main(commands.Cog):
             await ctx.send(f'{ctx.author.mention}, Не удалось записать тебя попробуй попозже!')
 
     @commands.command(name = 'отписаться', aliases=['unfollow'])
-    async def unfollow_streamer(self, ctx, streamer_name: str):
+    async def unfollow_streamer(self, ctx, *, streamer_name: str):
         followers = self.bot.db.get_value('twitch', 'followers', 'username', streamer_name)
         if followers == 0:
             return await ctx.send(f'{ctx.author.mention}, Такого стримера нет, добавь его сначала !stream_add <ник стримера>')
