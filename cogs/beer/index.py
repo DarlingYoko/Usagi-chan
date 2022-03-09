@@ -229,20 +229,20 @@ class Beer(commands.Cog):
         pos -= 1
         answer = ''
         member = None
-        len_extras = len(self.extras.keys())
-        len_prices = len(self.prices.keys())
-        len_additionals = len(self.additionals.keys())
+        len_extras = len(self.menu['extra'])
+        len_prices = len(self.menu['drinks'])
+        len_additionals = len(self.menu['snacks'])
         if pos >= 0 and pos <= len_prices - 1:
             product = self.menu['drinks'][pos]
             price = self.prices[product]
             answer = f'Ты налил выпить {product}а'
         elif pos >= len_prices and pos <= len_prices + len_additionals - 1:
-            pos -= 3
+            pos -= len_prices
             product = self.menu['snacks'][pos]
             price = self.additionals[product]
             answer = f'Ты взял закусочки {product}'
         elif pos >= len_prices + len_additionals and pos <= len_prices + len_additionals + len_extras - 1:
-            pos -= 5
+            pos -= (len_prices + len_additionals)
             product = self.menu['extra'][pos]
             price = self.extras[product]
             answer = price[2]
