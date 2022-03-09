@@ -35,11 +35,14 @@ from copy import deepcopy
 # оценка персонажа от Усаги
 # игра в вордли раз в 4 часа
 # за определенное кол во валюты можно давать какую нибудь роль, 
-# которую можно всем тегать или что то типо того @ПИДОРАС 
+# которую можно всем тегать или что то типо того @ 
 # либ самим покупать и придумывать роль человеку
 # а соц пакет у нас будет? зп по выходным без работы например
 # лимит упоминаний +
 # рулетка на бан за 6666
+# анонимные посылания нахуй 
+# Возможность кинуть клеймо и снять с себя только за дабеби
+
 
 class Beer(commands.Cog):
     def __init__(self, bot):
@@ -111,7 +114,7 @@ class Beer(commands.Cog):
 
 
 
-    @commands.command(name='работа', aliases=['work'], description = 'Команда для зарабатывания <:dababy:949712395385843782>')
+    @commands.command(name='работа', aliases=['work', 'работать', 'батрачить'], description = 'Команда для зарабатывания <:dababy:949712395385843782>')
     # @commands.cooldown(per=60*60*24, rate=1, type=commands.BucketType.user)
     async def go_to_work(self, ctx):
         money = randint(50, 100)
@@ -267,7 +270,7 @@ class Beer(commands.Cog):
         money -= sell_count
         r = self.bot.db.custom_command(f'UPDATE pivo set money = {money}, spend = {spend}, count_of_purchases = {count_of_purchases}, count_of_purchases_for_user = {count_of_purchases_for_user} where user_id = {ctx.author.id};')
         if r == 1:
-            answer = await answer(ctx)
+            answer = await answer(self, ctx, member)
             if for_user_name != None and member:
                 answer = f'{answer} для {member.mention}'
             await ctx.send(f'{ctx.author.mention}, {answer} за {sell_count} <:dababy:949712395385843782>\nУ тебя осталось {money} <:dababy:949712395385843782>')
