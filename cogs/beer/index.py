@@ -96,7 +96,7 @@ class Beer(commands.Cog):
         prices = deepcopy(self.prices)
         additionals = deepcopy(self.additionals)
 
-        menu = {'drinks':[], 'snacks': [], 'extra': ['Забить яблочко', 'Послать Весдоса нахуй', 'Сервер буст']}
+        menu = {'drinks':[], 'snacks': [], 'extra': list(self.extras.keys())}
 
         for i in range(3):
             pos = choice(list(prices.keys()))
@@ -229,16 +229,19 @@ class Beer(commands.Cog):
         pos -= 1
         answer = ''
         member = None
-        if pos >= 0 and pos <= 2:
+        len_extras = len(self.extras.keys())
+        len_prices = len(self.prices.keys())
+        len_additionals = len(self.additionals.keys())
+        if pos >= 0 and pos <= len_prices - 1:
             product = self.menu['drinks'][pos]
             price = self.prices[product]
             answer = f'Ты налил выпить {product}а'
-        elif pos >= 3 and pos <= 4:
+        elif pos >= len_prices and pos <= len_prices + len_additionals - 1:
             pos -= 3
             product = self.menu['snacks'][pos]
             price = self.additionals[product]
             answer = f'Ты взял закусочки {product}'
-        elif pos >= 5 and pos <= 5 + len(self.extras):
+        elif pos >= len_prices + len_additionals and pos <= len_prices + len_additionals + len_extras - 1:
             pos -= 5
             product = self.menu['extra'][pos]
             price = self.extras[product]
