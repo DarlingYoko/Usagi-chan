@@ -77,13 +77,20 @@ class Main(commands.Cog):
         for user in users:
             name = user[0]
             time = user[1]
+            followers = user[2]
             status = self.bot.twitch.get_streams(user_login=[name])
             if status['data']:
                 user = status['data'][0]
                 new_time = user['started_at']
                 if new_time != time:
+                    followers_text = ''
+                    if followers:
+                        followers = eval(followers)
+                        for follower in followers:
+                            followers_text += f'<@{follower}>'
                     text, file = gen_pic(user, self.bot.twitch)
                     await channel.send(text, file = file)
+                    await channel.send(followers_text)
                     self.bot.db.update('twitch', 'time', 'username', new_time, name)
 
     @check_twitch_online.before_loop
@@ -119,11 +126,59 @@ class Main(commands.Cog):
         users = self.bot.db.get_all('twitch')
         answer = 'Сейчас нет добавленных стримеров.'
         if users:
-            answer = 'Вот список стримеров:\n'
-        for user in users:
-            answer += f'{user[0]}\n'
-
+            answer = 'Вот список стримеров:\n```autohotkey\n'
+            counter = 1
+            for user in users:
+                answer += f'{counter}. {user[0]}\n'
+                counter += 1
+            answer += '```'
         await ctx.send(answer)
+
+    @commands.command(name = 'подписаться', aliases=['follow'])
+    async def follow_streamer(self, ctx, streamer_name: str):
+        followers = self.bot.db.get_value('twitch', 'followers', 'username', streamer_name)
+        if followers == 0:
+            return await ctx.send(f'{ctx.author.mention}, Такого стримера нет, добавь его сначала !stream_add <ник стримера>')
+        
+        if followers == None:
+            followers = [ctx.author.id]
+        else:
+            followers = eval(followers)
+            followers.append(ctx.author.id)
+        
+        r = self.bot.db.update('twitch', 'followers', 'username', str(followers), streamer_name)
+        if r:
+            await ctx.send(f'{ctx.author.mention}, Успешно записала тебя!')
+        else:
+            await ctx.send(f'{ctx.author.mention}, Не удалось записать тебя попробуй попозже!')
+
+    @commands.command(name = 'отписаться', aliases=['unfollow'])
+    async def unfollow_streamer(self, ctx, streamer_name: str):
+        followers = self.bot.db.get_value('twitch', 'followers', 'username', streamer_name)
+        if followers == 0:
+            return await ctx.send(f'{ctx.author.mention}, Такого стримера нет, добавь его сначала !stream_add <ник стримера>')
+        
+        if followers == None:
+            return await ctx.send(f'{ctx.author.mention}, Ты и не был подписан на этого стримера!')
+        else:
+            followers = eval(followers)
+            followers.remove(ctx.author.id)
+        
+        r = self.bot.db.update('twitch', 'followers', 'username', str(followers), streamer_name)
+        if r:
+            await ctx.send(f'{ctx.author.mention}, Успешно отписала тебя!')
+        else:
+            await ctx.send(f'{ctx.author.mention}, Не удалось отписать тебя попробуй попозже!')
+
+    @follow_streamer.error
+    async def follow_streamer_errors(self, ctx, error):
+        if isinstance(error, commands.MissingRequiredArgument):
+            await ctx.send(f'{ctx.author.mention}, Ты не ввёл имя стримера!')
+
+    @unfollow_streamer.error
+    async def unfollow_streamer_errors(self, ctx, error):
+        if isinstance(error, commands.MissingRequiredArgument):
+            await ctx.send(f'{ctx.author.mention}, Ты не ввёл имя стримера!')
 
 
     @tasks.loop(minutes=1)
