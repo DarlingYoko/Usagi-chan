@@ -118,7 +118,7 @@ class Beer(commands.Cog):
             menu['drinks'].append(pos)
             del prices[pos]
 
-        while len(menu['snaks']) != 2:
+        while len(menu['snacks']) != 2:
             pos = choice(list(additionals.keys()))
             if pos == 'Гавно':
                 continue
