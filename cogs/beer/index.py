@@ -226,7 +226,7 @@ class Beer(commands.Cog):
                     'value': text_extra,
                     'inline': True},
         ]
-        embed = get_embed(title='Меню на сегодня', fields=fields)
+        embed = get_embed(title='Меню на сегодня', description='[Описание всех пунктов меню.](https://discord.com/channels/858053936313008129/951557489344806983)', fields=fields)
         await ctx.send(content='Нья!', embed=embed)
 
     @today_menu.error
