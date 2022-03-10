@@ -296,7 +296,8 @@ class Beer(commands.Cog):
         money -= sell_count
         r = self.bot.db.custom_command(f'UPDATE pivo set money = {money}, spend = {spend}, count_of_purchases = {count_of_purchases}, count_of_purchases_for_user = {count_of_purchases_for_user} where user_id = {ctx.author.id};')
         if r == 1:
-            answer = await answer(self, ctx, member)
+            if type(answer) != str:
+                answer = await answer(self, ctx, member)
             if wesdos:
                 db_counter = self.bot.db.get_value('pivo', 'money', 'user_id', 1)
                 db_counter += 1
