@@ -72,7 +72,7 @@ class Beer(commands.Cog):
             'Забить яблочко': [400, 600, buy_based_apple],
             'Послать Весдоса нахуй': [20, 50, send_wesdos_nahui],
             'Послать пользователя нахуй': [50, 70, anon_send_nahui],
-            'Сервер буст': [5000, 5000, buy_server_boost],
+            'Ебучая рулетка': [5000, 5000, ban_casino],
             # 'Жаренный арахис': [50, 200],
             # 'Чипсеки': [200, 300],
             # 'Кыр сосичка': [0, 100],
@@ -282,8 +282,8 @@ class Beer(commands.Cog):
         money, spend, count_of_purchases, count_of_purchases_for_user = values[0], values[1], values[2], values[3] 
         if money < 1:
             return await ctx.send(f'{ctx.author.mention}, У тебя не хватает <:dababy:949712395385843782> на покупку!')
-        if money < 1 or (money - sell_count < 0 and product == 'Сервер буст'):
-            return await ctx.send(f'{ctx.author.mention}, Пчел, ты хочешь купить буст, но делаешь это без <:dababy:949712395385843782>. Иди работай негодяй!')
+        if money < 1 or (money - sell_count < 0 and product == 'Ебучая рулетка'):
+            return await ctx.send(f'{ctx.author.mention}, Пчел, ты хочешь рулетку, но делаешь это без <:dababy:949712395385843782>. Иди работай негодяй!')
         spend += sell_count
         if for_user_name and member:
             count_of_purchases_for_user += 1
@@ -310,6 +310,11 @@ class Beer(commands.Cog):
             await ctx.send(f'{ctx.author.mention}, Ты не ввёл позицию!')
         elif isinstance(error, commands.BadArgument):
             await ctx.send(f'{ctx.author.mention}, Ты ввёл неверную позицию!')
+    
+    # @commands.command()
+    # async def test_ban(self, ctx):
+    #     member = await ctx.guild.fetch_member(270904126974590976)
+        
 
     @tasks.loop(minutes=1)
     async def check_rewards_twitch(self):

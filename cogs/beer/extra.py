@@ -1,4 +1,7 @@
-from bin.functions import get_member_by_all
+import discord
+from random import choice
+from datetime import timedelta
+
 
 
 async def buy_based_apple(self, ctx, data = None):
@@ -19,5 +22,13 @@ async def anon_send_nahui(self, ctx, member):
 
 
 
-async def buy_server_boost(self, ctx, data = None):
-    return 'Жесть ты кадр конечно, гц гц, <@290166276796448768> у нас тут пчел нарисовался, бусты купить хочет'
+async def ban_casino(self, ctx, data = None):
+    guild = await self.bot.fetch_guild(self.bot.config['data']['guild_id'])
+    members = await guild.fetch_members(limit=None).flatten()
+    member = choice(members)
+    try:
+        await member.timeout_for(duration=timedelta(hours=1), reason='Выйграл в рулетку')
+    except discord.ext.commands.BotMissingPermissions:
+        pass
+    await ctx.send(f'{member.mention}, Ты выйграл в рулетку!! ЮХУУ, мои поздравления! Отбывай в муте на 1 час, приятно иметь с тобой дела.')
+    return 'Заролил рулетку на рандомный бан'
