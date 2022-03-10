@@ -258,7 +258,7 @@ class Beer(commands.Cog):
             answer = f'Ты взял закусочки {product}'
         elif pos >= len_prices + len_additionals and pos <= len_prices + len_additionals + len_extras - 1:
             pos -= (len_prices + len_additionals)
-            if pos == 2:
+            if pos == 1:
                 wesdos = True
             product = self.menu['extra'][pos]
             price = self.extras[product]
