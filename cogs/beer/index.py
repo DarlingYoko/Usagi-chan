@@ -226,7 +226,7 @@ class Beer(commands.Cog):
                     'value': text_extra,
                     'inline': True},
         ]
-        embed = get_embed(title='Меню на сегодня', description='[Описание всех пунктов меню.](https://discord.com/channels/858053936313008129/951557489344806983)', fields=fields)
+        embed = get_embed(title='Меню на сегодня', description='[Описание всех пунктов меню](https://discord.com/channels/858053936313008129/951557489344806983)', fields=fields)
         await ctx.send(content='Нья!', embed=embed)
 
     @today_menu.error
@@ -259,7 +259,7 @@ class Beer(commands.Cog):
             pos -= len_prices
             product = self.menu['snacks'][pos]
             price = self.additionals[product]
-            answer = f'Ты взял закусочки {product}'
+            answer = f'Ты купил {product}'
         elif pos >= len_prices + len_additionals and pos <= len_prices + len_additionals + len_extras - 1:
             pos -= (len_prices + len_additionals)
             if pos == 1:
@@ -275,7 +275,6 @@ class Beer(commands.Cog):
             if member == None:
                 return await ctx.send(f'{ctx.author.mention}, Такого пользователя нет!')
             
-        
         
        
         sell_count = randint(price[0], price[1])
