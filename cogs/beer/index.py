@@ -80,6 +80,7 @@ class Beer(commands.Cog):
         self.generate_menu.start()
         self.twitch_auth.start()
         self.check_rewards_twitch.start()
+        self.wesdos_counter.start()
         
     @tasks.loop(minutes=1, count=1)
     async def twitch_auth(self):
@@ -90,6 +91,20 @@ class Beer(commands.Cog):
         self.bot.twitch = Twitch(client_id, client_secret)
         target_scope = [AuthScope.CHANNEL_READ_REDEMPTIONS, AuthScope.CHANNEL_MANAGE_REDEMPTIONS]
         self.bot.twitch.set_user_authentication(token, target_scope, refresh_token)
+
+    @tasks.loop(minutes=10)
+    async def wesdos_counter(self):
+        db_counter = self.bot.db.get_value('pivo', 'money', 'user_id', 1)
+        if not db_counter:
+            return
+        db_counter += 1
+        channel = await self.bot.fetch_channel(951537014291976212)
+        await channel.edit(name = f'{db_counter} Раз')
+
+    @wesdos_counter.before_loop
+    async def before_wesdos_counter(self):
+        print('waiting for wesdos_counter')
+        await self.bot.wait_until_ready()
 
     @tasks.loop(hours=24)
     async def generate_menu(self):
@@ -232,6 +247,7 @@ class Beer(commands.Cog):
         len_extras = len(self.menu['extra'])
         len_prices = len(self.menu['drinks'])
         len_additionals = len(self.menu['snacks'])
+        wesdos = False
         if pos >= 0 and pos <= len_prices - 1:
             product = self.menu['drinks'][pos]
             price = self.prices[product]
@@ -243,6 +259,8 @@ class Beer(commands.Cog):
             answer = f'Ты взял закусочки {product}'
         elif pos >= len_prices + len_additionals and pos <= len_prices + len_additionals + len_extras - 1:
             pos -= (len_prices + len_additionals)
+            if pos == 2:
+                wesdos = True
             product = self.menu['extra'][pos]
             price = self.extras[product]
             answer = price[2]
@@ -276,6 +294,10 @@ class Beer(commands.Cog):
         r = self.bot.db.custom_command(f'UPDATE pivo set money = {money}, spend = {spend}, count_of_purchases = {count_of_purchases}, count_of_purchases_for_user = {count_of_purchases_for_user} where user_id = {ctx.author.id};')
         if r == 1:
             answer = await answer(self, ctx, member)
+            if wesdos:
+                db_counter = self.bot.db.get_value('pivo', 'money', 'user_id', 1)
+                db_counter += 1
+                self.bot.db.update('pivo', 'money', 'user_id', db_counter, 1)
             if for_user_name != None and member:
                 answer = f'{answer} для {member.mention}'
             await ctx.send(f'{ctx.author.mention}, {answer} за {sell_count} <:dababy:949712395385843782>\nУ тебя осталось {money} <:dababy:949712395385843782>')
@@ -368,6 +390,8 @@ class Beer(commands.Cog):
         pivo_table = self.bot.db.get_all('pivo')
         table = []
         for user in pivo_table:
+            if user[0] == 1:
+                continue
             try:
                 member = await ctx.guild.fetch_member(user[0])
                 member_name = member.name

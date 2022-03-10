@@ -181,8 +181,6 @@ class Technical(commands.Cog):
         channel = await self.bot.fetch_channel(self.config['channel'].getint('time'))
 
         now = datetime.now()
-        if not time:
-            return
         time = datetime.fromtimestamp(float(time))
         d = time - now
         hours = d.seconds // 3600
