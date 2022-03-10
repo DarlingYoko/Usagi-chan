@@ -90,7 +90,8 @@ class Main(commands.Cog):
                             followers_text += f'<@{follower}>'
                     text, file = gen_pic(user, self.bot.twitch)
                     await channel.send(text, file = file)
-                    await channel.send(followers_text)
+                    if followers_text:
+                        await channel.send(followers_text)
                     self.bot.db.update('twitch', 'time', 'username', new_time, name)
 
     @check_twitch_online.before_loop
