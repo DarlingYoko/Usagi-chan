@@ -97,9 +97,8 @@ class Beer(commands.Cog):
         db_counter = self.bot.db.get_value('pivo', 'money', 'user_id', 1)
         if not db_counter:
             return
-        db_counter += 1
         channel = await self.bot.fetch_channel(951537014291976212)
-        await channel.edit(name = f'{db_counter} Раз')
+        await channel.edit(name = f'{db_counter} раз')
 
     @wesdos_counter.before_loop
     async def before_wesdos_counter(self):
