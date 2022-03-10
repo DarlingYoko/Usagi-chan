@@ -67,6 +67,7 @@ class Beer(commands.Cog):
             'Жаренный арахис': [50, 200],
             'Чипсеки': [200, 300],
             'Кыр сосичка': [0, 100],
+            'Гавно': [0, 50],
         }
         self.extras = {
             'Забить яблочко': [400, 600, buy_based_apple],
@@ -117,12 +118,15 @@ class Beer(commands.Cog):
             menu['drinks'].append(pos)
             del prices[pos]
 
-        for i in range(2):
+        while len(menu['snaks']) != 2:
             pos = choice(list(additionals.keys()))
+            if pos == 'Гавно':
+                continue
             menu['snacks'].append(pos)
             del additionals[pos]
 
         # menu['Забить яблочко'] = [400, 600]
+        menu['snacks'].append('Гавно')
 
         pprint(menu)
         self.menu = menu
