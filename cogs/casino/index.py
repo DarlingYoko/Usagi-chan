@@ -98,7 +98,7 @@ class Casino(commands.Cog):
         self.roulette_counter.start()
         self.RED = [1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36]
 
-    @commands.cooldown(per=60*2+10, rate=1, type=commands.BucketType.channel)
+    @commands.cooldown(per=60, rate=1)
     @commands.command(name='рулетка', aliases=['roulette'])
     async def roulette(self, ctx):
         roulette_game = Roulette_view(ctx.bot)
