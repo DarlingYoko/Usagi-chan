@@ -97,14 +97,14 @@ def format_time(time):
     time %= 3600
     minutes = int(time // 60)
     time %= 60
-    seconds = time
+    seconds = int(time)
     formatted_time = ''
     if hour:
         formatted_time += f'{hour} ч. '
     if minutes:
         formatted_time += f'{minutes} мин. '
     if seconds:
-        formatted_time += f'{seconds:.1f} сек. '
+        formatted_time += f'{seconds} сек. '
     return formatted_time
 
 
