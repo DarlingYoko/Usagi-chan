@@ -37,7 +37,7 @@ Pillow==8.4.0
 protobuf==3.19.4
 psycopg2==2.9.3
 psycopg2-binary==2.9.3
-py-cord==2.0.0b1
+py-cord==2.0.0b5
 pyasn1==0.4.8
 pyasn1-modules==0.2.8
 pycparser==2.21
