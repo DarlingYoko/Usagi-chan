@@ -98,20 +98,20 @@ class Casino(commands.Cog):
         self.roulette_counter.start()
         self.RED = [1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36]
 
-    @commands.cooldown(per=60*5+30, rate=1, type=commands.BucketType.channel)
+    @commands.cooldown(per=60*2+10, rate=1, type=commands.BucketType.channel)
     @commands.command(name='рулетка', aliases=['roulette'])
     async def roulette(self, ctx):
         roulette_game = Roulette_view(ctx.bot)
 
 
-        timer = int(mktime(datetime.now().timetuple()) + 60*5)
+        timer = int(mktime(datetime.now().timetuple()) + 60*2)
         image_url = 'https://media.discordapp.net/attachments/807349536321175582/951940401852452944/roulette-table-vector-20671332.png'
         embed = get_embed(title='Новая рулетка!', 
             description=f'Старт <t:{timer}:R>\nСкорее делайте ваши ставочки!',
             url_image=image_url)
         
         message = await ctx.send(embed=embed, view=roulette_game)
-        self.roulettes.append({'message': message, 'embed': embed, 'game': roulette_game, 'timer': 60*5})
+        self.roulettes.append({'message': message, 'embed': embed, 'game': roulette_game, 'timer': 60*2})
         await ctx.message.delete()
 
     @tasks.loop(seconds=1)
