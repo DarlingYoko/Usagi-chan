@@ -98,7 +98,7 @@ class Casino(commands.Cog):
         self.roulette_counter.start()
         self.RED = [1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36]
 
-    @commands.cooldown(per=60*5, rate=1, type=commands.BucketType.channel)
+    @commands.cooldown(per=60*5+30, rate=1, type=commands.BucketType.channel)
     @commands.command(name='рулетка', aliases=['roulette'])
     async def roulette(self, ctx):
         roulette_game = Roulette_view(ctx.bot)
@@ -111,7 +111,7 @@ class Casino(commands.Cog):
             url_image=image_url)
         
         message = await ctx.send(embed=embed, view=roulette_game)
-        self.roulettes.append({'message': message, 'embed': embed, 'game': roulette_game, 'timer': 60})
+        self.roulettes.append({'message': message, 'embed': embed, 'game': roulette_game, 'timer': 60*5})
         await ctx.message.delete()
 
     @tasks.loop(seconds=1)
