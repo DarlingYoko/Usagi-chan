@@ -54,9 +54,10 @@ class Roulette_modal(Modal):
         # print(self.children[1].value, self.children[1].custom_id)
         money -= bet
         spend += bet
-        self.game.bot.db.custom_command(f'UPDATE pivo set money = {money}, spend = {spend} where user_id = {interaction.user.id};')
+        
         self.game.players[interaction.user.id] = {'type_bet': self.bet, 'bet': bet, 'own_bet': own_bet, 'money': money, 'name': interaction.user.name}
         await interaction.response.send_message(content=f'Ты сделал ставку в размере {bet} <:dababy:949712395385843782> на {self.bet}', ephemeral=True)
+        self.game.bot.db.custom_command(f'UPDATE pivo set money = {money}, spend = {spend} where user_id = {interaction.user.id};')
 
 class Roulette_bet_select(Select['Roulette_view']):
     def __init__(self):
