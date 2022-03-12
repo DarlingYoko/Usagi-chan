@@ -32,17 +32,19 @@ class Roulette_modal(Modal):
         if self.children[0].custom_id == 'own_bet':
             own_bet = self.children[0].value
             if not own_bet.isdecimal():
-                return await interaction.response.send_message(content=f'Ты ввёл не число, в поле выбора числа!', ephemeral=True)
+                return await interaction.response.send_message(content=f'Ты ввёл символы или буковы в поле "Выбор числа"!', ephemeral=True)
             own_bet = int(own_bet)
             if own_bet < 1 or own_bet > 36:
-                return await interaction.response.send_message(content=f'Ты ввёл недопустимое число, в поле выбора числа!', ephemeral=True)
+                return await interaction.response.send_message(content=f'Ты ввёл недопустимое число в поле "Выбор числа"!', ephemeral=True)
             bet = self.children[1].value
         else:
             bet = self.children[0].value
         
         if not bet.isdecimal():
-            return await interaction.response.send_message(content=f'Ты ввёл не число, в своей ставки!', ephemeral=True)
+            return await interaction.response.send_message(content=f'Ты ввёл символы или буковы в поле "Размер ставки"!', ephemeral=True)
         bet = int(bet)
+        # if bet < 1:
+            # return await interaction.response.send_message(content=f'Ты ввёл недопустимое число в поле "Размер ставки"!', ephemeral=True)
         values = self.game.bot.db.custom_command(f'SELECT money, spend from pivo where user_id = {interaction.user.id};')
         if not values:
             return await interaction.response.send_message(content=f'У тебя нет <:dababy:949712395385843782> в банке!', ephemeral=True)
@@ -99,6 +101,7 @@ class Casino(commands.Cog):
         self.ready_game = True
         self.roulette_counter.start()
         self.RED = [1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36]
+        self.BLACK = [2,4,6,8,10,11,13,15,17,20,22,24,26,28,29,31,33,35]
 
     @commands.cooldown(per=60, rate=1)
     @commands.command(name='рулетка', aliases=['roulette'])
@@ -108,7 +111,7 @@ class Casino(commands.Cog):
 
         roulette_game = Roulette_view(ctx.bot)
 
-        timer = int(mktime(datetime.now().timetuple()) + 60*2)
+        timer = int(mktime(datetime.now().timetuple()) + 60*2+20)
         image_url = 'https://media.discordapp.net/attachments/807349536321175582/951940401852452944/roulette-table-vector-20671332.png'
         embed = get_embed(title='Новая рулетка!', 
             description=f'Старт <t:{timer}:R>\nСкорее делайте ваши ставочки!',
@@ -126,6 +129,13 @@ class Casino(commands.Cog):
                 message['game'].stop()
                 rng = SystemRandom()
                 result = rng.randint(0, 36)
+                if result in self.BLACK:
+                    color = '\⚫'
+                elif result in self.RED:
+                    color = '\🔴'
+                else:
+                    color = '\🟢'
+                
                 winners = 'Победители:\n'
                 losers = 'Проигравшие:\n'
                 for player_id, data in message['game'].players.items():
@@ -144,7 +154,7 @@ class Casino(commands.Cog):
                         (type_bet == 'zero' and result == 0) or \
                         (type_bet == 'own' and result == own_bet) or \
                         (type_bet == 'red' and result in self.RED) or \
-                        (type_bet == 'black' and result not in self.RED):
+                        (type_bet == 'black' and result in self.BLACK):
                         
                         winners += f'{name}, поставил {bet}<:dababy:949712395385843782> на {type_bet} {text}'
                         money = self.bot.db.get_value('pivo', 'money', 'user_id', player_id)
@@ -167,7 +177,7 @@ class Casino(commands.Cog):
                 final_url = 'https://media.discordapp.net/attachments/807349536321175582/951946592968130561/3.png'
                 embed = get_embed(embed=embed,
                     title='Рулетка закончена',
-                    description=f'Выпало {result}!\n{winners}\n\n{losers}',
+                    description=f'Выпало {result}{color}!\n{winners}\n\n{losers}',
                     url_image=final_url)
                 await message['message'].edit(embed=embed)
 
