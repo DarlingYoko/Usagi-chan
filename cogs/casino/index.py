@@ -27,6 +27,8 @@ class Roulette_modal(Modal):
 
         if self.game.is_finished():
             return await interaction.response.send_message(content=f'Ты не успел поставить(', ephemeral=True)
+        if interaction.user.id in self.game.players.keys():
+            return await interaction.response.send_message(content=f'Ты уже сделал ставку на эту игру, подожди пока она закончится или выбери другой стол!', ephemeral=True)
 
         own_bet = None
         if self.children[0].custom_id == 'own_bet':
@@ -45,21 +47,20 @@ class Roulette_modal(Modal):
         bet = int(bet)
         # if bet < 1:
             # return await interaction.response.send_message(content=f'Ты ввёл недопустимое число в поле "Размер ставки"!', ephemeral=True)
-        values = self.game.bot.db.custom_command(f'SELECT money, spend from pivo where user_id = {interaction.user.id};')
-        if not values:
+        money = self.game.bot.db.get_value('pivo', 'money', 'user_id', interaction.user.id)
+        if not money:
             return await interaction.response.send_message(content=f'У тебя нет <:dababy:949712395385843782> в банке!', ephemeral=True)
-
-        values = values[0]
-        money, spend = values[0], values[1]
+        
         if bet > money:
             return await interaction.response.send_message(content=f'Ты не можешь сделать ставку больше чем у тебя есть <:dababy:949712395385843782>!', ephemeral=True)
         # print(self.children[1].value, self.children[1].custom_id)
         money -= bet
-        spend += bet
+
         
         self.game.players[interaction.user.id] = {'type_bet': self.bet, 'bet': bet, 'own_bet': own_bet, 'money': money, 'name': interaction.user.name}
         await interaction.response.send_message(content=f'Ты сделал ставку в размере {bet} <:dababy:949712395385843782> на {self.bet}', ephemeral=True)
-        self.game.bot.db.custom_command(f'UPDATE pivo set money = {money}, spend = {spend} where user_id = {interaction.user.id};')
+        self.game.bot.db.update('pivo', 'money', 'user_id', money, interaction.user.id)
+
 
 class Roulette_bet_select(Select['Roulette_view']):
     def __init__(self):
@@ -164,6 +165,10 @@ class Casino(commands.Cog):
                             self.bot.db.update('pivo', 'money', 'user_id', money + bet*36, player_id)
                     else:
                         losers += f'{name}, поставил {bet}<:dababy:949712395385843782> на {type_bet} {text}'
+                        spend = self.game.bot.db.get_value('pivo', 'spend', 'user_id', player_id)
+                        self.bot.db.update('pivo', 'spend', 'user_id', spend+bet, player_id)
+
+
                         
 
 
