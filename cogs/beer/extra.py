@@ -27,7 +27,7 @@ async def ban_casino(self, ctx, data = None):
     members = await guild.fetch_members(limit=None).flatten()
     member = choice(members)
     try:
-        await member.timeout_for(duration=timedelta(hours=1), reason='Выйграл в рулетку')
+        await member.timeout_for(duration=timedelta(hours=3), reason='Выйграл в рулетку')
     except discord.ext.commands.BotMissingPermissions:
         pass
     await ctx.send(f'{member.mention}, Ты выйграл в рулетку!! ЮХУУ, мои поздравления! Отбывай в муте на 1 час, приятно иметь с тобой дела.')
