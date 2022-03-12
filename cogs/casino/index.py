@@ -95,14 +95,17 @@ class Casino(commands.Cog):
         self.bot = bot
         self.config = bot.config
         self.roulettes = []
+        self.ready_game = True
         self.roulette_counter.start()
         self.RED = [1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36]
 
     @commands.cooldown(per=60, rate=1)
     @commands.command(name='рулетка', aliases=['roulette'])
     async def roulette(self, ctx):
-        roulette_game = Roulette_view(ctx.bot)
+        if not self.ready_game:
+            return await ctx.send(f'{ctx.author.mention}, Сейчас нельзя создавать игры, я обновляюсь!')
 
+        roulette_game = Roulette_view(ctx.bot)
 
         timer = int(mktime(datetime.now().timetuple()) + 60*2)
         image_url = 'https://media.discordapp.net/attachments/807349536321175582/951940401852452944/roulette-table-vector-20671332.png'
@@ -172,6 +175,18 @@ class Casino(commands.Cog):
             retry_after = error.retry_after
             time = format_time(retry_after)
             await ctx.send(f'{ctx.author.mention}, Рановато для новой рулетки, подожди пока закончится предыдущая! Попробуй через {time}')
+
+    @commands.command()
+    @commands.is_owner()
+    async def set_game(self, ctx, game = None):
+        if game in ['1', 'true']:
+            self.ready_game = True
+            await ctx.send(f'{ctx.author.mention}, включила игры')
+        else:
+            self.ready_game = False
+            await ctx.send(f'{ctx.author.mention}, выключила игры')
+
+        
 
 
 
