@@ -48,7 +48,7 @@ class Roulette_modal(Modal):
         # if bet < 1:
             # return await interaction.response.send_message(content=f'Ты ввёл недопустимое число в поле "Размер ставки"!', ephemeral=True)
         money = self.game.bot.db.get_value('pivo', 'money', 'user_id', interaction.user.id)
-        if not money.isdecimal():
+        if not money:
             return await interaction.response.send_message(content=f'У тебя нет <:dababy:949712395385843782> в банке!', ephemeral=True)
         
         if bet > money:
