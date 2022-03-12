@@ -165,7 +165,7 @@ class Casino(commands.Cog):
                             self.bot.db.update('pivo', 'money', 'user_id', money + bet*36, player_id)
                     else:
                         losers += f'{name}, поставил {bet}<:dababy:949712395385843782> на {type_bet} {text}'
-                        spend = self.game.bot.db.get_value('pivo', 'spend', 'user_id', player_id)
+                        spend = self.bot.db.get_value('pivo', 'spend', 'user_id', player_id)
                         self.bot.db.update('pivo', 'spend', 'user_id', spend+bet, player_id)
 
 
