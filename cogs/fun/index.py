@@ -2,7 +2,7 @@ import discord
 import random, requests
 from discord.ext import commands
 from bin.converters import *
-from bin.functions import get_embed
+from bin.functions import get_member_by_all
 from bs4 import BeautifulSoup
 
 class Fun(commands.Cog):
@@ -25,8 +25,8 @@ class Fun(commands.Cog):
         brief='Узнать когда юзер зашёл',
         usage = '<имя пользователя>|<ID>'
     )
-    async def joined(self, ctx, *, member: UserConverter = None):
-        member = member or ctx.author
+    async def joined(self, ctx, *, member: str = None):
+        member = get_member_by_all(member) or ctx.author
         time = member.joined_at.strftime("%m/%d/%Y, %H:%M")
         req = await self.bot.http.request(discord.http.Route("GET", "/users/{uid}", uid=member.id))
         banner_id = req["banner"]
