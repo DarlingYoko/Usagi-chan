@@ -4,7 +4,7 @@ from time import mktime
 from datetime import datetime
 from discord.ui import Modal, Select, InputText
 from bin.functions import get_embed, format_time
-from random import randint
+from random import SystemRandom
 import asyncio
 import discord
 
@@ -124,7 +124,8 @@ class Casino(commands.Cog):
             message['timer'] -= 1
             if message['timer'] == 0:
                 message['game'].stop()
-                result = randint(0, 36)
+                rng = SystemRandom()
+                result = rng.randint(0, 36)
                 winners = 'Победители:\n'
                 losers = 'Проигравшие:\n'
                 for player_id, data in message['game'].players.items():
