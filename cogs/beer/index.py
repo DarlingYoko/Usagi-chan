@@ -133,7 +133,7 @@ class Beer(commands.Cog):
 
 
 
-    @commands.command(name='работа', aliases=['work', 'работать', 'батрачить'], description = 'Команда для зарабатывания <:dababy:949712395385843782>')
+    @commands.command(name='работа', aliases=['work', 'работать', 'батрачить', 'рабство'], description = 'Команда для зарабатывания <:dababy:949712395385843782>')
     # @commands.cooldown(per=60*60*24, rate=1, type=commands.BucketType.user)
     async def go_to_work(self, ctx):
         money = randint(50, 100)
@@ -188,7 +188,7 @@ class Beer(commands.Cog):
         else:
             money += 50
             
-            r = self.bot.db.insert('pivo', user_id, money, time, 1, 0, 0, 0)
+            r = self.bot.db.insert('pivo', user_id, money, time, 1, 0, 0, 0, False, 0)
             if r == 1:
                 await ctx.send(f'{ctx.author.mention}, Поздравляю с первым рабочим днём, твоя первая зарплата — {money} <:dababy:949712395385843782>')
             else:
@@ -468,6 +468,50 @@ class Beer(commands.Cog):
             retry_after = error.retry_after
             time = format_time(retry_after)
             await ctx.send(f'{ctx.author.mention}, Рановато для получения топа, я же недавно показывала его вам, бака! Попробуй через {time}')
+
+    @commands.command(name='часовая', aliases=['hourly', 'hw'], description = 'Команда для зарабатывания <:dababy:949712395385843782> раз в час')
+    async def go_to_work_hourly(self, ctx):
+        money = randint(0, 25)
+        user_id = ctx.author.id
+        #  Проверка на возможность работать
+
+        # Если нельзя работать, то сообщение об отмене
+
+        # Если можно работать, то выдача монет + обновление в бд
+        time = mktime(datetime.now().timetuple())
+        values = self.bot.db.custom_command(f'SELECT money, hourly_work from pivo where user_id = {user_id};')
+        if values:
+            # return await ctx.send(f'{ctx.author.mention}, Не получилось проверить твой паспорт, попробуй ещё раз!')
+            values = values[0]
+            last_money, hourly_work = values[0], values[1]
+            if hourly_work == None:
+                hourly_work = 1
+            
+            if hourly_work:
+                diff = int(time - hourly_work)
+                diff = 3600 - diff # если больше 0, то кд, если меньше нуля, но не меньше чем -86400, то день юза, если меньше чем -86400, то факап
+                # diff = 0
+                if diff > 0:
+                    # user on cooldown
+                    time = format_time(diff)
+                    return await ctx.send(f'{ctx.author.mention}, Твоя часовая смена через {time}')
+
+                else:
+                    # fuckup streak 
+                    last_money += money
+                    r = self.bot.db.custom_command(f'UPDATE pivo set money = {last_money}, hourly_work = {time} where user_id = {user_id};')
+                    if r == 1:
+                        return await ctx.send(f'{ctx.author.mention}, Часовая смена закончена, топой довольный с {money} <:dababy:949712395385843782>\nТеперь у тебя {last_money} <:dababy:949712395385843782>')
+                    else:
+                        return await ctx.send(f'{ctx.author.mention}, Не получилось отправить тебя на работу, сходи ещё раз!')
+        else:
+            
+            r = self.bot.db.insert('pivo', user_id, money, 0, 1, 0, 0, 0, False, time)
+            if r == 1:
+                return await ctx.send(f'{ctx.author.mention}, Часовая смена закончена, топой довольный с {money} <:dababy:949712395385843782>\nТеперь у тебя {last_money} <:dababy:949712395385843782>')
+            else:
+                await ctx.send(f'{ctx.author.mention}, Не получилось отправить тебя на работу, сходи ещё раз!')
+
         
 
     
