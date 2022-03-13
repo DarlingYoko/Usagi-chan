@@ -10,6 +10,7 @@ from twitchAPI.twitch import Twitch
 from twitchAPI.types import AuthScope
 from pprint import pprint
 from copy import deepcopy
+from asyncio import TimeoutError
 
 
 # 1. Каждый зареганный игрок получает в день N монет
@@ -533,11 +534,64 @@ class Beer(commands.Cog):
             if user[0] == 1:
                 continue
             # text += f'<@{user[0]}, {user[1]}\n'
-            r = self.bot.db.update('pivo', 'money', 'user_id', user[1]+333, user[0])
-            print(r)
+            self.bot.db.update('pivo', 'money', 'user_id', user[1]+333, user[0])
         
-        # channel = await self.bot.fetch_channel(858053937008214018)
-        await ctx.send(text)
+        channel = await self.bot.fetch_channel(858053937008214018)
+        await channel.send(text)
+
+
+    @commands.command(name='перевод', 
+        aliases=['transfer', 'подачка', 'пожертвовать'], 
+        description='Вы можете отправить свои <:dababy:949712395385843782> другому пользователю!',
+        usage='<кол-во дабаби> <ник или ID юзера>')
+    async def transfer(self, ctx, transfer_money: int, *, user_name):
+        if transfer_money < 1:
+            return await ctx.send(f'{ctx.author.mention}, Ты ввёл не верную сумму!')
+        member = await get_member_by_all(self, user_name)
+        channel = ctx.channel
+        user_id = ctx.author.id
+        if member is None:
+            return await ctx.send(f'{ctx.author.mention}, Такого пользователя нет, попробуй по-другому')
+        
+        await ctx.send(f'{ctx.author.mention}, Пользователь которого я нашла - {member.name}, верно? да/нет')
+
+        def check(m):
+            return m.channel == channel and m.author.id == user_id
+
+        try:
+            message = await ctx.bot.wait_for('message', check=check)
+        except TimeoutError:
+            return await ctx.send(f'{ctx.author.mention}, Ты ничего не написал, завершаю диалог.')
+
+        answer = message.content.lower()
+
+        if answer in ['нет', 'no']:
+            return await ctx.send(f'{ctx.author.mention}, Хорошо, тогда попробуй по-другому.')
+        if answer not in ['да', 'yes']:
+            return await ctx.send(f'{ctx.author.mention}, Такого ответа нет.')
+
+        money = self.bot.db.get_value('pivo', 'money', 'user_id', user_id)
+        
+        if transfer_money > money:
+            return await ctx.send(f'{ctx.author.mention}, У тебя нет столько деняг!')
+        
+
+        second_money = self.bot.db.get_value('pivo', 'money', 'user_id', member.id)
+
+        money -= transfer_money
+        second_money += transfer_money
+
+        self.bot.db.update('pivo', 'money', 'user_id', money, user_id)
+        self.bot.db.update('pivo', 'money', 'user_id', second_money, member.id)
+
+        await ctx.send(f'{member.mention}, Тебе перевод от {ctx.author.mention}!')
+
+    @transfer.error
+    async def transfer_errors(self, ctx, error):
+        if isinstance(error, commands.BadArgument):
+            return await ctx.send(f'{ctx.author.mention}, Ты ввёл не верное число!')
+        if isinstance(error, commands.MissingRequiredArgument):
+            return await ctx.send(f'{ctx.author.mention}, Ты не ввёл необходимые данные!')
             
         
 
