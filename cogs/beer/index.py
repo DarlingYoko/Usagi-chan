@@ -137,6 +137,7 @@ class Beer(commands.Cog):
     @commands.command(name='работа', aliases=['work', 'работать', 'батрачить', 'рабство'], description = 'Команда для зарабатывания <:dababy:949712395385843782>', help='toxic')
     # @commands.cooldown(per=60*60*24, rate=1, type=commands.BucketType.user)
     async def go_to_work(self, ctx):
+        await ctx.message.delete()
         # toxic = self.bot.config['channel'].getint('toxic')
         # bar = self.bot.config['channel'].getint('bar')
         # if ctx.channel.id not in [toxic, bar] and str(ctx.channel.type) == 'text':
@@ -200,7 +201,7 @@ class Beer(commands.Cog):
             else:
                 await ctx.send(f'{ctx.author.mention}, Не получилось отправить тебя на работу, сходи ещё раз!', delete_after=20)
 
-        await ctx.message.delete()
+        
 
         # bd.update or insert
     @commands.command(name='меню', aliases=['menu'], description = 'Посмотреть меню на сегодня')
@@ -481,6 +482,7 @@ class Beer(commands.Cog):
 
     @commands.command(name='часовая', aliases=['hourly', 'hw'], description = 'Команда для зарабатывания <:dababy:949712395385843782> раз в час', help='toxic')
     async def go_to_work_hourly(self, ctx):
+        await ctx.message.delete()
         # toxic = self.bot.config['channel'].getint('toxic')
         # bar = self.bot.config['channel'].getint('bar')
         # if ctx.channel.id not in [toxic, bar] and str(ctx.channel.type) == 'text':
@@ -526,7 +528,6 @@ class Beer(commands.Cog):
                 return await ctx.send(f'{ctx.author.mention}, Часовая смена закончена, топай довольный с {money} <:dababy:949712395385843782>\nТеперь у тебя {last_money} <:dababy:949712395385843782>', delete_after=20)
             else:
                 await ctx.send(f'{ctx.author.mention}, Не получилось отправить тебя на работу, сходи ещё раз!', delete_after=20)
-        await ctx.message.delete()
 
     @commands.command()
     @commands.is_owner()
