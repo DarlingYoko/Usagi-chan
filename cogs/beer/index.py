@@ -527,16 +527,17 @@ class Beer(commands.Cog):
     @commands.command()
     @commands.is_owner()
     async def weekend(self, ctx):
-        text = '<@&951577062907453460>\nВсех с концом рабочей недели. Воть вам мини премия за неделю.\n ||+333||'
+        text = 'Всех с концом рабочей недели. Воть вам мини премия за неделю.\n ||+333||'
         users = self.bot.db.get_all('pivo')
         for user in users:
             if user[0] == 1:
                 continue
             # text += f'<@{user[0]}, {user[1]}\n'
-            self.bot.db.update('pivo', 'money', 'user_id', user[0], user[1]+333)
+            r = self.bot.db.update('pivo', 'money', 'user_id', user[1]+333, user[0])
+            print(r)
         
-        channel = await self.bot.fetch_channel(858053937008214018)
-        await channel.send(text)
+        # channel = await self.bot.fetch_channel(858053937008214018)
+        await ctx.send(text)
             
         
 
