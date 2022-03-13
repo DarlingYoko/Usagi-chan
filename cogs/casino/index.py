@@ -220,6 +220,85 @@ class Casino(commands.Cog):
             self.ready_game = False
             await ctx.send(f'{ctx.author.mention}, выключила игры')
 
+    @commands.cooldown(per=60*5, rate=1)
+    @commands.command(name='победители')
+    async def winners(self, ctx):
+        pivo_table = self.bot.db.get_all('roulette_stat')
+        table = []
+        for user in pivo_table:
+            if user[0] == 1:
+                continue
+            try:
+                member = await ctx.guild.fetch_member(user[0])
+                member_name = member.name
+            except:
+                continue
+            
+            table.append([member_name, user[1], user[2], user[3], user[4]])
+        top_win = sorted(table, key=lambda x: x[1], reverse=True)
+        top_win_count = sorted(table, key=lambda x: x[3], reverse=True)
+        top_lose = sorted(table, key=lambda x: x[2], reverse=True)
+        top_lose_count = sorted(table, key=lambda x: x[4], reverse=True)
+
+        # print(top_spend)
+        # print(top_spend_for_self)
+        # print(top_spend_for_user)
+        text_money = ''
+        text_spend = ''
+        text_spend_for_self = ''
+        text_spend_for_user = ''
+        counter = 1
+        for user in top_win[:10]:
+            text_money += f'{counter}. {user[0]} {user[1]}\n'
+            counter += 1
+
+        counter = 1
+        for user in top_win_count[:10]:
+            text_spend += f'{counter}. {user[0]} {user[2]}\n'
+            counter += 1
+
+        counter = 1
+        for user in top_lose[:10]:
+            text_spend_for_self += f'{counter}. {user[0]} {user[3]}\n'
+            counter += 1
+
+        counter = 1
+        for user in top_lose_count[:10]:
+            text_spend_for_user += f'{counter}. {user[0]} {user[4]}\n'
+            counter += 1
+
+        fields = [
+                {'name': 'Топ лутателей', 
+                    'value': text_money,
+                    'inline': True},
+                {'name': '_ _', 
+                    'value': '_ _',
+                    'inline': True},
+                {'name': 'Топ лакеров', 
+                    'value': text_spend,
+                    'inline': True},
+                {'name': 'Топ транжир', 
+                    'value': text_spend_for_self,
+                    'inline': True},
+                {'name': '_ _', 
+                    'value': '_ _',
+                    'inline': True},
+                {'name': 'Топ лузеров', 
+                    'value': text_spend_for_user,
+                    'inline': True},
+        ]
+        embed = get_embed(title='Топ топов', fields=fields)
+        await ctx.send(content='Нья!', embed=embed)
+
+    @winners.error
+    async def winners_errors(self, ctx, error):
+        if isinstance(error, commands.CommandOnCooldown):
+            retry_after = error.retry_after
+            time = format_time(retry_after)
+            await ctx.send(f'{ctx.author.mention}, Рановато для получения топа, я же недавно показывала его вам, бака! Попробуй через {time}')
+
+        
+
         
 
 
