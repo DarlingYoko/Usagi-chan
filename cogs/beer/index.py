@@ -137,10 +137,10 @@ class Beer(commands.Cog):
     @commands.command(name='работа', aliases=['work', 'работать', 'батрачить', 'рабство'], description = 'Команда для зарабатывания <:dababy:949712395385843782>', help='toxic')
     # @commands.cooldown(per=60*60*24, rate=1, type=commands.BucketType.user)
     async def go_to_work(self, ctx):
-        toxic = self.bot.config['channel'].getint('toxic')
-        bar = self.bot.config['channel'].getint('bar')
-        if ctx.channel.id not in [toxic, bar] and str(ctx.channel.type) == 'text':
-            return await ctx.send(f'{ctx.author.mention}, Туть работать низя, выходи на смену туда -> <#{toxic}>')
+        # toxic = self.bot.config['channel'].getint('toxic')
+        # bar = self.bot.config['channel'].getint('bar')
+        # if ctx.channel.id not in [toxic, bar] and str(ctx.channel.type) == 'text':
+        #     return await ctx.send(f'{ctx.author.mention}, Туть работать низя, выходи на смену туда -> <#{toxic}>')
         rng = SystemRandom()
         money = rng.randint(50, 100)
         user_id = ctx.author.id
@@ -163,7 +163,7 @@ class Beer(commands.Cog):
                 if diff > 0:
                     # user on cooldown
                     time = format_time(diff)
-                    return await ctx.send(f'{ctx.author.mention}, Ты сможешь работать через {time}')
+                    return await ctx.send(f'{ctx.author.mention}, Ты сможешь работать через {time}', delete_after=20)
                 elif diff <= 0 and diff > -84600:
                     # new work day
                     extra = ''
@@ -179,26 +179,26 @@ class Beer(commands.Cog):
                     
                     r = self.bot.db.custom_command(f'UPDATE pivo set money = {last_money+modifyer}, last_time = {time}, streak = {streak} where user_id = {user_id};')
                     if r == 1:
-                        return await ctx.send(f'{ctx.author.mention}, Хорошо поработал, дежи {money} <:dababy:949712395385843782> {extra}\nТеперь у тебя {last_money+modifyer} <:dababy:949712395385843782>, твой стрик {streak}')
+                        return await ctx.send(f'{ctx.author.mention}, Хорошо поработал, дежи {money} <:dababy:949712395385843782> {extra}\nТеперь у тебя {last_money+modifyer} <:dababy:949712395385843782>, твой стрик {streak}', delete_after=20)
                     else:
-                        return await ctx.send(f'{ctx.author.mention}, Не получилось отправить тебя на работу, сходи ещё раз!')
+                        return await ctx.send(f'{ctx.author.mention}, Не получилось отправить тебя на работу, сходи ещё раз!', delete_after=20)
                 else:
                     # fuckup streak 
                     last_money += money
                     streak = 1
                     r = self.bot.db.custom_command(f'UPDATE pivo set money = {last_money}, last_time = {time}, streak = {streak} where user_id = {user_id};')
                     if r == 1:
-                        return await ctx.send(f'{ctx.author.mention}, Понятно, дабаби закончились, так сразу на работу прибежал, ладно дежи свои {money} <:dababy:949712395385843782> и иди с миром\nТеперь у тебя {last_money} <:dababy:949712395385843782>, твой стрик {streak}')
+                        return await ctx.send(f'{ctx.author.mention}, Понятно, дабаби закончились, так сразу на работу прибежал, ладно дежи свои {money} <:dababy:949712395385843782> и иди с миром\nТеперь у тебя {last_money} <:dababy:949712395385843782>, твой стрик {streak}', delete_after=20)
                     else:
-                        return await ctx.send(f'{ctx.author.mention}, Не получилось отправить тебя на работу, сходи ещё раз!')
+                        return await ctx.send(f'{ctx.author.mention}, Не получилось отправить тебя на работу, сходи ещё раз!', delete_after=20)
         else:
             money += 50
             
             r = self.bot.db.insert('pivo', user_id, money, time, 1, 0, 0, 0, False, 0)
             if r == 1:
-                await ctx.send(f'{ctx.author.mention}, Поздравляю с первым рабочим днём, твоя первая зарплата — {money} <:dababy:949712395385843782>')
+                await ctx.send(f'{ctx.author.mention}, Поздравляю с первым рабочим днём, твоя первая зарплата — {money} <:dababy:949712395385843782>', delete_after=20)
             else:
-                await ctx.send(f'{ctx.author.mention}, Не получилось отправить тебя на работу, сходи ещё раз!')
+                await ctx.send(f'{ctx.author.mention}, Не получилось отправить тебя на работу, сходи ещё раз!', delete_after=20)
 
         # bd.update or insert
     @commands.command(name='меню', aliases=['menu'], description = 'Посмотреть меню на сегодня')
@@ -479,10 +479,10 @@ class Beer(commands.Cog):
 
     @commands.command(name='часовая', aliases=['hourly', 'hw'], description = 'Команда для зарабатывания <:dababy:949712395385843782> раз в час', help='toxic')
     async def go_to_work_hourly(self, ctx):
-        toxic = self.bot.config['channel'].getint('toxic')
-        bar = self.bot.config['channel'].getint('bar')
-        if ctx.channel.id not in [toxic, bar] and str(ctx.channel.type) == 'text':
-            return await ctx.send(f'{ctx.author.mention}, Туть работать низя, выходи на смену туда -> <#{toxic}>')
+        # toxic = self.bot.config['channel'].getint('toxic')
+        # bar = self.bot.config['channel'].getint('bar')
+        # if ctx.channel.id not in [toxic, bar] and str(ctx.channel.type) == 'text':
+        #     return await ctx.send(f'{ctx.author.mention}, Туть работать низя, выходи на смену туда -> <#{toxic}>')
         rng = SystemRandom()
         money = rng.randint(0, 25)
         user_id = ctx.author.id
@@ -507,23 +507,23 @@ class Beer(commands.Cog):
                 if diff > 0:
                     # user on cooldown
                     time = format_time(diff)
-                    return await ctx.send(f'{ctx.author.mention}, Твоя часовая смена через {time}')
+                    return await ctx.send(f'{ctx.author.mention}, Твоя часовая смена через {time}, ', delete_after=20)
 
                 else:
                     # fuckup streak 
                     last_money += money
                     r = self.bot.db.custom_command(f'UPDATE pivo set money = {last_money}, hourly_work = {time} where user_id = {user_id};')
                     if r == 1:
-                        return await ctx.send(f'{ctx.author.mention}, Часовая смена закончена, топай довольный с {money} <:dababy:949712395385843782>\nТеперь у тебя {last_money} <:dababy:949712395385843782>')
+                        return await ctx.send(f'{ctx.author.mention}, Часовая смена закончена, топай довольный с {money} <:dababy:949712395385843782>\nТеперь у тебя {last_money} <:dababy:949712395385843782>', delete_after=20)
                     else:
-                        return await ctx.send(f'{ctx.author.mention}, Не получилось отправить тебя на работу, сходи ещё раз!')
+                        return await ctx.send(f'{ctx.author.mention}, Не получилось отправить тебя на работу, сходи ещё раз!', delete_after=20)
         else:
             
             r = self.bot.db.insert('pivo', user_id, money, 0, 1, 0, 0, 0, False, time)
             if r == 1:
-                return await ctx.send(f'{ctx.author.mention}, Часовая смена закончена, топай довольный с {money} <:dababy:949712395385843782>\nТеперь у тебя {last_money} <:dababy:949712395385843782>')
+                return await ctx.send(f'{ctx.author.mention}, Часовая смена закончена, топай довольный с {money} <:dababy:949712395385843782>\nТеперь у тебя {last_money} <:dababy:949712395385843782>', delete_after=20)
             else:
-                await ctx.send(f'{ctx.author.mention}, Не получилось отправить тебя на работу, сходи ещё раз!')
+                await ctx.send(f'{ctx.author.mention}, Не получилось отправить тебя на работу, сходи ещё раз!', delete_after=20)
 
     @commands.command()
     @commands.is_owner()
@@ -584,7 +584,7 @@ class Beer(commands.Cog):
         self.bot.db.update('pivo', 'money', 'user_id', money, user_id)
         self.bot.db.update('pivo', 'money', 'user_id', second_money, member.id)
 
-        await ctx.send(f'{member.mention}, Тебе перевод от {ctx.author.mention}!')
+        await ctx.send(f'{member.mention}, Тебе перевод от {ctx.author.mention} {transfer_money}<:dababy:949712395385843782>!')
 
     @transfer.error
     async def transfer_errors(self, ctx, error):
