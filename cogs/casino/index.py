@@ -57,7 +57,7 @@ class Roulette_modal(Modal):
         money -= bet
 
         
-        self.game.players[interaction.user.id] = {'type_bet': self.bet, 'bet': bet, 'own_bet': own_bet, 'money': money, 'name': interaction.user.name}
+        self.game.players[interaction.user.id] = {'type_bet': self.bet, 'bet': bet, 'own_bet': own_bet, 'money': money, 'name': interaction.user.name, 'id': interaction.user.id}
         await interaction.response.send_message(content=f'Ты сделал ставку в размере {bet} <:dababy:949712395385843782> на {self.bet}', ephemeral=True)
         self.game.bot.db.update('pivo', 'money', 'user_id', money, interaction.user.id)
 
@@ -128,6 +128,11 @@ class Casino(commands.Cog):
             message['timer'] -= 1
             if message['timer'] == 0:
                 message['game'].stop()
+                gif_url = 'https://media.discordapp.net/attachments/807349536321175582/951805421050544138/1VNB.gif'
+                embed = get_embed(embed=message['embed'],
+                    description='Все ставки приняты, больше ставки не принимаются!\nКрутим рулетку!',
+                    url_image=gif_url)
+                await message['message'].edit(embed=embed, view=None)
                 rng = SystemRandom()
                 result = rng.randint(0, 36)
                 if result in self.BLACK:
@@ -145,6 +150,7 @@ class Casino(commands.Cog):
                     own_bet = data['own_bet']
                     money = data['money']
                     name = data['name']
+                    user_id = data['id']
                     if own_bet:
                         text = f'на число {own_bet}\n'
                     else:
@@ -159,26 +165,37 @@ class Casino(commands.Cog):
                         
                         winners += f'{name}, поставил {bet}<:dababy:949712395385843782> на {type_bet} {text}'
                         money = self.bot.db.get_value('pivo', 'money', 'user_id', player_id)
+                        stats = self.bot.db.custom_command(f'SELECT win, win_count from roulette_stat where user_id = {user_id};')
+                        if not stats:
+                            win = 0
+                            win_count = 1
+                        else:
+                            stats = stats[0]
+                            win, win_count = stats[0], stats[1]
+                        win_count += 1
                         if type_bet in ['even', 'odd', 'red', 'black']:
                             self.bot.db.update('pivo', 'money', 'user_id', money + bet*2, player_id)
+                            self.bot.db.custom_command(f'UPDATE roulette_stat set win = {win + bet*2}, win_count = {win_count} where user_id = {user_id};')
                         else:
                             self.bot.db.update('pivo', 'money', 'user_id', money + bet*36, player_id)
+                            self.bot.db.custom_command(f'UPDATE roulette_stat set win = {win + bet*36}, win_count = {win_count} where user_id = {user_id};')
+                            
                     else:
                         losers += f'{name}, поставил {bet}<:dababy:949712395385843782> на {type_bet} {text}'
+                        stats = self.bot.db.custom_command(f'SELECT lose, lose_count from roulette_stat where user_id = {user_id};')
+                        if not stats:
+                            lose = 0
+                            lose_count = 1
+                        else:
+                            stats = stats[0]
+                            lose, lose_count = stats[0], stats[1]
+                        lose_count += 1
                         spend = self.bot.db.get_value('pivo', 'spend', 'user_id', player_id)
                         self.bot.db.update('pivo', 'spend', 'user_id', spend+bet, player_id)
+                        self.bot.db.custom_command(f'UPDATE roulette_stat set lose = {lose + bet}, lose_count = {lose_count} where user_id = {user_id};')
 
 
-                        
-
-
-                gif_url = 'https://media.discordapp.net/attachments/807349536321175582/951805421050544138/1VNB.gif'
-                embed = get_embed(embed=message['embed'],
-                    description='Все ставки приняты, больше ставки не принимаются!\nКрутим рулетку!',
-                    url_image=gif_url)
-                await message['message'].edit(embed=embed, view=None)
-
-                await asyncio.sleep(10)
+                await asyncio.sleep(5)
                 final_url = 'https://media.discordapp.net/attachments/807349536321175582/951946592968130561/3.png'
                 embed = get_embed(embed=embed,
                     title='Рулетка закончена',

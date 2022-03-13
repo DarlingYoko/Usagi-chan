@@ -200,6 +200,8 @@ class Beer(commands.Cog):
             else:
                 await ctx.send(f'{ctx.author.mention}, Не получилось отправить тебя на работу, сходи ещё раз!', delete_after=20)
 
+        await ctx.message.delete()
+
         # bd.update or insert
     @commands.command(name='меню', aliases=['menu'], description = 'Посмотреть меню на сегодня')
     @commands.cooldown(per=60*1, rate=1, type=commands.BucketType.user)
@@ -524,6 +526,7 @@ class Beer(commands.Cog):
                 return await ctx.send(f'{ctx.author.mention}, Часовая смена закончена, топай довольный с {money} <:dababy:949712395385843782>\nТеперь у тебя {last_money} <:dababy:949712395385843782>', delete_after=20)
             else:
                 await ctx.send(f'{ctx.author.mention}, Не получилось отправить тебя на работу, сходи ещё раз!', delete_after=20)
+        await ctx.message.delete()
 
     @commands.command()
     @commands.is_owner()
@@ -593,7 +596,77 @@ class Beer(commands.Cog):
         if isinstance(error, commands.MissingRequiredArgument):
             return await ctx.send(f'{ctx.author.mention}, Ты не ввёл необходимые данные!')
             
-        
+    # @commands.command()
+    # async def test(self, ctx):
+    #     await ctx.message.delete()
+    #     channels = [951927827215822888, 951927724849635358, 951927512445886584]
+    #     users = {}
+    #     for channel in channels:
+    #         channel = await self.bot.fetch_channel(channel)
+    #         async for message in channel.history(limit=None):
+    #             if message.embeds:
+    #                 embed = message.embeds[0]
+    #                 if embed.title == 'Рулетка закончена':
+    #                     text = embed.description.split('\n\n\n')
+    #                     winners = text[0].split('Победители:\n')
+    #                     losers = text[1].split('Проигравшие:\n')
+
+    #                     if len(winners) == 2:
+    #                         winners = winners[1].split('\n')
+    #                     else:
+    #                         winners = None
+    #                     if len(losers) == 2:
+    #                         losers = losers[1].split('\n')
+    #                     else:
+    #                         losers = None
+    #                     # print(winners, losers)
+    #                     if winners:
+    #                         for winner in winners:
+    #                             winner_data = winner.split('поставил')
+    #                             winner_name = winner_data[0][:-2]
+    #                             winner_data = winner_data[1].split(' ')
+    #                             winner_bet = int(winner_data[1][:-28])
+    #                             winner_bet_type = winner_data[3]
+    #                             # print(winner_bet_type)
+    #                             if winner_bet_type in ['even', 'odd', 'red', 'black']:
+    #                                 winner_bet *= 2
+    #                             else:
+    #                                 winner_bet *= 36
+    #                             # print(winner_name)
+    #                             if winner_name in users.keys():
+    #                                 users[winner_name]['win_count'] += 1
+    #                                 users[winner_name]['win'] += winner_bet
+    #                             else:
+    #                                 users[winner_name] = {'lose_count': 0, 'lose': 0, 'win': winner_bet, 'win_count': 1}
+
+
+    #                     if losers:
+    #                         for loser in losers:
+    #                             loser_data = loser.split('поставил')
+    #                             loser_name = loser_data[0][:-2]
+    #                             loser_data = loser_data[1].split(' ')
+    #                             # print(loser_data)
+    #                             loser_bet = int(loser_data[1][:-28])
+    #                             # print(loser_name)
+    #                             if loser_name in users.keys():
+    #                                 users[loser_name]['lose_count'] += 1
+    #                                 users[loser_name]['lose'] += loser_bet
+    #                             else:
+    #                                 users[loser_name] = {'lose_count': 1, 'lose': loser_bet, 'win': 0, 'win_count': 0}
+    #     pprint(users)
+
+    #     for user, bets in users.items():
+    #         if user == 'Stella By Moor':
+    #             user = 'Axonn'
+    #         member = await get_member_by_all(self, user)
+    #         if member is None:
+    #             continue
+                
+    #         self.bot.db.insert('roulette_stat', member.id, bets['win'], bets['lose'], bets['win_count'], bets['lose_count'])
+
+
+
+
 
     
 
