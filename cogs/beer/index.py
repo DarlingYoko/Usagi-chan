@@ -3,7 +3,7 @@ import twitchAPI
 from datetime import datetime
 from discord.ext import commands, tasks
 from time import mktime
-from random import randint, choice
+from random import randint, choice, SystemRandom
 from bin.functions import format_time, get_member_by_all, get_embed
 from cogs.beer.extra import *
 from twitchAPI.twitch import Twitch
@@ -133,10 +133,14 @@ class Beer(commands.Cog):
 
 
 
-    @commands.command(name='работа', aliases=['work', 'работать', 'батрачить', 'рабство'], description = 'Команда для зарабатывания <:dababy:949712395385843782>')
+    @commands.command(name='работа', aliases=['work', 'работать', 'батрачить', 'рабство'], description = 'Команда для зарабатывания <:dababy:949712395385843782>', help='toxic')
     # @commands.cooldown(per=60*60*24, rate=1, type=commands.BucketType.user)
     async def go_to_work(self, ctx):
-        money = randint(50, 100)
+        toxic = self.bot.config['channel']['toxic']
+        if ctx.channel.id != toxic:
+            return await ctx.send(f'{ctx.author.mention}, Туть работать низя, выходи на смену туда -> <#{toxic}>')
+        rng = SystemRandom()
+        money = rng.randint(50, 100)
         user_id = ctx.author.id
         #  Проверка на возможность работать
 
@@ -471,9 +475,13 @@ class Beer(commands.Cog):
             time = format_time(retry_after)
             await ctx.send(f'{ctx.author.mention}, Рановато для получения топа, я же недавно показывала его вам, бака! Попробуй через {time}')
 
-    @commands.command(name='часовая', aliases=['hourly', 'hw'], description = 'Команда для зарабатывания <:dababy:949712395385843782> раз в час')
+    @commands.command(name='часовая', aliases=['hourly', 'hw'], description = 'Команда для зарабатывания <:dababy:949712395385843782> раз в час', help='toxic')
     async def go_to_work_hourly(self, ctx):
-        money = randint(0, 25)
+        toxic = self.bot.config['channel']['toxic']
+        if ctx.channel.id != toxic:
+            return await ctx.send(f'{ctx.author.mention}, Туть работать низя, выходи на смену туда -> <#{toxic}>')
+        rng = SystemRandom()
+        money = rng.randint(0, 25)
         user_id = ctx.author.id
         #  Проверка на возможность работать
 
