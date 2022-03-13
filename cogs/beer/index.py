@@ -296,6 +296,8 @@ class Beer(commands.Cog):
         r = self.bot.db.custom_command(f'UPDATE pivo set money = {money}, spend = {spend}, count_of_purchases = {count_of_purchases}, count_of_purchases_for_user = {count_of_purchases_for_user} where user_id = {ctx.author.id};')
         if r == 1:
             if type(answer) != str:
+                if member == None:
+                    member = ctx.author
                 answer = await answer(self, ctx, member)
             if wesdos:
                 db_counter = self.bot.db.get_value('pivo', 'money', 'user_id', 1)
@@ -501,14 +503,14 @@ class Beer(commands.Cog):
                     last_money += money
                     r = self.bot.db.custom_command(f'UPDATE pivo set money = {last_money}, hourly_work = {time} where user_id = {user_id};')
                     if r == 1:
-                        return await ctx.send(f'{ctx.author.mention}, Часовая смена закончена, топой довольный с {money} <:dababy:949712395385843782>\nТеперь у тебя {last_money} <:dababy:949712395385843782>')
+                        return await ctx.send(f'{ctx.author.mention}, Часовая смена закончена, топай довольный с {money} <:dababy:949712395385843782>\nТеперь у тебя {last_money} <:dababy:949712395385843782>')
                     else:
                         return await ctx.send(f'{ctx.author.mention}, Не получилось отправить тебя на работу, сходи ещё раз!')
         else:
             
             r = self.bot.db.insert('pivo', user_id, money, 0, 1, 0, 0, 0, False, time)
             if r == 1:
-                return await ctx.send(f'{ctx.author.mention}, Часовая смена закончена, топой довольный с {money} <:dababy:949712395385843782>\nТеперь у тебя {last_money} <:dababy:949712395385843782>')
+                return await ctx.send(f'{ctx.author.mention}, Часовая смена закончена, топай довольный с {money} <:dababy:949712395385843782>\nТеперь у тебя {last_money} <:dababy:949712395385843782>')
             else:
                 await ctx.send(f'{ctx.author.mention}, Не получилось отправить тебя на работу, сходи ещё раз!')
 
