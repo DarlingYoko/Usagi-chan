@@ -136,7 +136,7 @@ class Beer(commands.Cog):
     @commands.command(name='работа', aliases=['work', 'работать', 'батрачить', 'рабство'], description = 'Команда для зарабатывания <:dababy:949712395385843782>', help='toxic')
     # @commands.cooldown(per=60*60*24, rate=1, type=commands.BucketType.user)
     async def go_to_work(self, ctx):
-        toxic = self.bot.config['channel']['toxic']
+        toxic = self.bot.config['channel'].getint('toxic')
         if ctx.channel.id != toxic:
             return await ctx.send(f'{ctx.author.mention}, Туть работать низя, выходи на смену туда -> <#{toxic}>')
         rng = SystemRandom()
@@ -477,7 +477,7 @@ class Beer(commands.Cog):
 
     @commands.command(name='часовая', aliases=['hourly', 'hw'], description = 'Команда для зарабатывания <:dababy:949712395385843782> раз в час', help='toxic')
     async def go_to_work_hourly(self, ctx):
-        toxic = self.bot.config['channel']['toxic']
+        toxic = self.bot.config['channel'].getint('toxic')
         if ctx.channel.id != toxic:
             return await ctx.send(f'{ctx.author.mention}, Туть работать низя, выходи на смену туда -> <#{toxic}>')
         rng = SystemRandom()
