@@ -134,7 +134,7 @@ class Beer(commands.Cog):
 
 
 
-    @commands.command(name='работа', aliases=['work', 'работать', 'батрачить', 'рабство'], description = 'Команда для зарабатывания <:dababy:949712395385843782>', help='toxic')
+    @commands.command(name='работа', aliases=['work', 'работать', 'батрачить', 'рабство', 'w'], description = 'Команда для зарабатывания <:dababy:949712395385843782>', help='toxic')
     # @commands.cooldown(per=60*60*24, rate=1, type=commands.BucketType.user)
     async def go_to_work(self, ctx):
         # toxic = self.bot.config['channel'].getint('toxic')
@@ -397,7 +397,7 @@ class Beer(commands.Cog):
         print('waiting for twitch rewards')
         await self.bot.wait_until_ready()
 
-    @commands.command(name='кэш', aliases=['кошелёк', 'кошелек', 'wallet', 'кеш', 'бабло', 'мани', 'зелень', 'капуста', 'cash', 'баланс'], description = 'Посмотреть свой кэш')
+    @commands.command(name='кэш', aliases=['кошелёк', 'кошелек', 'wallet', 'кеш', 'бабло', 'мани', 'зелень', 'капуста', 'cash', 'баланс', 'balance'], description = 'Посмотреть свой кэш')
     async def get_user_wallet(self, ctx):
         money = self.bot.db.get_value('pivo', 'money', 'user_id', ctx.author.id)
         await ctx.send(content=f'{ctx.author.mention}, На твоём кошельке сейчас {money} <:dababy:949712395385843782>')
