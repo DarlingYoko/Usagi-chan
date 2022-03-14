@@ -4,7 +4,7 @@ from time import mktime
 from datetime import datetime
 from discord.ui import Modal, Select, InputText
 from bin.functions import get_embed, format_time
-from random import SystemRandom
+from random import SystemRandom, randint
 import asyncio
 import discord
 
@@ -133,8 +133,7 @@ class Casino(commands.Cog):
                     description='Все ставки приняты, больше ставки не принимаются!\nКрутим рулетку!',
                     url_image=gif_url)
                 await message['message'].edit(embed=embed, view=None)
-                rng = SystemRandom()
-                result = rng.randint(0, 36)
+                result = randint(0, 36)
                 if result in self.BLACK:
                     color = '\⚫'
                 elif result in self.RED:
@@ -254,12 +253,12 @@ class Casino(commands.Cog):
 
         counter = 1
         for user in top_win_count[:10]:
-            text_spend += f'{counter}. {user[0]} {user[2]}\n'
+            text_spend += f'{counter}. {user[0]} {user[3]}\n'
             counter += 1
 
         counter = 1
         for user in top_lose[:10]:
-            text_spend_for_self += f'{counter}. {user[0]} {user[3]}\n'
+            text_spend_for_self += f'{counter}. {user[0]} {user[2]}\n'
             counter += 1
 
         counter = 1
