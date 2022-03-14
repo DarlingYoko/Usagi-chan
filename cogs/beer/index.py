@@ -164,7 +164,7 @@ class Beer(commands.Cog):
                 if diff > 0:
                     # user on cooldown
                     time = format_time(diff)
-                    return await ctx.send(f'{ctx.author.mention}, Ты сможешь работать через {time}', delete_after=20)
+                    return await ctx.send(f'{ctx.author.mention}, Ты сможешь работать через {time}')
                 elif diff <= 0 and diff > -84600:
                     # new work day
                     extra = ''
@@ -180,26 +180,26 @@ class Beer(commands.Cog):
                     
                     r = self.bot.db.custom_command(f'UPDATE pivo set money = {last_money+modifyer}, last_time = {time}, streak = {streak} where user_id = {user_id};')
                     if r == 1:
-                        return await ctx.send(f'{ctx.author.mention}, Хорошо поработал, дежи {money} <:dababy:949712395385843782> {extra}\nТеперь у тебя {last_money+modifyer} <:dababy:949712395385843782>, твой стрик {streak}', delete_after=20)
+                        return await ctx.send(f'{ctx.author.mention}, Хорошо поработал, дежи {money} <:dababy:949712395385843782> {extra}\nТеперь у тебя {last_money+modifyer} <:dababy:949712395385843782>, твой стрик {streak}')
                     else:
-                        return await ctx.send(f'{ctx.author.mention}, Не получилось отправить тебя на работу, сходи ещё раз!', delete_after=20)
+                        return await ctx.send(f'{ctx.author.mention}, Не получилось отправить тебя на работу, сходи ещё раз!')
                 else:
                     # fuckup streak 
                     last_money += money
                     streak = 1
                     r = self.bot.db.custom_command(f'UPDATE pivo set money = {last_money}, last_time = {time}, streak = {streak} where user_id = {user_id};')
                     if r == 1:
-                        return await ctx.send(f'{ctx.author.mention}, Понятно, дабаби закончились, так сразу на работу прибежал, ладно дежи свои {money} <:dababy:949712395385843782> и иди с миром\nТеперь у тебя {last_money} <:dababy:949712395385843782>, твой стрик {streak}', delete_after=20)
+                        return await ctx.send(f'{ctx.author.mention}, Понятно, дабаби закончились, так сразу на работу прибежал, ладно дежи свои {money} <:dababy:949712395385843782> и иди с миром\nТеперь у тебя {last_money} <:dababy:949712395385843782>, твой стрик {streak}')
                     else:
-                        return await ctx.send(f'{ctx.author.mention}, Не получилось отправить тебя на работу, сходи ещё раз!', delete_after=20)
+                        return await ctx.send(f'{ctx.author.mention}, Не получилось отправить тебя на работу, сходи ещё раз!')
         else:
             money += 50
             
             r = self.bot.db.insert('pivo', user_id, money, time, 1, 0, 0, 0, False, 0)
             if r == 1:
-                await ctx.send(f'{ctx.author.mention}, Поздравляю с первым рабочим днём, твоя первая зарплата — {money} <:dababy:949712395385843782>', delete_after=20)
+                await ctx.send(f'{ctx.author.mention}, Поздравляю с первым рабочим днём, твоя первая зарплата — {money} <:dababy:949712395385843782>')
             else:
-                await ctx.send(f'{ctx.author.mention}, Не получилось отправить тебя на работу, сходи ещё раз!', delete_after=20)
+                await ctx.send(f'{ctx.author.mention}, Не получилось отправить тебя на работу, сходи ещё раз!')
 
         
 
@@ -511,23 +511,23 @@ class Beer(commands.Cog):
                 if diff > 0:
                     # user on cooldown
                     time = format_time(diff)
-                    return await ctx.send(f'{ctx.author.mention}, Твоя часовая смена через {time}, ', delete_after=20)
+                    return await ctx.send(f'{ctx.author.mention}, Твоя часовая смена через {time}, ')
 
                 else:
                     # fuckup streak 
                     last_money += money
                     r = self.bot.db.custom_command(f'UPDATE pivo set money = {last_money}, hourly_work = {time} where user_id = {user_id};')
                     if r == 1:
-                        return await ctx.send(f'{ctx.author.mention}, Часовая смена закончена, топай довольный с {money} <:dababy:949712395385843782>\nТеперь у тебя {last_money} <:dababy:949712395385843782>', delete_after=20)
+                        return await ctx.send(f'{ctx.author.mention}, Часовая смена закончена, топай довольный с {money} <:dababy:949712395385843782>\nТеперь у тебя {last_money} <:dababy:949712395385843782>')
                     else:
-                        return await ctx.send(f'{ctx.author.mention}, Не получилось отправить тебя на работу, сходи ещё раз!', delete_after=20)
+                        return await ctx.send(f'{ctx.author.mention}, Не получилось отправить тебя на работу, сходи ещё раз!')
         else:
             
             r = self.bot.db.insert('pivo', user_id, money, 0, 1, 0, 0, 0, False, time)
             if r == 1:
-                return await ctx.send(f'{ctx.author.mention}, Часовая смена закончена, топай довольный с {money} <:dababy:949712395385843782>\nТеперь у тебя {last_money} <:dababy:949712395385843782>', delete_after=20)
+                return await ctx.send(f'{ctx.author.mention}, Часовая смена закончена, топай довольный с {money} <:dababy:949712395385843782>\nТеперь у тебя {last_money} <:dababy:949712395385843782>')
             else:
-                await ctx.send(f'{ctx.author.mention}, Не получилось отправить тебя на работу, сходи ещё раз!', delete_after=20)
+                await ctx.send(f'{ctx.author.mention}, Не получилось отправить тебя на работу, сходи ещё раз!')
 
     @commands.command()
     @commands.is_owner()
@@ -601,13 +601,19 @@ class Beer(commands.Cog):
     # async def test(self, ctx):
     #     await ctx.message.delete()
     #     channels = [951927827215822888, 951927724849635358, 951927512445886584]
-    #     users = {}
+    #     users = {0:0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6:0, 7:0, 8:0, 9:0, 10:0, 11:0, 12:0, 13:0, 14:0, 15:0, 16:0, 17:0, 18:0, 19:0, 20:0, 21:0, 22:0, 23:0, 24:0, 25:0, 26:0, 27:0, 28:0, 29:0, 30:0, 31:0, 32:0, 33:0, 34:0, 35:0, 36:0}
     #     for channel in channels:
     #         channel = await self.bot.fetch_channel(channel)
     #         async for message in channel.history(limit=None):
     #             if message.embeds:
     #                 embed = message.embeds[0]
     #                 if embed.title == 'Рулетка закончена':
+    #                     text = embed.description.split('!')[0].split(' ')[1]
+                        
+                        # if '\\' in text:
+                        #     text = text.split('\\')[0]
+                        # text = int(text)
+                        # users[text] += 1
     #                     text = embed.description.split('\n\n\n')
     #                     winners = text[0].split('Победители:\n')
     #                     losers = text[1].split('Проигравшие:\n')
@@ -654,7 +660,7 @@ class Beer(commands.Cog):
     #                                 users[loser_name]['lose'] += loser_bet
     #                             else:
     #                                 users[loser_name] = {'lose_count': 1, 'lose': loser_bet, 'win': 0, 'win_count': 0}
-    #     pprint(users)
+        # print(users)
 
     #     for user, bets in users.items():
     #         if user == 'Stella By Moor':
