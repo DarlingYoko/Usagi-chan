@@ -137,7 +137,6 @@ class Beer(commands.Cog):
     @commands.command(name='работа', aliases=['work', 'работать', 'батрачить', 'рабство'], description = 'Команда для зарабатывания <:dababy:949712395385843782>', help='toxic')
     # @commands.cooldown(per=60*60*24, rate=1, type=commands.BucketType.user)
     async def go_to_work(self, ctx):
-        await ctx.message.delete()
         # toxic = self.bot.config['channel'].getint('toxic')
         # bar = self.bot.config['channel'].getint('bar')
         # if ctx.channel.id not in [toxic, bar] and str(ctx.channel.type) == 'text':
@@ -482,7 +481,6 @@ class Beer(commands.Cog):
 
     @commands.command(name='часовая', aliases=['hourly', 'hw'], description = 'Команда для зарабатывания <:dababy:949712395385843782> раз в час', help='toxic')
     async def go_to_work_hourly(self, ctx):
-        await ctx.message.delete()
         # toxic = self.bot.config['channel'].getint('toxic')
         # bar = self.bot.config['channel'].getint('bar')
         # if ctx.channel.id not in [toxic, bar] and str(ctx.channel.type) == 'text':
