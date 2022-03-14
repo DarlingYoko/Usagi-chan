@@ -26,7 +26,7 @@ class Fun(commands.Cog):
         usage = '<имя пользователя>|<ID>'
     )
     async def joined(self, ctx, *, member: str = None):
-        member = get_member_by_all(self, member) or ctx.author
+        member = await get_member_by_all(self, member) or ctx.author
         time = member.joined_at.strftime("%m/%d/%Y, %H:%M")
         req = await self.bot.http.request(discord.http.Route("GET", "/users/{uid}", uid=member.id))
         banner_id = req["banner"]
