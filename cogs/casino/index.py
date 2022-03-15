@@ -27,8 +27,8 @@ class Roulette_modal(Modal):
 
         if self.game.is_finished():
             return await interaction.response.send_message(content=f'Ты не успел поставить(', ephemeral=True)
-        if interaction.user.id in self.game.players.keys():
-            return await interaction.response.send_message(content=f'Ты уже сделал ставку на эту игру, подожди пока она закончится или выбери другой стол!', ephemeral=True)
+        # if interaction.user.id in self.game.players.keys():
+        #     return await interaction.response.send_message(content=f'Ты уже сделал ставку на эту игру, подожди пока она закончится или выбери другой стол!', ephemeral=True)
 
         own_bet = None
         if self.children[0].custom_id == 'own_bet':
@@ -56,8 +56,10 @@ class Roulette_modal(Modal):
         # print(self.children[1].value, self.children[1].custom_id)
         money -= bet
 
-        
-        self.game.players[interaction.user.id] = {'type_bet': self.bet, 'bet': bet, 'own_bet': own_bet, 'money': money, 'name': interaction.user.name, 'id': interaction.user.id}
+        if interaction.user.id in self.game.players.keys():
+            self.game.players[interaction.user.id].append({'type_bet': self.bet, 'bet': bet, 'own_bet': own_bet, 'name': interaction.user.name})
+        else:
+            self.game.players[interaction.user.id] = [{'type_bet': self.bet, 'bet': bet, 'own_bet': own_bet, 'name': interaction.user.name}]
         await interaction.response.send_message(content=f'Ты сделал ставку в размере {bet} <:dababy:949712395385843782> на {self.bet}', ephemeral=True)
         self.game.bot.db.update('pivo', 'money', 'user_id', money, interaction.user.id)
 
@@ -145,38 +147,37 @@ class Casino(commands.Cog):
                 losers = 'Проигравшие:\n'
                 money_sql = ''
                 stat_sql = ''
-                for player_id, data in message['game'].players.items():
-                    type_bet = data['type_bet']
-                    bet = data['bet']
-                    own_bet = data['own_bet']
-                    money = data['money']
-                    name = data['name']
-                    user_id = data['id']
-                    if own_bet:
-                        text = f'на число {own_bet}\n'
-                    else:
-                        text = '\n'
-
-                    if (type_bet == 'even' and result % 2 == 0) or \
-                        (type_bet == 'odd' and result % 2 == 1) or \
-                        (type_bet == 'zero' and result == 0) or \
-                        (type_bet == 'own' and result == own_bet) or \
-                        (type_bet == 'red' and result in self.RED) or \
-                        (type_bet == 'black' and result in self.BLACK):
-                        
-                        winners += f'{name}, поставил {bet}<:dababy:949712395385843782> на {type_bet} {text}'
-
-                        if type_bet in ['even', 'odd', 'red', 'black']:
-                            bet *= 2
+                for player_id, bets in message['game'].players.items():
+                    for bet_data in bets:
+                        type_bet = bet_data['type_bet']
+                        bet = bet_data['bet']
+                        own_bet = bet_data['own_bet']
+                        name = bet_data['name']
+                        if own_bet:
+                            text = f'на число {own_bet}\n'
                         else:
-                            bet *= 36
-                        money_sql += f'update pivo set money = money + {bet} where user_id = {user_id};\n'
-                        stat_sql += f'update roulette_stat set win = win + {bet}, win_count = win_count + 1 where user_id = {user_id};\n'
+                            text = '\n'
+
+                        if (type_bet == 'even' and result % 2 == 0) or \
+                            (type_bet == 'odd' and result % 2 == 1) or \
+                            (type_bet == 'zero' and result == 0) or \
+                            (type_bet == 'own' and result == own_bet) or \
+                            (type_bet == 'red' and result in self.RED) or \
+                            (type_bet == 'black' and result in self.BLACK):
                             
-                    else:
-                        losers += f'{name}, поставил {bet}<:dababy:949712395385843782> на {type_bet} {text}'
-                        money_sql += f'update pivo set spend = spend + {bet} where user_id = {user_id};\n'
-                        stat_sql += f'update roulette_stat set lose = lose + {bet}, lose_count = lose_count+1 where user_id = {user_id};\n'
+                            winners += f'{name}, поставил {bet}<:dababy:949712395385843782> на {type_bet} {text}'
+
+                            if type_bet in ['even', 'odd', 'red', 'black']:
+                                bet *= 2
+                            else:
+                                bet *= 36
+                            money_sql += f'update pivo set money = money + {bet} where user_id = {player_id};\n'
+                            stat_sql += f'update roulette_stat set win = win + {bet}, win_count = win_count + 1 where user_id = {player_id};\n'
+                                
+                        else:
+                            losers += f'{name}, поставил {bet}<:dababy:949712395385843782> на {type_bet} {text}'
+                            money_sql += f'update pivo set spend = spend + {bet} where user_id = {player_id};\n'
+                            stat_sql += f'update roulette_stat set lose = lose + {bet}, lose_count = lose_count+1 where user_id = {player_id};\n'
                 self.bot.db.custom_command(money_sql)
                 self.bot.db.custom_command(stat_sql)
 
