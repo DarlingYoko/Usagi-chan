@@ -143,6 +143,8 @@ class Casino(commands.Cog):
                 
                 winners = 'Победители:\n'
                 losers = 'Проигравшие:\n'
+                money_sql = ''
+                stat_sql = ''
                 for player_id, data in message['game'].players.items():
                     type_bet = data['type_bet']
                     bet = data['bet']
@@ -163,35 +165,20 @@ class Casino(commands.Cog):
                         (type_bet == 'black' and result in self.BLACK):
                         
                         winners += f'{name}, поставил {bet}<:dababy:949712395385843782> на {type_bet} {text}'
-                        money = self.bot.db.get_value('pivo', 'money', 'user_id', player_id)
-                        stats = self.bot.db.custom_command(f'SELECT win, win_count from roulette_stat where user_id = {user_id};')
-                        if not stats:
-                            win = 0
-                            win_count = 1
-                        else:
-                            stats = stats[0]
-                            win, win_count = stats[0], stats[1]
-                        win_count += 1
+
                         if type_bet in ['even', 'odd', 'red', 'black']:
-                            self.bot.db.update('pivo', 'money', 'user_id', money + bet*2, player_id)
-                            self.bot.db.custom_command(f'UPDATE roulette_stat set win = {win + bet*2}, win_count = {win_count} where user_id = {user_id};')
+                            bet *= 2
                         else:
-                            self.bot.db.update('pivo', 'money', 'user_id', money + bet*36, player_id)
-                            self.bot.db.custom_command(f'UPDATE roulette_stat set win = {win + bet*36}, win_count = {win_count} where user_id = {user_id};')
+                            bet *= 36
+                        money_sql += f'update pivo set money = money + {bet} where user_id = {user_id};\n'
+                        stat_sql += f'update roulette_stat set win = win + {bet}, win_count = win_count + 1 where user_id = {user_id};\n'
                             
                     else:
                         losers += f'{name}, поставил {bet}<:dababy:949712395385843782> на {type_bet} {text}'
-                        stats = self.bot.db.custom_command(f'SELECT lose, lose_count from roulette_stat where user_id = {user_id};')
-                        if not stats:
-                            lose = 0
-                            lose_count = 1
-                        else:
-                            stats = stats[0]
-                            lose, lose_count = stats[0], stats[1]
-                        lose_count += 1
-                        spend = self.bot.db.get_value('pivo', 'spend', 'user_id', player_id)
-                        self.bot.db.update('pivo', 'spend', 'user_id', spend+bet, player_id)
-                        self.bot.db.custom_command(f'UPDATE roulette_stat set lose = {lose + bet}, lose_count = {lose_count} where user_id = {user_id};')
+                        money_sql += f'update pivo set spend = spend + {bet} where user_id = {user_id};\n'
+                        stat_sql += f'update roulette_stat set lose = lose + {bet}, lose_count = lose_count+1 where user_id = {user_id};\n'
+                self.bot.db.custom_command(money_sql)
+                self.bot.db.custom_command(stat_sql)
 
 
                 await asyncio.sleep(5)
