@@ -135,7 +135,8 @@ class Casino(commands.Cog):
                     description='Все ставки приняты, больше ставки не принимаются!\nКрутим рулетку!',
                     url_image=gif_url)
                 await message['message'].edit(embed=embed, view=None)
-                result = randint(0, 36)
+                rng = SystemRandom()
+                result = rng.randint(0, 36)
                 if result in self.BLACK:
                     color = '\⚫'
                 elif result in self.RED:
@@ -147,6 +148,7 @@ class Casino(commands.Cog):
                 losers = 'Проигравшие:\n'
                 money_sql = ''
                 stat_sql = ''
+                trans_sql = ''
                 for player_id, bets in message['game'].players.items():
                     for bet_data in bets:
                         type_bet = bet_data['type_bet']
@@ -173,13 +175,16 @@ class Casino(commands.Cog):
                                 bet *= 36
                             money_sql += f'update pivo set money = money + {bet} where user_id = {player_id};\n'
                             stat_sql += f'update roulette_stat set win = win + {bet}, win_count = win_count + 1 where user_id = {player_id};\n'
+                            trans_sql += f'insert into transactions values ({player_id}, {bet}, \'win bet\', \'\', {mktime(datetime.now().timetuple())});\n'
                                 
                         else:
                             losers += f'{name}, поставил {bet}<:dababy:949712395385843782> на {type_bet} {text}'
                             money_sql += f'update pivo set spend = spend + {bet} where user_id = {player_id};\n'
                             stat_sql += f'update roulette_stat set lose = lose + {bet}, lose_count = lose_count+1 where user_id = {player_id};\n'
+                            trans_sql += f'insert into transactions values ({player_id}, {bet}, \'lose bet\', \'\', {mktime(datetime.now().timetuple())});\n'
                 self.bot.db.custom_command(money_sql)
                 self.bot.db.custom_command(stat_sql)
+                self.bot.db.custom_command(trans_sql)
 
 
                 await asyncio.sleep(5)

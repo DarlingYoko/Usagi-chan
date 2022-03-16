@@ -158,7 +158,7 @@ class Beer(commands.Cog):
             
             if last_time:
                 diff = int(time - last_time)
-                diff = 84600 - diff # если больше 0, то кд, если меньше нуля, но не меньше чем -86400, то день юза, если меньше чем -86400, то факап
+                diff = 84600 - diff # если больше 0, то кд, если меньше нуля, но не больше чем -86400, то день юза, если меньше чем -86400, то факап
                 # diff = 0
                 if diff > 0:
                     # user on cooldown
@@ -170,15 +170,16 @@ class Beer(commands.Cog):
                     streak += 1
                     modifyer = 0
                     if streak in [10, 20, 30, 40]:
-                        modifyer = streak * 10
+                        modifyer = streak * 20
                         extra = f'Также за хорошую работу ты получаешь премию {modifyer}'
                     if streak >= 50 and streak % 10 == 0:
-                        modifyer = 1000
+                        modifyer = 5000
                         extra = f'Жесть ты работяга получай МЕГАХАРОШУЮ премию {modifyer}'
                     last_money += money
                     
                     r = self.bot.db.custom_command(f'UPDATE pivo set money = {last_money+modifyer}, last_time = {time}, streak = {streak} where user_id = {user_id};')
                     if r == 1:
+                        self.bot.db.insert('transactions', user_id, modifyer, 'salary', 'per day', mktime(datetime.now().timetuple()))
                         return await ctx.send(f'{ctx.author.mention}, Хорошо поработал, дежи {money} <:dababy:949712395385843782> {extra}\nТеперь у тебя {last_money+modifyer} <:dababy:949712395385843782>, твой стрик {streak}')
                     else:
                         return await ctx.send(f'{ctx.author.mention}, Не получилось отправить тебя на работу, сходи ещё раз!')
@@ -188,6 +189,7 @@ class Beer(commands.Cog):
                     streak = 1
                     r = self.bot.db.custom_command(f'UPDATE pivo set money = {last_money}, last_time = {time}, streak = {streak} where user_id = {user_id};')
                     if r == 1:
+                        self.bot.db.insert('transactions', user_id, modifyer, 'salary', 'per day', mktime(datetime.now().timetuple()))
                         return await ctx.send(f'{ctx.author.mention}, Понятно, дабаби закончились, так сразу на работу прибежал, ладно дежи свои {money} <:dababy:949712395385843782> и иди с миром\nТеперь у тебя {last_money} <:dababy:949712395385843782>, твой стрик {streak}')
                     else:
                         return await ctx.send(f'{ctx.author.mention}, Не получилось отправить тебя на работу, сходи ещё раз!')
@@ -196,6 +198,7 @@ class Beer(commands.Cog):
             
             r = self.bot.db.insert('pivo', user_id, money, time, 1, 0, 0, 0, False, 0)
             if r == 1:
+                self.bot.db.insert('transactions', user_id, modifyer, 'salary', 'per day', mktime(datetime.now().timetuple()))
                 await ctx.send(f'{ctx.author.mention}, Поздравляю с первым рабочим днём, твоя первая зарплата — {money} <:dababy:949712395385843782>')
             else:
                 await ctx.send(f'{ctx.author.mention}, Не получилось отправить тебя на работу, сходи ещё раз!')
@@ -311,9 +314,12 @@ class Beer(commands.Cog):
                 db_counter = self.bot.db.get_value('pivo', 'money', 'user_id', 1)
                 db_counter += 1
                 self.bot.db.update('pivo', 'money', 'user_id', db_counter, 1)
+            name = ''
             if for_user_name != None and member:
                 answer = f'{answer} для {member.mention}'
+                name = member.name
             await ctx.send(f'{ctx.author.mention}, {answer} за {sell_count} <:dababy:949712395385843782>\nУ тебя осталось {money} <:dababy:949712395385843782>')
+            self.bot.db.insert('transactions', ctx.author.id, sell_count, 'buy item', f'{product} {name}', mktime(datetime.now().timetuple()))
         else:
             await ctx.send(f'{ctx.author.mention}, Не получилось обработать твою покупку, попробуй позже!')
 
@@ -374,9 +380,7 @@ class Beer(commands.Cog):
             member = redemption['member']
             response = 0
             if member != None:
-                money = self.bot.db.get_value('pivo', 'money', 'user_id', member.id)
-                money += cost // 10
-                response = self.bot.db.update('pivo', 'money', 'user_id', money, member.id)
+                response = self.bot.db.custom_command(f'update pivo set money = money + {cost // 10} where user_id = {member.id};')
                 if not response:
                     redemption['status'] = twitchAPI.types.CustomRewardRedemptionStatus.CANCELED
             r = self.bot.twitch.update_redemption_status(
@@ -390,6 +394,7 @@ class Beer(commands.Cog):
             if response:
                 from_user = redemption['from_user']
                 await channel.send(f'{member.mention}, Тебе перевод {cost//10} <:dababy:949712395385843782> от {from_user}')
+                self.bot.db.insert('transactions', member.author.id, cost//10, 'top up', f'from {from_user}', mktime(datetime.now().timetuple()))
         
 
     @check_rewards_twitch.before_loop
@@ -516,6 +521,7 @@ class Beer(commands.Cog):
                     last_money += money
                     r = self.bot.db.custom_command(f'UPDATE pivo set money = {last_money}, hourly_work = {time} where user_id = {user_id};')
                     if r == 1:
+                        self.bot.db.insert('transactions', user_id, money, 'salary', 'per day', mktime(datetime.now().timetuple()))
                         return await ctx.send(f'{ctx.author.mention}, Часовая смена закончена, топай довольный с {money} <:dababy:949712395385843782>\nТеперь у тебя {last_money} <:dababy:949712395385843782>')
                     else:
                         return await ctx.send(f'{ctx.author.mention}, Не получилось отправить тебя на работу, сходи ещё раз!')
@@ -523,6 +529,7 @@ class Beer(commands.Cog):
             
             r = self.bot.db.insert('pivo', user_id, money, 0, 1, 0, 0, 0, False, time)
             if r == 1:
+                self.bot.db.insert('transactions', user_id, money, 'salary', 'per day', mktime(datetime.now().timetuple()))
                 return await ctx.send(f'{ctx.author.mention}, Часовая смена закончена, топай довольный с {money} <:dababy:949712395385843782>\nТеперь у тебя {last_money} <:dababy:949712395385843782>')
             else:
                 await ctx.send(f'{ctx.author.mention}, Не получилось отправить тебя на работу, сходи ещё раз!')
@@ -576,17 +583,16 @@ class Beer(commands.Cog):
         
         if transfer_money > money:
             return await ctx.send(f'{ctx.author.mention}, У тебя нет столько деняг!')
-        
 
-        second_money = self.bot.db.get_value('pivo', 'money', 'user_id', member.id)
 
-        money -= transfer_money
-        second_money += transfer_money
 
-        self.bot.db.update('pivo', 'money', 'user_id', money, user_id)
-        self.bot.db.update('pivo', 'money', 'user_id', second_money, member.id)
+
+        self.bot.db.custom_command(f'update pivo set money = money + {transfer_money} where user_id = {member.id};\
+            update pivo set money = money - {transfer_money} where user_id = {user_id};')
 
         await ctx.send(f'{member.mention}, Тебе перевод от {ctx.author.mention} {transfer_money}<:dababy:949712395385843782>!')
+        self.bot.db.insert('transactions', member.id, transfer_money, 'transfer', f'from {ctx.author.id}', mktime(datetime.now().timetuple()))
+        self.bot.db.insert('transactions', user_id, transfer_money, 'donate', f'to {member.id}', mktime(datetime.now().timetuple()))
 
     @transfer.error
     async def transfer_errors(self, ctx, error):
@@ -679,6 +685,32 @@ class Beer(commands.Cog):
                 
     #         self.bot.db.insert('roulette_stat', member.id, bets['win'], bets['lose'], bets['win_count'], bets['lose_count'])
 
+
+
+    @commands.command(name='история', aliases=['history'])
+    async def transactions_history(self, ctx):
+        history = self.bot.db.custom_command(f'select * from transactions where user_id = {ctx.author.id};')
+
+        if not history:
+            return await ctx.send(f'{ctx.author.mention}, У тебя нет сохранённых транзакций!')
+
+        text = '```autohotkey\n'
+        counter = 1
+        for trans in history:
+            date = trans[4]
+            date = datetime.fromtimestamp(date).strftime("%B %d, %Y %H:%M:%S")
+            text += f'{counter}. дабеби — {trans[1]}, тип — {trans[2]}, доп инфо — {trans[3]}, дата — {date}\n'
+            counter += 1
+        text += '```'
+        try:
+            channel = ctx.author.dm_channel
+            if channel == None:
+                channel = await ctx.author.create_dm()
+            await channel.send(f'История твоих транзакций:\n{text}')
+        except:
+            return await ctx.send(f'{ctx.author.mention}, У тебя закрыта лс, не смогла отправить тебе историю.')
+        
+        await ctx.send(f'{ctx.author.mention}, Отправила в лс твою историю')
 
 
 
