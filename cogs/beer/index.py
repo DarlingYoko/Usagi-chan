@@ -394,7 +394,7 @@ class Beer(commands.Cog):
             if response:
                 from_user = redemption['from_user']
                 await channel.send(f'{member.mention}, Тебе перевод {cost//10} <:dababy:949712395385843782> от {from_user}')
-                self.bot.db.insert('transactions', member.author.id, cost//10, 'top up', f'from {from_user}', mktime(datetime.now().timetuple()))
+                self.bot.db.insert('transactions', member.id, cost//10, 'top up', f'from {from_user}', mktime(datetime.now().timetuple()))
         
 
     @check_rewards_twitch.before_loop
@@ -706,8 +706,16 @@ class Beer(commands.Cog):
             channel = ctx.author.dm_channel
             if channel == None:
                 channel = await ctx.author.create_dm()
-            await channel.send(f'История твоих транзакций:\n{text}')
-        except:
+            if len(text) >= 2000:
+                await channel.send(f'История твоих транзакций:')
+                text = text[15:]
+                text = text[:-3]
+                for i in range(0, len(text), 1950):
+                    await channel.send(f'```autohotkey\n{text[i:i+1950]}\n```')
+            else:
+                await channel.send(f'История твоих транзакций:\n{text}')
+        except Exception as e:
+            print(e)
             return await ctx.send(f'{ctx.author.mention}, У тебя закрыта лс, не смогла отправить тебе историю.')
         
         await ctx.send(f'{ctx.author.mention}, Отправила в лс твою историю')
