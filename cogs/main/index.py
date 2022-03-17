@@ -192,10 +192,11 @@ class Main(commands.Cog):
         # self.bot.db.update('forum', 'time', 'userid', time, 2)
         #
         # self.bot.db.update('forum', 'time', 'userid', '933469504174981161', 2)
-            message_id = self.bot.db.get_value('forum', 'time', 'userid', 2)
+            message_id = int(self.bot.db.get_value('forum', 'time', 'userid', 2))
             # print(message_id)
             channel = await self.bot.fetch_channel(932628946443468841)
-            message_after = discord.Object(id = message_id)
+            message_after = await channel.fetch_message(message_id)
+
             top_ru = {
                 '1/6': [],
                 '2/6': [],
@@ -248,6 +249,7 @@ class Main(commands.Cog):
             for key, value in top_eng.items():
                 answer += key + ' ' + '; '.join(value) + '\n'
             answer += '```'
+            message = await channel.send(answer)
 
             answer = f'```cs\n# Math Wordle Day #{top_math_day}\n'
             for key, value in top_math.items():
