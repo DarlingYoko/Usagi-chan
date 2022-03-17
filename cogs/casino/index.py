@@ -20,7 +20,11 @@ class Roulette_modal(Modal):
         self.bet = bet
         self.game = game
         if bet == 'own':
-           self.add_item(InputText(label='Число, на которое ты хочешь поставить', custom_id='own_bet')) 
+           self.add_item(InputText(label='Число, на которое ты хочешь поставить', custom_id='own_bet'))
+        if bet == 'columns':
+           self.add_item(InputText(label='Номер колонны', custom_id='own_bet')) 
+        if bet == 'dozens':
+           self.add_item(InputText(label='Номер дюжины', custom_id='own_bet')) 
         self.add_item(InputText(label='Ставка', custom_id='bet_count'))
         
     async def callback(self, interaction: discord.Interaction):
@@ -44,6 +48,11 @@ class Roulette_modal(Modal):
         
         if not bet.isdecimal():
             return await interaction.response.send_message(content=f'Ты ввёл символы или буковы в поле "Размер ставки"!', ephemeral=True)
+
+        if self.bet in ['columns', 'dozens']:
+            if own_bet < 1 or own_bet > 3:
+                return await interaction.response.send_message(content=f'Ты ввёл не допустимое значние в поле "Колонна/Дюжина"!', ephemeral=True)
+
         bet = int(bet)
         # if bet < 1:
             # return await interaction.response.send_message(content=f'Ты ввёл недопустимое число в поле "Размер ставки"!', ephemeral=True)
@@ -72,6 +81,10 @@ class Roulette_bet_select(Select['Roulette_view']):
             SelectOption(label='Зеро', value='zero'),
             SelectOption(label='Чётное', value='even'),
             SelectOption(label='Нечётное', value='odd'),
+            SelectOption(label='Малые', value='little'),
+            SelectOption(label='Большие', value='big'),
+            SelectOption(label='Колонны', value='columns'),
+            SelectOption(label='Дюжины', value='dozens'),
             SelectOption(label='Свой номер', value='own'),
         ]
         super().__init__(options=options)
@@ -105,6 +118,9 @@ class Casino(commands.Cog):
         self.roulette_counter.start()
         self.RED = [1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36]
         self.BLACK = [2,4,6,8,10,11,13,15,17,20,22,24,26,28,29,31,33,35]
+        self.columns = {1: range(1, 36, 3), 2: range(2, 36, 3), 3: range(3, 37, 3)}
+        self.dozens = {1: range(1, 13), 2: range(13, 25), 3: range(25, 37)}
+    
 
     @commands.cooldown(per=60, rate=1)
     @commands.command(name='рулетка', aliases=['roulette'])
@@ -165,7 +181,11 @@ class Casino(commands.Cog):
                             (type_bet == 'zero' and result == 0) or \
                             (type_bet == 'own' and result == own_bet) or \
                             (type_bet == 'red' and result in self.RED) or \
-                            (type_bet == 'black' and result in self.BLACK):
+                            (type_bet == 'black' and result in self.BLACK) or \
+                            (type_bet == 'little' and result >= 1 and result <= 18) or \
+                            (type_bet == 'big' and result >= 19 and result <= 36) or \
+                            (type_bet == 'columns' and result in self.columns[own_bet]) or \
+                            (type_bet == 'dozens' and result in self.dozens[own_bet]):
                             
                             winners += f'{name}, поставил {bet}<:dababy:949712395385843782> на {type_bet} {text}'
 
