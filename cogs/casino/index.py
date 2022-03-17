@@ -20,8 +20,8 @@ class Roulette_modal(Modal):
         self.bet = bet
         self.game = game
         if bet == 'own':
-           self.add_item(InputText(label='Число, на которое ты хочешь поставить', value=1, custom_id='own_bet')) 
-        self.add_item(InputText(label='Ставка', value=1, custom_id='bet_count'))
+           self.add_item(InputText(label='Число, на которое ты хочешь поставить', custom_id='own_bet')) 
+        self.add_item(InputText(label='Ставка', custom_id='bet_count'))
         
     async def callback(self, interaction: discord.Interaction):
 
@@ -288,6 +288,21 @@ class Casino(commands.Cog):
             retry_after = error.retry_after
             time = format_time(retry_after)
             await ctx.send(f'{ctx.author.mention}, Рановато для получения топа, я же недавно показывала его вам, бака! Попробуй через {time}')
+
+    
+    @commands.group(
+        name='правила',
+        aliases=['rules'],
+        description='Помощь по всем правилам казиныча'
+    )
+    async def rules(self, ctx):
+        if ctx.invoked_subcommand is None:
+            return await ctx.send_help('rules')
+    
+
+    @rules.command(name='рулетка')
+    async def rules_roulette(self, ctx):
+        await ctx.send(f'Вот ссылочка на все правила, ня\nhttps://discord.com/channels/858053936313008129/951577300758036630/954012390305984572')
 
         
 
