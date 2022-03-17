@@ -189,10 +189,14 @@ class Casino(commands.Cog):
                             
                             winners += f'{name}, поставил {bet}<:dababy:949712395385843782> на {type_bet} {text}'
 
-                            if type_bet in ['even', 'odd', 'red', 'black']:
+                            if type_bet in ['even', 'odd', 'red', 'black', 'little', 'big']:
                                 bet *= 2
-                            else:
+                            elif type_bet in ['zero', 'own']:
                                 bet *= 36
+                            elif type_bet in ['columns', 'dozens']:
+                                bet *= 3
+                            else:
+                                bet *= 0
                             money_sql += f'update pivo set money = money + {bet} where user_id = {player_id};\n'
                             stat_sql += f'update roulette_stat set win = win + {bet}, win_count = win_count + 1 where user_id = {player_id};\n'
                             trans_sql += f'insert into transactions values ({player_id}, {bet}, \'win bet\', \'\', {mktime(datetime.now().timetuple())});\n'
