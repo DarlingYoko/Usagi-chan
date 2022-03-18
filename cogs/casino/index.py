@@ -285,22 +285,22 @@ class Casino(commands.Cog):
 
         fields = [
                 {'name': 'Топ лутателей', 
-                    'value': text_money,
+                    'value': f'```\n{text_money}```',
                     'inline': True},
                 {'name': '_ _', 
                     'value': '_ _',
                     'inline': True},
                 {'name': 'Топ лакеров', 
-                    'value': text_spend,
+                    'value': f'```\n{text_spend}```',
                     'inline': True},
                 {'name': 'Топ транжир', 
-                    'value': text_spend_for_self,
+                    'value': f'```\n{text_spend_for_self}```',
                     'inline': True},
                 {'name': '_ _', 
                     'value': '_ _',
                     'inline': True},
                 {'name': 'Топ лузеров', 
-                    'value': text_spend_for_user,
+                    'value': f'```\n{text_spend_for_user}```',
                     'inline': True},
         ]
         embed = get_embed(title='Топ топов', fields=fields)
