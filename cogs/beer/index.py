@@ -198,7 +198,7 @@ class Beer(commands.Cog):
             
             r = self.bot.db.insert('pivo', user_id, money, time, 1, 0, 0, 0, False, 0)
             if r == 1:
-                self.bot.db.insert('transactions', user_id, modifyer, 'salary', 'per day', mktime(datetime.now().timetuple()))
+                self.bot.db.insert('transactions', user_id, money, 'salary', 'per day', mktime(datetime.now().timetuple()))
                 await ctx.send(f'{ctx.author.mention}, Поздравляю с первым рабочим днём, твоя первая зарплата — {money} <:dababy:949712395385843782>')
             else:
                 await ctx.send(f'{ctx.author.mention}, Не получилось отправить тебя на работу, сходи ещё раз!')
