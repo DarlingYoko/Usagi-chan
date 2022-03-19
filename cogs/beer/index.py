@@ -601,24 +601,24 @@ class Beer(commands.Cog):
         if isinstance(error, commands.MissingRequiredArgument):
             return await ctx.send(f'{ctx.author.mention}, Ты не ввёл необходимые данные!')
     
-    @commands.cooldown(per=60*5, rate=1)
-    @commands.command(name='топ_цифр')
-    async def top_numbers(self, ctx):
-        await ctx.message.delete()
-        channels = [951927827215822888, 951927724849635358, 951927512445886584]
-        users = {0:0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6:0, 7:0, 8:0, 9:0, 10:0, 11:0, 12:0, 13:0, 14:0, 15:0, 16:0, 17:0, 18:0, 19:0, 20:0, 21:0, 22:0, 23:0, 24:0, 25:0, 26:0, 27:0, 28:0, 29:0, 30:0, 31:0, 32:0, 33:0, 34:0, 35:0, 36:0}
-        for channel in channels:
-            channel = await self.bot.fetch_channel(channel)
-            async for message in channel.history(limit=None):
-                if message.embeds:
-                    embed = message.embeds[0]
-                    if embed.title == 'Рулетка закончена':
-                        text = embed.description.split('!')[0].split(' ')[1]
+    # @commands.cooldown(per=60*5, rate=1)
+    # @commands.command(name='топ_цифр')
+    # async def top_numbers(self, ctx):
+    #     await ctx.message.delete()
+    #     channels = [951927827215822888, 951927724849635358, 951927512445886584]
+    #     users = {0:0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6:0, 7:0, 8:0, 9:0, 10:0, 11:0, 12:0, 13:0, 14:0, 15:0, 16:0, 17:0, 18:0, 19:0, 20:0, 21:0, 22:0, 23:0, 24:0, 25:0, 26:0, 27:0, 28:0, 29:0, 30:0, 31:0, 32:0, 33:0, 34:0, 35:0, 36:0}
+    #     for channel in channels:
+    #         channel = await self.bot.fetch_channel(channel)
+    #         async for message in channel.history(limit=None):
+    #             if message.embeds:
+    #                 embed = message.embeds[0]
+    #                 if embed.title == 'Рулетка закончена':
+                        # text = embed.description.split('!')[0].split(' ')[1]
                         
-                        if '\\' in text:
-                            text = text.split('\\')[0]
-                        text = int(text)
-                        users[text] += 1
+                        # if '\\' in text:
+                        #     text = text.split('\\')[0]
+                        # text = int(text)
+                        # users[text] += 1
     #                     text = embed.description.split('\n\n\n')
     #                     winners = text[0].split('Победители:\n')
     #                     losers = text[1].split('Проигравшие:\n')
@@ -665,16 +665,16 @@ class Beer(commands.Cog):
     #                                 users[loser_name]['lose'] += loser_bet
     #                             else:
     #                                 users[loser_name] = {'lose_count': 1, 'lose': loser_bet, 'win': 0, 'win_count': 0}
-        users = {k: v for k, v in sorted(users.items(), key=lambda item: item[1], reverse=True)}
-        text = ''
-        counter = 1
+        # users = {k: v for k, v in sorted(users.items(), key=lambda item: item[1], reverse=True)}
+        # text = ''
+        # counter = 1
 
-        for key, value in users.items():
-            text += f'{counter}. {key} — {value}\n'
-            counter += 1
-            if counter == 10:
-                break
-        await ctx.send(text)
+        # for key, value in users.items():
+        #     text += f'{counter}. {key} — {value}\n'
+        #     counter += 1
+        #     if counter == 10:
+        #         break
+        # await ctx.send(text)
 
     #     for user, bets in users.items():
     #         if user == 'Stella By Moor':
