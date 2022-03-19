@@ -9,7 +9,7 @@ class Main(commands.Cog):
         self.bot = bot
         self.config = bot.config
         self.check_twitch_online.start()
-        self.wordle_results.start()
+        # self.wordle_results.start()
 
 
     @commands.command()
