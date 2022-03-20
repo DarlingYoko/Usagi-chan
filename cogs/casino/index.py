@@ -68,7 +68,7 @@ class Roulette_modal(Modal):
         if interaction.user.id in self.game.players.keys():
             self.game.players[interaction.user.id].append({'type_bet': self.bet, 'bet': bet, 'own_bet': own_bet, 'name': interaction.user.name})
         else:
-            self.game.players[self.interaction.user.id] = [{'type_bet': self.bet, 'bet': bet, 'own_bet': own_bet, 'name': interaction.user.name}]
+            self.game.players[interaction.user.id] = [{'type_bet': self.bet, 'bet': bet, 'own_bet': own_bet, 'name': interaction.user.name}]
         await interaction.response.send_message(content=f'Ты сделал ставку в размере {bet} <:dababy:949712395385843782> на {self.bet}', ephemeral=True)
         self.game.bot.db.update('pivo', 'money', 'user_id', money, interaction.user.id)
 
