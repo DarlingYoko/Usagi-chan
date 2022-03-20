@@ -15,11 +15,10 @@ import discord
 
 
 class Roulette_modal(Modal):
-    def __init__(self, game, bet, interaction):
+    def __init__(self, game, bet):
         super().__init__(title='Ставочка', custom_id='roulette_modal')
         self.bet = bet
         self.game = game
-        self.interaction = interaction
         if bet == 'own':
            self.add_item(InputText(label='Число, на которое ты хочешь поставить', custom_id='own_bet'))
         if bet == 'columns':
@@ -31,7 +30,7 @@ class Roulette_modal(Modal):
     async def callback(self, interaction: discord.Interaction):
 
         if self.game.is_finished():
-            return await self.interaction.response.send_message(content=f'Ты не успел поставить(', ephemeral=True)
+            return await interaction.response.send_message(content=f'Ты не успел поставить(', ephemeral=True)
         # if interaction.user.id in self.game.players.keys():
         #     return await interaction.response.send_message(content=f'Ты уже сделал ставку на эту игру, подожди пока она закончится или выбери другой стол!', ephemeral=True)
 
@@ -39,39 +38,39 @@ class Roulette_modal(Modal):
         if self.children[0].custom_id == 'own_bet':
             own_bet = self.children[0].value
             if not own_bet.isdecimal():
-                return await self.interaction.response.send_message(content=f'Ты ввёл символы или буковы в поле "Выбор числа"!', ephemeral=True)
+                return await interaction.response.send_message(content=f'Ты ввёл символы или буковы в поле "Выбор числа"!', ephemeral=True)
             own_bet = int(own_bet)
             if own_bet < 1 or own_bet > 36:
-                return await self.interaction.response.send_message(content=f'Ты ввёл недопустимое число в поле "Выбор числа"!', ephemeral=True)
+                return await interaction.response.send_message(content=f'Ты ввёл недопустимое число в поле "Выбор числа"!', ephemeral=True)
             bet = self.children[1].value
         else:
             bet = self.children[0].value
         
         if not bet.isdecimal():
-            return await self.interaction.response.send_message(content=f'Ты ввёл символы или буковы в поле "Размер ставки"!', ephemeral=True)
+            return await interaction.response.send_message(content=f'Ты ввёл символы или буковы в поле "Размер ставки"!', ephemeral=True)
 
         if self.bet in ['columns', 'dozens']:
             if own_bet < 1 or own_bet > 3:
-                return await self.interaction.response.send_message(content=f'Ты ввёл не допустимое значние в поле "Колонна/Дюжина"!', ephemeral=True)
+                return await interaction.response.send_message(content=f'Ты ввёл не допустимое значние в поле "Колонна/Дюжина"!', ephemeral=True)
 
         bet = int(bet)
         # if bet < 1:
             # return await interaction.response.send_message(content=f'Ты ввёл недопустимое число в поле "Размер ставки"!', ephemeral=True)
-        money = self.game.bot.db.get_value('pivo', 'money', 'user_id', self.interaction.user.id)
+        money = self.game.bot.db.get_value('pivo', 'money', 'user_id', interaction.user.id)
         if not money:
-            return await self.interaction.response.send_message(content=f'У тебя нет <:dababy:949712395385843782> в банке!', ephemeral=True)
+            return await interaction.response.send_message(content=f'У тебя нет <:dababy:949712395385843782> в банке!', ephemeral=True)
         
         if bet > money:
-            return await self.interaction.response.send_message(content=f'Ты не можешь сделать ставку больше чем у тебя есть <:dababy:949712395385843782>!', ephemeral=True)
+            return await interaction.response.send_message(content=f'Ты не можешь сделать ставку больше чем у тебя есть <:dababy:949712395385843782>!', ephemeral=True)
         # print(self.children[1].value, self.children[1].custom_id)
         money -= bet
 
-        if self.interaction.user.id in self.game.players.keys():
-            self.game.players[self.interaction.user.id].append({'type_bet': self.bet, 'bet': bet, 'own_bet': own_bet, 'name': self.interaction.user.name})
+        if interaction.user.id in self.game.players.keys():
+            self.game.players[interaction.user.id].append({'type_bet': self.bet, 'bet': bet, 'own_bet': own_bet, 'name': interaction.user.name})
         else:
-            self.game.players[self.interaction.user.id] = [{'type_bet': self.bet, 'bet': bet, 'own_bet': own_bet, 'name': self.interaction.user.name}]
-        await self.interaction.response.send_message(content=f'Ты сделал ставку в размере {bet} <:dababy:949712395385843782> на {self.bet}', ephemeral=True)
-        self.game.bot.db.update('pivo', 'money', 'user_id', money, self.interaction.user.id)
+            self.game.players[self.interaction.user.id] = [{'type_bet': self.bet, 'bet': bet, 'own_bet': own_bet, 'name': interaction.user.name}]
+        await interaction.response.send_message(content=f'Ты сделал ставку в размере {bet} <:dababy:949712395385843782> на {self.bet}', ephemeral=True)
+        self.game.bot.db.update('pivo', 'money', 'user_id', money, interaction.user.id)
 
 
 class Roulette_bet_select(Select['Roulette_view']):
@@ -94,7 +93,7 @@ class Roulette_bet_select(Select['Roulette_view']):
         assert self.view is not None
         view: Roulette_view = self.view
         bet = self.values[0]
-        await interaction.response.send_modal(Roulette_modal(view, bet, interaction))
+        await interaction.response.send_modal(Roulette_modal(view, bet))
             
 
 class Roulette_view(discord.ui.View):
