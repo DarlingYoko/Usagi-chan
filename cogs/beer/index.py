@@ -189,7 +189,7 @@ class Beer(commands.Cog):
                     streak = 1
                     r = self.bot.db.custom_command(f'UPDATE pivo set money = {last_money}, last_time = {time}, streak = {streak} where user_id = {user_id};')
                     if r == 1:
-                        self.bot.db.insert('transactions', user_id, modifyer, 'salary', 'per day', mktime(datetime.now().timetuple()))
+                        self.bot.db.insert('transactions', user_id, last_money, 'salary', 'per day', mktime(datetime.now().timetuple()))
                         return await ctx.send(f'{ctx.author.mention}, Понятно, дабаби закончились, так сразу на работу прибежал, ладно дежи свои {money} <:dababy:949712395385843782> и иди с миром\nТеперь у тебя {last_money} <:dababy:949712395385843782>, твой стрик {streak}')
                     else:
                         return await ctx.send(f'{ctx.author.mention}, Не получилось отправить тебя на работу, сходи ещё раз!')
