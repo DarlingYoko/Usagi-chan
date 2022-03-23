@@ -459,7 +459,7 @@ class Casino(commands.Cog):
     async def rules_roulette(self, ctx):
         await ctx.send(f'Вот ссылочка на все правила, ня\nhttps://discord.com/channels/858053936313008129/951577300758036630/954012390305984572')
 
-    @commands.cooldown(per=60*2, rate=1)
+    @commands.cooldown(per=60*2, rate=1, type=commands.BucketType.channel)
     @commands.command(name='блекджек', aliases = ['blackjack', 'bj'])
     async def blackjack(self, ctx):
         if not self.ready_game:
