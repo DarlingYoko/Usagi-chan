@@ -27,7 +27,11 @@ class Player_bj:
             elif card in ['jack', 'queen', 'king']:
                 value += 10
             elif card == 'ace':
-                if value < 21:
+                ace = False
+                for card in self.cards:
+                    if card['id'] == 'ace':
+                        ace = True
+                if not ace:
                     value += 11
                 else:
                     value += 1

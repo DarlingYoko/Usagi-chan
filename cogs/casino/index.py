@@ -560,7 +560,7 @@ class Casino(commands.Cog):
                         new_msg = await channel.send(content=f'Играем с <@{player_id}>', embed=embed, view=game)
                         counter = 0
                         player = data['player']
-                        while counter != 60 and player.calculate_value() <= 21 and len(player.cards) < 6:
+                        while counter != 60 and player.calculate_value() < 21 and len(player.cards) < 6:
                             if data['action'] == 'hit':
                                 data['action'] = None
                                 counter = 0
@@ -615,7 +615,7 @@ class Casino(commands.Cog):
                             player_number = player.calculate_value()
                             if player_number > 21:
                                 result = 'Перебор'
-                                sql += f'update pivo set money = money - {bet} where user_id = {player_id};\n'
+                                sql += f'update pivo set money = money - {bet}, spend = spend + {bet} where user_id = {player_id};\n'
                                 stat_sql += f'update roulette_stat set lose = lose + {bet}, lose_count = lose_count+1 where user_id = {player_id};\n'
                                 trans_sql += f'insert into transactions values ({player_id}, {bet}, \'lose bet\', \'\', {mktime(datetime.now().timetuple())});\n'
                             else:
@@ -631,11 +631,9 @@ class Casino(commands.Cog):
                                     trans_sql += f'insert into transactions values ({player_id}, {bet}, \'win bet\', \'\', {mktime(datetime.now().timetuple())});\n'
                                 elif dealer_number == player_number:
                                     result = 'Равно'
-                                    data['result'] = 'push'
                                 else:
                                     result = 'Мало'
-                                    data['result'] = 'lose'
-                                    sql += f'update pivo set money = money - {bet} where user_id = {player_id};\n'
+                                    sql += f'update pivo set money = money - {bet}, spend = spend + {bet} where user_id = {player_id};\n'
                                     stat_sql += f'update roulette_stat set lose = lose + {bet}, lose_count = lose_count+1 where user_id = {player_id};\n'
                                     trans_sql += f'insert into transactions values ({player_id}, {bet}, \'lose bet\', \'\', {mktime(datetime.now().timetuple())});\n'
                             
