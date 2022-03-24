@@ -31,7 +31,7 @@ class Player_bj:
                 for card in self.cards:
                     if card['id'] == 'ace':
                         ace += 1
-                if ace >= 2:
+                if ace >= 2 or value >= 21:
                     value += 1
                 else:
                     value += 11
