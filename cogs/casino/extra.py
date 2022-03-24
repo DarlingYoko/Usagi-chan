@@ -20,6 +20,7 @@ class Player_bj:
     
     def calculate_value(self, slice = None):
         value = 0
+        ace = 0
         for card in self.cards[:slice]:
             card = card['id']
             if card.isdecimal():
@@ -27,17 +28,13 @@ class Player_bj:
             elif card in ['jack', 'queen', 'king']:
                 value += 10
             elif card == 'ace':
-                ace = 0
-                for card in self.cards:
-                    if card['id'] == 'ace':
-                        ace += 1
-                if ace >= 2 or value >= 21:
-                    value += 1
-                else:
-                    value += 11
+                value += 11
 
             else:
                 pass
+        while ace > 0 and value > 21:
+            value -= 10
+            ace -= 1
         return value
 
     def gen_card(self):
