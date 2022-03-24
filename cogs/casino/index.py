@@ -252,6 +252,8 @@ class Casino(commands.Cog):
     @commands.cooldown(per=60, rate=1)
     @commands.command(name='рулетка', aliases=['roulette'])
     async def roulette(self, ctx):
+        if ctx.channel.id not in [951927512445886584, 951927724849635358, 807349536321175582]:
+            return await ctx.channel.send(f'{ctx.author.mention}, здесь нельзя играть в блекджек <a:Tssk:883736146578915338>. Тебе сюда -> <#951927512445886584> <#951927724849635358>')
         if not self.ready_game:
             return await ctx.send(f'{ctx.author.mention}, Сейчас нельзя создавать игры, я обновляюсь!')
 
@@ -462,6 +464,8 @@ class Casino(commands.Cog):
     @commands.cooldown(per=60, rate=1, type=commands.BucketType.channel)
     @commands.command(name='блекджек', aliases = ['blackjack', 'bj'])
     async def blackjack(self, ctx):
+        if ctx.channel.id not in [956266610669285376, 956266663681081434, 807349536321175582]:
+            return await ctx.channel.send(f'{ctx.author.mention}, здесь нельзя играть в блекджек <a:Tssk:883736146578915338>. Тебе сюда -> <#956266610669285376> <#956266663681081434>')
         if not self.ready_game:
             return await ctx.send(f'{ctx.author.mention}, Сейчас нельзя создавать игры, я обновляюсь!')
         # 1. Когда игра стартует, происходит запись на игру примерно 30 сек + 
