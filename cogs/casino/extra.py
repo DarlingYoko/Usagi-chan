@@ -29,6 +29,7 @@ class Player_bj:
                 value += 10
             elif card == 'ace':
                 value += 11
+                ace += 1
 
             else:
                 pass
