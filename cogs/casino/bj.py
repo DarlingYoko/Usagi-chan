@@ -1,6 +1,7 @@
 from copy import deepcopy
 from random import shuffle
 from datetime import datetime
+from re import I
 from time import mktime
 from bin.functions import get_embed
 from time import mktime
@@ -28,9 +29,9 @@ class Blackjack_btn_join(Button['Blackjack_view']):
     async def callback(self, interaction: discord.Interaction):
         assert self.view is not None
         view: Blackjack_view = self.view
-        user_id = interaction.user.id
+        player = view.find_player(interaction.user.id)
 
-        if user_id in view.players:
+        if player:
             return await interaction.response.send_message(content='Ты уже зарегестрирован на игру!', ephemeral=True)
 
         # view.players[user_id] = {'bet': None, 'name': interaction.user.name, 'action': None}
@@ -45,12 +46,12 @@ class Blackjack_btn_leave(Button['Blackjack_view']):
     async def callback(self, interaction: discord.Interaction):
         assert self.view is not None
         view: Blackjack_view = self.view
-        user_id = interaction.user.id
+        player = view.find_player(interaction.user.id)
 
-        if user_id not in view.players.keys():
+        if not player:
             return await interaction.response.send_message(content='Ты ещё не зарегестрирован на игру!', ephemeral=True)
 
-        del view.players[user_id]
+        view.players.remove(player)
         desc = view.embed.description.split('\n')
         name = interaction.user.name
         desc.remove(name)
@@ -69,33 +70,70 @@ class Blackjack_btn_make_bet(Button['Blackjack_view']):
         await interaction.response.send_modal(Blackjack_modal_make_bet(view))
 
 class Blackjack_btn_hit(Button['Blackjack_view']):
-    def __init__(self, user_id):
+    def __init__(self, player):
         super().__init__(style=discord.ButtonStyle.success, label='Hit')
-        self.user_id = user_id
+        self.player = player
 
     async def callback(self, interaction: discord.Interaction):
         assert self.view is not None
         view: Blackjack_view = self.view
-        if interaction.user.id != self.user_id:
+        if interaction.user.id != self.player.id:
             return await interaction.response.send_message(content='Сейчас игра не с тобой', ephemeral=True)
-        
-        view.players[interaction.user.id]['action'] = 'hit'
+
+        self.player.action = 'hit'
 
 
 class Blackjack_btn_stay(Button['Blackjack_view']):
-    def __init__(self, user_id):
+    def __init__(self, player):
         super().__init__(label='Stay')
-        self.user_id = user_id
+        self.player = player
 
     async def callback(self, interaction: discord.Interaction):
         assert self.view is not None
         view: Blackjack_view = self.view
-        if interaction.user.id != self.user_id:
+        if interaction.user.id != self.player.id:
             return await interaction.response.send_message(content='Сейчас игра не с тобой', ephemeral=True)
 
-        view.players[interaction.user.id]['action'] = 'stay'
+        self.player.action = 'stay'
 
-        
+class Blackjack_btn_surrender(Button['Blackjack_view']):
+    def __init__(self):
+        super().__init__(style=discord.ButtonStyle.danger, label='SURRENDER')
+
+    async def callback(self, interaction: discord.Interaction):
+        assert self.view is not None
+        view: Blackjack_view = self.view
+        player = view.find_player(interaction.user.id)
+        if not player:
+            return await interaction.response.send_message(content='Ты не играешь!', ephemeral=True)
+        player.action = 'surrender'
+        await interaction.response.send_message(content='Ты сдался и теряешь только половину ставки!', ephemeral=True)
+
+class Blackjack_btn_double(Button['Blackjack_view']):
+    def __init__(self, player):
+        super().__init__(style=discord.ButtonStyle.primary, label='Double')
+        self.player = player
+
+    async def callback(self, interaction: discord.Interaction):
+        assert self.view is not None
+        view: Blackjack_view = self.view
+        if interaction.user.id != self.player.id:
+            return await interaction.response.send_message(content='Сейчас игра не с тобой', ephemeral=True)
+
+        self.player.action = 'double'
+
+class Blackjack_btn_split(Button['Blackjack_view']):
+    def __init__(self, player):
+        super().__init__(style=discord.ButtonStyle.primary, label='Split')
+        self.player = player
+
+    async def callback(self, interaction: discord.Interaction):
+        assert self.view is not None
+        view: Blackjack_view = self.view
+        if interaction.user.id != self.player.id:
+            return await interaction.response.send_message(content='Сейчас игра не с тобой', ephemeral=True)
+
+        self.player.action = 'split'
 
 class Blackjack_modal_make_bet(Modal):
     def __init__(self, view):
@@ -123,8 +161,8 @@ class Blackjack_modal_make_bet(Modal):
 
         money -= bet
 
-        
-        self.game.players[interaction.user.id] = {'bet': bet, 'name': interaction.user.name, 'action': None}
+        player = Player_bj(interaction.user.id, interaction.user.name, bet)
+        self.game.players.append(player)
         embed = get_embed(embed=self.game.embed, description=self.game.embed.description + f'{interaction.user.name}\n')
         await interaction.message.edit(embed=embed)
         await interaction.response.send_message(content=f'Ты сделал ставку в размере {bet} <:dababy:949712395385843782>', ephemeral=True)
@@ -133,13 +171,19 @@ class Blackjack_modal_make_bet(Modal):
 class Blackjack_view(discord.ui.View):
     def __init__(self, bot, embed):
         super().__init__()
-        self.players = {}
+        self.players = []
         self.bot = bot
         self.embed = embed
         self.reg = True
         self.add_item(Blackjack_btn_join())
         self.add_item(Blackjack_btn_leave())
         # self.add_item(Blackjack_btn_make_bet())
+
+    def find_player(self, player_id):
+        for player in self.players:
+            if player.id == player_id:
+                return player
+        return None
         
 
     async def start_game(self, data, message):
@@ -147,10 +191,21 @@ class Blackjack_view(discord.ui.View):
         await bj_game(data, message)
 
 class Player_bj:
-    def __init__(self, deck):
-        self.deck = deck
-        self.cards = [self.gen_card(), self.gen_card()]
+    def __init__(self, id=None, name=None, bet=None):
+        self.id = id
+        self.name = name
+        self.bet = bet
+        self.action = None
+        self.cards = []
+        # self.deck = deck
+
     
+    def get_cards(self, owner=None):
+        if not owner:
+            self.cards = [self.gen_card(), self.gen_card()]
+        else:
+            self.cards = [{'id': '2', 'pic': '<:01:955875487002005554>'}, {'id': '2', 'pic': '<:14:955875487140433960>'}]
+        
     def calculate_value(self, slice = None):
         value = 0
         ace = 0
@@ -178,6 +233,20 @@ class Player_bj:
         card[id].append(pic)
         self.deck.append(card)
         return {'id': id, 'pic': pic}
+    
+    def same_cards(self):
+        card_1 = self.transform_card(self.cards[0]['id'])
+        card_2 = self.transform_card(self.cards[1]['id'])
+        return card_1 == card_2
+
+    def transform_card(self, card):
+        if card.isdecimal():
+            card = int(card)
+        elif card in ['jack', 'queen', 'king']:
+            card = 10
+        else:
+            card = 11
+        return card
 
 
 def gen_deck(pl_count):
@@ -186,7 +255,7 @@ def gen_deck(pl_count):
         modifyer = 4
 
     deck = deepcopy(CARDS) * modifyer
-    for i in range(10):
+    for i in range(20):
         shuffle(deck)
 
     for card in deck:
@@ -204,7 +273,10 @@ async def bj_game(self, message):
     channel_id = channel.id
     game.clear_items()
     game.reg = False
-    pl_count = len(list(game.players.keys()))
+    sql = ''
+    stat_sql = ''
+    trans_sql = ''
+    pl_count = len(game.players)
     # для 2-ух надо 104 карты
     # для 4 и более надо 208 карт
     if (not self.decks[channel_id]['deck']) or \
@@ -214,9 +286,9 @@ async def bj_game(self, message):
     
     deck = self.decks[channel_id]['deck']
  
-    dealer = Player_bj(deck)
-
-    await channel.send(content=f'Создана колода на {len(self.decks[channel_id]["deck"]) * 4} карт')
+    dealer = Player_bj()
+    dealer.deck = deck
+    dealer.get_cards()
 
     # Раздача карт
 
@@ -225,26 +297,47 @@ async def bj_game(self, message):
             'inline': False}]
     remove_users = []
 
-    for player_id, data in game.players.items():
-        if data['bet'] == 0 or data['bet'] == None:
-            await channel.send(f'<@{player_id}>, Ты сделал нулевую ставку и не учавствуешь в игре.')
-            remove_users.append(player_id)
+    for player in game.players:
+        if player.bet == 0 or player.bet == None:
+            await channel.send(f'<@{player.id}>, Ты сделал нулевую ставку и не учавствуешь в игре.')
+            remove_users.append(player)
             continue
-
-        player = Player_bj(deck)
-        data['player'] = player
+        player.deck = deck
+        if player.id == 290166276796448768:
+            player.get_cards(1)
+        else:
+            player.get_cards()
         cards = ' '.join(map(lambda x: x['pic'], player.cards))
-        fields.append({'name': data['name'] + ' | ' + str(player.calculate_value()),
-            'value': f"Ставка: {data['bet']}\n{cards}",
+        fields.append({'name': player.name + ' | ' + str(player.calculate_value()),
+            'value': f'Ставка: {player.bet}\n{cards}',
             'inline': True})
     timer = int(mktime(datetime.now().timetuple()) + 30)
     embed.description = f'<t:{timer}:R>\nТекущий стол:'
     embed = get_embed(embed=embed, fields=fields)
-    await message['message'].edit(content='Осмотр стола', embed=embed, view=None)
-    for id in remove_users:
-        del game.players[id]
-    await asyncio.sleep(10)
+    game.clear_items()
+    game.add_item(Blackjack_btn_surrender())
+    await message['message'].edit(content=f'Колода на {len(self.decks[channel_id]["deck"]) * 4} карт\nОсмотр стола', embed=embed, view=game)
+    for user in remove_users:
+        game.players.remove(user)
+
+    # also time for surrender 
+    await asyncio.sleep(20)
+    remove = []
+    for player in game.players:
+        if player.action == 'surrender':
+            sql += f'update pivo set money = money - {player.bet//2}, spend = spend + {player.bet//2} where user_id = {player.id};\n'
+            stat_sql += f'update roulette_stat set lose = lose + {player.bet//2}, lose_count = lose_count+1 where user_id = {player.id};\n'
+            trans_sql += f'insert into transactions values ({player.id}, {player.bet//2}, \'lose bet\', \'\', {mktime(datetime.now().timetuple())});\n'
+            field = fields[game.players.index(player) + 1]
+            fields.remove(field)
+            embed = get_embed(embed=embed, fields=fields)
+            await message['message'].edit(embed=embed)
+            remove.append(player)
+    for user in remove:
+        game.players.remove(user)
+
     can_play = True
+    await message['message'].edit(embed=embed, view=None)
     # Игра с проверкой бж у дилера
     if dealer.cards[0]['id'] in ['10', 'jack', 'queen', 'king', 'ace']:
         embed.description = f'У диллера возможен блекджек! Проверям вторую карту'
@@ -258,45 +351,93 @@ async def bj_game(self, message):
             await message['message'].edit(embed=embed)
             can_play = False
             await asyncio.sleep(5)
+
         else:
             embed.description = f'У диллера не блекджек, играем дальше!'
             await message['message'].edit(embed=embed)
             await asyncio.sleep(5)
+
     new_msg = message['message']
     if can_play:
-        for player_id, data in game.players.items():
+        for player in game.players:
             embed.description = f'Текущая раздача:'
+
             game.clear_items()
-            game.add_item(Blackjack_btn_hit(player_id))
-            game.add_item(Blackjack_btn_stay(player_id))
+            game.add_item(Blackjack_btn_hit(player))
+            game.add_item(Blackjack_btn_double(player))
+            if player.same_cards():
+                game.add_item(Blackjack_btn_split(player))
+            game.add_item(Blackjack_btn_stay(player))
+
             old_msg = new_msg
             await old_msg.delete()
-            new_msg = await channel.send(content=f'Играем с <@{player_id}>', embed=embed, view=game)
+            new_msg = await channel.send(content=f'Играем с <@{player.id}>', embed=embed, view=game)
             counter = 0
-            player = data['player']
             while counter != 60 and player.calculate_value() < 21 and len(player.cards) < 6:
-                if data['action'] == 'hit':
-                    data['action'] = None
+                if player.action == 'hit':
+                    player.action = None
                     counter = 0
-                    for field in fields:
-                        if data['name'] in field['name']:
-                            player.cards.append(player.gen_card())
-                            
-                            field['value'] = 'Ставка: ' + str(data['bet']) + '\n' + ' '.join(map(lambda x: x['pic'], player.cards))
-                            field['name'] = data['name'] + ' | ' + str(player.calculate_value())
-                            embed = get_embed(embed=embed, fields=fields)
-                            await new_msg.edit(embed=embed)
 
-                elif game.players[player_id]['action'] == 'stay':
+                    field = fields[game.players.index(player) + 1]
+                    player.cards.append(player.gen_card())
+                    field['value'] = 'Ставка: ' + str(player.bet) + '\n' + ' '.join(map(lambda x: x['pic'], player.cards))
+                    field['name'] = player.name + ' | ' + str(player.calculate_value())
+                    embed = get_embed(embed=embed, fields=fields)
+                    await new_msg.edit(embed=embed)
+
+                elif player.action == 'double':
+                    player.action = None
+                    money = game.bot.db.get_value('pivo', 'money', 'user_id', player.id)
+                    if money < player.bet * 2:
+                        await channel.send(f'<@{player.id}>, У тебя не хватает дабаби, чтобы сделать дабл ставку')
+                        continue
+
+                    player.bet *= 2
+                    field = fields[game.players.index(player) + 1]
+                    player.cards.append(player.gen_card())
+                    field['value'] = 'Ставка: ' + str(player.bet) + '\n' + ' '.join(map(lambda x: x['pic'], player.cards))
+                    field['name'] = player.name + ' | ' + str(player.calculate_value())
+                    game.children[1].disabled = True
+                    embed = get_embed(embed=embed, fields=fields)
+                    await new_msg.edit(embed=embed, view=game)
+                    
+                elif player.action == 'split':
+                    player.action = None
+                    money = game.bot.db.get_value('pivo', 'money', 'user_id', player.id)
+                    if money < player.bet * 2:
+                        await channel.send(f'<@{player.id}>, У тебя не хватает дабаби, чтобы сделать сплит.')
+                        continue
+                    second_hand = Player_bj(player.id, player.name, player.bet)
+                    second_hand.deck = deck
+                    second_hand.cards = [player.cards[1], second_hand.gen_card()]
+                    player.cards = [player.cards[0], player.gen_card()]
+                    game.players.insert(game.players.index(player)+1, second_hand)
+                    game.children[2].disabled = True
+
+                    field = fields[game.players.index(player) + 1]
+                    field['value'] = 'Ставка: ' + str(player.bet) + '\n' + ' '.join(map(lambda x: x['pic'], player.cards))
+                    field['name'] = player.name + ' | ' + str(player.calculate_value())
+
+                    cards = ' '.join(map(lambda x: x['pic'], second_hand.cards))
+                    new_field = {'name': player.name + ' 2 | ' + str(second_hand.calculate_value()),
+                            'value': f'Ставка: {player.bet}\n{cards}',
+                            'inline': True}
+                    fields.insert(fields.index(field)+1, new_field)
+
+                    embed = get_embed(embed=embed, fields=fields)
+                    await new_msg.edit(embed=embed, view=game)
+
+                elif player.action == 'stay':
                     break
+                
                 else:
                     pass
                 counter += 1
                 await asyncio.sleep(1)
             if player.calculate_value() > 21:
-                await channel.send(f'<@{player_id}>, Ты набрал больше 21 и проиграл!')
+                await channel.send(f'<@{player.id}>, Ты набрал больше 21 и проиграл!')
             if len(player.cards) == 6:
-                await channel.send(f'<@{player_id}>, Нельзя брать больше 6 карт!')
+                await channel.send(f'<@{player.id}>, Нельзя брать больше 6 карт!')
 
     # Ход диллера
     dealer_field = fields[0]
@@ -304,9 +445,9 @@ async def bj_game(self, message):
     dealer_field['name'] = 'Дилер | ' + str(dealer.calculate_value())
     embed.description = f'Ход дилера!'
     embed = get_embed(embed=embed, fields=fields)
-    await new_msg.edit(embed=embed)
+    await new_msg.edit(content=None, embed=embed)
     await asyncio.sleep(1)
-    while dealer.calculate_value() <= 16:
+    while dealer.calculate_value() <= 16 and len(dealer.cards) < 6:
         dealer.cards.append(dealer.gen_card())    
         dealer_field['value'] = ' '.join(map(lambda x: x['pic'], dealer.cards))
         dealer_field['name'] = 'Дилер | ' + str(dealer.calculate_value())
@@ -318,41 +459,35 @@ async def bj_game(self, message):
     embed.description = f'Подсчёт очков'
     await new_msg.edit(content=None, embed=embed, view=None)
     dealer_number = dealer.calculate_value()
-    sql = ''
-    stat_sql = ''
-    trans_sql = ''
-    for player_id, data in game.players.items():
-        for field in fields:
-            if data['name'] in field['name']:
-                player = data['player']
-                bet = data['bet']
-                player_number = player.calculate_value()
-                if player_number > 21:
-                    result = 'Перебор'
-                    sql += f'update pivo set money = money - {bet}, spend = spend + {bet} where user_id = {player_id};\n'
-                    stat_sql += f'update roulette_stat set lose = lose + {bet}, lose_count = lose_count+1 where user_id = {player_id};\n'
-                    trans_sql += f'insert into transactions values ({player_id}, {bet}, \'lose bet\', \'\', {mktime(datetime.now().timetuple())});\n'
-                else:
-                    if player_number == 21 and len(player.cards) == 2:
-                        result = 'Блекджек!'
-                        sql += f'update pivo set money = money + {bet*1.5} where user_id = {player_id};\n'
-                        stat_sql += f'update roulette_stat set win = win + {bet*1.5}, win_count = win_count+1 where user_id = {player_id};\n'
-                        trans_sql += f'insert into transactions values ({player_id}, {bet}, \'win bet\', \'\', {mktime(datetime.now().timetuple())});\n'
-                    elif player_number > dealer_number or dealer_number > 21:
-                        result = 'Победа'
-                        sql += f'update pivo set money = money + {bet} where user_id = {player_id};\n'
-                        stat_sql += f'update roulette_stat set win = win + {bet}, win_count = win_count+1 where user_id = {player_id};\n'
-                        trans_sql += f'insert into transactions values ({player_id}, {bet}, \'win bet\', \'\', {mktime(datetime.now().timetuple())});\n'
-                    elif dealer_number == player_number:
-                        result = 'Равно'
-                    else:
-                        result = 'Мало'
-                        sql += f'update pivo set money = money - {bet}, spend = spend + {bet} where user_id = {player_id};\n'
-                        stat_sql += f'update roulette_stat set lose = lose + {bet}, lose_count = lose_count+1 where user_id = {player_id};\n'
-                        trans_sql += f'insert into transactions values ({player_id}, {bet}, \'lose bet\', \'\', {mktime(datetime.now().timetuple())});\n'
-                
-                field['name'] = field['name'] + '\n' + result
-    
+    for player in game.players:
+        field = fields[game.players.index(player) + 1]
+        player_number = player.calculate_value()
+        if player_number > 21:
+            result = 'Перебор'
+            sql += f'update pivo set money = money - {player.bet}, spend = spend + {player.bet} where user_id = {player.id};\n'
+            stat_sql += f'update roulette_stat set lose = lose + {player.bet}, lose_count = lose_count+1 where user_id = {player.id};\n'
+            trans_sql += f'insert into transactions values ({player.id}, {player.bet}, \'lose bet\', \'\', {mktime(datetime.now().timetuple())});\n'
+        else:
+            if player_number == 21 and len(player.cards) == 2:
+                result = 'Блекджек!'
+                sql += f'update pivo set money = money + {player.bet*1.5} where user_id = {player.id};\n'
+                stat_sql += f'update roulette_stat set win = win + {player.bet*1.5}, win_count = win_count+1 where user_id = {player.id};\n'
+                trans_sql += f'insert into transactions values ({player.id}, {player.bet}, \'win bet\', \'\', {mktime(datetime.now().timetuple())});\n'
+            elif player_number > dealer_number or dealer_number > 21:
+                result = 'Победа'
+                sql += f'update pivo set money = money + {player.bet} where user_id = {player.id};\n'
+                stat_sql += f'update roulette_stat set win = win + {player.bet}, win_count = win_count+1 where user_id = {player.id};\n'
+                trans_sql += f'insert into transactions values ({player.id}, {player.bet}, \'win bet\', \'\', {mktime(datetime.now().timetuple())});\n'
+            elif dealer_number == player_number:
+                result = 'Равно'
+            else:
+                result = 'Мало'
+                sql += f'update pivo set money = money - {player.bet}, spend = spend + {player.bet} where user_id = {player.id};\n'
+                stat_sql += f'update roulette_stat set lose = lose + {player.bet}, lose_count = lose_count+1 where user_id = {player.id};\n'
+                trans_sql += f'insert into transactions values ({player.id}, {player.bet}, \'lose bet\', \'\', {mktime(datetime.now().timetuple())});\n'
+        
+        field['name'] = field['name'] + '\n' + result
+
     embed = get_embed(embed=embed, fields=fields)
     await new_msg.edit(embed=embed)
 
