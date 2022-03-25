@@ -507,5 +507,6 @@ async def bj_game(self, message):
     if (len(self.decks[channel_id]['deck']) == 104 and self.decks[channel_id]['counter'] == 1) or \
             (len(self.decks[channel_id]['deck']) == 208 and self.decks[channel_id]['counter'] == 4):
         self.decks[channel_id]['deck'] = gen_deck(pl_count)
+        self.decks[channel_id]['counter'] = 0 
 
 
