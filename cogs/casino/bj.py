@@ -142,6 +142,10 @@ class Blackjack_modal_make_bet(Modal):
         self.game = view
     
     async def callback(self, interaction: discord.Interaction):
+        player = self.game.find_player(interaction.user.id)
+
+        if player:
+            return await interaction.response.send_message(content='Ты уже зарегестрирован на игру!', ephemeral=True)
         if not self.game.reg:
             return await interaction.response.send_message(content=f'Ты не успел сделать ставку', ephemeral=True)
         bet = self.children[0].value
