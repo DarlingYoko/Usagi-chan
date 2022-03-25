@@ -303,10 +303,10 @@ async def bj_game(self, message):
             remove_users.append(player)
             continue
         player.deck = deck
-        if player.id == 290166276796448768:
-            player.get_cards(1)
-        else:
-            player.get_cards()
+        # if player.id in [290166276796448768, 793409024015073281]:
+        #     player.get_cards(1)
+        # else:
+        player.get_cards()
         cards = ' '.join(map(lambda x: x['pic'], player.cards))
         fields.append({'name': player.name + ' | ' + str(player.calculate_value()),
             'value': f'Ставка: {player.bet}\n{cards}',
@@ -365,7 +365,7 @@ async def bj_game(self, message):
             game.clear_items()
             game.add_item(Blackjack_btn_hit(player))
             game.add_item(Blackjack_btn_double(player))
-            if player.same_cards():
+            if player.same_cards() and len(player.cards) == 2:
                 game.add_item(Blackjack_btn_split(player))
             game.add_item(Blackjack_btn_stay(player))
 
@@ -383,7 +383,10 @@ async def bj_game(self, message):
                     field['value'] = 'Ставка: ' + str(player.bet) + '\n' + ' '.join(map(lambda x: x['pic'], player.cards))
                     field['name'] = player.name + ' | ' + str(player.calculate_value())
                     embed = get_embed(embed=embed, fields=fields)
-                    await new_msg.edit(embed=embed)
+                    if len(game.children) == 4:
+                        game.children[2].disabled = True
+                    game.children[1].disabled = True
+                    await new_msg.edit(embed=embed, view=game)
 
                 elif player.action == 'double':
                     player.action = None
@@ -397,9 +400,9 @@ async def bj_game(self, message):
                     player.cards.append(player.gen_card())
                     field['value'] = 'Ставка: ' + str(player.bet) + '\n' + ' '.join(map(lambda x: x['pic'], player.cards))
                     field['name'] = player.name + ' | ' + str(player.calculate_value())
-                    game.children[1].disabled = True
                     embed = get_embed(embed=embed, fields=fields)
-                    await new_msg.edit(embed=embed, view=game)
+                    await new_msg.edit(embed=embed, view=None)
+                    break
                     
                 elif player.action == 'split':
                     player.action = None
