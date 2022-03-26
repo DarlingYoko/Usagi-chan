@@ -452,7 +452,7 @@ async def bj_game(self, message):
     dealer_field['name'] = 'Дилер | ' + str(dealer.calculate_value())
     embed.description = f'Ход дилера!'
     embed = get_embed(embed=embed, fields=fields)
-    await new_msg.edit(content=None, embed=embed)
+    await new_msg.edit(content=None, embed=embed, view=None)
     await asyncio.sleep(1)
     while dealer.calculate_value() <= 16 and len(dealer.cards) < 6:
         dealer.cards.append(dealer.gen_card())    
