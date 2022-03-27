@@ -396,8 +396,8 @@ class Beer(commands.Cog):
             
             if response:
                 from_user = redemption['from_user']
-                await channel.send(f'{member.mention}, Тебе перевод {cost//10} <:dababy:949712395385843782> от {from_user}')
-                self.bot.db.insert('transactions', member.id, cost//10, 'top up', f'from {from_user}', mktime(datetime.now().timetuple()))
+                await channel.send(f'{member.mention}, Тебе перевод {cost//self.currenсy} <:dababy:949712395385843782> от {from_user}')
+                self.bot.db.insert('transactions', member.id, cost//self.currenсy, 'top up', f'from {from_user}', mktime(datetime.now().timetuple()))
         
 
     @check_rewards_twitch.before_loop

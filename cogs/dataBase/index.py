@@ -101,6 +101,7 @@ class Database(commands.Cog):
             self.disconnect(cur)
             return data
         except psycopg2.ProgrammingError:
+            print_error()
             return 1
         except Exception as e:
             print_error()
