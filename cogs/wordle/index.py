@@ -201,8 +201,13 @@ class Wordle(commands.Cog):
             try_words_db = try_words_db.split(',')
         else:
             try_words_db = []
-        try_dababy = (len(try_words) - len(set(try_words) & set(try_words_db)))
-        white_dababy = (len(white_words) - len(set(white_words) & set(white_words_db))) * 2
+        winner_text = ''
+        default_text = ''
+        if dababy_game:
+            try_dababy = (len(try_words) - len(set(try_words) & set(try_words_db)))
+            white_dababy = (len(white_words) - len(set(white_words) & set(white_words_db))) * 2
+            winner_text = f' И заработал {len(word) * 5} <:dababy:915736432021221386> за угаданное слово!'
+            default_text = f', Ты открыл новые буквы и заработал {try_dababy + white_dababy} <:dababy:915736432021221386>!'
         ban_words = list(set(ban_words + ban_words_db))
         white_words = list(set(white_words + white_words_db))
         try_words = list(set(try_words + try_words_db))
@@ -212,7 +217,7 @@ class Wordle(commands.Cog):
         if counter == len(word):
             # win!
             word = ''.join(word)
-            await ctx.send(f'{ctx.author.mention}, Ула Ула ты победил! И заработал {len(word) * 5} dababy за угаданное слово!')
+            await ctx.send(f'{ctx.author.mention}, Ула Ула ты победил! {winner_text}')
             self.bot.db.custom_command(f'update wordle set winner_id = {ctx.author.id}, points = {lives} where channel_id = {ctx.channel.id};\n' +\
                                         f'update pivo set money = money + {len(word) * 5} where user_id = {ctx.author.id};')
             await wordle_channel.send(f"<@{author_id}>\n```cs\n# {ctx.channel.name} закончена.\nПобедитель — {ctx.author.name}\nСлово — '{word}'```")
@@ -227,9 +232,10 @@ class Wordle(commands.Cog):
             return await ctx.channel.edit(archived=True, locked=True)
 
 
-        await ctx.send(f'Ваше текущее количество попыток - {lives}.\n{ctx.author.mention}, Ты открыл новые буквы и заработал {try_dababy + white_dababy} dababy!', file=get_words_keybord(ban_words, white_words, try_words, lang))
-        self.bot.db.custom_command(f'update wordle set lives = {lives}, ban_words = \'{",".join(ban_words)}\', white_words = \'{",".join(white_words)}\', try_words = \'{",".join(try_words)}\'  where channel_id = {ctx.channel.id};\n' +\
-                                    f'update pivo set money = money + {try_dababy + white_dababy} where user_id = {ctx.author.id};')
+        await ctx.send(f'Ваше текущее количество попыток - {lives}.\n{ctx.author.mention} {default_text}', file=get_words_keybord(ban_words, white_words, try_words, lang))
+        self.bot.db.custom_command(f'update wordle set lives = {lives}, ban_words = \'{",".join(ban_words)}\', white_words = \'{",".join(white_words)}\', try_words = \'{",".join(try_words)}\'  where channel_id = {ctx.channel.id};')
+        if dababy_game:
+            self.bot.db.custom_command(f'update pivo set money = money + {try_dababy + white_dababy} where user_id = {ctx.author.id};')
 
 
     @commands.command(aliases = ['вордли_топ', 'вордле_топ', 'топ_вордле', 'топ_вордли', 'top_wordle'],
