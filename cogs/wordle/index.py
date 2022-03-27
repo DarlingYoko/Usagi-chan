@@ -1,8 +1,8 @@
 import discord, requests, asyncio, random
-from discord.ext import commands, tasks
+from discord.ext import commands
 from bin.converters import *
-from bin.functions import get_embed
-from .utils import create_pic_from_word, get_words_keybord, get_word
+from bin.functions import format_time
+from .utils import *
 
 
 # !create_game <word> ?
@@ -42,6 +42,9 @@ from .utils import create_pic_from_word, get_words_keybord, get_word
 # ru upper 1040-1071
 
 # разобраться с выделением буков
+
+
+
 
 
 class Wordle(commands.Cog):
@@ -109,7 +112,7 @@ class Wordle(commands.Cog):
         await ctx.send(f'Ваша игра создана -> {thread.mention}')
         await thread.add_user(ctx.author)
 
-        self.bot.db.insert('wordle', last_id, 0, 0, thread.id, word, lives, ctx.author.id, '', lang)
+        self.bot.db.insert('wordle', last_id, 0, 0, thread.id, word, lives, ctx.author.id, '', lang , '', '', False)
         self.bot.db.update('wordle', 'winner_id', 'id', last_id, 0)
 
 
@@ -117,7 +120,7 @@ class Wordle(commands.Cog):
     @commands.cooldown(per=10, rate=1, type=commands.BucketType.channel)
     async def answer(self, ctx, try_word: str):
         try_word = list(try_word.upper())
-        command = f'SELECT word,lives,owner_id,lang,ban_words,white_words,try_words from wordle where channel_id = {ctx.channel.id};'
+        command = f'SELECT word,lives,owner_id,lang,ban_words,white_words,try_words,dababy_game from wordle where channel_id = {ctx.channel.id};'
         # word = self.bot.db.get_value('wordle', 'word', 'channel_id', ctx.channel.id)
         # lives = self.bot.db.get_value('wordle', 'lives', 'channel_id', ctx.channel.id)
         # author_id = self.bot.db.get_value('wordle', 'owner_id', 'channel_id', ctx.channel.id)
@@ -134,6 +137,7 @@ class Wordle(commands.Cog):
         ban_words_db = result[4]
         white_words_db = result[5]
         try_words_db = result[6]
+        dababy_game = result[7]
         wordle_channel_id = self.config['channel'].getint('wordle')
         wordle_channel = await ctx.bot.fetch_channel(wordle_channel_id)
         if not word:
@@ -148,6 +152,11 @@ class Wordle(commands.Cog):
         if len(try_word) != len(word):
             # wrong length
             return await ctx.send(f'{ctx.author.mention}, Дурак? Длина слова другая!')
+
+        if dababy_game:
+            check = check_word(''.join(word))
+            if not check:
+                return await ctx.send(f'{ctx.author.mention}, Такого слова нет в словаре <a:Tssk:883736146578915338>')
 
         blocks = {}
         word_copy = word.copy()
@@ -192,6 +201,8 @@ class Wordle(commands.Cog):
             try_words_db = try_words_db.split(',')
         else:
             try_words_db = []
+        try_dababy = (len(try_words) - len(set(try_words) & set(try_words_db)))
+        white_dababy = (len(white_words) - len(set(white_words) & set(white_words_db))) * 2
         ban_words = list(set(ban_words + ban_words_db))
         white_words = list(set(white_words + white_words_db))
         try_words = list(set(try_words + try_words_db))
@@ -201,9 +212,9 @@ class Wordle(commands.Cog):
         if counter == len(word):
             # win!
             word = ''.join(word)
-            await ctx.send(f'Ула Ула ты победил!')
-            self.bot.db.update('wordle', 'winner_id', 'channel_id', ctx.author.id, ctx.channel.id)
-            self.bot.db.update('wordle', 'points', 'channel_id', lives, ctx.channel.id)
+            await ctx.send(f'{ctx.author.mention}, Ула Ула ты победил! И заработал {len(word) * 5} dababy за угаданное слово!')
+            self.bot.db.custom_command(f'update wordle set winner_id = {ctx.author.id}, points = {lives} where channel_id = {ctx.channel.id};\n' +\
+                                        f'update pivo set money = money + {len(word) * 5} where user_id = {ctx.author.id};')
             await wordle_channel.send(f"<@{author_id}>\n```cs\n# {ctx.channel.name} закончена.\nПобедитель — {ctx.author.name}\nСлово — '{word}'```")
             return await ctx.channel.edit(archived=True, locked=True)
 
@@ -216,12 +227,9 @@ class Wordle(commands.Cog):
             return await ctx.channel.edit(archived=True, locked=True)
 
 
-        await ctx.send(f'Ваше текущее количество попыток - {lives}.', file=get_words_keybord(ban_words, white_words, try_words, lang))
-
-        self.bot.db.update('wordle', 'lives', 'channel_id', lives, ctx.channel.id)
-        self.bot.db.update('wordle', 'ban_words', 'channel_id', ','.join(ban_words), ctx.channel.id)
-        self.bot.db.update('wordle', 'white_words', 'channel_id', ','.join(white_words), ctx.channel.id)
-        self.bot.db.update('wordle', 'try_words', 'channel_id', ','.join(try_words), ctx.channel.id)
+        await ctx.send(f'Ваше текущее количество попыток - {lives}.\n{ctx.author.mention}, Ты открыл новые буквы и заработал {try_dababy + white_dababy} dababy!', file=get_words_keybord(ban_words, white_words, try_words, lang))
+        self.bot.db.custom_command(f'update wordle set lives = {lives}, ban_words = \'{",".join(ban_words)}\', white_words = \'{",".join(white_words)}\', try_words = \'{",".join(try_words)}\'  where channel_id = {ctx.channel.id};\n' +\
+                                    f'update pivo set money = money + {try_dababy + white_dababy} where user_id = {ctx.author.id};')
 
 
     @commands.command(aliases = ['вордли_топ', 'вордле_топ', 'топ_вордле', 'топ_вордли', 'top_wordle'],
@@ -299,7 +307,7 @@ class Wordle(commands.Cog):
         await ctx.send(answer)
 
     @commands.command(help = 'wordle', aliases = ['авто_игра'])
-    @commands.cooldown(per=30, rate=1)
+    @commands.cooldown(per=60, rate=1)
     async def auto_game(self, ctx, count_of_letters: int = None):
 
         if not count_of_letters or count_of_letters < 4 or count_of_letters > 12:
@@ -308,14 +316,19 @@ class Wordle(commands.Cog):
         word = get_word(count_of_letters)
         if not word:
             return await ctx.send(f'{ctx.author.mention}, Не получилось найти слово, попробуй ещё раз!')
-        language = 'русских'
         last_id = self.bot.db.get_value('wordle', 'winner_id', 'id', 0) + 1
         channel = await self.bot.fetch_channel(self.config['channel']['wordle'])
         thread_name = f'Wordle Game #{last_id}'
+        dababy_game = False
+        dababy_text = ''
+        if 5 <= count_of_letters <= 7:
+            dababy_game = True
+            dababy_text = '**За эту игру можно получить дабаби!**'
         message = f'''#Новая __**обычная**__ игра от Меня для {ctx.author.mention}. <a:BasedgePooPoo:933131389526757476>
 Слово состоит из **{len(word)}** русских буковок. <:StaregeNoted:860038779070447667>
 
-У вас только **{len(word) + 1}** попыток, пришло время их тратить! <a:sparkles:934435764564013076>'''
+У вас только **{len(word) + 1}** попыток, пришло время их тратить! <a:sparkles:934435764564013076>
+{dababy_text}'''
         type = discord.ChannelType.public_thread
         lives = len(word) + 1
         thread = await channel.create_thread(name=thread_name, type=type, auto_archive_duration=1440)
@@ -323,7 +336,7 @@ class Wordle(commands.Cog):
         await thread.send(message)
         await ctx.send(f'Ваша игра создана -> {thread.mention}')
 
-        self.bot.db.insert('wordle', last_id, 0, 0, thread.id, word, lives, 801153197552304129, '', 'ru')
+        self.bot.db.insert('wordle', last_id, 0, 0, thread.id, word, lives, 801153197552304129, '', 'ru', '', '', dababy_game)
         self.bot.db.update('wordle', 'winner_id', 'id', last_id, 0)
 
     @create_game.error
@@ -333,22 +346,30 @@ class Wordle(commands.Cog):
         if isinstance(error, commands.MissingRequiredArgument):
             await ctx.send(f'{ctx.author.mention} Ты не ввёл слово для игры.')
         if isinstance(error, commands.CommandOnCooldown):
-            await ctx.send(f'{ctx.author.mention} Пока рано для создания новой игры, подожди чуток.\n' + str(error))
+            retry_after = error.retry_after
+            time = format_time(retry_after)
+            await ctx.send(f'{ctx.author.mention} Пока рано для новой игры, подожди чуток.\n Попробуй через {time}')
 
     @answer.error
     async def answer_errors(self, ctx, error):
         if isinstance(error, commands.CommandOnCooldown):
-            await ctx.send(f'{ctx.author.mention} Пока рано для ответа, подожди чуток.\n' + str(error))
+            retry_after = error.retry_after
+            time = format_time(retry_after)
+            await ctx.send(f'{ctx.author.mention} Пока рано для ответа, подожди чуток.\n Попробуй через {time}')
 
     @auto_game.error
     async def auto_game_errors(self, ctx, error):
         if isinstance(error, commands.CommandOnCooldown):
-            await ctx.send(f'{ctx.author.mention} Пока рано для ответа, подожди чуток.\n' + str(error))
+            retry_after = error.retry_after
+            time = format_time(retry_after)
+            await ctx.send(f'{ctx.author.mention} Пока рано для новой игры, подожди чуток.\n Попробуй через {time}')
 
     @wordle_top.error
     async def wordle_top_errors(self, ctx, error):
         if isinstance(error, commands.CommandOnCooldown):
-            await ctx.send(f'{ctx.author.mention} Пока рано для ответа, подожди чуток.\n' + str(error))
+            retry_after = error.retry_after
+            time = format_time(retry_after)
+            await ctx.send(f'{ctx.author.mention} Пока рано для нового топа, подожди чуток.\n Попробуй через {time}')
 
 
 def setup(bot):

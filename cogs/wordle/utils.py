@@ -82,13 +82,15 @@ def get_word(length):
     with open('./files/russian.txt', 'r') as f:
         words = f.readline().split(',')
 
-
     words = list(filter(lambda x: len(x) == length, words))
     if not words:
         return None
     word = words[randint(0, len(words))]
 
-    # except:
-    #     return None
-
     return word.upper()
+
+def check_word(word):
+    with open('./files/russian.txt', 'r') as f:
+        words = f.readline().split(',')
+    words = list(filter(lambda x: len(x) == len(word), words))
+    return word in words
