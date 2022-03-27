@@ -1,7 +1,6 @@
 from copy import deepcopy
 from random import shuffle
 from datetime import datetime
-from re import I
 from time import mktime
 from bin.functions import get_embed
 from time import mktime

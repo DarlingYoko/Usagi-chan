@@ -196,6 +196,7 @@ class Fun(commands.Cog):
 
             # f"{numObj:.{digits}f}"
         # print(currencys)
+        beer = self.bot.get_cog('Beer')
         text = f'''```autohotkey
 Сводка курса на данный момент:
 
@@ -203,7 +204,7 @@ class Fun(commands.Cog):
 2. Бел рубль {currencys["USDBYN"]["value"]} ({currencys["USDBYN"]["change"]})
 3. Гривня {currencys["USDUAH"]["value"]} ({currencys["USDUAH"]["change"]})
 4. Теньхе {currencys["USDKZT"]["value"]} ({currencys["USDKZT"]["change"]})
-5. Усаги коины к дабаби 10 к 1
+5. Усаги коины к дабаби {beer.currenсy} к 1
 ```
 '''
         await ctx.send(content=text)

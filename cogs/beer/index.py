@@ -83,6 +83,7 @@ class Beer(commands.Cog):
         self.twitch_auth.start()
         self.check_rewards_twitch.start()
         self.wesdos_counter.start()
+        self.regen_currency.start()
         
     @tasks.loop(minutes=1, count=1)
     async def twitch_auth(self):
@@ -334,7 +335,9 @@ class Beer(commands.Cog):
     # @commands.command()
     # async def test_ban(self, ctx):
     #     member = await ctx.guild.fetch_member(270904126974590976)
-        
+    @tasks.loop(hours=1)
+    async def regen_currency(self):
+        self.currenсy = randint(5, 12)
 
     @tasks.loop(minutes=1)
     async def check_rewards_twitch(self):
@@ -380,7 +383,7 @@ class Beer(commands.Cog):
             member = redemption['member']
             response = 0
             if member != None:
-                response = self.bot.db.custom_command(f'update pivo set money = money + {cost // 10} where user_id = {member.id};')
+                response = self.bot.db.custom_command(f'update pivo set money = money + {cost // self.currenсy} where user_id = {member.id};')
                 if not response:
                     redemption['status'] = twitchAPI.types.CustomRewardRedemptionStatus.CANCELED
             r = self.bot.twitch.update_redemption_status(
