@@ -541,10 +541,9 @@ class Beer(commands.Cog):
                 return await ctx.send(f'{ctx.author.mention}, Часовая смена закончена, топай довольный с {money} <:dababy:949712395385843782>\nТеперь у тебя {last_money} <:dababy:949712395385843782>', delete_after=60*10)
             else:
                 await ctx.send(f'{ctx.author.mention}, Не получилось отправить тебя на работу, сходи ещё раз!', delete_after=60*10)
-        try:
-            await ctx.message.delete(delay=60*10)
-        except:
-            pass
+        
+        await ctx.message.delete(delay=60*10)
+        
 
     @commands.command()
     @commands.is_owner()
