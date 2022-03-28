@@ -94,7 +94,7 @@ def get_word(length):
     return word.upper()
 
 def check_word(word):
-    with open('./files/russian.txt', 'r') as f:
+    with open('./files/check_dict.txt', 'r') as f:
         words = f.readline().split(',')
     words = list(filter(lambda x: len(x) == len(word), words))
     return word in words
