@@ -78,7 +78,13 @@ class Main(commands.Cog):
             name = user[0]
             time = user[1]
             followers = user[2]
-            status = self.bot.twitch.get_streams(user_login=[name])
+            status = None 
+            try:
+                status = self.bot.twitch.get_streams(user_login=[name])
+            except Exception as e:
+                print(f'Не могу найти {name}')
+            if not status:
+                continue
             if status['data']:
                 user = status['data'][0]
                 new_time = user['started_at']
