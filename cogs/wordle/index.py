@@ -154,7 +154,7 @@ class Wordle(commands.Cog):
             return await ctx.send(f'{ctx.author.mention}, Дурак? Длина слова другая!')
 
         if dababy_game:
-            check = check_word(''.join(word))
+            check = check_word(''.join(try_word))
             if not check:
                 return await ctx.send(f'{ctx.author.mention}, Такого слова нет в словаре <a:Tssk:883736146578915338>')
 
