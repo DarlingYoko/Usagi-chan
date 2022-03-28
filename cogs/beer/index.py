@@ -164,7 +164,7 @@ class Beer(commands.Cog):
                 if diff > 0:
                     # user on cooldown
                     time = format_time(diff)
-                    return await ctx.send(f'{ctx.author.mention}, Ты сможешь работать через {time}')
+                    return await ctx.send(f'{ctx.author.mention}, Ты сможешь работать через {time}', delete_after=60*10)
                 elif diff <= 0 and diff > -84600:
                     # new work day
                     extra = ''
@@ -181,9 +181,9 @@ class Beer(commands.Cog):
                     r = self.bot.db.custom_command(f'UPDATE pivo set money = {last_money+modifyer}, last_time = {time}, streak = {streak} where user_id = {user_id};')
                     if r == 1:
                         self.bot.db.insert('transactions', user_id, modifyer, 'salary', 'per day', mktime(datetime.now().timetuple()))
-                        return await ctx.send(f'{ctx.author.mention}, Хорошо поработал, дежи {money} <:dababy:949712395385843782> {extra}\nТеперь у тебя {last_money+modifyer} <:dababy:949712395385843782>, твой стрик {streak}')
+                        return await ctx.send(f'{ctx.author.mention}, Хорошо поработал, дежи {money} <:dababy:949712395385843782> {extra}\nТеперь у тебя {last_money+modifyer} <:dababy:949712395385843782>, твой стрик {streak}', delete_after=60*10)
                     else:
-                        return await ctx.send(f'{ctx.author.mention}, Не получилось отправить тебя на работу, сходи ещё раз!')
+                        return await ctx.send(f'{ctx.author.mention}, Не получилось отправить тебя на работу, сходи ещё раз!', delete_after=60*10)
                 else:
                     # fuckup streak 
                     last_money += money
@@ -191,18 +191,23 @@ class Beer(commands.Cog):
                     r = self.bot.db.custom_command(f'UPDATE pivo set money = {last_money}, last_time = {time}, streak = {streak} where user_id = {user_id};')
                     if r == 1:
                         self.bot.db.insert('transactions', user_id, last_money, 'salary', 'per day', mktime(datetime.now().timetuple()))
-                        return await ctx.send(f'{ctx.author.mention}, Понятно, дабаби закончились, так сразу на работу прибежал, ладно дежи свои {money} <:dababy:949712395385843782> и иди с миром\nТеперь у тебя {last_money} <:dababy:949712395385843782>, твой стрик {streak}')
+                        return await ctx.send(f'{ctx.author.mention}, Понятно, дабаби закончились, так сразу на работу прибежал, ладно дежи свои {money} <:dababy:949712395385843782> и иди с миром\nТеперь у тебя {last_money} <:dababy:949712395385843782>, твой стрик {streak}', delete_after=60*10)
                     else:
-                        return await ctx.send(f'{ctx.author.mention}, Не получилось отправить тебя на работу, сходи ещё раз!')
+                        return await ctx.send(f'{ctx.author.mention}, Не получилось отправить тебя на работу, сходи ещё раз!', delete_after=60*10)
         else:
             money += 50
             
             r = self.bot.db.insert('pivo', user_id, money, time, 1, 0, 0, 0, False, 0)
             if r == 1:
                 self.bot.db.insert('transactions', user_id, money, 'salary', 'per day', mktime(datetime.now().timetuple()))
-                await ctx.send(f'{ctx.author.mention}, Поздравляю с первым рабочим днём, твоя первая зарплата — {money} <:dababy:949712395385843782>')
+                await ctx.send(f'{ctx.author.mention}, Поздравляю с первым рабочим днём, твоя первая зарплата — {money} <:dababy:949712395385843782>', delete_after=60*10)
             else:
-                await ctx.send(f'{ctx.author.mention}, Не получилось отправить тебя на работу, сходи ещё раз!')
+                await ctx.send(f'{ctx.author.mention}, Не получилось отправить тебя на работу, сходи ещё раз!', delete_after=60*10)
+
+        try:
+            await ctx.message.delete(delay=60*10)
+        except:
+            pass
 
         
 
@@ -517,7 +522,7 @@ class Beer(commands.Cog):
                 if diff > 0:
                     # user on cooldown
                     time = format_time(diff)
-                    return await ctx.send(f'{ctx.author.mention}, Твоя часовая смена через {time}, ')
+                    return await ctx.send(f'{ctx.author.mention}, Твоя часовая смена через {time}', delete_after=60*10)
 
                 else:
                     # fuckup streak 
@@ -525,17 +530,21 @@ class Beer(commands.Cog):
                     r = self.bot.db.custom_command(f'UPDATE pivo set money = {last_money}, hourly_work = {time} where user_id = {user_id};')
                     if r == 1:
                         self.bot.db.insert('transactions', user_id, money, 'salary', 'per day', mktime(datetime.now().timetuple()))
-                        return await ctx.send(f'{ctx.author.mention}, Часовая смена закончена, топай довольный с {money} <:dababy:949712395385843782>\nТеперь у тебя {last_money} <:dababy:949712395385843782>')
+                        return await ctx.send(f'{ctx.author.mention}, Часовая смена закончена, топай довольный с {money} <:dababy:949712395385843782>\nТеперь у тебя {last_money} <:dababy:949712395385843782>', delete_after=60*10)
                     else:
-                        return await ctx.send(f'{ctx.author.mention}, Не получилось отправить тебя на работу, сходи ещё раз!')
+                        return await ctx.send(f'{ctx.author.mention}, Не получилось отправить тебя на работу, сходи ещё раз!', delete_after=60*10)
         else:
             
             r = self.bot.db.insert('pivo', user_id, money, 0, 1, 0, 0, 0, False, time)
             if r == 1:
                 self.bot.db.insert('transactions', user_id, money, 'salary', 'per day', mktime(datetime.now().timetuple()))
-                return await ctx.send(f'{ctx.author.mention}, Часовая смена закончена, топай довольный с {money} <:dababy:949712395385843782>\nТеперь у тебя {last_money} <:dababy:949712395385843782>')
+                return await ctx.send(f'{ctx.author.mention}, Часовая смена закончена, топай довольный с {money} <:dababy:949712395385843782>\nТеперь у тебя {last_money} <:dababy:949712395385843782>', delete_after=60*10)
             else:
-                await ctx.send(f'{ctx.author.mention}, Не получилось отправить тебя на работу, сходи ещё раз!')
+                await ctx.send(f'{ctx.author.mention}, Не получилось отправить тебя на работу, сходи ещё раз!', delete_after=60*10)
+        try:
+            await ctx.message.delete(delay=60*10)
+        except:
+            pass
 
     @commands.command()
     @commands.is_owner()
