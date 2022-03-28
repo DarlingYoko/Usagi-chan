@@ -1,10 +1,10 @@
 from copy import deepcopy
-from random import shuffle
 from datetime import datetime
 from time import mktime
 from bin.functions import get_embed
 from time import mktime
 from datetime import datetime
+from random import SystemRandom
 from discord.ui import Modal, InputText, Button
 import asyncio, discord
 
@@ -251,6 +251,18 @@ class Player_bj:
             card = 11
         return card
 
+def shuffle(deck):
+    new_deck = []
+    length = len(deck) - 1
+    rng = SystemRandom()
+    for i in range(length):
+        index = rng.randint(0, length)
+        new_deck.append(deck.pop(index))
+        length -= 1
+    new_deck.append(deck.pop(0))
+    return new_deck
+
+
 
 def gen_deck(pl_count):
     modifyer = 2
@@ -258,13 +270,14 @@ def gen_deck(pl_count):
         modifyer = 4
 
     deck = deepcopy(CARDS) * modifyer
-    for i in range(20):
-        shuffle(deck)
+    for i in range(3):
+        deck = shuffle(deck)
+
 
     for card in deck:
         id = list(card.keys())[0]
         # print(id)
-        shuffle(card[id])
+        card[id] = shuffle(card[id])
     
     return deck
 
