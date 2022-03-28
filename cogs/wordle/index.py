@@ -218,8 +218,9 @@ class Wordle(commands.Cog):
             # win!
             word = ''.join(word)
             await ctx.send(f'{ctx.author.mention}, Ула Ула ты победил! {winner_text}')
-            self.bot.db.custom_command(f'update wordle set winner_id = {ctx.author.id}, points = {lives} where channel_id = {ctx.channel.id};\n' +\
-                                        f'update pivo set money = money + {len(word) * 5} where user_id = {ctx.author.id};')
+            self.bot.db.custom_command(f'update wordle set winner_id = {ctx.author.id}, points = {lives} where channel_id = {ctx.channel.id};')
+            if dababy_game:
+                self.bot.db.custom_command(f'update pivo set money = money + {len(word) * 5} where user_id = {ctx.author.id};')
             await wordle_channel.send(f"<@{author_id}>\n```cs\n# {ctx.channel.name} закончена.\nПобедитель — {ctx.author.name}\nСлово — '{word}'```")
             return await ctx.channel.edit(archived=True, locked=True)
 

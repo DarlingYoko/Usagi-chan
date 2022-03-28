@@ -38,18 +38,22 @@ def get_words_keybord(ban_words, white_words, try_words, lang):
     black_block = Image.open('./files/photo/black_block.png')
     blank = Editor('./files/photo/clear_keyboard.png')
 
-    ru_keyboard = 'й ц у к е н г ш щ з х ъ,ф ы в а п р о л д ж э,я ч с м и т ь б ю'
+    ru_keyboard = 'ё й ц у к е н г ш щ з х ъ,ф ы в а п р о л д ж э,я ч с м и т ь б ю'
     en_keyboard = 'q w e r t y u i o p,a s d f g h j k l,z x c v b n m'
 
     if lang == 'ru':
         keyboard = ru_keyboard.upper()
         blank = Editor('./files/photo/clear_keyboard.png')
+        shift = 113
+        layer_counter_place = {0: 0, 1:1, 2:2}
     else:
         keyboard = en_keyboard.upper()
         blank = Editor('./files/photo/clear_keyboard_en.png')
+        shift = 57
+        layer_counter_place = {0: 0, 1:1, 2:3}
 
     layer_counter = 0
-    layer_counter_place = {0: 0, 1:1, 2:3}
+    
     for layer in keyboard.split(','):
         place_counter = 0
         for word in layer.split(' '):
@@ -63,11 +67,11 @@ def get_words_keybord(ban_words, white_words, try_words, lang):
                 block = black_block
                 color = '#818384'
             if block:
-                blank.paste(block, (113 * place_counter + 57 * layer_counter_place[layer_counter], 118 * layer_counter))
+                blank.paste(block, (113 * place_counter + shift * layer_counter_place[layer_counter], 118 * layer_counter))
             up = 30
             if word in ['Й', 'Ё']:
                 up = 20
-            blank.text((113 * place_counter + 25 + 57 * layer_counter_place[layer_counter], 118 * layer_counter + up), word, font = font, color = color)
+            blank.text((113 * place_counter + 25 + shift * layer_counter_place[layer_counter], 118 * layer_counter + up), word, font = font, color = color)
             place_counter += 1
         layer_counter += 1
 
