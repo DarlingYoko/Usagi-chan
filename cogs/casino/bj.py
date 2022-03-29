@@ -4,7 +4,7 @@ from time import mktime
 from bin.functions import get_embed
 from time import mktime
 from datetime import datetime
-from random import SystemRandom
+from random import SystemRandom, randint
 from discord.ui import Modal, InputText, Button
 import asyncio, discord
 
@@ -270,7 +270,7 @@ def gen_deck(pl_count):
         modifyer = 4
 
     deck = deepcopy(CARDS) * modifyer
-    for i in range(3):
+    for i in range(randint(1, 10)):
         deck = shuffle(deck)
 
 
