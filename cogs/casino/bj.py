@@ -516,8 +516,8 @@ async def bj_game(self, message):
     self.bot.db.custom_command(trans_sql)
 
     self.decks[channel_id]['counter'] += 1
-    if (len(self.decks[channel_id]['deck']) == 104 and self.decks[channel_id]['counter'] == 1) or \
-            (len(self.decks[channel_id]['deck']) == 208 and self.decks[channel_id]['counter'] == 4):
+    if (len(self.decks[channel_id]['deck']) == 26 and self.decks[channel_id]['counter'] == 1) or \
+            (len(self.decks[channel_id]['deck']) == 52 and self.decks[channel_id]['counter'] == 4):
         self.decks[channel_id]['deck'] = gen_deck(pl_count)
         self.decks[channel_id]['counter'] = 0 
 
