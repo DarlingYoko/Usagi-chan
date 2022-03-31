@@ -295,10 +295,10 @@ async def bj_game(self, message):
     pl_count = len(game.players)
     # для 2-ух надо 104 карты
     # для 4 и более надо 208 карт
-    if (not self.decks[channel_id]['deck']) or \
-            (len(self.decks[channel_id]['deck']) == 26 and pl_count > 3) or \
-            (len(self.decks[channel_id]['deck']) == 52 and pl_count < 4):
-        self.decks[channel_id]['deck'] = gen_deck(pl_count)
+    # if (not self.decks[channel_id]['deck']) or \
+    #         (len(self.decks[channel_id]['deck']) == 26 and pl_count > 3) or \
+    #         (len(self.decks[channel_id]['deck']) == 52 and pl_count < 4):
+    self.decks[channel_id]['deck'] = gen_deck(pl_count)
     
     deck = self.decks[channel_id]['deck']
  
@@ -515,10 +515,12 @@ async def bj_game(self, message):
     self.bot.db.custom_command(stat_sql)
     self.bot.db.custom_command(trans_sql)
 
-    self.decks[channel_id]['counter'] += 1
-    if (len(self.decks[channel_id]['deck']) == 26 and self.decks[channel_id]['counter'] == 1) or \
-            (len(self.decks[channel_id]['deck']) == 52 and self.decks[channel_id]['counter'] == 4):
-        self.decks[channel_id]['deck'] = gen_deck(pl_count)
-        self.decks[channel_id]['counter'] = 0 
+    # self.decks[channel_id]['counter'] += 1
+    # print(len(self.decks[channel_id]['deck']), self.decks[channel_id]['counter'])
+    # if (len(self.decks[channel_id]['deck']) == 26 and self.decks[channel_id]['counter'] == 1) or \
+    #         (len(self.decks[channel_id]['deck']) == 52 and self.decks[channel_id]['counter'] == 4):
+    #     self.decks[channel_id]['deck'] = gen_deck(pl_count)
+    #     self.decks[channel_id]['counter'] = 0
+    #     print('refresh deck')
 
 
