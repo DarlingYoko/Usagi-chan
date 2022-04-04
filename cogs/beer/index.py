@@ -3,7 +3,7 @@ import twitchAPI
 from datetime import datetime
 from discord.ext import commands, tasks
 from time import mktime
-from random import randint, choice, SystemRandom
+from random import randint, choice, SystemRandom, choices
 from bin.functions import format_time, get_member_by_all, get_embed
 from cogs.beer.extra import *
 from twitchAPI.twitch import Twitch
@@ -343,7 +343,9 @@ class Beer(commands.Cog):
     #     member = await ctx.guild.fetch_member(270904126974590976)
     @tasks.loop(hours=1)
     async def regen_currency(self):
-        self.currenсy = randint(5, 12)
+        currenсy = [0.1, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
+        weights = [1, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9]
+        self.currenсy = choices(currenсy, weights=weights)[0]
 
     @tasks.loop(minutes=1)
     async def check_rewards_twitch(self):
