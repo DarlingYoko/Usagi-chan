@@ -189,6 +189,14 @@ class Events(commands.Cog):
 
         if after.channel and after.channel.id == voice_channel and not vc:
             await after.channel.connect()
+    
+    @commands.Cog.listener()
+    async def on_member_update(self, before, after):
+        user_id = before.id
+        huis = {686586463357370449: 'Хуй 1', 864765911663116288: 'Хуй 2', 289361805279494145: 'Хуй 3', 674650795525799994: 'Хуй 4'}
+        if user_id in huis.keys():
+            if 'хуй' not in after.display_name.lower():
+                await after.edit(nick=huis[user_id])
 
 
     async def give_role_to_user(self, user_id, role_id, guild_id):
