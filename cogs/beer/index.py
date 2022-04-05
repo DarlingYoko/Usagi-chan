@@ -322,7 +322,7 @@ class Beer(commands.Cog):
                 db_counter += 1
                 self.bot.db.update('pivo', 'money', 'user_id', db_counter, 1)
             name = ''
-            if for_user_name != None and member:
+            if for_user_name != None and member and not wesdos:
                 answer = f'{answer} для {member.mention}'
                 name = member.name
             await ctx.send(f'{ctx.author.mention}, {answer} за {sell_count} <:dababy:949712395385843782>\nУ тебя осталось {money} <:dababy:949712395385843782>')
