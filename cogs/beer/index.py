@@ -4,7 +4,7 @@ from datetime import datetime
 from discord.ext import commands, tasks
 from time import mktime
 from random import randint, choice, SystemRandom, choices
-from bin.functions import format_time, get_member_by_all, get_embed
+from bin.functions import *
 from cogs.beer.extra import *
 from twitchAPI.twitch import Twitch
 from twitchAPI.types import AuthScope
@@ -75,7 +75,7 @@ class Beer(commands.Cog):
             'Послать Весдоса нахуй': [20, 50, send_wesdos_nahui],
             'Послать пользователя нахуй': [50, 70, anon_send_nahui],
             'Послать <@&950668415402651718>ОВ нахуй': [150, 200, pidors_send_nahui],
-            'Послать рандома нахуй': [10, 50, send_random_nahui],
+            'Послать рандома нахуй': [50, 100, send_random_nahui],
             'Ебучая рулетка': [6666, 6666, ban_casino],
             # 'Жаренный арахис': [50, 200],
             # 'Чипсеки': [200, 300],
@@ -262,6 +262,7 @@ class Beer(commands.Cog):
         description='Купить наименование себе или другану, для покупки указывайте номер лота. Возможно покупка только 1 лота за раз. Если хотите купить для друга, то укажите его ник в конце.',
         usage='<№ лота> <Имя или ID друга по желанию>',
         )
+    @commands.cooldown(per=5*60, rate=1, type=commands.BucketType.user)
     # @commands.cooldown(per=60*1, rate=1, type=commands.BucketType.user)
     async def buy_beer(self, ctx, pos: int, *, for_user_name = None):
         pos -= 1
@@ -341,6 +342,10 @@ class Beer(commands.Cog):
             await ctx.send(f'{ctx.author.mention}, Ты не ввёл позицию!')
         elif isinstance(error, commands.BadArgument):
             await ctx.send(f'{ctx.author.mention}, Ты ввёл неверную позицию!')
+        elif isinstance(error, commands.CommandOnCooldown):
+            retry_after = error.retry_after
+            time = format_time(retry_after)
+            await ctx.send(f'{ctx.author.mention} Пока рано для новой игры, подожди чуток.\n Попробуй через {time}')
     
     # @commands.command()
     # async def test_ban(self, ctx):
