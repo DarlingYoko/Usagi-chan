@@ -24,17 +24,27 @@ async def pidors_send_nahui(self, ctx, member):
     guild = await self.bot.fetch_guild(self.bot.config['data']['guild_id'])
     channel = await guild.fetch_channel(self.bot.config['channel']['main'])
     await channel.send(f'<@&950668415402651718>Ы, ИДИТЕ НАХУЙ!')
-    return 'Послал пользователя нахуй'
+    return 'Послал ПИДОРАСОВ нахуй'
+
+async def send_random_nahui(self, ctx, member):
+    guild = await self.bot.fetch_guild(self.bot.config['data']['guild_id'])
+    channel = await guild.fetch_channel(self.bot.config['channel']['main'])
+    members = await guild.fetch_members(limit=None).flatten()
+    member = choice(members)
+    await channel.send(f'{member.mention}, ИДИ НАХУЙ!')
+
+    return 'Заролил рулетку на рандомный бан'
 
 
 
 async def ban_casino(self, ctx, data = None):
     guild = await self.bot.fetch_guild(self.bot.config['data']['guild_id'])
+    channel = await guild.fetch_channel(self.bot.config['channel']['main'])
     members = await guild.fetch_members(limit=None).flatten()
     member = choice(members)
     try:
         await member.timeout_for(duration=timedelta(hours=3), reason='Выйграл в рулетку')
     except discord.ext.commands.BotMissingPermissions:
         pass
-    await ctx.send(f'{member.mention}, Ты выйграл в рулетку!! ЮХУУ, мои поздравления! Отбывай в муте на 1 час, приятно иметь с тобой дела.')
+    await channel.send(f'{member.mention}, Ты выйграл в рулетку!! ЮХУУ, мои поздравления! Отбывай в муте на 3 час, приятно иметь с тобой дела.')
     return 'Заролил рулетку на рандомный бан'
