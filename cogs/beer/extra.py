@@ -23,7 +23,7 @@ async def anon_send_nahui(self, ctx, member):
 async def pidors_send_nahui(self, ctx, member):
     guild = await self.bot.fetch_guild(self.bot.config['data']['guild_id'])
     channel = await guild.fetch_channel(self.bot.config['channel']['main'])
-    await channel.send(f'<@&950668415402651718>, ИДИТЕ НАХУЙ!')
+    await channel.send(f'<@&950668415402651718>Ы, ИДИТЕ НАХУЙ!')
     return 'Послал пользователя нахуй'
 
 
