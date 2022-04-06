@@ -20,6 +20,12 @@ async def anon_send_nahui(self, ctx, member):
     await channel.send(f'{member.mention}, ИДИ НАХУЙ!')
     return 'Послал пользователя нахуй'
 
+async def pidors_send_nahui(self, ctx, member):
+    guild = await self.bot.fetch_guild(self.bot.config['data']['guild_id'])
+    channel = await guild.fetch_channel(self.bot.config['channel']['main'])
+    await channel.send(f'<@&950668415402651718>, ИДИТЕ НАХУЙ!')
+    return 'Послал пользователя нахуй'
+
 
 
 async def ban_casino(self, ctx, data = None):

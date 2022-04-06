@@ -74,6 +74,7 @@ class Beer(commands.Cog):
             'Забить яблочко': [400, 600, buy_based_apple],
             'Послать Весдоса нахуй': [20, 50, send_wesdos_nahui],
             'Послать пользователя нахуй': [50, 70, anon_send_nahui],
+            'Послать <@&950668415402651718>ОВ нахуй': [150, 200, pidors_send_nahui],
             'Ебучая рулетка': [6666, 6666, ban_casino],
             # 'Жаренный арахис': [50, 200],
             # 'Чипсеки': [200, 300],
@@ -325,7 +326,7 @@ class Beer(commands.Cog):
             if for_user_name != None and member and not wesdos:
                 answer = f'{answer} для {member.mention}'
                 name = member.name
-            await ctx.send(f'{ctx.author.mention}, {answer} за {sell_count} <:dababy:949712395385843782>\nУ тебя осталось {money} <:dababy:949712395385843782>')
+            await ctx.author.send(f'Ты купил {answer} за {sell_count} <:dababy:949712395385843782>\nУ тебя осталось {money} <:dababy:949712395385843782>')
             self.bot.db.insert('transactions', ctx.author.id, sell_count, 'buy item', f'{product} {name}', mktime(datetime.now().timetuple()))
         else:
             await ctx.send(f'{ctx.author.mention}, Не получилось обработать твою покупку, попробуй позже!')
