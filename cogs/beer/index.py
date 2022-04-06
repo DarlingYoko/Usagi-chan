@@ -345,7 +345,7 @@ class Beer(commands.Cog):
         elif isinstance(error, commands.CommandOnCooldown):
             retry_after = error.retry_after
             time = format_time(retry_after)
-            await ctx.send(f'{ctx.author.mention} Пока рано для новой игры, подожди чуток.\n Попробуй через {time}')
+            await ctx.send(f'{ctx.author.mention} Пока рано для новой покупки, подожди чуток.\n Попробуй через {time}')
     
     # @commands.command()
     # async def test_ban(self, ctx):
