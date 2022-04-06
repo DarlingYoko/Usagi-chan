@@ -332,6 +332,8 @@ class Beer(commands.Cog):
         else:
             await ctx.send(f'{ctx.author.mention}, Не получилось обработать твою покупку, попробуй позже!')
 
+        await ctx.message.delete(delay=10*60)
+
 
     @buy_beer.error
     async def buy_beer_errors(self, ctx, error):
