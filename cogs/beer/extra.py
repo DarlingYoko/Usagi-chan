@@ -33,7 +33,7 @@ async def send_random_nahui(self, ctx, member):
     member = choice(members)
     await channel.send(f'{member.mention}, ИДИ НАХУЙ!')
 
-    return 'Заролил рулетку на рандомный бан'
+    return 'Послал рандома нахуй'
 
 
 
