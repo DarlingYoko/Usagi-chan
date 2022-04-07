@@ -26,27 +26,27 @@ class Events(commands.Cog):
 
         # print(message.content)
 
-        if 'dababy' in message.content.lower():
+        # if 'dababy' in message.content.lower():
             
-            values = self.bot.db.custom_command(f'SELECT money, spend, notify from pivo where user_id = {message.author.id};')
-            if not values:
-                await message.channel.send(f'{message.author.mention}, У тебя не хватает <:dababy:949712395385843782> на счету для использования!')
-                await message.delete()
-            else:
-                values = values[0]
-                money, spend, notify = values[0], values[1], values[2]
+        #     values = self.bot.db.custom_command(f'SELECT money, spend, notify from pivo where user_id = {message.author.id};')
+        #     if not values:
+        #         await message.channel.send(f'{message.author.mention}, У тебя не хватает <:dababy:949712395385843782> на счету для использования!')
+        #         await message.delete()
+        #     else:
+        #         values = values[0]
+        #         money, spend, notify = values[0], values[1], values[2]
                 
-                if money < 1 and not notify:
-                    await message.channel.send(f'{message.author.mention}, У тебя не хватает <:dababy:949712395385843782> на счету для использования!')
-                    await message.delete()
-                    notify = True
-                elif money < 1 and notify:
-                    await message.delete()
-                else:
-                    money -= 1
-                    spend += 1
-                    notify = False
-                self.bot.db.custom_command(f'UPDATE pivo set money = {money}, spend = {spend}, notify = {notify} where user_id = {message.author.id};')
+        #         if money < 1 and not notify:
+        #             await message.channel.send(f'{message.author.mention}, У тебя не хватает <:dababy:949712395385843782> на счету для использования!')
+        #             await message.delete()
+        #             notify = True
+        #         elif money < 1 and notify:
+        #             await message.delete()
+        #         else:
+        #             money -= 1
+        #             spend += 1
+        #             notify = False
+        #         self.bot.db.custom_command(f'UPDATE pivo set money = {money}, spend = {spend}, notify = {notify} where user_id = {message.author.id};')
 
 
 
@@ -87,29 +87,29 @@ class Events(commands.Cog):
             if message_id in [858131920729931796, 877665594307125268, 933409260874903602, 951943709900017694]:
                 return await self.give_role_to_user(user_id, self.config['roles'].getint(f'{emoji.id}'), guild_id)
 
-        if 'dababy' in emoji.name.lower():
-            guild = await self.bot.fetch_guild(guild_id)
-            channel = await self.bot.fetch_channel(channel_id)
-            message = await channel.fetch_message(message_id)
-            member = await guild.fetch_member(user_id)
-            values = self.bot.db.custom_command(f'SELECT money, spend, notify from pivo where user_id = {user_id};')
-            if not values:
-                await channel.send(f'{member.mention}, У тебя не хватает <:dababy:949712395385843782> на счету для использования!')
-                await message.remove_reaction(emoji, member)
-            else:
-                values = values[0]
-                money, spend, notify = values[0], values[1], values[2]
-                if money < 1 and not notify:
-                    await message.channel.send(f'{member.mention}, У тебя не хватает <:dababy:949712395385843782> на счету для использования!')
-                    await message.remove_reaction(emoji, member)
-                    notify = True
-                elif money < 1 and notify:
-                    await message.remove_reaction(emoji, member)
-                else:
-                    money -= 1
-                    spend += 1
-                    notify = False
-                self.bot.db.custom_command(f'UPDATE pivo set money = {money}, spend = {spend}, notify = {notify} where user_id = {user_id};')
+        # if 'dababy' in emoji.name.lower():
+        #     guild = await self.bot.fetch_guild(guild_id)
+        #     channel = await self.bot.fetch_channel(channel_id)
+        #     message = await channel.fetch_message(message_id)
+        #     member = await guild.fetch_member(user_id)
+        #     values = self.bot.db.custom_command(f'SELECT money, spend, notify from pivo where user_id = {user_id};')
+        #     if not values:
+        #         await channel.send(f'{member.mention}, У тебя не хватает <:dababy:949712395385843782> на счету для использования!')
+        #         await message.remove_reaction(emoji, member)
+        #     else:
+        #         values = values[0]
+        #         money, spend, notify = values[0], values[1], values[2]
+        #         if money < 1 and not notify:
+        #             await message.channel.send(f'{member.mention}, У тебя не хватает <:dababy:949712395385843782> на счету для использования!')
+        #             await message.remove_reaction(emoji, member)
+        #             notify = True
+        #         elif money < 1 and notify:
+        #             await message.remove_reaction(emoji, member)
+        #         else:
+        #             money -= 1
+        #             spend += 1
+        #             notify = False
+        #         self.bot.db.custom_command(f'UPDATE pivo set money = {money}, spend = {spend}, notify = {notify} where user_id = {user_id};')
 
 
 

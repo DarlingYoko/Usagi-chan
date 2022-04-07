@@ -763,4 +763,5 @@ class Beer(commands.Cog):
 
 
 def setup(bot):
-    bot.add_cog(Beer(bot))
+    pass
+    # bot.add_cog(Beer(bot))

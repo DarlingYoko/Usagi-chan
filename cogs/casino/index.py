@@ -218,4 +218,5 @@ class Casino(commands.Cog):
 
 
 def setup(bot):
-    bot.add_cog(Casino(bot))
+    pass
+    # bot.add_cog(Casino(bot))
