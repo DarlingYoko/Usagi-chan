@@ -1,5 +1,5 @@
 import discord
-import random, requests
+import random, requests, re
 from discord.ext import commands
 from bin.converters import *
 from bin.functions import get_member_by_all
@@ -282,6 +282,61 @@ class Fun(commands.Cog):
     # @commands.cooldown(per=60*1, rate=1, type=commands.BucketType.user)
     # async def get_iq(self, ctx):
     #     pass
+    
+    @commands.is_owner()
+    @commands.command()
+    async def test(self, ctx):
+        guild = await self.bot.fetch_guild(858053936313008129)
+        users = {}
+        text_channel = await guild.fetch_channel(863966092153192478)
+
+        channels = await guild.fetch_channels()
+        threads = await guild.active_threads()
+        channels += threads
+
+        for channel in channels:
+            history = []
+            if channel.type != discord.ChannelType.text:
+                continue
+            first_message = await channel.history(limit=1, oldest_first=True).flatten()
+            first_message = first_message[0]
+            history.append(first_message)
+            messages = await channel.history(limit=200, after=first_message).flatten()
+            # print(len(messages), channel.name)
+            while len(messages) == 200:
+                history += messages
+                messages = await channel.history(limit=200, after=messages[-1]).flatten()
+            history += messages
+            for message in history:
+                if message.author.bot:
+                    continue
+
+                user_id = message.author.id
+                if user_id not in users.keys():
+                    users[user_id] = {'message': 0, 'image': 0, 'gifs': 0, 'emoji': 0, 'sticker': 0}
+
+                if message.attachments:
+                    for attachment in message.attachments:
+                        if attachment.content_type in ['image/png', 'image/jpeg', 'image/jpg']:
+                            users[user_id]['image'] += 1
+                        if attachment.content_type in ['image/gif']:
+                            users[user_id]['gifs'] += 1
+                if '.gif' in message.content:
+                    users[user_id]['gifs'] += 1
+                if re.search('<*:*:*>', message.content):
+                    users[user_id]['emoji'] += 1
+                if message.stickers:
+                    users[user_id]['sticker'] += len(message.stickers)
+                users[user_id]['message'] += 1
+                
+            await text_channel.send(f'{len(history)}, {channel.name}, ready')
+            sql = ''
+            for key, item in users.items():
+                sql += f'insert into statistic values ({key}, {item["message"]}, {item["emoji"]}, {item["sticker"]}, {item["image"]}, {item["gifs"]}, \'\');\n'
+
+            self.bot.db.custom_command(sql)
+
+
 
 
 
