@@ -3,12 +3,15 @@ from discord.ext import commands, tasks
 from twitchAPI.twitch import Twitch
 from .utils import gen_pic
 from datetime import datetime
+from twitchAPI.twitch import Twitch
+from twitchAPI.types import AuthScope
 
 class Main(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.config = bot.config
         self.check_twitch_online.start()
+        self.twitch_auth.start()
         # self.wordle_results.start()
 
 
@@ -68,6 +71,16 @@ class Main(commands.Cog):
             answer = 'Выключила переадресацию'
         await ctx.send(answer)
 
+    @tasks.loop(minutes=1, count=1)
+    async def twitch_auth(self):
+        token = self.config['twitch']['token']
+        refresh_token = self.config['twitch']['refresh_token']
+        client_id = self.config['twitch']['client_id']
+        client_secret = self.config['twitch']['client_secret']
+        self.bot.twitch = Twitch(client_id, client_secret)
+        target_scope = [AuthScope.CHANNEL_READ_REDEMPTIONS, AuthScope.CHANNEL_MANAGE_REDEMPTIONS]
+        self.bot.twitch.set_user_authentication(token, target_scope, refresh_token)
+
     @tasks.loop(minutes=1)
     async def check_twitch_online(self):
         users = self.bot.db.get_all('twitch')
@@ -82,7 +95,7 @@ class Main(commands.Cog):
             try:
                 status = self.bot.twitch.get_streams(user_login=[name])
             except Exception as e:
-                print(f'Не могу найти {name}')
+                print(f'Не могу найти {name}, {e}')
             if not status:
                 continue
             if status['data']:
