@@ -212,7 +212,7 @@ class Events(commands.Cog):
 
         if after.channel and after.channel.id == voice_channel and not vc:
             await after.channel.connect()
-            
+
         # user connect voice
         if after.channel and not before.channel:
             self.bot.voice_users[user_id] = {'state': 'connect', 'time': mktime(datetime.now().timetuple())}
@@ -227,7 +227,11 @@ class Events(commands.Cog):
             exists_user = self.bot.db.custom_command(f'select exists(select * from statistic where user_id = {user_id});')[0][0]
             cur_time = mktime(datetime.now().timetuple())
             if exists_user:
-                voice = eval(self.bot.db.get_value('statistic', 'voice', 'user_id', user_id))
+                voice = self.bot.db.get_value('statistic', 'voice', 'user_id', user_id)
+                if not voice:
+                    voice = {}
+                else:
+                    voice = eval(voice)
                 
                 if channel_id in voice.keys():
                     voice[channel_id] += (cur_time - self.bot.voice_users[user_id]['time'])
