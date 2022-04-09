@@ -24,7 +24,7 @@ class Events(commands.Cog):
 
         if message.author == self.bot.user or message.author.bot:
             return
-
+        return
         user_id = message.author.id
         user = {'message': 1, 'image': 0, 'gif': 0, 'emoji': 0, 'sticker': 0}
 
@@ -212,7 +212,7 @@ class Events(commands.Cog):
 
         if after.channel and after.channel.id == voice_channel and not vc:
             await after.channel.connect()
-
+        return
         # user connect voice
         if after.channel and not before.channel:
             self.bot.voice_users[user_id] = {'state': 'connect', 'time': mktime(datetime.now().timetuple())}
