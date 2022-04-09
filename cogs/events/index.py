@@ -1,7 +1,8 @@
-from xmlrpc.client import Boolean
-import discord, telebot
+import discord, telebot, re
 from discord.ext import commands
 from bin.functions import *
+from time import mktime
+from datetime import datetime
 
 
 
@@ -23,6 +24,28 @@ class Events(commands.Cog):
 
         if message.author == self.bot.user or message.author.bot:
             return
+
+        user_id = message.author.id
+        user = {'message': 1, 'image': 0, 'gif': 0, 'emoji': 0, 'sticker': 0}
+
+        if message.attachments:
+            for attachment in message.attachments:
+                if attachment.content_type in ['image/png', 'image/jpeg', 'image/jpg']:
+                    user['image'] += 1
+                if attachment.content_type in ['image/gif']:
+                    user['gif'] += 1
+        if '.gif' in message.content:
+            user['gif'] += 1
+        if re.search('<*:*:*>', message.content):
+            user['emoji'] += 1
+        if message.stickers:
+            user['sticker'] += len(message.stickers)
+        exists_user = self.bot.db.custom_command(f'select exists(select * from statistic where user_id = {user_id});')[0][0]
+        if exists_user:
+            sql = f'update statistic set message = message + {user["message"]}, emoji = emoji + {user["emoji"]}, sticker = sticker + {user["sticker"]}, image = image + {user["image"]}, gif = gif + {user["gif"]} where user_id = {user_id};'
+        else:
+            sql = f'insert into statistic values ({user_id}, {user["message"]}, {user["emoji"]}, {user["sticker"]}, {user["image"]}, {user["gif"]}, \'\');\n'
+        self.bot.db.custom_command(sql)
 
         # print(message.content)
 
@@ -178,8 +201,8 @@ class Events(commands.Cog):
 
     @commands.Cog.listener()
     async def on_voice_state_update(self, member, before, after):
+        user_id = member.id
         voice_channel = self.config['channel'].getint('mp_voice')
-        channel = before.channel or after.channel
         vc = get_vc(self)
 
         if before.channel and before.channel.id == voice_channel:
@@ -189,6 +212,33 @@ class Events(commands.Cog):
 
         if after.channel and after.channel.id == voice_channel and not vc:
             await after.channel.connect()
+            
+        # user connect voice
+        if after.channel and not before.channel:
+            self.bot.voice_users[user_id] = {'state': 'connect', 'time': mktime(datetime.now().timetuple())}
+        
+        # user disconnect voice 
+        if not after.channel and before.channel:
+            if user_id not in self.bot.voice_users.keys():
+                return
+            if self.bot.voice_users[user_id]['state'] == 'disconnect':
+                return
+            channel_id = before.channel.id
+            exists_user = self.bot.db.custom_command(f'select exists(select * from statistic where user_id = {user_id});')[0][0]
+            cur_time = mktime(datetime.now().timetuple())
+            if exists_user:
+                voice = eval(self.bot.db.get_value('statistic', 'voice', 'user_id', user_id))
+                
+                if channel_id in voice.keys():
+                    voice[channel_id] += (cur_time - self.bot.voice_users[user_id]['time'])
+                else:
+                    voice[channel_id] = (cur_time - self.bot.voice_users[user_id]['time'])
+                sql = f'update statistic set voice = \'{str(voice)}\' where user_id = {user_id};'
+            else:
+                voice = {channel_id: cur_time - self.bot.voice_users[user_id]['time']}
+                sql = f'insert into statistic values ({user_id}, 0, 0, 0, 0, 0, \'{str(voice)}\');\n'
+            self.bot.db.custom_command(sql)
+            self.bot.voice_users[user_id]['state'] = 'disconnect'
     
     # @commands.Cog.listener()
     # async def on_member_update(self, before, after):

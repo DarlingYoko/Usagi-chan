@@ -13,6 +13,7 @@ bot = commands.Bot(command_prefix = '!', intents = intents, help_command = Custo
 
 bot.config = get_config('config')
 bot.redirect = True
+bot.voice_users = {}
 # bot.players = ['290166276796448768', '224812444462088194']#, '224812444462088194', '249874183943749632', '575338259031392276', '357540566843523073']
 # bot.table =[]
 
