@@ -24,10 +24,11 @@ class Events(commands.Cog):
 
         if message.author == self.bot.user or message.author.bot:
             return
-        return
-        user_id = message.author.id
-        user = {'message': 1, 'image': 0, 'gif': 0, 'emoji': 0, 'sticker': 0}
 
+        user_id = message.author.id
+        channel_id = message.channel.id
+        user = {'message': 1, 'image': 0, 'gif': 0, 'emoji': 0, 'sticker': 0}
+        # return
         if message.attachments:
             for attachment in message.attachments:
                 if attachment.content_type in ['image/png', 'image/jpeg', 'image/jpg']:
@@ -40,11 +41,11 @@ class Events(commands.Cog):
             user['emoji'] += 1
         if message.stickers:
             user['sticker'] += len(message.stickers)
-        exists_user = self.bot.db.custom_command(f'select exists(select * from statistic where user_id = {user_id});')[0][0]
+        exists_user = self.bot.db.custom_command(f'select exists(select * from web_stat_all_stats where user_id = {user_id} and channel_id = {channel_id});')[0][0]
         if exists_user:
-            sql = f'update statistic set message = message + {user["message"]}, emoji = emoji + {user["emoji"]}, sticker = sticker + {user["sticker"]}, image = image + {user["image"]}, gif = gif + {user["gif"]} where user_id = {user_id};'
+            sql = f'update web_stat_all_stats set message = message + {user["message"]}, emoji = emoji + {user["emoji"]}, sticker = sticker + {user["sticker"]}, image = image + {user["image"]}, gif = gif + {user["gif"]} where user_id = {user_id} and channel_id = {channel_id};'
         else:
-            sql = f'insert into statistic values ({user_id}, {user["message"]}, {user["emoji"]}, {user["sticker"]}, {user["image"]}, {user["gif"]}, \'\');\n'
+            sql = f'insert into web_stat_all_stats values (nextval(\'web_stat_all_stats_id_seq\'), {user_id}, {channel_id}, {user["message"]}, {user["emoji"]}, {user["sticker"]}, {user["image"]}, {user["gif"]}, 0);\n'
         self.bot.db.custom_command(sql)
 
         # print(message.content)
@@ -212,7 +213,7 @@ class Events(commands.Cog):
 
         if after.channel and after.channel.id == voice_channel and not vc:
             await after.channel.connect()
-        return
+        # return
         # user connect voice
         if after.channel and not before.channel:
             self.bot.voice_users[user_id] = {'state': 'connect', 'time': mktime(datetime.now().timetuple())}
@@ -224,23 +225,13 @@ class Events(commands.Cog):
             if self.bot.voice_users[user_id]['state'] == 'disconnect':
                 return
             channel_id = before.channel.id
-            exists_user = self.bot.db.custom_command(f'select exists(select * from statistic where user_id = {user_id});')[0][0]
+            exists_user = self.bot.db.custom_command(f'select exists(select * from web_stat_all_stats where user_id = {user_id} and channel_id = {channel_id});')[0][0]
             cur_time = mktime(datetime.now().timetuple())
+            time = (cur_time - self.bot.voice_users[user_id]['time'])
             if exists_user:
-                voice = self.bot.db.get_value('statistic', 'voice', 'user_id', user_id)
-                if not voice:
-                    voice = {}
-                else:
-                    voice = eval(voice)
-                
-                if channel_id in voice.keys():
-                    voice[channel_id] += (cur_time - self.bot.voice_users[user_id]['time'])
-                else:
-                    voice[channel_id] = (cur_time - self.bot.voice_users[user_id]['time'])
-                sql = f'update statistic set voice = \'{str(voice)}\' where user_id = {user_id};'
+                sql = f'update web_stat_all_stats set voice = voice + {time} where user_id = {user_id} and channel_id = {channel_id};'
             else:
-                voice = {channel_id: cur_time - self.bot.voice_users[user_id]['time']}
-                sql = f'insert into statistic values ({user_id}, 0, 0, 0, 0, 0, \'{str(voice)}\');\n'
+                sql = f'insert into web_stat_all_stats values (nextval(\'web_stat_all_stats_id_seq\'), {user_id}, {channel_id}, 0, 0, 0, 0, 0, {time});\n'
             self.bot.db.custom_command(sql)
             self.bot.voice_users[user_id]['state'] = 'disconnect'
     
