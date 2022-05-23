@@ -10,8 +10,8 @@ class Main(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.config = bot.config
-        self.check_twitch_online.start()
         self.twitch_auth.start()
+        self.check_twitch_online.start()
         # self.wordle_results.start()
 
 
@@ -123,7 +123,7 @@ class Main(commands.Cog):
 
     @commands.command(name = 'stream_add')
     async def add_streamer(self, ctx, streamer: str):
-        if streamer.lower() == 'nuke73':
+        if 'nuke73' in streamer.lower():
             answer = 'Этот стример заблокирован за откровенный или чувствительный контент и удалён модератором. Подробные правила можно найти в <#858096576136347648>'
             return await ctx.send(answer)
         r = self.bot.db.insert('twitch', streamer, 0)
