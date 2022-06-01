@@ -167,7 +167,7 @@ class Events(commands.Cog):
         else:
             request = f'insert into web_stat_user_data values (nextval(\'web_stat_user_data_id_seq\'), {member.id}, \'{member.name}\', \'{member.display_name}\', \'{member.avatar}\', {True});\n'
         result = self.bot.db.custom_command(request)
-        print('Set active True for user in database - ', result)
+        print('Set active True for user in database - ', result, member.id)
         # проверить, есть ли пользователь в бд, и если да, то выдать его роли
         request = f"SELECT EXISTS(SELECT * from user_stats where user_id = {member.id});"
         user_in_db = self.bot.db.custom_command(request)[0][0]
@@ -199,7 +199,7 @@ class Events(commands.Cog):
             sql = f'update discordlogin_discorduser set has_link = {False} where id = {member.id};\n'
             result = self.bot.db.custom_command(request)
             self.bot.db.custom_command(sql)
-            print('Set active false to user in database - ', result)
+            print('Set active false to user in database - ', result, member.id)
         else:
             print('Wrong user, isn\'t in database')
         # сохранить все роли у юзера при выходе с серва
@@ -266,19 +266,19 @@ class Events(commands.Cog):
         else:
             request = f'insert into web_stat_user_data values (nextval(\'web_stat_user_data_id_seq\'), {after.id}, \'{after.name}\', \'{after.display_name}\', \'{after.avatar}\', {True});\n'
         result = self.bot.db.custom_command(request)
-        print('Update display name for user in database - ', result)
+        print('Update display name for user in database - ', result, after.display_name)
     
     @commands.Cog.listener()
     async def on_guild_channel_create(self, channel):
         request = f'insert into web_stat_user_data values (nextval(\'web_stat_user_data_id_seq\'), {channel.id}, \'{channel.name}\', \'\', \'\', {True});\n'
         result = self.bot.db.custom_command(request)
-        print('Create channel in database - ', result)
+        print('Create channel in database - ', result, channel.name)
 
     @commands.Cog.listener()
     async def on_guild_channel_update(self, before, after):
         request = f'update web_stat_user_data set name = \'{after.name}\' where uid = {after.id};\n'
         result = self.bot.db.custom_command(request)
-        print('Update channel in database - ', result)
+        print('Update channel in database - ', result, after.name)
 
 
     @commands.Cog.listener()
@@ -290,7 +290,7 @@ class Events(commands.Cog):
         else:
             request = f'insert into web_stat_user_data values (nextval(\'web_stat_user_data_id_seq\'), {after.id}, \'{after.name}\', \'{after.display_name}\', \'{after.avatar}\', {True});\n'
         result = self.bot.db.custom_command(request)
-        print('Update display name for user in database - ', result)
+        print('Update display name for user in database - ', result, after.name)
 
 
     async def give_role_to_user(self, user_id, role_id, guild_id):
