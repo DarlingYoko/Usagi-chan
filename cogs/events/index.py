@@ -24,11 +24,11 @@ class Events(commands.Cog):
 
         if message.author == self.bot.user or message.author.bot:
             return
-
+        # return
         user_id = message.author.id
         channel_id = message.channel.id
         user = {'message': 1, 'image': 0, 'gif': 0, 'emoji': 0, 'sticker': 0}
-        # return
+
         if message.attachments:
             for attachment in message.attachments:
                 if attachment.content_type in ['image/png', 'image/jpeg', 'image/jpg']:
@@ -160,6 +160,14 @@ class Events(commands.Cog):
 
     @commands.Cog.listener()
     async def on_member_join(self, member):
+        request = f"SELECT EXISTS(SELECT * from web_stat_user_data where uid = {member.id});"
+        user_in_db = self.bot.db.custom_command(request)[0][0]
+        if user_in_db:
+            request = f'update web_stat_user_data set active = {True} where uid = {member.id};\n'
+        else:
+            request = f'insert into web_stat_user_data values (nextval(\'web_stat_user_data_id_seq\'), {member.id}, \'{member.name}\', \'{member.display_name}\', \'{member.avatar}\', {True});\n'
+        result = self.bot.db.custom_command(request)
+        print('Set active True for user in database - ', result)
         # проверить, есть ли пользователь в бд, и если да, то выдать его роли
         request = f"SELECT EXISTS(SELECT * from user_stats where user_id = {member.id});"
         user_in_db = self.bot.db.custom_command(request)[0][0]
@@ -180,9 +188,20 @@ class Events(commands.Cog):
         channel = await self.bot.fetch_channel(self.config['channel']['main'])
         await channel.send(answer)
 
+        
 
     @commands.Cog.listener()
     async def on_member_remove(self, member):
+        request = f"SELECT EXISTS(SELECT * from web_stat_user_data where uid = {member.id});"
+        user_in_db = self.bot.db.custom_command(request)[0][0]
+        if user_in_db:
+            request = f'update web_stat_user_data set active = {False} where uid = {member.id};\n'
+            sql = f'update discordlogin_discorduser set has_link = {False} where id = {member.id};\n'
+            result = self.bot.db.custom_command(request)
+            self.bot.db.custom_command(sql)
+            print('Set active false to user in database - ', result)
+        else:
+            print('Wrong user, isn\'t in database')
         # сохранить все роли у юзера при выходе с серва
         request = f"SELECT EXISTS(SELECT * from user_stats where user_id = {member.id});"
         user_in_db = self.bot.db.custom_command(request)[0][0]
@@ -199,6 +218,9 @@ class Events(commands.Cog):
 
         channel = await self.bot.fetch_channel(self.config['channel']['main'])
         await channel.send(answer)
+
+            
+        
 
     @commands.Cog.listener()
     async def on_voice_state_update(self, member, before, after):
@@ -235,13 +257,40 @@ class Events(commands.Cog):
             self.bot.db.custom_command(sql)
             self.bot.voice_users[user_id]['state'] = 'disconnect'
     
-    # @commands.Cog.listener()
-    # async def on_member_update(self, before, after):
-    #     user_id = before.id
-    #     huis = {686586463357370449: 'Хуй 1', 864765911663116288: 'Хуй 2', 289361805279494145: 'Хуй 3', 674650795525799994: 'Хуй 4'}
-    #     if user_id in huis.keys():
-    #         if 'хуй' not in after.display_name.lower():
-    #             await after.edit(nick=huis[user_id])
+    @commands.Cog.listener()
+    async def on_member_update(self, before, after):
+        request = f"SELECT EXISTS(SELECT * from web_stat_user_data where uid = {after.id});"
+        user_in_db = self.bot.db.custom_command(request)[0][0]
+        if user_in_db:
+            request = f'update web_stat_user_data set display_name = \'{after.display_name}\' where uid = {after.id};\n'
+        else:
+            request = f'insert into web_stat_user_data values (nextval(\'web_stat_user_data_id_seq\'), {after.id}, \'{after.name}\', \'{after.display_name}\', \'{after.avatar}\', {True});\n'
+        result = self.bot.db.custom_command(request)
+        print('Update display name for user in database - ', result)
+    
+    @commands.Cog.listener()
+    async def on_guild_channel_create(self, channel):
+        request = f'insert into web_stat_user_data values (nextval(\'web_stat_user_data_id_seq\'), {channel.id}, \'{channel.name}\', \'\', \'\', {True});\n'
+        result = self.bot.db.custom_command(request)
+        print('Create channel in database - ', result)
+
+    @commands.Cog.listener()
+    async def on_guild_channel_update(self, before, after):
+        request = f'update web_stat_user_data set name = \'{after.name}\' where uid = {after.id};\n'
+        result = self.bot.db.custom_command(request)
+        print('Update channel in database - ', result)
+
+
+    @commands.Cog.listener()
+    async def on_user_update(self, before, after):
+        request = f"SELECT EXISTS(SELECT * from web_stat_user_data where uid = {after.id});"
+        user_in_db = self.bot.db.custom_command(request)[0][0]
+        if user_in_db:
+            request = f'update web_stat_user_data set name = \'{after.name}\', icon_url = \'{after.avatar}\' where uid = {after.id};\n'
+        else:
+            request = f'insert into web_stat_user_data values (nextval(\'web_stat_user_data_id_seq\'), {after.id}, \'{after.name}\', \'{after.display_name}\', \'{after.avatar}\', {True});\n'
+        result = self.bot.db.custom_command(request)
+        print('Update display name for user in database - ', result)
 
 
     async def give_role_to_user(self, user_id, role_id, guild_id):
