@@ -5,6 +5,7 @@ from .utils import gen_pic
 from datetime import datetime
 from twitchAPI.twitch import Twitch
 from twitchAPI.types import AuthScope
+from datetime import timedelta
 
 class Main(commands.Cog):
     def __init__(self, bot):
@@ -285,6 +286,19 @@ class Main(commands.Cog):
     async def before_wordle_results(self):
         print('waiting wordle results')
         await self.bot.wait_until_ready()
+
+
+    @commands.command(name='сон', aliases=['спать'])
+    async def get_mute(self, ctx, count:str = 0):
+        if not count.isdigit():
+            return await ctx.send(f'{ctx.author.mention}, Ты задал не числовое время сна')
+        if count < 0:
+            return await ctx.send(f'{ctx.author.mention}, Ты задал отрицательное время сна')
+        if count == 0:
+            count=8
+        duration = timedelta(hours=count)
+        await ctx.author.timeout_for(duration=duration, reason='Timeout for sleep')
+        await ctx.send(f'{ctx.author.mention}, Отдыхай {count} часов')
 
 
 
