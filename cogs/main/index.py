@@ -290,9 +290,7 @@ class Main(commands.Cog):
 
 
     @commands.command(name='сон', aliases=['спать'])
-    async def get_mute(self, ctx, count:str = None):
-        if count == None:
-            count = '8'
+    async def get_mute(self, ctx, count:str = '8'):
         if not count.isdigit():
             return await ctx.send(f'{ctx.author.mention}, Ты задал не числовое время сна')
         count = int(count)
