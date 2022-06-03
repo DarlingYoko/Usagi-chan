@@ -292,8 +292,11 @@ class Main(commands.Cog):
     async def get_mute(self, ctx, count:str = 0):
         if not count.isdigit():
             return await ctx.send(f'{ctx.author.mention}, Ты задал не числовое время сна')
+        count = int(count)
         if count < 0:
             return await ctx.send(f'{ctx.author.mention}, Ты задал отрицательное время сна')
+        if count > 24:
+            return await ctx.send(f'{ctx.author.mention}, Ты задал слишком большое время сна')
         if count == 0:
             count=8
         duration = timedelta(hours=count)
