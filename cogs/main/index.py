@@ -13,6 +13,7 @@ class Main(commands.Cog):
         self.config = bot.config
         self.twitch_auth.start()
         self.check_twitch_online.start()
+        self.check_sleep_users.start()
         # self.wordle_results.start()
 
 
@@ -302,6 +303,34 @@ class Main(commands.Cog):
         duration = timedelta(hours=count)
         await ctx.author.timeout_for(duration=duration, reason='Timeout for sleep')
         await ctx.send(f'{ctx.author.mention}, Отдыхай {count} часов')
+
+        # give member sleep role
+        role = ctx.guild.get_role(982230259665600522)
+        print('get role')
+        await ctx.author.add_roles(role)
+        print('gave role')
+        # add member in sleep table
+        self.bot.db.custom_command(f"INSERT INTO sleep_users VALUES ({ctx.author.id});")
+
+
+    @tasks.loop(minutes=10)
+    async def check_sleep_users(self):
+        users = self.bot.db.get_all('sleep_users')[0]
+        guild = await self.bot.fetch_guild(858053936313008129)
+        role = guild.get_role(982230259665600522)
+        for user in users:
+            member = await guild.fetch_member(user)
+            if not member.timed_out:
+                # remove member sleep role
+                await member.remove_roles(role)
+
+                # remove member from sleep table
+                self.bot.db.remove('sleep_users', 'user_id', member.id)
+    
+    @check_sleep_users.before_loop
+    async def before_check_sleep_users(self):
+        print('waiting check sleep users')
+        await self.bot.wait_until_ready()
 
 
 
