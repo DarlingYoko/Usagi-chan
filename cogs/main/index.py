@@ -326,6 +326,7 @@ class Main(commands.Cog):
 
                 # remove member from sleep table
                 self.bot.db.remove('sleep_users', 'user_id', member.id)
+                print(f'Wake up {member.name}')
     
     @check_sleep_users.before_loop
     async def before_check_sleep_users(self):
