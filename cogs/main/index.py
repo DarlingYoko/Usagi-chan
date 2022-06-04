@@ -317,6 +317,7 @@ class Main(commands.Cog):
         users = self.bot.db.get_all('sleep_users')[0]
         guild = await self.bot.fetch_guild(858053936313008129)
         role = guild.get_role(982230259665600522)
+        print(users)
         for user in users:
             member = await guild.fetch_member(user)
             if not member.timed_out:
