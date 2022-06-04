@@ -309,17 +309,17 @@ class Main(commands.Cog):
         await ctx.author.add_roles(role)
         print('gave role')
         # add member in sleep table
-        self.bot.db.custom_command(f"INSERT INTO sleep_users VALUES ({ctx.author.id});")
+        self.bot.db.custom_command(f"insert into sleep_users values ({ctx.author.id});")
 
 
     @tasks.loop(minutes=10)
     async def check_sleep_users(self):
-        users = self.bot.db.get_all('sleep_users')[0]
+        users = self.bot.db.custom_command('select user_id from sleep_users;')
         guild = await self.bot.fetch_guild(858053936313008129)
         role = guild.get_role(982230259665600522)
-        print(users)
+        # users = list(map(lambda x: x[0], users))
         for user in users:
-            member = await guild.fetch_member(user)
+            member = await guild.fetch_member(user[0])
             if not member.timed_out:
                 # remove member sleep role
                 await member.remove_roles(role)
