@@ -1,9 +1,11 @@
+from calendar import c
 import discord
 import random, requests, re
 from discord.ext import commands
 from bin.converters import *
 from bin.functions import get_member_by_all
 from bs4 import BeautifulSoup
+from datetime import datetime
 
 class Fun(commands.Cog):
     def __init__(self, bot):
@@ -197,17 +199,15 @@ class Fun(commands.Cog):
             # f"{numObj:.{digits}f}"
         # print(currencys)
         beer = self.bot.get_cog('Beer')
+        # 2. Бел рубль {currencys["USDBYN"]["value"]} ({currencys["USDBYN"]["change"]})
         text = f'''```autohotkey
-Сводка курса на данный момент:
-
-1. Рубль {currencys["USDRUB"]["value"]} ({currencys["USDRUB"]["change"]})
-2. Бел рубль {currencys["USDBYN"]["value"]} ({currencys["USDBYN"]["change"]})
-3. Гривня {currencys["USDUAH"]["value"]} ({currencys["USDUAH"]["change"]})
-4. Теньхе {currencys["USDKZT"]["value"]} ({currencys["USDKZT"]["change"]})
-
-```
-'''
+Сводка курса на данный момент:'''
 # 5. Усаги коины к дабаби {beer.currenсy} к 1
+        counter = 1
+        for key in currencys:
+            text += f'{counter}. {key} {currencys[key]["value"]} ({currencys[key]["change"]})\n'
+            counter += 1
+        text += '```'
         await ctx.send(content=text)
 
         # Your JSON object
@@ -286,13 +286,13 @@ class Fun(commands.Cog):
     @commands.is_owner()
     @commands.command()
     async def test(self, ctx):
-        c = {917896025849606145: (58, 36, 0, 3, 0, ''), 866083224354684928: (4956, 730, 0, 58, 0, ''), 864765911663116288: (5771, 1228, 18, 1053, 41, ''), 860284431029501952: (208, 15, 0, 1, 0, ''), 824521926416269312: (1068, 93, 4, 17, 1, ''), 793963638901833769: (13, 4, 0, 0, 0, ''), 793409024015073281: (44219, 20848, 653, 4373, 512, ''), 750563921584193577: (17547, 8260, 29, 3280, 18, ''), 734108286248288281: (11668, 5240, 194, 286, 83, ''), 721761390725038161: (25396, 5163, 72, 386, 49, ''), 689134347516903425: (19097, 5722, 188, 219, 0, ''), 686586463357370449: (87338, 18574, 456, 743, 2, ''), 681151018922410048: (29, 11, 0, 0, 0, ''), 674650795525799994: (47384, 18577, 409, 384, 19, ''), 606900908579880992: (1219, 819, 0, 93, 31, ''), 575338259031392276: (21365, 8193, 180, 3126, 149, ''), 559399135195693079: (77, 39, 0, 2, 0, ''), 532323484924116992: (39997, 11576, 29, 3319, 10, ''), 509446686171463690: (95, 2, 0, 2, 0, ''), 507901141116518415: (50640, 11219, 187, 1584, 75, ''), 498249577699344384: (27777, 17714, 1073, 567, 326, ''), 480462696802680842: (60274, 38222, 909, 4552, 180, ''), 452021696346456085: (25361, 15067, 1166, 2076, 12, ''), 432227036472541184: (460, 125, 6, 47, 12, ''), 417334123301175297: (255, 148, 19, 38, 0, ''), 409436915117326338: (52073, 38145, 850, 4083, 43, ''), 397085339292008449: (22327, 8300, 414, 4434, 684, ''), 385069724486074378: (4014, 720, 45, 332, 20, ''), 369138872048943115: (82137, 24489, 266, 1981, 544, ''), 357540566843523073: (83237, 9513, 409, 1340, 104, ''), 341610000264724511: (1525, 410, 12, 116, 6, ''), 341222213409701899: (25927, 1705, 1, 1151, 0, ''), 335954146765045761: (26480, 11285, 304, 3306, 111, ''), 332882488961662978: (39666, 15735, 342, 457, 2, ''), 329174370562080778: (6652, 3097, 21, 183, 29, ''), 325604243925106688: (658, 154, 6, 37, 4, ''), 324159705544916992: (16637, 9849, 41, 1537, 131, ''), 322388684034932736: (451, 72, 1, 2, 0, ''), 311415107928457226: (3230, 74, 24, 1, 0, ''), 307491897562234884: (13831, 4772, 486, 677, 209, ''), 304578501351047178: (58588, 21295, 407, 3608, 94, ''), 303623084429148161: (30121, 8150, 179, 2376, 66, ''), 300483698665586689: (7301, 4519, 87, 832, 18, ''), 300281175942103040: (14273, 3926, 115, 641, 44, ''), 298740173741621270: (42367, 17925, 1430, 3428, 219, ''), 294905624464982016: (47272, 4497, 8, 92, 0, ''), 290166276796448768: (29152, 9678, 233, 3345, 125, ''), 289479328830586880: (55, 2, 0, 0, 0, ''), 289361805279494145: (24493, 11646, 327, 1238, 123, ''), 282838803289341954: (19655, 8736, 4, 813, 58, ''), 276427191217160202: (68125, 34526, 253, 4594, 47, ''), 269453719303618560: (20228, 5308, 47, 478, 8, ''), 260076356597972993: (17700, 3144, 69, 64, 2, ''), 259754214341738497: (58578, 31479, 1967, 5213, 685, ''), 253520491422285834: (15, 0, 0, 0, 0, ''), 249874183943749632: (78931, 15011, 471, 2084, 120, ''), 249146637618905088: (32130, 9734, 24, 2180, 127, ''), 243658118372917248: (16851, 2325, 124, 1080, 109, ''), 241182014181474304: (7318, 2018, 17, 856, 87, ''), 234419004008038411: (1146, 516, 62, 44, 4, ''), 230863156174520320: (2365, 1602, 21, 290, 11, ''), 224812444462088194: (13301, 6253, 762, 1340, 226, ''), 212894057884549121: (2025, 1077, 30, 229, 1, ''), 203616268618563584: (17405, 14174, 87, 1252, 319, ''), 198013978079657984: (44755, 12545, 57, 4093, 1020, ''), 197830830213693441: (7463, 4319, 1, 399, 4, ''), 197127942784942080: (387, 196, 1, 32, 0, ''), 185353739278745600: (60525, 12839, 329, 594, 227, ''), 183310604692357120: (109, 69, 0, 4, 0, ''), 182131285051965440: (5627, 4423, 19, 354, 27, ''), 127990560538492928: (50739, 16295, 10, 2597, 2, ''), 752055514497548360: (11, 0, 0, 4, 3, ''), 257573093126569988: (90, 2, 0, 32, 11, ''), 252000672415744001: (36, 9, 0, 28, 3, ''), 619982406354731025: (166, 2, 0, 71, 4, ''), 548794687587352576: (3, 2, 0, 0, 1, ''), 276388874031464448: (13, 0, 1, 3, 7, ''), 268691598102102017: (28, 0, 0, 20, 1, '')}
-        sql = ''
-        for key, value in c.items():
-            sql += f'insert into statistic values ({key}, {value[0]}, {value[1]}, {value[2]}, {value[3]}, {value[4]}, \'\');\n'
-        self.bot.db.custom_command(sql)
-        # print('start searching')
-        # guild = await self.bot.fetch_guild(858053936313008129)
+        # c = {917896025849606145: (58, 36, 0, 3, 0, ''), 866083224354684928: (4956, 730, 0, 58, 0, ''), 864765911663116288: (5771, 1228, 18, 1053, 41, ''), 860284431029501952: (208, 15, 0, 1, 0, ''), 824521926416269312: (1068, 93, 4, 17, 1, ''), 793963638901833769: (13, 4, 0, 0, 0, ''), 793409024015073281: (44219, 20848, 653, 4373, 512, ''), 750563921584193577: (17547, 8260, 29, 3280, 18, ''), 734108286248288281: (11668, 5240, 194, 286, 83, ''), 721761390725038161: (25396, 5163, 72, 386, 49, ''), 689134347516903425: (19097, 5722, 188, 219, 0, ''), 686586463357370449: (87338, 18574, 456, 743, 2, ''), 681151018922410048: (29, 11, 0, 0, 0, ''), 674650795525799994: (47384, 18577, 409, 384, 19, ''), 606900908579880992: (1219, 819, 0, 93, 31, ''), 575338259031392276: (21365, 8193, 180, 3126, 149, ''), 559399135195693079: (77, 39, 0, 2, 0, ''), 532323484924116992: (39997, 11576, 29, 3319, 10, ''), 509446686171463690: (95, 2, 0, 2, 0, ''), 507901141116518415: (50640, 11219, 187, 1584, 75, ''), 498249577699344384: (27777, 17714, 1073, 567, 326, ''), 480462696802680842: (60274, 38222, 909, 4552, 180, ''), 452021696346456085: (25361, 15067, 1166, 2076, 12, ''), 432227036472541184: (460, 125, 6, 47, 12, ''), 417334123301175297: (255, 148, 19, 38, 0, ''), 409436915117326338: (52073, 38145, 850, 4083, 43, ''), 397085339292008449: (22327, 8300, 414, 4434, 684, ''), 385069724486074378: (4014, 720, 45, 332, 20, ''), 369138872048943115: (82137, 24489, 266, 1981, 544, ''), 357540566843523073: (83237, 9513, 409, 1340, 104, ''), 341610000264724511: (1525, 410, 12, 116, 6, ''), 341222213409701899: (25927, 1705, 1, 1151, 0, ''), 335954146765045761: (26480, 11285, 304, 3306, 111, ''), 332882488961662978: (39666, 15735, 342, 457, 2, ''), 329174370562080778: (6652, 3097, 21, 183, 29, ''), 325604243925106688: (658, 154, 6, 37, 4, ''), 324159705544916992: (16637, 9849, 41, 1537, 131, ''), 322388684034932736: (451, 72, 1, 2, 0, ''), 311415107928457226: (3230, 74, 24, 1, 0, ''), 307491897562234884: (13831, 4772, 486, 677, 209, ''), 304578501351047178: (58588, 21295, 407, 3608, 94, ''), 303623084429148161: (30121, 8150, 179, 2376, 66, ''), 300483698665586689: (7301, 4519, 87, 832, 18, ''), 300281175942103040: (14273, 3926, 115, 641, 44, ''), 298740173741621270: (42367, 17925, 1430, 3428, 219, ''), 294905624464982016: (47272, 4497, 8, 92, 0, ''), 290166276796448768: (29152, 9678, 233, 3345, 125, ''), 289479328830586880: (55, 2, 0, 0, 0, ''), 289361805279494145: (24493, 11646, 327, 1238, 123, ''), 282838803289341954: (19655, 8736, 4, 813, 58, ''), 276427191217160202: (68125, 34526, 253, 4594, 47, ''), 269453719303618560: (20228, 5308, 47, 478, 8, ''), 260076356597972993: (17700, 3144, 69, 64, 2, ''), 259754214341738497: (58578, 31479, 1967, 5213, 685, ''), 253520491422285834: (15, 0, 0, 0, 0, ''), 249874183943749632: (78931, 15011, 471, 2084, 120, ''), 249146637618905088: (32130, 9734, 24, 2180, 127, ''), 243658118372917248: (16851, 2325, 124, 1080, 109, ''), 241182014181474304: (7318, 2018, 17, 856, 87, ''), 234419004008038411: (1146, 516, 62, 44, 4, ''), 230863156174520320: (2365, 1602, 21, 290, 11, ''), 224812444462088194: (13301, 6253, 762, 1340, 226, ''), 212894057884549121: (2025, 1077, 30, 229, 1, ''), 203616268618563584: (17405, 14174, 87, 1252, 319, ''), 198013978079657984: (44755, 12545, 57, 4093, 1020, ''), 197830830213693441: (7463, 4319, 1, 399, 4, ''), 197127942784942080: (387, 196, 1, 32, 0, ''), 185353739278745600: (60525, 12839, 329, 594, 227, ''), 183310604692357120: (109, 69, 0, 4, 0, ''), 182131285051965440: (5627, 4423, 19, 354, 27, ''), 127990560538492928: (50739, 16295, 10, 2597, 2, ''), 752055514497548360: (11, 0, 0, 4, 3, ''), 257573093126569988: (90, 2, 0, 32, 11, ''), 252000672415744001: (36, 9, 0, 28, 3, ''), 619982406354731025: (166, 2, 0, 71, 4, ''), 548794687587352576: (3, 2, 0, 0, 1, ''), 276388874031464448: (13, 0, 1, 3, 7, ''), 268691598102102017: (28, 0, 0, 20, 1, '')}
+        # sql = ''
+        # for key, value in c.items():
+        #     sql += f'insert into statistic values ({key}, {value[0]}, {value[1]}, {value[2]}, {value[3]}, {value[4]}, \'\');\n'
+        # self.bot.db.custom_command(sql)
+        print('start searching')
+        guild = await self.bot.fetch_guild(858053936313008129)
         # members = await guild.fetch_members(limit=None).flatten()
         # users = {}
         # for member in members:
@@ -305,71 +305,215 @@ class Fun(commands.Cog):
             # for data in datas:
             #     if member.id in users.keys():
             #         pass
-        # users = {}
-        # text_channel = await guild.fetch_channel(863966092153192478)
+        users = {}
+        text_channel = await guild.fetch_channel(863966092153192478)
 
-        # channels = await guild.fetch_channels()
+        channels = await guild.fetch_channels()
         # threads = await guild.active_threads()
-        # channels += threads
+        
 
-        # channels = [881983857019191296, 
-        #     957040305222348860,
-        #     889243020707369031,
-        #     932628946443468841,
-        #     870347994669662249,
-        #     880810276981714954,
-        #     895049999228993556,
-        #     875431191245885460,
-        #     931920673297801256,
-        #     873264415368179773,
-        #     941774848886190090
-        # ]
+        threads_ids = [881983857019191296, 
+            957040305222348860,
+            889243020707369031,
+            932628946443468841,
+            870347994669662249,
+            880810276981714954,
+            895049999228993556,
+            875431191245885460,
+            931920673297801256,
+            873264415368179773,
+            941774848886190090
+        ]
+        threads = []
+        for thread_id in threads_ids:
+            threads.append(await guild.fetch_channel(thread_id))
+        channels += threads
 
-        # for channel in channels:
-        #     channel = await guild.fetch_channel(channel)
-        #     print(f'start with channel {channel.name}')
-        #     history = []
-        #     # if channel.type != discord.ChannelType.text:
-        #     #     continue
-        #     first_message = await channel.history(limit=1, oldest_first=True).flatten()
-        #     first_message = first_message[0]
-        #     history.append(first_message)
-        #     messages = await channel.history(limit=200, after=first_message).flatten()
-        #     # print(len(messages), channel.name)
-        #     while len(messages) == 200:
-        #         history += messages
-        #         messages = await channel.history(limit=200, after=messages[-1]).flatten()
-        #     history += messages
-        #     print(len(history))
-        #     for message in history:
-        #         if message.author.bot:
-        #             continue
+        for channel in channels:
 
-        #         user_id = message.author.id
-        #         if user_id not in users.keys():
-        #             users[user_id] = {'message': 0, 'image': 0, 'gifs': 0, 'emoji': 0, 'sticker': 0}
+            print(f'start with channel {channel.name}')
+            history = []
+            if not (channel.type == discord.ChannelType.text or \
+                    channel.type == discord.ChannelType.private or \
+                    channel.type == discord.ChannelType.group or \
+                    channel.type == discord.ChannelType.public_thread or \
+                    channel.type == discord.ChannelType.private_thread):
+                continue
+            first_message = await channel.history(limit=1, oldest_first=True).flatten()
+            first_message = first_message[0]
+            history.append(first_message)
+            messages = await channel.history(limit=200, after=first_message).flatten()
+            # print(len(messages), channel.name)
+            while len(messages) == 200:
+                history += messages
+                messages = await channel.history(limit=200, after=messages[-1]).flatten()
+            history += messages
+            print(len(history))
+            for message in history:
+                if message.author.bot:
+                    continue
 
-        #         if message.attachments:
-        #             for attachment in message.attachments:
-        #                 if attachment.content_type in ['image/png', 'image/jpeg', 'image/jpg']:
-        #                     users[user_id]['image'] += 1
-        #                 if attachment.content_type in ['image/gif']:
-        #                     users[user_id]['gifs'] += 1
-        #         if '.gif' in message.content:
-        #             users[user_id]['gifs'] += 1
-        #         if re.search('<*:*:*>', message.content):
-        #             users[user_id]['emoji'] += 1
-        #         if message.stickers:
-        #             users[user_id]['sticker'] += len(message.stickers)
-        #         users[user_id]['message'] += 1
+                user_id = message.author.id
+                if user_id not in users.keys():
+                    users[user_id] = {}
+                    # 'message': 0, 'image': 0, 'gifs': 0, 'emoji': 0, 'sticker': 0
                 
-        #     await text_channel.send(f'{len(history)}, {channel.name}, ready')
-        # sql = ''
-        # for key, item in users.items():
-        #     sql += f'insert into statistic values ({key}, {item["message"]}, {item["emoji"]}, {item["sticker"]}, {item["image"]}, {item["gifs"]}, \'\');\n'
+                if message.channel.id not in users[user_id].keys():
+                    users[user_id][message.channel.id] = {'message': 0, 'image': 0, 'gif': 0, 'emoji': 0, 'sticker': 0}
 
-        # self.bot.db.custom_command(sql)
-        # print(users)
+                if message.attachments:
+                    for attachment in message.attachments:
+                        if attachment.content_type in ['image/png', 'image/jpeg', 'image/jpg']:
+                            users[user_id][message.channel.id]['image'] += 1
+                        if attachment.content_type in ['image/gif']:
+                            users[user_id][message.channel.id]['gif'] += 1
+                if '.gif' in message.content:
+                    users[user_id][message.channel.id]['gif'] += 1
+                if re.search('<*:*:*>', message.content):
+                    users[user_id][message.channel.id]['emoji'] += 1
+                if message.stickers:
+                    users[user_id][message.channel.id]['sticker'] += len(message.stickers)
+                users[user_id][message.channel.id]['message'] += 1
+                
+            await text_channel.send(f'{len(history)}, {channel.name}, ready')
+        sql = ''
+        for key, channel_data in users.items():
+            for channel_id, data in channel_data.items():
+                sql += f'insert into web_stat_all_stats values (nextval(\'web_stat_all_stats_id_seq\'), {key}, {channel_id}, {data["message"]}, {data["emoji"]}, {data["sticker"]}, {data["image"]}, {data["gif"]}, 0);\n'
+        
+        print(users)
+        self.bot.db.custom_command(sql)
+
+    @commands.is_owner()
+    @commands.command()
+    async def get(self, ctx):
+        guild = await self.bot.fetch_guild(858053936313008129)
+
+        channels = await guild.fetch_channels()
+
+        threads_ids = [
+            881983857019191296, 
+            957040305222348860,
+            889243020707369031,
+            932628946443468841,
+            870347994669662249,
+            880810276981714954,
+            895049999228993556,
+            875431191245885460,
+            931920673297801256,
+            873264415368179773,
+            941774848886190090
+        ]
+        threads = []
+        for thread_id in threads_ids:
+            threads.append(await guild.fetch_channel(thread_id))
+        channels += threads
+
+        sql = ''
+        for channel in channels:
+            try:
+                # channel = await guild.fetch_channel(channel)
+                print(channel.name)
+                sql += f'insert into web_stat_user_data values (nextval(\'web_stat_user_data_id_seq\'), {channel.id}, \'{channel.name}\', \'\', \'\', {True});\n'
+            except:
+                sql += f'insert into web_stat_user_data values (nextval(\'web_stat_user_data_id_seq\'), {channel}, \'Deleted channel\', \'\', \'\', {False});\n'
+        users = await guild.fetch_members(limit=None).flatten()
+        # sql = ''
+        # for user in users:
+        #     sql += f'insert into web_stat_user_data values (nextval(\'web_stat_user_data_id_seq\'), {user.id}, \'{user.name}\', \'{user.display_name}\', \'{user.avatar}\', {True});\n'
+        self.bot.db.custom_command(sql)
+        await ctx.send('Ready')
+
+    
+    @commands.is_owner()
+    @commands.command()
+    async def pop_words(self, ctx):
+        print('start searching')
+        guild = await self.bot.fetch_guild(858053936313008129)
+        text_channel = await guild.fetch_channel(863966092153192478)
+
+        channels = await guild.fetch_channels()
+        # threads = await guild.active_threads()
+        
+
+        threads_ids = [881983857019191296, 
+            957040305222348860,
+            889243020707369031,
+            932628946443468841,
+            870347994669662249,
+            880810276981714954,
+            895049999228993556,
+            875431191245885460,
+            931920673297801256,
+            873264415368179773,
+            941774848886190090
+        ]
+        threads = []
+        for thread_id in threads_ids:
+            threads.append(await guild.fetch_channel(thread_id))
+        channels += threads
+
+        word_mes = {}
+        emoji_mes = {}
+        count_mes = {}
+        day_stat = 8
+        time = datetime(day=day_stat,month=5,year=2022)
+        for i in range(day_stat, 16):
+            count_mes[i] = 0
+
+        for channel in channels:
+
+            print(f'start with channel {channel.name}')
+            if not (channel.type == discord.ChannelType.text or \
+                    channel.type == discord.ChannelType.private or \
+                    channel.type == discord.ChannelType.group or \
+                    channel.type == discord.ChannelType.public_thread or \
+                    channel.type == discord.ChannelType.private_thread):
+                continue
+            if channel.id == 858278222188773436:
+                continue
+            messages = await channel.history(limit=None, after=time).flatten()
+            print(len(messages))
+            for message in messages:
+                day = message.created_at.day
+                if day < day_stat:
+                    continue
+                count_mes[day] += 1
+                emoji = re.search('(<a?)?:\w+:(\d{18}>)?', message.content)
+                if emoji:
+                    span = emoji.span()
+                    emoji = message.content[span[0]:span[1]]
+                    if not emoji in emoji_mes.keys():
+                        emoji_mes[emoji] = 0
+                    emoji_mes[emoji] += 1
+
+                for word in message.content.split(' '):
+                    emoji = re.search('(<a?)?:\w+:(\d{18}>)?', word)
+                    if len(word) <= 3 or emoji:
+                        continue
+
+                    if not word in word_mes.keys():
+                        word_mes[word] = 0
+                    word_mes[word] += 1
+        
+        # print({k: v for k, v in sorted(word_mes.items(), key=lambda item: item[1])})
+        print({k: v for k, v in sorted(emoji_mes.items(), key=lambda item: item[1])})
+        print(count_mes)
+        a = ''
+        for k, v in word_mes.items():
+            a += ' '.join([k] * v)
+            a += ' '
+        with open('words.txt', 'w') as f:
+            f.write(a)
+
+        await text_channel.send('REady')
+
+                
+            # count of messages
+            # count of text
+            # count of emoji
+
+        
 
 
 

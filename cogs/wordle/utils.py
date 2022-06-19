@@ -96,5 +96,8 @@ def get_word(length):
 def check_word(word):
     with open('./files/check_dict.txt', 'r') as f:
         words = f.readline().split(',')
+    with open('./files/russian.txt', 'r') as f:
+        words2 = f.readline().split(',')
     words = list(filter(lambda x: len(x) == len(word), words))
-    return word in words
+    words2 = list(filter(lambda x: len(x) == len(word), words2))
+    return word in words or word in words2

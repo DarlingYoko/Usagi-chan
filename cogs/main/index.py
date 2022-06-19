@@ -2,10 +2,9 @@ import discord, pytz, copy
 from discord.ext import commands, tasks
 from twitchAPI.twitch import Twitch
 from .utils import gen_pic
-from datetime import datetime
 from twitchAPI.twitch import Twitch
 from twitchAPI.types import AuthScope
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 class Main(commands.Cog):
     def __init__(self, bot):
@@ -103,7 +102,13 @@ class Main(commands.Cog):
             if status['data']:
                 user = status['data'][0]
                 new_time = user['started_at']
-                if new_time != time:
+                new_time = new_time.replace('T', ' ')
+                new_time = new_time.replace('Z', '')
+                new_time = datetime.strptime(new_time, '%Y-%m-%d %H:%M:%S')
+                time = time.replace('T', ' ')
+                time = time.replace('Z', '')
+                time = datetime.strptime(time, '%Y-%m-%d %H:%M:%S')
+                if new_time != time and new_time - time > timedelta(hours=6):
                     followers_text = ''
                     if followers:
                         followers = eval(followers)
@@ -125,10 +130,16 @@ class Main(commands.Cog):
 
     @commands.command(name = 'stream_add')
     async def add_streamer(self, ctx, streamer: str):
-        if 'nuke73' in streamer.lower():
+        if 'nuke73' in streamer.lower() or 'aleksandar' in streamer.lower():
             answer = 'Этот стример заблокирован за откровенный или чувствительный контент и удалён модератором. Подробные правила можно найти в <#858096576136347648>'
             return await ctx.send(answer)
-        r = self.bot.db.insert('twitch', streamer, 0)
+        
+        exists_user = self.bot.db.custom_command(f'select exists(select * from twitch where username = \'{streamer}\');')[0][0]
+
+        if exists_user:
+            answer = 'Такой стример уже есть в базе данных, негодяй'
+            return await ctx.send(answer)
+        r = self.bot.db.insert('twitch', streamer.lower(), 0)
         answer = 'Не получилось добавить нового стримера('
         if r:
             answer = 'Добавила нового стримера!'
@@ -191,6 +202,25 @@ class Main(commands.Cog):
             await ctx.send(f'{ctx.author.mention}, Успешно отписала тебя!')
         else:
             await ctx.send(f'{ctx.author.mention}, Не удалось отписать тебя попробуй попозже!')
+
+    @commands.command(name = 'фоловы', aliases=['follows'])
+    async def user_follows(self, ctx):
+        users = self.bot.db.get_all('twitch')
+        answer = 'Ты не подписан ни на кого'
+        follows = []
+        for user in users:
+            name = user[0]
+            followers = user[2]
+            if followers and str(ctx.author.id) in followers:
+                follows.append(name)
+
+        if len(follows) > 0:
+            answer = 'Ты подписан на:\n```autohotkey\n'
+            for i in range(len(follows)):
+                answer += f'{i + 1}. {follows[i]}\n'
+            answer += '```'
+        
+        await ctx.send(answer)
 
     @follow_streamer.error
     async def follow_streamer_errors(self, ctx, error):
