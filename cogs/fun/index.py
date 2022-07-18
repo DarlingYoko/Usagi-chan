@@ -201,7 +201,7 @@ class Fun(commands.Cog):
         beer = self.bot.get_cog('Beer')
         # 2. Бел рубль {currencys["USDBYN"]["value"]} ({currencys["USDBYN"]["change"]})
         text = f'''```autohotkey
-Сводка курса на данный момент:'''
+Сводка курса на данный момент:\n'''
 # 5. Усаги коины к дабаби {beer.currenсy} к 1
         counter = 1
         for key in currencys:
