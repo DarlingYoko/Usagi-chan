@@ -139,7 +139,7 @@ class Main(commands.Cog):
         if exists_user:
             answer = 'Такой стример уже есть в базе данных, негодяй'
             return await ctx.send(answer)
-        r = self.bot.db.insert('twitch', streamer.lower(), 0)
+        r = self.bot.db.insert('twitch', streamer.lower(), datetime.now())
         answer = 'Не получилось добавить нового стримера('
         if r:
             answer = 'Добавила нового стримера!'
