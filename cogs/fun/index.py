@@ -10,6 +10,7 @@ from datetime import datetime
 class Fun(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.config = bot.config
 
 
     @commands.command(
@@ -72,7 +73,17 @@ class Fun(commands.Cog):
 
     @commands.command(name = 'вебивент', aliases = ['веб', 'ивент'])
     async def web_event_link(self, ctx):
-        return await ctx.send('<https://webstatic-sea.mihoyo.com/ys/event/e20220128lantern/index.html>\n<https://webstatic-sea.mihoyo.com/ys/event/e20220129-postcard/index.html>')
+        links = self.config['web_event']['links'].split(',')
+        links = list(map(lambda x: f'<{x}>', links))
+        return await ctx.send('Текущие ссылки на веб ивент:\n' + '\n'.join(links))
+
+    @commands.is_owner()
+    @commands.command()
+    async def set_web_event_link(self, ctx, links: str):
+        self.config['web_event']['links'] = links
+        with open('./test_config/variables.ini', "w") as config_file:
+            self.config.write(config_file)
+        return await ctx.send('Записала новые ссылки')
 
     @commands.command(name = 'примогемы')
     async def primogems_link(self, ctx):
@@ -210,8 +221,6 @@ class Fun(commands.Cog):
         text += '```'
         await ctx.send(content=text)
 
-        # Your JSON object
-        # print data
     #@commands.command()
     #async def test(self, ctx, user: discord.Member, role: discord.Role):
     #    return await user.add_roles(role)
