@@ -130,7 +130,7 @@ class Main(commands.Cog):
 
     @commands.command(name = 'stream_add')
     async def add_streamer(self, ctx, streamer: str):
-        if 'nuke73' in streamer.lower() or 'aleksandar' in streamer.lower():
+        if 'nuke73' in streamer.lower():
             answer = 'Этот стример заблокирован за откровенный или чувствительный контент и удалён модератором. Подробные правила можно найти в <#858096576136347648>'
             return await ctx.send(answer)
         
