@@ -67,7 +67,7 @@ class Fun(commands.Cog):
     @roll.error
     async def joined_error(self, ctx, error):
         if isinstance(error, commands.BadArgument):
-            await ctx.send('<:MonkaStop:837405113638977576>')
+            await ctx.send('<:MonkaStop:858348472838258708>')
 
 
 
