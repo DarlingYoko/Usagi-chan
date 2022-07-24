@@ -120,8 +120,8 @@ class CustomHelpCommand(commands.HelpCommand):
         usage = f'  {command.usage}' if command.usage else ''
 
         if command.help:
-            if key == 'dm':
-                key += f'`{item}`\n╰➣#DM_only\n'
+            if command.help == 'dm':
+                key = f'`{command.qualified_name}`\n╰➣#DM_only\n'
             else:
                 key = f'[<#{config["channel"][command.help]}>](https://ptb.discord.com/channels/{config["data"]["guild_id"]}/{config["channel"][command.help]}/)'
         else:
