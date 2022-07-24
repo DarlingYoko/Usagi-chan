@@ -255,7 +255,7 @@ class Genshin(commands.Cog):
             if data['resin'] >= 155 and not cookie[3]:
                 response = self.bot.db.update('genshin_stats', 'resin_alerted', 'id', True, user_id)
                 if response:
-                    await channel.send(f'<@{user_id}>, Вижу у тебя уже 155 смолы, время сливать? <:blushDetective:860444156386869288>')
+                    await channel.send(f'<@{user_id}>, Вижу у тебя уже {data["resin"]} смолы, время сливать? <:blushDetective:860444156386869288>')
                 else:
                     print(f'error {response}, {user_id} resin alert')
             
