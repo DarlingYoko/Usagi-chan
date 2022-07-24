@@ -1,5 +1,4 @@
 from calendar import c
-import discord
 from discord.ext import commands, tasks
 from datetime import datetime
 from time import mktime
@@ -41,6 +40,7 @@ class Genshin(commands.Cog):
             return m.author.id == author_id and m.channel == dm_channel
 
         msg = await self.bot.wait_for('message', check=check)
+        msg = msg.replace('\'', '')
         
         for atr in msg.content.split('; '):
             if atr.startswith('ltoken'):
@@ -60,6 +60,8 @@ class Genshin(commands.Cog):
             gs.get_notes(uid)
         except errors.NotLoggedIn:
             return await dm_channel.send('Ошибка авторизации, проверь пожалуйста свои данные!')
+        except errors.DataNotPublic:
+            await dm_channel.send('Я тебя запишу, но ты пожалуйста поставь галочку -> https://discord.com/channels/858053936313008129/873352458443845632/1000726302766137424')
 
         exists_user = self.bot.db.custom_command(f'select exists(select * from genshin_stats where id = {author_id});')[0][0]
 
