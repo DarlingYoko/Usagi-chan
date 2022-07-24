@@ -216,9 +216,9 @@ class Genshin(commands.Cog):
         else:
             await ctx.reply('Не получилось прочитать твои подписки, попробуй позже.')
 
-    @tasks.loop(hours=1)
+    @tasks.loop(minutes=30)
     async def claim_daily_reward(self):
-        if datetime.now().hour == 17:
+        if datetime.now().hour == 16 or datetime.now().hour == 15:
             cookies = self.bot.db.custom_command(f'select ltuid, uid, ltoken from genshin_stats where daily_sub = {True};')
             reward_claimed = False
             for cookie in cookies:

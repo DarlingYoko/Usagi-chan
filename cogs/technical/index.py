@@ -67,7 +67,7 @@ class Technical(commands.Cog):
     @tasks.loop(minutes=30.0)
     async def notify_forum_login(self):
         if datetime.now().hour == 16:
-            message = 'Не забываем забрать логин бонус!\n<https://webstatic-sea.mihoyo.com/ys/event/signin-sea/index.html?act_id=e202102251931481&lang=ru-ru>'
+            message = 'Не забываем забрать логин бонус!\n<https://webstatic-sea.mihoyo.com/ys/event/signin-sea/index.html?act_id=e202102251931481&lang=ru-ru>\nИли ты можешь подписаться на автоматический сбор дейли отметок -> `!help drs`'
             channels_id = [self.config['channel'].getint('main'), self.config['channel'].getint('bar')]
             for channel_id in channels_id:
                 channel = await self.bot.fetch_channel(channel_id)
