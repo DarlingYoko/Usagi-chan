@@ -14,8 +14,6 @@ click==8.0.3
 colorama==0.4.4
 commonmark==0.9.1
 cryptography==37.0.4
-discord==1.7.3
-discord.py==1.7.3
 easy-pil==0.1.4
 et-xmlfile==1.1.0
 genshinstats==1.4.11.3
