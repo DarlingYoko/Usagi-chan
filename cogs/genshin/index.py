@@ -40,9 +40,9 @@ class Genshin(commands.Cog):
             return m.author.id == author_id and m.channel == dm_channel
 
         msg = await self.bot.wait_for('message', check=check)
-        msg = msg.replace('\'', '')
+        msg = msg.content.replace('\'', '')
         
-        for atr in msg.content.split('; '):
+        for atr in msg.split('; '):
             if atr.startswith('ltoken'):
                 ltoken = atr.split('ltoken=')[1]
 
