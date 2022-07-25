@@ -97,7 +97,10 @@ class Genshin(commands.Cog):
         fields.append({'name': f'Монеток в чайнике - {data["realm_currency"]} 🫖', 'value': f'До полной чаши - <t:{realm_timer}:R>', 'inline': False})
 
         embed = get_embed(title = 'Краткая сводка.', fields = fields)
-        await ctx.reply(embed = embed)
+        msg = await ctx.reply(embed = embed)
+        if ctx.guild is not None:
+            await ctx.message.delete(delay = 10*60)
+            await msg.delete(delay = 10*60)
 
     @commands.command(
         name = 'notes',
@@ -212,7 +215,10 @@ class Genshin(commands.Cog):
             fields.append({'name': f'Кап смолы', 'value': f'{"Да" if cookie[1] else "Нет"}', 'inline': False})
 
             embed = get_embed(title = 'Твои подписки', fields = fields)
-            await ctx.reply(embed = embed)
+            msg = await ctx.reply(embed = embed)
+            if ctx.guild is not None:
+                await ctx.message.delete(delay = 10*60)
+                await msg.delete(delay = 10*60)
         else:
             await ctx.reply('Не получилось прочитать твои подписки, попробуй позже.')
 
