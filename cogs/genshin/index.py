@@ -226,7 +226,7 @@ class Genshin(commands.Cog):
 
     @tasks.loop(minutes=30)
     async def claim_daily_reward(self):
-        if datetime.now().hour == 16 or datetime.now().hour == 15:
+        if datetime.now().hour in [15,16,17]:
             cookies = self.bot.db.custom_command(f'select ltuid, uid, ltoken from genshin_stats where daily_sub = {True};')
             reward_claimed = False
             for cookie in cookies:
