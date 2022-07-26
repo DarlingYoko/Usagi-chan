@@ -1,9 +1,11 @@
 from calendar import c
+from cgitb import text
 from discord.ext import commands, tasks
 from datetime import datetime
 from time import mktime
 from bin.functions import get_embed
 from bin.checks import is_transformator_channel
+from random import choice
 
 instruction = '''
 1. Зайти на сайт Хоёлаба <https://www.hoyolab.com/home> и авторизоваться там
@@ -93,8 +95,8 @@ class Genshin(commands.Cog):
         resin_timer = int(mktime(datetime.now().timetuple()) + int(data['until_resin_limit']))
         realm_timer = int(mktime(datetime.now().timetuple()) + int(data['until_realm_currency_limit']))
         fields = []
-        fields.append({'name': f'Твоя смола - {data["resin"]} <:resin:1000684701331234857>', 'value': f'До 160 - <t:{resin_timer}:R>', 'inline': False})
-        fields.append({'name': f'Монеток в чайнике - {data["realm_currency"]} 🫖', 'value': f'До полной чаши - <t:{realm_timer}:R>', 'inline': False})
+        fields.append({'name': f'Твоя смола - {data["resin"]} <:resin:1000684701331234857>', 'value': f'160 смолы <t:{resin_timer}:R>', 'inline': False})
+        fields.append({'name': f'Монеток в чайнике - {data["realm_currency"]} 🫖', 'value': f'Полная чаша <t:{realm_timer}:R>', 'inline': False})
 
         embed = get_embed(title = 'Краткая сводка.', fields = fields)
         msg = await ctx.reply(embed = embed)
@@ -116,8 +118,8 @@ class Genshin(commands.Cog):
         realm_timer = int(mktime(datetime.now().timetuple()) + int(data['until_realm_currency_limit']))
         cookie = self.bot.db.custom_command(f'select daily_sub, resin_sub, uid from genshin_stats where id = {ctx.author.id};')[0]
         fields = []
-        fields.append({'name': f'Твоя смола - {data["resin"]} <:resin:1000684701331234857>', 'value': f'До 160 - <t:{resin_timer}:R>', 'inline': False})
-        fields.append({'name': f'Монеток в чайнике - {data["realm_currency"]} 🫖', 'value': f'До полной чаши - <t:{realm_timer}:R>', 'inline': False})
+        fields.append({'name': f'Твоя смола - {data["resin"]} <:resin:1000684701331234857>', 'value': f'160 смолы <t:{resin_timer}:R>', 'inline': False})
+        fields.append({'name': f'Монеток в чайнике - {data["realm_currency"]} 🫖', 'value': f'Полная чаша <t:{realm_timer}:R>', 'inline': False})
         fields.append({'name': f'Сколько выполнено дейликов - {data["completed_commissions"]}', 'value': f'Забрана ли награда за дейлики - {"Да" if data["claimed_commission_reward"] else "Нет"}', 'inline': False})
         fields.append({'name': f'Подписка на сбор дейли отметок', 'value': f'{"Да" if cookie[0] else "Нет"}', 'inline': False})
         fields.append({'name': f'Подписка на кап смолы', 'value': f'{"Да" if cookie[1] else "Нет"}', 'inline': False})
@@ -248,7 +250,7 @@ class Genshin(commands.Cog):
     async def resin_cup_alert(self):
 
         cookies = self.bot.db.custom_command(f'select ltuid, uid, ltoken, resin_alerted, id from genshin_stats where resin_sub = {True};')
-        channel = await self.bot.fetch_channel(self.config['channel']['main'])
+        channel = await self.bot.fetch_channel(self.config['channel']['transformator'])
         for cookie in cookies:
             import genshinstats as gs
             ltuid = cookie[0]
@@ -261,7 +263,14 @@ class Genshin(commands.Cog):
             if data['resin'] >= 155 and not cookie[3]:
                 response = self.bot.db.update('genshin_stats', 'resin_alerted', 'id', True, user_id)
                 if response:
-                    await channel.send(f'<@{user_id}>, Вижу у тебя уже {data["resin"]} смолы, время сливать? <:blushDetective:860444156386869288>')
+                    texts = [
+                        f'<@{user_id}>, Вижу у тебя уже {data["resin"]} смолы, время сливать? <:blushDetective:860444156386869288>',
+                        f'<@{user_id}>, Вот-вот перекап, уже {data["resin"]} смолы, пойдем сливать? :3',
+                        f'<@{user_id}>, АААААААААААААААААААА, СКОРЕЕЕ, УЖЕ {data["resin"]} СМОЛЫ <a:dinkDonk:865127621112102953> <a:dinkDonk:865127621112102953> <a:dinkDonk:865127621112102953>',
+                        # f'<@{user_id}>, ',
+                        # f'<@{user_id}>, ',
+                    ]
+                    await channel.send(choice(texts))
                 else:
                     print(f'error {response}, {user_id} resin alert')
             
