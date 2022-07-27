@@ -230,12 +230,16 @@ class Genshin(commands.Cog):
             cookies = self.bot.db.custom_command(f'select ltuid, uid, ltoken from genshin_stats where daily_sub = {True};')
             reward_claimed = False
             for cookie in cookies:
-                import genshinstats as gs
-                gs.set_cookie(ltuid=cookie[0], ltoken=cookie[2])
-                reward = gs.claim_daily_reward(cookie[1])
-                if reward:
-                    reward_claimed = True
-                print(reward)
+                try:
+                    import genshinstats as gs
+                    gs.set_cookie(ltuid=cookie[0], ltoken=cookie[2])
+                    reward = gs.claim_daily_reward(cookie[1])
+                    if reward:
+                        reward_claimed = True
+                    print(reward)
+                except Exception as e:
+                    print(f'resin cup error with {cookie[1]}')
+                    print(e)
             if reward_claimed:
                 channel = await self.bot.fetch_channel(self.config['channel']['main'])
                 await channel.send('Собрала ежедневные отметки, Нья!')
@@ -257,28 +261,32 @@ class Genshin(commands.Cog):
             uid = cookie[1]
             ltoken = cookie[2]
             user_id = cookie[4]
-            import genshinstats as gs
-            gs.set_cookie(ltuid=ltuid, ltoken=ltoken)
-            data = gs.get_notes(uid)
-            if data['resin'] >= 155 and not cookie[3]:
-                response = self.bot.db.update('genshin_stats', 'resin_alerted', 'id', True, user_id)
-                if response:
-                    texts = [
-                        f'<@{user_id}>, Вижу у тебя уже {data["resin"]} смолы, время сливать? <:blushDetective:860444156386869288>',
-                        f'<@{user_id}>, Вот-вот перекап, уже {data["resin"]} смолы, пойдем сливать? :3',
-                        f'<@{user_id}>, АААААААААААААААААААА, СКОРЕЕЕ, УЖЕ {data["resin"]} СМОЛЫ <a:dinkDonk:865127621112102953> <a:dinkDonk:865127621112102953> <a:dinkDonk:865127621112102953>',
-                        # f'<@{user_id}>, ',
-                        # f'<@{user_id}>, ',
-                    ]
-                    await channel.send(choice(texts))
-                else:
-                    print(f'error {response}, {user_id} resin alert')
+            try:
+                import genshinstats as gs
+                gs.set_cookie(ltuid=ltuid, ltoken=ltoken)
+                data = gs.get_notes(uid)
+                if data['resin'] >= 155 and not cookie[3]:
+                    response = self.bot.db.update('genshin_stats', 'resin_alerted', 'id', True, user_id)
+                    if response:
+                        texts = [
+                            f'<@{user_id}>, Вижу у тебя уже {data["resin"]} смолы, время сливать? <:blushDetective:860444156386869288>',
+                            f'<@{user_id}>, Вот-вот перекап, уже {data["resin"]} смолы, пойдем сливать? :3',
+                            f'<@{user_id}>, АААААААААААААААААААА, СКОРЕЕЕ, УЖЕ {data["resin"]} СМОЛЫ <a:dinkDonk:865127621112102953> <a:dinkDonk:865127621112102953> <a:dinkDonk:865127621112102953>',
+                            # f'<@{user_id}>, ',
+                            # f'<@{user_id}>, ',
+                        ]
+                        await channel.send(choice(texts))
+                    else:
+                        print(f'error {response}, {user_id} resin alert')
+                
+                if data['resin'] < 155 and cookie[3]:
+                    response = self.bot.db.update('genshin_stats', 'resin_alerted', 'id', False, user_id)
+                    if not response:
+                        print(f'error {response}, {user_id} resin alert')
+            except Exception as e:
+                print(f'resin cup error with {user_id}')
+                print(e)
             
-            if data['resin'] < 155 and cookie[3]:
-                response = self.bot.db.update('genshin_stats', 'resin_alerted', 'id', False, user_id)
-                if not response:
-                    print(f'error {response}, {user_id} resin alert')
-        
             
 
 
