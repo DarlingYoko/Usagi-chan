@@ -90,7 +90,12 @@ class Genshin(commands.Cog):
         description='Краткая сводка по смоле',
         )
     async def genshin_resin(self, ctx, *, member: str = None):
-        member = await get_member_by_all(self, member) or ctx.author
+        if member is not None:
+            member = await get_member_by_all(self, member)
+            if not member:
+                return await ctx.reply('Такого пользователя нет!')
+        else:
+            member = ctx.author
         data = await self.get_genshin_data(ctx, member)
         if not data: return
         resin_timer = int(mktime(datetime.now().timetuple()) + int(data['until_resin_limit']))
