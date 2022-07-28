@@ -3,7 +3,7 @@ from cgitb import text
 from discord.ext import commands, tasks
 from datetime import datetime
 from time import mktime
-from bin.functions import get_embed
+from bin.functions import get_embed, get_member_by_all
 from bin.checks import is_transformator_channel
 from random import choice
 
@@ -89,8 +89,9 @@ class Genshin(commands.Cog):
         aliases=['смола'],
         description='Краткая сводка по смоле',
         )
-    async def genshin_resin(self, ctx):
-        data = await self.get_genshin_data(ctx)
+    async def genshin_resin(self, ctx, *, member: str = None):
+        member = await get_member_by_all(self, member) or ctx.author
+        data = await self.get_genshin_data(ctx, member)
         if not data: return
         resin_timer = int(mktime(datetime.now().timetuple()) + int(data['until_resin_limit']))
         realm_timer = int(mktime(datetime.now().timetuple()) + int(data['until_realm_currency_limit']))
@@ -296,11 +297,14 @@ class Genshin(commands.Cog):
         await self.bot.wait_until_ready()
 
 
-    async def get_genshin_data(self, ctx):
-        author_id = ctx.author.id
+    async def get_genshin_data(self, ctx, author):
+        author_id = author.id
         exists_user = self.bot.db.custom_command(f'select exists(select * from genshin_stats where id = {author_id});')[0][0]
         if not exists_user:
-            await ctx.reply('Ты не авторизован, бака!')
+            if author_id != ctx.author.id:
+                await ctx.reply('Такого пользователя нет, бака!')
+            else:
+                await ctx.reply('Ты не авторизован, бака!')
             return 0
         cookie = self.bot.db.custom_command(f'select ltuid, uid, ltoken from genshin_stats where id = {author_id};')[0]
         ltuid = cookie[0]
