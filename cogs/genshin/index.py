@@ -118,7 +118,7 @@ class Genshin(commands.Cog):
         )
     @commands.check(is_transformator_channel)
     async def genshin_notes(self, ctx):
-        data = await self.get_genshin_data(ctx)
+        data = await self.get_genshin_data(ctx, ctx.author)
         if not data: return
         resin_timer = int(mktime(datetime.now().timetuple()) + int(data['until_resin_limit']))
         realm_timer = int(mktime(datetime.now().timetuple()) + int(data['until_realm_currency_limit']))
