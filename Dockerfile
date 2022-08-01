@@ -6,3 +6,5 @@ ADD . /Usagi/
 RUN pip install -r requirements.txt
 
 CMD ["python3", "/Usagi/main.py"]
+
+RUN python main.py
