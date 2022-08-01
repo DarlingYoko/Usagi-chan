@@ -103,8 +103,8 @@ class Genshin(commands.Cog):
         fields = []
         fields.append({'name': f'Твоя смола - {data["resin"]} <:resin:1000684701331234857>', 'value': f'160 смолы <t:{resin_timer}:R>', 'inline': False})
         fields.append({'name': f'Монеток в чайнике - {data["realm_currency"]} 🫖', 'value': f'Полная чаша <t:{realm_timer}:R>', 'inline': False})
-
-        embed = get_embed(title = 'Краткая сводка.', fields = fields)
+        cookie = self.bot.db.custom_command(f'select uid from genshin_stats where id = {member.id};')[0]
+        embed = get_embed(title = f'Краткая сводка. [{cookie[0]}]', fields = fields)
         msg = await ctx.reply(embed = embed)
         if ctx.guild is not None:
             await ctx.message.delete(delay = 10*60)
