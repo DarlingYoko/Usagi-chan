@@ -2,3 +2,6 @@ test.py
 tests/
 test_config/
 usagi_venv/
+test.py
+test_config/variables.ini
+
