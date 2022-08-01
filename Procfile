@@ -1,1 +1,1 @@
-usagi: python main.py 8080
+usagi: python main.py $PORT
