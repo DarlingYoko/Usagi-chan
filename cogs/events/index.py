@@ -276,6 +276,8 @@ class Events(commands.Cog):
 
     @commands.Cog.listener()
     async def on_guild_channel_update(self, before, after):
+        if after.id == 863159302213337179:
+            return
         request = f'update web_stat_user_data set name = \'{after.name}\' where uid = {after.id};\n'
         result = self.bot.db.custom_command(request)
         print('Update channel in database - ', result, after.name)
