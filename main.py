@@ -23,7 +23,7 @@ for dir in os.listdir('./cogs'):
 
 
 
-token = bot.config['data'].get('token')
+token = os.environ.get("DISCORD_TOKEN")
 
 @bot.event
 async def on_ready():
