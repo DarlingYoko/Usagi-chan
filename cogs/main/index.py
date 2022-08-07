@@ -10,9 +10,9 @@ class Main(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.config = bot.config
-        self.twitch_auth.start()
-        self.check_twitch_online.start()
-        self.check_sleep_users.start()
+        # self.twitch_auth.start()
+        # self.check_twitch_online.start()
+        # self.check_sleep_users.start()
         # self.wordle_results.start()
 
 

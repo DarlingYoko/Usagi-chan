@@ -16,7 +16,7 @@ class Birthday(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.config = bot.config
-        self.birthdays_notify.start()
+        # self.birthdays_notify.start()
 
     @tasks.loop(minutes=1)
     async def birthdays_notify(self):

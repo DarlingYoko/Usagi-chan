@@ -1,0 +1,9 @@
+version: '3'
+services:
+    usagi-chan:
+        build: .
+        volumes:
+            - .:/Usagi
+        restart: always
+        ports:
+            - "8080:8080"

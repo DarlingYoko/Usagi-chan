@@ -5,4 +5,6 @@ WORKDIR /Usagi
 ADD . /Usagi/
 RUN pip install -r requirements.txt
 
-CMD ["python3", "/Usagi/main.py"]
+COPY . .
+
+CMD ["python3", "-u", "/Usagi/main.py"]

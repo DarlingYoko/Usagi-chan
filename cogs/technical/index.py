@@ -13,9 +13,9 @@ class Technical(commands.Cog):
 
         self.config = bot.config
 
-        self.notify_forum_login.start()
-        self.countdown_for_update.start()
-        self.notify_transformator.start()
+        # self.notify_forum_login.start()
+        # self.countdown_for_update.start()
+        # self.notify_transformator.start()
 
 
 

@@ -19,8 +19,8 @@ class Genshin(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.config = bot.config
-        self.claim_daily_reward.start()
-        self.resin_cup_alert.start()
+        # self.claim_daily_reward.start()
+        # self.resin_cup_alert.start()
         
 
     @commands.command(

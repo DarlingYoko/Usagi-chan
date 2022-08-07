@@ -46,7 +46,7 @@ class Events(commands.Cog):
             sql = f'update web_stat_all_stats set message = message + {user["message"]}, emoji = emoji + {user["emoji"]}, sticker = sticker + {user["sticker"]}, image = image + {user["image"]}, gif = gif + {user["gif"]} where user_id = {user_id} and channel_id = {channel_id};'
         else:
             sql = f'insert into web_stat_all_stats values (nextval(\'web_stat_all_stats_id_seq\'), {user_id}, {channel_id}, {user["message"]}, {user["emoji"]}, {user["sticker"]}, {user["image"]}, {user["gif"]}, 0);\n'
-        self.bot.db.custom_command(sql)
+        # self.bot.db.custom_command(sql)
 
         # print(message.content)
 
@@ -254,7 +254,7 @@ class Events(commands.Cog):
                 sql = f'update web_stat_all_stats set voice = voice + {time} where user_id = {user_id} and channel_id = {channel_id};'
             else:
                 sql = f'insert into web_stat_all_stats values (nextval(\'web_stat_all_stats_id_seq\'), {user_id}, {channel_id}, 0, 0, 0, 0, 0, {time});\n'
-            self.bot.db.custom_command(sql)
+            # self.bot.db.custom_command(sql)
             self.bot.voice_users[user_id]['state'] = 'disconnect'
     
     @commands.Cog.listener()
