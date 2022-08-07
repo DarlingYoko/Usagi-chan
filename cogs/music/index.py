@@ -431,9 +431,10 @@ class Music_Player(commands.Cog):
 
             if URL:
                 channel = await self.bot.fetch_channel(self.config['channel']['mp'])
+                print('URL FOR PLAYING - ', URL['formats'][0]['url'])
                 vc.play(discord.FFmpegPCMAudio(URL['formats'][0]['url'], **self.FFMPEG_OPTIONS))#, executable = 'C:/FFMPEG/bin/ffmpeg.exe'))
 
-                duration = self.get_duration(target = self.queryData[self.lastAudio])
+                duration = self.get_duration(target=self.queryData[self.lastAudio])
                 name = self.queryData[self.lastAudio]['title']
                 user_name = self.queryData[self.lastAudio]['user']
                 answer = f'Start play — **｢{name}｣** added by **{user_name}** `{duration}`'
