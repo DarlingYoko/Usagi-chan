@@ -319,7 +319,7 @@ class Genshin(commands.Cog):
         gs.set_cookie(ltuid=ltuid, ltoken=ltoken)
         return gs.get_notes(uid)
 
-    @commands.Cog.listener()
+    @commands.Cog.cog_command_error()
     async def on_command_error(self, ctx: commands.Context, error: commands.CommandError):
         if isinstance(error, commands.CheckFailure):
             channel = self.config['channel']['transformator']
