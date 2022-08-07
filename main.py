@@ -9,7 +9,7 @@ from bin.helpCommand import CustomHelpCommand
 print(discord.__version__)
 
 intents = discord.Intents().all()
-bot = commands.Bot(command_prefix = '?', intents = intents, help_command = CustomHelpCommand())
+bot = commands.Bot(command_prefix = '!', intents = intents, help_command = CustomHelpCommand())
 
 bot.config = get_config('config')
 bot.redirect = True
