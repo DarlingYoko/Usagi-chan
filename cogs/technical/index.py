@@ -327,7 +327,7 @@ class Technical(commands.Cog):
             message = ctx.message.reference.resolved
             if message:
                 await message.pin(reason=f'Message pinned by {ctx.author.name}')
-                await ctx.reply('Закрепила твоё сообщение')
+                await ctx.reply('Закрепила сообщение')
         else:
             await ctx.reply('Ты не переслал какое сообщение закрепить надо, бака!')
     
@@ -341,7 +341,7 @@ class Technical(commands.Cog):
             message = ctx.message.reference.resolved
             if message:
                 await message.unpin()
-                await ctx.reply('Открепила твоё сообщение')
+                await ctx.reply('Открепила сообщение')
         else:
             await ctx.reply('Ты не переслал какое сообщение открепить надо, бака!')
 
