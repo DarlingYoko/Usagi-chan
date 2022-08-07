@@ -5,12 +5,7 @@ WORKDIR /Usagi
 ADD . /Usagi/
 RUN pip install -r requirements.txt
 
-RUN set -x \
-    && add-apt-repository ppa:mc3man/trusty-media \
-    && apt-get update \
-    && apt-get dist-upgrade \
-    && apt-get install -y --no-install-recommends \
-        ffmpeg
+RUN apt-get update && apt-get install ffmpeg -y
 
 COPY . .
 
