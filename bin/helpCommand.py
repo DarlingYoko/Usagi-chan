@@ -5,7 +5,7 @@ import itertools
 
 from bin.functions import get_config
 
-config = get_config('test_config')
+config = get_config('config')
 
 class CustomHelpCommand(commands.HelpCommand):
     def __init__(self):

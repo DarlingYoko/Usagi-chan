@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 from bin.functions import get_config
 
-config = get_config('test_config')
+config = get_config('config')
 
 
 def is_artifact_channel(ctx):

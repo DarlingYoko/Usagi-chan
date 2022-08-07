@@ -86,16 +86,6 @@ class Beer(commands.Cog):
         self.check_rewards_twitch.start()
         self.wesdos_counter.start()
         self.regen_currency.start()
-        
-    @tasks.loop(minutes=1, count=1)
-    async def twitch_auth(self):
-        token = self.config['twitch']['token']
-        refresh_token = self.config['twitch']['refresh_token']
-        client_id = self.config['twitch']['client_id']
-        client_secret = self.config['twitch']['client_secret']
-        self.bot.twitch = Twitch(client_id, client_secret)
-        target_scope = [AuthScope.CHANNEL_READ_REDEMPTIONS, AuthScope.CHANNEL_MANAGE_REDEMPTIONS]
-        self.bot.twitch.set_user_authentication(token, target_scope, refresh_token)
 
     @tasks.loop(minutes=10)
     async def wesdos_counter(self):

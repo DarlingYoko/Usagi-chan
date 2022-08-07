@@ -1,4 +1,4 @@
-import discord, pytz, copy
+import discord, pytz, copy, os
 from discord.ext import commands, tasks
 from twitchAPI.twitch import Twitch
 from .utils import gen_pic
@@ -10,10 +10,10 @@ class Main(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.config = bot.config
-        # self.twitch_auth.start()
-        # self.check_twitch_online.start()
-        # self.check_sleep_users.start()
-        # self.wordle_results.start()
+        self.twitch_auth.start()
+        self.check_twitch_online.start()
+        self.check_sleep_users.start()
+        self.wordle_results.start()
 
 
     @commands.command()
@@ -74,10 +74,10 @@ class Main(commands.Cog):
 
     @tasks.loop(minutes=1, count=1)
     async def twitch_auth(self):
-        token = self.config['twitch']['token']
-        refresh_token = self.config['twitch']['refresh_token']
-        client_id = self.config['twitch']['client_id']
-        client_secret = self.config['twitch']['client_secret']
+        token = os.environ.get("TWITCH_TOKEN")
+        refresh_token = os.environ.get("REFRESH_TOKEN")
+        client_id = os.environ.get("CLIENT_ID")
+        client_secret = os.environ.get("CLIENT_SECRET")
         self.bot.twitch = Twitch(client_id, client_secret)
         target_scope = [AuthScope.CHANNEL_READ_REDEMPTIONS, AuthScope.CHANNEL_MANAGE_REDEMPTIONS]
         self.bot.twitch.set_user_authentication(token, target_scope, refresh_token)

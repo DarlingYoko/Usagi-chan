@@ -81,7 +81,7 @@ class Fun(commands.Cog):
     @commands.command()
     async def set_web_event_link(self, ctx, links: str):
         self.config['web_event']['links'] = links
-        with open('./test_config/variables.ini', "w") as config_file:
+        with open('./config/variables.ini', "w") as config_file:
             self.config.write(config_file)
         return await ctx.send('Записала новые ссылки')
 
