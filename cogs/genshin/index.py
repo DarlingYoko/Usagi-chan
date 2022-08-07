@@ -319,8 +319,7 @@ class Genshin(commands.Cog):
         gs.set_cookie(ltuid=ltuid, ltoken=ltoken)
         return gs.get_notes(uid)
 
-    @commands.Cog.cog_command_error()
-    async def on_command_error(self, ctx: commands.Context, error: commands.CommandError):
+    async def cog_command_error(self, ctx: commands.Context, error: commands.CommandError):
         if isinstance(error, commands.CheckFailure):
             channel = self.config['channel']['transformator']
             await ctx.send(f'Низя использовать эту команду туть. Тебе сюда <#{channel}>')

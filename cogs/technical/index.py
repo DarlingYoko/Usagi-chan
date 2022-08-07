@@ -221,11 +221,9 @@ class Technical(commands.Cog):
             return await ctx.send(f'{ctx.author.mention}, тебе низя использовать эту команду.')
         await ctx.send('Не получилось установить новое время')
 
-
-    @commands.Cog.listener()
-    async def on_command_error(self, ctx, error):
+    async def cog_command_error(self, ctx, error):
         print(ctx.command.name)
-        if isinstance(error, commands.CheckFailure) and 'преобразователь' in ctx.command.name:
+        if isinstance(error, commands.CheckFailure):
             channel = self.config['channel'].getint('transformator')
             await ctx.send(f'{ctx.author.mention}, тебе низя использовать эту команду туть. Сюда <#{channel}>')
 

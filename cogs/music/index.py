@@ -397,10 +397,9 @@ class Music_Player(commands.Cog):
 
         await ctx.send(answer)
 
-    @commands.Cog.listener()
-    async def on_command_error(self, ctx, error):
-        music_commands = ['play', 'pause', 'resume', 'stop', 'skip', 'query', 'shuffle']
-        if isinstance(error, commands.CheckFailure) and ctx.command.name in music_commands:
+
+    async def cog_command_error(self, ctx, error):
+        if isinstance(error, commands.CheckFailure):
             channel = self.config['channel']['mp']
             voice = self.config['channel'].getint('mp_voice')
             await ctx.send(f'Низя использовать эту команду туть. Тебе сюда <#{channel}> и подключись к войсу <#{voice}>')
