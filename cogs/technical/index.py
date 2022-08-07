@@ -319,6 +319,34 @@ class Technical(commands.Cog):
         if isinstance(error, commands.MissingRequiredArgument):
             await ctx.send(f'{ctx.author.mention}, ты ничего не ввёл, бааака!')
 
+    @commands.command(
+        name = 'закрепить',
+        description = 'Закрепить сообщение из ответа',
+        aliases = ['pin', 'закреп'],
+    )
+    async def pin_message(self, ctx):
+        if ctx.message.reference:
+            message = ctx.message.reference.resolved
+            if message:
+                await message.pin(reason=f'Message pinned by {ctx.author.name}')
+                await ctx.reply('Закрепила твоё сообщение')
+        else:
+            await ctx.reply('Ты не переслал какое сообщение закрепить надо, бака!')
+    
+    @commands.command(
+        name = 'открепить',
+        description = 'Открепить сообщение из ответа',
+        aliases = ['unpin', 'откреп'],
+    )
+    async def unpin_message(self, ctx):
+        if ctx.message.reference:
+            message = ctx.message.reference.resolved
+            if message:
+                await message.unpin()
+                await ctx.reply('Открепила твоё сообщение')
+        else:
+            await ctx.reply('Ты не переслал какое сообщение открепить надо, бака!')
+
 
 
 
