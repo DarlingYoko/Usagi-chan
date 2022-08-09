@@ -49,36 +49,12 @@ class Events(commands.Cog):
             self.bot.messages_dump[user_id][channel_id]['sticker'] += len(message.stickers)
 
         # print(self.bot.messages_dump)
-
-        if len(self.bot.messages_dump) > 3:
-            sql = ''
-            sql_exists = ''
-            for user_id in self.bot.messages_dump.keys():
-                for channel_id in self.bot.messages_dump[user_id].keys():
-                    if not sql_exists:
-                        sql_exists = f'select * from web_stat_all_stats where (user_id = {user_id} and channel_id = {channel_id})'
-                    else:
-                        sql_exists += f' or (user_id = {user_id} and channel_id = {channel_id})'
-
-            sql_exists += ';'
-            exists_user = self.bot.db.custom_command(sql_exists)
-            sql = ''
-
-            for user in exists_user:
-                    user_id = user[1]
-                    channel_id = user[2]
-                    sql += f'update web_stat_all_stats set message = message + {self.bot.messages_dump[user_id][channel_id]["message"]}, emoji = emoji + {self.bot.messages_dump[user_id][channel_id]["emoji"]}, sticker = sticker + {self.bot.messages_dump[user_id][channel_id]["sticker"]}, image = image + {self.bot.messages_dump[user_id][channel_id]["image"]}, gif = gif + {self.bot.messages_dump[user_id][channel_id]["gif"]} where user_id = {user_id} and channel_id = {channel_id};'
-                    del self.bot.messages_dump[user_id][channel_id]
-                    if len(self.bot.messages_dump[user_id]) == 0:
-                        del self.bot.messages_dump[user_id]
-
-            for user_id in self.bot.messages_dump.keys():
-                for channel_id in self.bot.messages_dump[user_id].keys():
-                    sql += f'insert into web_stat_all_stats values (nextval(\'web_stat_all_stats_id_seq\'), {user_id}, {channel_id}, {self.bot.messages_dump[user_id][channel_id]["message"]}, {self.bot.messages_dump[user_id][channel_id]["emoji"]}, {self.bot.messages_dump[user_id][channel_id]["sticker"]}, {self.bot.messages_dump[user_id][channel_id]["image"]}, {self.bot.messages_dump[user_id][channel_id]["gif"]}, 0);\n'
-            # print(sql)
-            # print(self.bot.messages_dump)
-            self.bot.messages_dump = {}
-            self.bot.db.custom_command(sql)
+        lenght = 0
+        for user in self.bot.messages_dump.keys():
+            lenght += len(self.bot.messages_dump[user])
+        # print(lenght)
+        if lenght > 3:
+            await self.manual_dump()
 
         # print(message.content)
 
@@ -326,6 +302,12 @@ class Events(commands.Cog):
         result = self.bot.db.custom_command(request)
         print('Update display name for user in database - ', result, after.name)
 
+    @commands.is_owner()
+    @commands.command()
+    async def dump_messages(self, ctx):
+        await self.manual_dump()
+        await ctx.reply('Done')
+
 
     async def give_role_to_user(self, user_id, role_id, guild_id):
         guild = await self.bot.fetch_guild(guild_id)
@@ -338,6 +320,44 @@ class Events(commands.Cog):
         role = guild.get_role(role_id)
         user = await guild.fetch_member(user_id)
         return await user.remove_roles(role)
+
+    async def manual_dump(self):
+        sql = ''
+        sql_exists = ''
+        for user_id in self.bot.messages_dump.keys():
+            for channel_id in self.bot.messages_dump[user_id].keys():
+                if not sql_exists:
+                    sql_exists = f'select * from web_stat_all_stats where (user_id = {user_id} and channel_id = {channel_id})'
+                else:
+                    sql_exists += f' or (user_id = {user_id} and channel_id = {channel_id})'
+
+        sql_exists += ';'
+        exists_user = self.bot.db.custom_command(sql_exists)
+        sql = ''
+        # print(sql_exists)
+        # print(exists_user)
+        user_id = 0
+        channel_id = 0
+        for user in exists_user:
+            if user_id == user[1] and channel_id == user[2]:
+                self.bot.db.custom_command(f'delete from web_stat_all_stats where id = {user[0]}')
+                continue
+            user_id = user[1]
+            channel_id = user[2]
+            # print(user_id, channel_id)
+            # print(exists_user)
+            sql += f'update web_stat_all_stats set message = message + {self.bot.messages_dump[user_id][channel_id]["message"]}, emoji = emoji + {self.bot.messages_dump[user_id][channel_id]["emoji"]}, sticker = sticker + {self.bot.messages_dump[user_id][channel_id]["sticker"]}, image = image + {self.bot.messages_dump[user_id][channel_id]["image"]}, gif = gif + {self.bot.messages_dump[user_id][channel_id]["gif"]} where user_id = {user_id} and channel_id = {channel_id};'
+            del self.bot.messages_dump[user_id][channel_id]
+            if len(self.bot.messages_dump[user_id]) == 0:
+                del self.bot.messages_dump[user_id]
+
+        for user_id in self.bot.messages_dump.keys():
+            for channel_id in self.bot.messages_dump[user_id].keys():
+                sql += f'insert into web_stat_all_stats values (nextval(\'web_stat_all_stats_id_seq\'), {user_id}, {channel_id}, {self.bot.messages_dump[user_id][channel_id]["message"]}, {self.bot.messages_dump[user_id][channel_id]["emoji"]}, {self.bot.messages_dump[user_id][channel_id]["sticker"]}, {self.bot.messages_dump[user_id][channel_id]["image"]}, {self.bot.messages_dump[user_id][channel_id]["gif"]}, 0);\n'
+        # print(sql)
+        # print(self.bot.messages_dump)
+        self.bot.messages_dump = {}
+        self.bot.db.custom_command(sql)
 
 def setup(bot):
     bot.add_cog(Events(bot))
