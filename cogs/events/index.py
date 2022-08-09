@@ -53,7 +53,7 @@ class Events(commands.Cog):
         for user in self.bot.messages_dump.keys():
             lenght += len(self.bot.messages_dump[user])
         # print(lenght)
-        if lenght > 3:
+        if lenght > 10:
             await self.manual_dump()
 
         # print(message.content)
