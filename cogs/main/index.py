@@ -12,7 +12,7 @@ class Main(commands.Cog):
         self.config = bot.config
         #self.twitch_auth.start()
         #self.check_twitch_online.start()
-        #self.check_sleep_users.start()
+        self.check_sleep_users.start()
         #self.wordle_results.start()
 
 

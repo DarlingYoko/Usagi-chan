@@ -2,3 +2,5 @@ test.py
 tests/
 usagi_venv/
 usagi-variables.env
+__pycache__
+discord.log

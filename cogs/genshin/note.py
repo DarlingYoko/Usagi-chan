@@ -6,6 +6,8 @@ from time import mktime
 from bin.functions import get_embed, get_member_by_all
 from bin.checks import is_transformator_channel
 from random import choice
+import genshinstats as gs
+from genshinstats import errors
 
 instruction = '''
 1. Зайти на сайт Хоёлаба <https://www.hoyolab.com/home> и авторизоваться там
@@ -19,8 +21,8 @@ class Genshin(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.config = bot.config
-        #self.claim_daily_reward.start()
-        #self.resin_cup_alert.start()
+        # self.claim_daily_reward.start()
+        # self.resin_cup_alert.start()
         
 
     @commands.command(
@@ -55,8 +57,6 @@ class Genshin(commands.Cog):
         msg = await self.bot.wait_for('message', check=check)
         uid = msg.content
 
-        import genshinstats as gs
-        from genshinstats import errors
         try:
             gs.set_cookie(ltuid=ltuid, ltoken=ltoken)
             gs.get_notes(uid)
@@ -109,6 +109,24 @@ class Genshin(commands.Cog):
         if ctx.guild is not None:
             await ctx.message.delete(delay = 10*60)
             await msg.delete(delay = 10*60)
+    
+    @commands.command(
+        name = 'code',
+        aliases=['коды'],
+        description='активировать код для геншина',
+        )
+    async def genshin_code_activate(self, ctx, code_str: str):
+        author_id = ctx.author.id
+        exists_user = self.bot.db.custom_command(f'select exists(select * from genshin_stats where id = {author_id});')[0][0]
+        if not exists_user:
+            await ctx.reply('Ты не авторизован, бака!')
+            return 0
+        cookie = self.bot.db.custom_command(f'select ltuid, uid, ltoken from genshin_stats where id = {author_id};')[0]
+        ltuid = cookie[0]
+        uid = cookie[1]
+        ltoken = cookie[2]
+        gs.set_cookie(ltuid=ltuid, ltoken=ltoken)
+        return gs.redeem_code(uid)
 
     @commands.command(
         name = 'notes',
@@ -237,7 +255,6 @@ class Genshin(commands.Cog):
             reward_claimed = False
             for cookie in cookies:
                 try:
-                    import genshinstats as gs
                     gs.set_cookie(ltuid=cookie[0], ltoken=cookie[2])
                     reward = gs.claim_daily_reward(cookie[1])
                     if reward:
@@ -256,22 +273,20 @@ class Genshin(commands.Cog):
         print('waiting claim_daily_reward')
         await self.bot.wait_until_ready()
 
-    @tasks.loop(minutes=10)
+    @tasks.loop(minutes=30)
     async def resin_cup_alert(self):
 
         cookies = self.bot.db.custom_command(f'select ltuid, uid, ltoken, resin_alerted, id from genshin_stats where resin_sub = {True};')
         channel = await self.bot.fetch_channel(self.config['channel']['transformator'])
         for cookie in cookies:
-            import genshinstats as gs
             ltuid = cookie[0]
             uid = cookie[1]
             ltoken = cookie[2]
             user_id = cookie[4]
             try:
-                import genshinstats as gs
                 gs.set_cookie(ltuid=ltuid, ltoken=ltoken)
                 data = gs.get_notes(uid)
-                if data['resin'] >= 155 and not cookie[3]:
+                if data['resin'] >= 150 and not cookie[3]:
                     response = self.bot.db.update('genshin_stats', 'resin_alerted', 'id', True, user_id)
                     if response:
                         texts = [
@@ -285,7 +300,7 @@ class Genshin(commands.Cog):
                     else:
                         print(f'error {response}, {user_id} resin alert')
                 
-                if data['resin'] < 155 and cookie[3]:
+                if data['resin'] < 150 and cookie[3]:
                     response = self.bot.db.update('genshin_stats', 'resin_alerted', 'id', False, user_id)
                     if not response:
                         print(f'error {response}, {user_id} resin alert')
@@ -315,9 +330,10 @@ class Genshin(commands.Cog):
         ltuid = cookie[0]
         uid = cookie[1]
         ltoken = cookie[2]
-        import genshinstats as gs
         gs.set_cookie(ltuid=ltuid, ltoken=ltoken)
-        return gs.get_notes(uid)
+        stats = gs.get_notes(uid)
+        gs.genshinstats.session.close()
+        return stats
 
     async def cog_command_error(self, ctx: commands.Context, error: commands.CommandError):
         if isinstance(error, commands.CheckFailure):
@@ -329,4 +345,5 @@ class Genshin(commands.Cog):
 
 
 def setup(bot):
+    # pass
     bot.add_cog(Genshin(bot))
