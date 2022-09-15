@@ -13,7 +13,7 @@ from datetime import timedelta
 class Music_Player(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.play_url.start()
+        #self.play_url.start()
 
         self.config = bot.config
 

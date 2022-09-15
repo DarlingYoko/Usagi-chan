@@ -10,7 +10,7 @@ class Events(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.config = bot.config
-        self.tg_bot = telebot.TeleBot('5080341472:AAGRRMfyO68ys333warKu97C5iepRH7IC3Q')
+        #self.tg_bot = telebot.TeleBot('5080341472:AAGRRMfyO68ys333warKu97C5iepRH7IC3Q')
 
 
     @commands.Cog.listener()
@@ -24,7 +24,7 @@ class Events(commands.Cog):
 
         if message.author == self.bot.user or message.author.bot:
             return
-        # return
+        return
         user_id = message.author.id
         channel_id = message.channel.id
         if user_id in self.bot.messages_dump.keys():
@@ -243,7 +243,7 @@ class Events(commands.Cog):
 
         if after.channel and after.channel.id == voice_channel and not vc:
             await after.channel.connect()
-        # return
+        return
         # user connect voice
         if after.channel and not before.channel:
             self.bot.voice_users[user_id] = {'state': 'connect', 'time': mktime(datetime.now().timetuple())}
@@ -267,6 +267,7 @@ class Events(commands.Cog):
     
     @commands.Cog.listener()
     async def on_member_update(self, before, after):
+	return
         request = f"SELECT EXISTS(SELECT * from web_stat_user_data where uid = {after.id});"
         user_in_db = self.bot.db.custom_command(request)[0][0]
         if user_in_db:
@@ -278,13 +279,15 @@ class Events(commands.Cog):
     
     @commands.Cog.listener()
     async def on_guild_channel_create(self, channel):
+	return
         request = f'insert into web_stat_user_data values (nextval(\'web_stat_user_data_id_seq\'), {channel.id}, \'{channel.name}\', \'\', \'\', {True});\n'
         result = self.bot.db.custom_command(request)
         print('Create channel in database - ', result, channel.name)
 
     @commands.Cog.listener()
     async def on_guild_channel_update(self, before, after):
-        if after.id == 863159302213337179:
+        return
+	if after.id == 863159302213337179:
             return
         request = f'update web_stat_user_data set name = \'{after.name}\' where uid = {after.id};\n'
         result = self.bot.db.custom_command(request)
@@ -293,7 +296,8 @@ class Events(commands.Cog):
 
     @commands.Cog.listener()
     async def on_user_update(self, before, after):
-        request = f"SELECT EXISTS(SELECT * from web_stat_user_data where uid = {after.id});"
+        return
+	request = f"SELECT EXISTS(SELECT * from web_stat_user_data where uid = {after.id});"
         user_in_db = self.bot.db.custom_command(request)[0][0]
         if user_in_db:
             request = f'update web_stat_user_data set name = \'{after.name}\', icon_url = \'{after.avatar}\' where uid = {after.id};\n'
