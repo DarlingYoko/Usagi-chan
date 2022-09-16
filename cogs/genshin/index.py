@@ -126,7 +126,8 @@ class Genshin(commands.Cog):
         uid = cookie[1]
         ltoken = cookie[2]
         gs.set_cookie(ltuid=ltuid, ltoken=ltoken)
-        return gs.redeem_code(uid)
+        gs.redeem_code(uid)
+        await ctx.reply('Активировала код!')
 
     @commands.command(
         name = 'notes',
