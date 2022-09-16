@@ -332,7 +332,7 @@ class Genshin(commands.Cog):
         ltoken = cookie[2]
         gs.set_cookie(ltuid=ltuid, ltoken=ltoken)
         stats = gs.get_notes(uid)
-        gs.genshinstats.session.close()
+        # gs.genshinstats.session.close()
         return stats
 
     async def cog_command_error(self, ctx: commands.Context, error: commands.CommandError):
