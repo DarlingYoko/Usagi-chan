@@ -21,8 +21,8 @@ class Genshin(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.config = bot.config
-        # self.claim_daily_reward.start()
-        # self.resin_cup_alert.start()
+        self.claim_daily_reward.start()
+        self.resin_cup_alert.start()
         
 
     @commands.command(
@@ -67,6 +67,8 @@ class Genshin(commands.Cog):
 
         exists_user = self.bot.db.custom_command(f'select exists(select * from genshin_stats where id = {author_id});')[0][0]
 
+        relog = False
+
         if not exists_user:
             response = self.bot.db.insert(
                 'genshin_stats', 
@@ -78,9 +80,13 @@ class Genshin(commands.Cog):
                 False
             )
         else:
-            return await dm_channel.send('Ты уже авторизован, бака!')
+            response = self.bot.db.update('genshin_stats', 'ltoken', 'id', ltoken, author_id)
+            relog = True
         if response:
-            await dm_channel.send(f'Успешно авторизовала тебя!')
+            if relog:
+                await dm_channel.send(f'Успешно переавторизовала тебя!')
+            else:
+                await dm_channel.send(f'Успешно авторизовала тебя!')
         else:
             await dm_channel.send(f'Не удалось авторизоваться, попробуй позже.')
 
