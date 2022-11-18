@@ -1,6 +1,6 @@
-test.py
-tests/
-usagi_venv/
-usagi-variables.env
+#usagi-variables.env
+.idea
+/.pytest_cache/
+/usagiBot/tests/.pytest_cache/
+/venv/
 __pycache__
-discord.log
