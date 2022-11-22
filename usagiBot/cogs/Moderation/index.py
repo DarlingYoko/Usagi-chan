@@ -2,11 +2,13 @@ import discord
 from discord.ext import commands
 from usagiBot.db.models import UsagiConfig
 from usagiBot.src.UsagiUtils import check_arg_in_command_tags
-from typing import Union
+from typing import Union, List
 
 
-def get_command_tags(ctx: discord.AutocompleteContext):
-    """Returns a list of colors that begin with the characters entered so far."""
+def get_command_tags(ctx: discord.AutocompleteContext) -> List[discord.commands.options.OptionChoice]:
+    """
+    Returns a list of command tags.
+    """
     return ctx.bot.command_tags
 
 

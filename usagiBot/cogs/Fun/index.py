@@ -1,7 +1,7 @@
 import random
 import discord
 
-from usagiBot.cogs.Fun import fun_utils
+from usagiBot.cogs.Fun.fun_utils import get_exchange_rate_data
 from discord.ext import commands
 from usagiBot.db.models import UsagiConfig
 from usagiBot.src.UsagiChecks import check_is_already_set_up
@@ -54,7 +54,7 @@ class Fun(commands.Cog):
     async def get_exchange_rate(self, ctx) -> None:
         return_message = "```autohotkey\n" "Сводка курса на данный момент:\n"
 
-        rates = fun_utils.get_exchange_rate_data()
+        rates = get_exchange_rate_data()
         required_rates = ["USDRUB", "USDUAH", "USDBYN", "USDKZT"]
         counter = 1
         for rate in required_rates:

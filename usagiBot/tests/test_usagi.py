@@ -1,4 +1,4 @@
-from usagiBot.usagi import on_command_error
+from sqlalchemy.ext import asyncio
 from unittest import mock
 from unittest import IsolatedAsyncioTestCase
 from discord.ext import commands
@@ -6,15 +6,19 @@ from discord.ext import commands
 
 class TestUsagiMethods(IsolatedAsyncioTestCase):
 
-    def setUp(self) -> None:
+    @mock.patch("usagiBot.db.models.UsagiConfig")
+    @mock.patch.object(asyncio, "create_async_engine")
+    def setUp(self, mock_engine, mock_UsagiConfig) -> None:
         self.ctx = mock.AsyncMock()
         self.ctx.author.name = "Yoko"
 
     async def test_command_not_found(self) -> None:
+        from usagiBot.usagi import on_command_error
         await on_command_error(self.ctx, commands.CommandNotFound())
         self.ctx.reply.assert_called_with("Такой команды не существует.")
 
     async def test_command_on_cooldown(self) -> None:
+        from usagiBot.usagi import on_command_error
         error = commands.CommandOnCooldown(
             cooldown=commands.Cooldown(rate=1, per=60.0),
             retry_after=60.0,
@@ -24,6 +28,7 @@ class TestUsagiMethods(IsolatedAsyncioTestCase):
         self.ctx.reply.assert_called_with("Эту команду ты сможешь использовать через 60s")
 
     async def test_on_command_error(self) -> None:
+        from usagiBot.usagi import on_command_error
         user = mock.AsyncMock()
         self.ctx.bot.fetch_user.return_value = user
         self.ctx.command.name = "test_command_name"
