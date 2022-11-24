@@ -11,6 +11,12 @@ def get_command_tags(ctx: discord.AutocompleteContext) -> List[discord.commands.
     """
     return ctx.bot.command_tags
 
+def get_bot_cogs(ctx: discord.AutocompleteContext) -> List[discord.commands.options.OptionChoice]:
+    """
+    Returns a list of command tags.
+    """
+    return ctx.bot.cogs
+
 
 class Moderation(commands.Cog):
     def __init__(self, bot):
@@ -67,6 +73,23 @@ class Moderation(commands.Cog):
         await UsagiConfig.delete(guild_id=733631069542416384, command_tag=command)
 
         await ctx.respond("Successfully configured", ephemeral=True)
+
+    @commands.slash_command(
+        name="disable_module", description="Disable modules in bot"
+    )
+    @discord.commands.option(
+        name="module",
+        description="Pick a module!",
+        autocomplete=get_bot_cogs,
+        required=True,
+    )
+    async def delete_config_for_command(
+            self,
+            ctx,
+            module: str,
+            # channel: Union[discord.TextChannel, discord.VoiceChannel]
+    ) -> None:
+        pass
 
 
 def setup(bot):
