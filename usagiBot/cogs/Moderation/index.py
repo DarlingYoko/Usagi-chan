@@ -1,8 +1,9 @@
 import discord
+from discord import Cog
 from discord.ext import commands
 from usagiBot.db.models import UsagiConfig
 from usagiBot.src.UsagiUtils import check_arg_in_command_tags
-from typing import Union, List
+from typing import Union, List, Mapping
 
 
 def get_command_tags(ctx: discord.AutocompleteContext) -> List[discord.commands.options.OptionChoice]:
@@ -11,7 +12,8 @@ def get_command_tags(ctx: discord.AutocompleteContext) -> List[discord.commands.
     """
     return ctx.bot.command_tags
 
-def get_bot_cogs(ctx: discord.AutocompleteContext) -> List[discord.commands.options.OptionChoice]:
+
+def get_bot_cogs(ctx: discord.AutocompleteContext) -> Mapping[str, Cog]:
     """
     Returns a list of command tags.
     """
@@ -75,7 +77,7 @@ class Moderation(commands.Cog):
         await ctx.respond("Successfully configured", ephemeral=True)
 
     @commands.slash_command(
-        name="disable_module", description="Disable modules in bot"
+        name="disable_module", description="Disable module in bot"
     )
     @discord.commands.option(
         name="module",
