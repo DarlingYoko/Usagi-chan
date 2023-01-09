@@ -77,6 +77,22 @@ class Moderation(commands.Cog):
         await ctx.respond("Successfully configured", ephemeral=True)
 
     @commands.slash_command(
+        name="enable_module", description="Enable module in bot"
+    )
+    @discord.commands.option(
+        name="module",
+        description="Pick a module!",
+        autocomplete=get_bot_cogs,
+        required=True,
+    )
+    async def enable_module(
+            self,
+            ctx,
+            module: str,
+    ) -> None:
+        pass
+
+    @commands.slash_command(
         name="disable_module", description="Disable module in bot"
     )
     @discord.commands.option(
@@ -85,7 +101,7 @@ class Moderation(commands.Cog):
         autocomplete=get_bot_cogs,
         required=True,
     )
-    async def delete_config_for_command(
+    async def disable_module(
             self,
             ctx,
             module: str,
