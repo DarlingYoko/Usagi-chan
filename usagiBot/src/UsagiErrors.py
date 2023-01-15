@@ -6,3 +6,10 @@ class UsagiNotSetUpError(CommandError):
 
     This inherits from :exc:`CommandError`
     """
+
+
+class UsagiModuleDisabled(CommandError):
+    """Exception raised when the command was called from disabled module
+
+    This inherits from :exc:`CommandError`
+    """

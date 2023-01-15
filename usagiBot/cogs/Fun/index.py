@@ -5,11 +5,18 @@ from usagiBot.cogs.Fun.fun_utils import get_exchange_rate_data
 from discord.ext import commands
 from usagiBot.db.models import UsagiConfig
 from usagiBot.src.UsagiChecks import check_is_already_set_up
+from usagiBot.src.UsagiUtils import check_cog_whitelist
+from usagiBot.src.UsagiErrors import UsagiModuleDisabled
 
 
 class Fun(commands.Cog):
     def __init__(self, bot):
         pass
+
+    def cog_check(self, ctx):
+        if check_cog_whitelist(self, ctx):
+            return True
+        raise UsagiModuleDisabled()
 
     # Default commands
     @commands.command(
@@ -110,7 +117,7 @@ class Fun(commands.Cog):
     )
     @check_is_already_set_up()
     async def add_based_message(self, ctx, message: discord.Message) -> None:
-        config = await UsagiConfig.get(
+        config = await UsagiConfig.get_command_tag(
             guild_id=ctx.guild.id, command_tag="based_message_channel"
         )
         based_message_channel_id = config.generic_id

@@ -14,11 +14,12 @@ bot = commands.Bot(
     debug_guilds=[733631069542416384, 955858929496231976],
 )
 
-bot.command_tags = []
-
 # Define logger
 bot.logger = logging.getLogger("mylogger")
 logging.basicConfig(format="%(asctime)s - %(message)s", level=logging.INFO)
+
+# Define variables
+bot.command_tags = []
 
 # Define cogs
 for cog_name in os.listdir(COGS_DIR):

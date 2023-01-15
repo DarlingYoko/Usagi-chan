@@ -2,8 +2,12 @@ import discord
 import platform
 import os
 from discord.ext import commands
-from usagiBot.src.UsagiUtils import error_notification_to_owner, load_all_command_tags
-from usagiBot.src.UsagiErrors import UsagiNotSetUpError
+from usagiBot.src.UsagiUtils import (
+    error_notification_to_owner,
+    load_all_command_tags,
+    init_cogs_settings
+)
+from usagiBot.src.UsagiErrors import UsagiNotSetUpError, UsagiModuleDisabled
 
 
 class Events(commands.Cog):
@@ -14,6 +18,7 @@ class Events(commands.Cog):
     @commands.Cog.listener()
     async def on_ready(self):
         await load_all_command_tags(self.bot)
+        self.bot.guild_cogs_settings = await init_cogs_settings()
         self.bot.logger.info("---------NEW SESSION----------")
         self.bot.logger.info(f"Logged in as {self.bot.user.name}")
         self.bot.logger.info(f"discord.py API version: {discord.__version__}")
@@ -38,10 +43,18 @@ class Events(commands.Cog):
                 "This command was not configured. Contact the server administration.",
                 delete_after=2 * 60,
             )
+        elif isinstance(error, UsagiModuleDisabled):
+            await ctx.reply(
+                "This command is disabled. Contact the server administration.",
+                delete_after=2 * 60,
+            )
         elif isinstance(error, discord.errors.CheckFailure):
-            await ctx.respond("Some requirements were not met.", delete_after=2 * 60)
+            await ctx.reply("Some requirements were not met.", delete_after=2 * 60)
         else:
             await error_notification_to_owner(ctx, error)
+
+        if not isinstance(ctx.message.channel, discord.DMChannel):
+            await ctx.message.delete(delay=2*60)
 
     @commands.Cog.listener()
     async def on_application_command_error(self, ctx, error):

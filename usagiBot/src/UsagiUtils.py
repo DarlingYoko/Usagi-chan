@@ -1,10 +1,10 @@
-from typing import List
+from typing import List, Dict
 
 import discord
 from discord.ext.commands._types import Error
 
 from usagiBot.env import BOT_OWNER
-from usagiBot.db.models import UsagiConfig
+from usagiBot.db.models import UsagiConfig, UsagiCogs
 
 
 async def error_notification_to_owner(ctx: discord.ext.commands.Context, error: Error, app_command: bool = False):
@@ -22,6 +22,7 @@ async def error_notification_to_owner(ctx: discord.ext.commands.Context, error: 
             + f"> **User** - {ctx.author.mention}\n"
             + f"> **Channel** - {ctx.channel.id}\n"
             + f"> **Error** - {error}\n"
+            + f"> **Error type** - {type(error)}\n"
     )
 
     if not app_command:
@@ -60,7 +61,7 @@ async def check_command_tag_in_db(ctx: discord.ext.commands.Context, command_tag
     :param command_tag: Command name tag
     :return: Bool
     """
-    config = await UsagiConfig.get(guild_id=ctx.guild.id, command_tag=command_tag)
+    config = await UsagiConfig.get_command_tag(guild_id=ctx.guild.id, command_tag=command_tag)
     if config:
         return True
 
@@ -81,3 +82,34 @@ def check_arg_in_command_tags(
         if arg == tag.value:
             return True
     return False
+
+
+async def init_cogs_settings() -> Dict:
+    """
+    Init and load cogs settings from db
+    :return:
+    """
+    cogs_settings = {}
+    copy_from_db = await UsagiCogs.get_all()
+    for item in copy_from_db:
+        guild_id = item.guild_id
+        module_name = item.module_name
+        access = item.access
+        if guild_id in cogs_settings.keys():
+            cogs_settings[guild_id][module_name] = access
+        else:
+            cogs_settings[guild_id] = {module_name: access}
+
+    return cogs_settings
+
+
+def check_cog_whitelist(cog, ctx):
+    guild_cogs_settings = ctx.bot.guild_cogs_settings
+    guild_id = ctx.guild.id
+    cog_name = cog.qualified_name
+
+    if guild_id in guild_cogs_settings and cog_name in guild_cogs_settings[guild_id]:
+        return guild_cogs_settings[guild_id][cog_name]
+
+    return False
+

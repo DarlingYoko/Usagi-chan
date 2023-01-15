@@ -1,9 +1,8 @@
 import discord
-from discord import Cog
 from discord.ext import commands
-from usagiBot.db.models import UsagiConfig
+from usagiBot.db.models import UsagiConfig, UsagiCogs
 from usagiBot.src.UsagiUtils import check_arg_in_command_tags
-from typing import Union, List, Mapping
+from typing import Union, List
 
 
 def get_command_tags(ctx: discord.AutocompleteContext) -> List[discord.commands.options.OptionChoice]:
@@ -13,11 +12,16 @@ def get_command_tags(ctx: discord.AutocompleteContext) -> List[discord.commands.
     return ctx.bot.command_tags
 
 
-def get_bot_cogs(ctx: discord.AutocompleteContext) -> Mapping[str, Cog]:
+def get_bot_cogs(ctx: discord.AutocompleteContext) -> List:
     """
     Returns a list of command tags.
     """
-    return ctx.bot.cogs
+    no_access_cogs = ["Events", "Moderation"]
+    cogs = []
+    for name in ctx.bot.cogs:
+        if name not in no_access_cogs:
+            cogs.append(name)
+    return cogs
 
 
 class Moderation(commands.Cog):
@@ -44,7 +48,7 @@ class Moderation(commands.Cog):
             )
             return
 
-        command_config_exist = await UsagiConfig.get(guild_id=ctx.guild.id, command_tag=command)
+        command_config_exist = await UsagiConfig.get_command_tag(guild_id=ctx.guild.id, command_tag=command)
         text_result = "Successfully configured channel for command"
         if command_config_exist:
             await UsagiConfig.update(
@@ -85,7 +89,7 @@ class Moderation(commands.Cog):
             )
             return
 
-        await UsagiConfig.delete(guild_id=ctx.guild.id, command_tag=command)
+        await UsagiConfig.delete_command_tag(guild_id=ctx.guild.id, command_tag=command)
 
         await ctx.respond("Successfully deleted configure for command", ephemeral=True)
 
@@ -103,7 +107,38 @@ class Moderation(commands.Cog):
             ctx,
             module: str,
     ) -> None:
-        pass
+        guild_id = ctx.guild.id
+        guild_cogs_settings = ctx.bot.guild_cogs_settings
+
+        if module not in get_bot_cogs(ctx):
+            await ctx.respond(
+                "This module is't available.", ephemeral=True
+            )
+            return
+
+        if (
+            guild_id in guild_cogs_settings and
+            module in guild_cogs_settings[guild_id]
+        ):
+            await ctx.respond(
+                "This module already enabled.", ephemeral=True
+            )
+            return
+
+        await UsagiCogs.create(
+            guild_id=guild_id,
+            module_name=module,
+            access=True,
+        )
+        if guild_id in guild_cogs_settings:
+            guild_cogs_settings[guild_id][module] = True
+        else:
+            guild_cogs_settings[guild_id] = {module: True}
+
+        await ctx.respond(
+            f"The `{module}` module has been enabled.", ephemeral=True
+        )
+        return
 
     @commands.slash_command(
         name="disable_module", description="Disable module in bot"
@@ -118,9 +153,38 @@ class Moderation(commands.Cog):
             self,
             ctx,
             module: str,
-            # channel: Union[discord.TextChannel, discord.VoiceChannel]
     ) -> None:
-        pass
+        guild_id = ctx.guild.id
+        guild_cogs_settings = ctx.bot.guild_cogs_settings
+
+        if module not in get_bot_cogs(ctx):
+            await ctx.respond(
+                "This module is't available.", ephemeral=True
+            )
+            return
+
+        if (
+            guild_id not in guild_cogs_settings or
+            (guild_id in guild_cogs_settings and module not in guild_cogs_settings[guild_id])
+        ):
+            await ctx.respond(
+                "This module isn't enabled.", ephemeral=True
+            )
+            return
+
+        await UsagiCogs.delete_module_name(
+            guild_id=guild_id,
+            module_name=module,
+        )
+
+        del guild_cogs_settings[guild_id][module]
+        if len(guild_cogs_settings) == 0:
+            del guild_cogs_settings[guild_id]
+
+        await ctx.respond(
+            f"The `{module}` module has been disabled.", ephemeral=True
+        )
+        return
 
 
 def setup(bot):
