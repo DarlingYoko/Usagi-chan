@@ -44,11 +44,24 @@ class Moderation(commands.Cog):
             )
             return
 
-        await UsagiConfig.create(
-            guild_id=ctx.guild.id, command_tag=command, generic_id=channel.id
-        )
+        command_config_exist = await UsagiConfig.get(guild_id=ctx.guild.id, command_tag=command)
+        text_result = "Successfully configured channel for command"
+        if command_config_exist:
+            await UsagiConfig.update(
+                id=command_config_exist.id,
+                guild_id=ctx.guild.id,
+                command_tag=command,
+                generic_id=channel.id
+            )
+            text_result = "Successfully reconfigured channel for command"
+        else:
+            await UsagiConfig.create(
+                guild_id=ctx.guild.id,
+                command_tag=command,
+                generic_id=channel.id
+            )
 
-        await ctx.respond("Successfully configured", ephemeral=True)
+        await ctx.respond(content=text_result, ephemeral=True)
 
     @commands.slash_command(
         name="delete_settings", description="Delete Settings For Command"
@@ -72,9 +85,9 @@ class Moderation(commands.Cog):
             )
             return
 
-        await UsagiConfig.delete(guild_id=733631069542416384, command_tag=command)
+        await UsagiConfig.delete(guild_id=ctx.guild.id, command_tag=command)
 
-        await ctx.respond("Successfully configured", ephemeral=True)
+        await ctx.respond("Successfully deleted configure for command", ephemeral=True)
 
     @commands.slash_command(
         name="enable_module", description="Enable module in bot"
