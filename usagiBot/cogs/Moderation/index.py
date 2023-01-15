@@ -80,7 +80,6 @@ class Moderation(commands.Cog):
         self,
         ctx,
         command: str,
-        # channel: Union[discord.TextChannel, discord.VoiceChannel]
     ) -> None:
 
         if not check_arg_in_command_tags(command, ctx.bot.command_tags):

@@ -1,5 +1,5 @@
 from discord.ext import commands
-from usagiBot.src.UsagiErrors import UsagiNotSetUpError
+from usagiBot.src.UsagiErrors import UsagiNotSetUpError, UsagiModuleDisabled
 import discord
 from unittest.mock import MagicMock
 
@@ -19,6 +19,10 @@ class CustomHelpCommand(commands.HelpCommand):
         answer = ""
         for cog in mapping:
             if cog:
+                try:
+                    cog.cog_check(ctx)
+                except UsagiModuleDisabled:
+                    continue
                 answer += f"**{cog.qualified_name}**\n"
                 commands_dict = {}
                 for command in cog.get_commands():
