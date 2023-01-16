@@ -25,7 +25,7 @@ class TestFunMethods(IsolatedAsyncioTestCase):
         self.message = mock.AsyncMock()
         self.channel = mock.AsyncMock()
         config = mock.MagicMock
-        mock_UsagiConfig.get_command_tag = mock.AsyncMock()
+        mock_UsagiConfig.get = mock.AsyncMock()
 
         self.ctx.author.name = "Yoko"
 
@@ -36,7 +36,7 @@ class TestFunMethods(IsolatedAsyncioTestCase):
         self.message.embeds = []
 
         config.generic_id = 54321
-        mock_UsagiConfig.get_command_tag.return_value = config
+        mock_UsagiConfig.get.return_value = config
 
     async def test_ping(self) -> None:
         self.ctx.bot.latency = 1

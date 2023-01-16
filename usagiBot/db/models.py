@@ -14,29 +14,18 @@ class ModelAdmin:
                 session.add(cls(**kwargs))
                 await session.commit()
 
-    # @classmethod
-    # async def update(cls, id, **kwargs):
-    #     query = (
-    #         sqlalchemy_update(cls)
-    #         .where(cls.id == id)
-    #         .values(**kwargs)
-    #         .execution_options(synchronize_session="fetch")
-    #     )
-    #     async with async_session() as session:
-    #         async with session.begin():
-    #             await session.execute(query)
-    #             await session.commit()
-
     @classmethod
-    async def get_command_tag(cls, guild_id, command_tag):
-        query = select(cls).where(
-            cls.guild_id == guild_id, cls.command_tag == command_tag
+    async def update(cls, id, **kwargs):
+        query = (
+            sqlalchemy_update(cls)
+            .where(cls.id == id)
+            .values(**kwargs)
+            .execution_options(synchronize_session="fetch")
         )
         async with async_session() as session:
             async with session.begin():
-                results = await session.execute(query)
-                config = results.scalars().first()
-                return config
+                await session.execute(query)
+                await session.commit()
 
     @classmethod
     async def get_all(cls):
@@ -47,8 +36,17 @@ class ModelAdmin:
                 config = results.scalars().all()
                 return config
 
+
+class UsagiConfig(Base, ModelAdmin):
+    __tablename__ = "usagi_config"
+
+    id = Column(Integer, primary_key=True)
+    guild_id = Column(BigInteger)
+    command_tag = Column(Text)
+    generic_id = Column(BigInteger)
+
     @classmethod
-    async def delete_command_tag(cls, guild_id, command_tag):
+    async def delete(cls, guild_id, command_tag):
         query = (
             sqlalchemy_delete(cls)
             .where(cls.guild_id == guild_id, cls.command_tag == command_tag)
@@ -60,7 +58,27 @@ class ModelAdmin:
                 await session.commit()
 
     @classmethod
-    async def delete_module_name(cls, guild_id, module_name):
+    async def get(cls, guild_id, command_tag):
+        query = select(cls).where(
+            cls.guild_id == guild_id, cls.command_tag == command_tag
+        )
+        async with async_session() as session:
+            async with session.begin():
+                results = await session.execute(query)
+                config = results.scalars().first()
+                return config
+
+
+class UsagiCogs(Base, ModelAdmin):
+    __tablename__ = "usagi_cogs"
+
+    id = Column(Integer, primary_key=True)
+    guild_id = Column(BigInteger)
+    module_name = Column(Text)
+    access = Column(Boolean)
+
+    @classmethod
+    async def delete(cls, guild_id, module_name):
         query = (
             sqlalchemy_delete(cls)
             .where(cls.guild_id == guild_id, cls.module_name == module_name)
@@ -72,22 +90,24 @@ class ModelAdmin:
                 await session.commit()
 
 
-class UsagiConfig(Base, ModelAdmin):
-    __tablename__ = "usagi_config"
+class UsagiModerRoles(Base, ModelAdmin):
+    __tablename__ = "usagi_moder_roles"
 
     id = Column(Integer, primary_key=True)
     guild_id = Column(BigInteger)
-    command_tag = Column(Text)
-    generic_id = Column(BigInteger)
+    moder_role_id = Column(BigInteger)
 
-
-class UsagiCogs(Base, ModelAdmin):
-    __tablename__ = "usagi_cogs"
-
-    id = Column(Integer, primary_key=True)
-    guild_id = Column(BigInteger)
-    module_name = Column(Text)
-    access = Column(Boolean)
+    @classmethod
+    async def delete(cls, guild_id, moder_role_id):
+        query = (
+            sqlalchemy_delete(cls)
+            .where(cls.guild_id == guild_id, cls.moder_role_id == moder_role_id)
+            .execution_options(synchronize_session="fetch")
+        )
+        async with async_session() as session:
+            async with session.begin():
+                await session.execute(query)
+                await session.commit()
 
 
 async def create_tables():

@@ -1,7 +1,8 @@
 import discord
 from discord.ext import commands
-from usagiBot.db.models import UsagiConfig, UsagiCogs
+from usagiBot.db.models import UsagiConfig, UsagiCogs, UsagiModerRoles
 from usagiBot.src.UsagiUtils import check_arg_in_command_tags
+from usagiBot.src.UsagiChecks import check_member_is_moder
 from typing import Union, List
 
 
@@ -28,14 +29,15 @@ class Moderation(commands.Cog):
     def __init__(self, bot):
         pass
 
-    @commands.slash_command(description="Set Up Command")
+    @commands.slash_command(name="set_up_command", description="Set up dettings for command")
     @discord.commands.option(
         name="command",
         description="Pick a command!",
         autocomplete=get_command_tags,
         required=True,
     )
-    async def set_up_command(
+    @check_member_is_moder()
+    async def add_config_for_command(
         self,
         ctx,
         command: str,
@@ -48,7 +50,7 @@ class Moderation(commands.Cog):
             )
             return
 
-        command_config_exist = await UsagiConfig.get_command_tag(guild_id=ctx.guild.id, command_tag=command)
+        command_config_exist = await UsagiConfig.get(guild_id=ctx.guild.id, command_tag=command)
         text_result = "Successfully configured channel for command"
         if command_config_exist:
             await UsagiConfig.update(
@@ -68,7 +70,7 @@ class Moderation(commands.Cog):
         await ctx.respond(content=text_result, ephemeral=True)
 
     @commands.slash_command(
-        name="delete_settings", description="Delete Settings For Command"
+        name="delete_settings", description="Delete settings for command"
     )
     @discord.commands.option(
         name="command",
@@ -88,7 +90,7 @@ class Moderation(commands.Cog):
             )
             return
 
-        await UsagiConfig.delete_command_tag(guild_id=ctx.guild.id, command_tag=command)
+        await UsagiConfig.delete(guild_id=ctx.guild.id, command_tag=command)
 
         await ctx.respond("Successfully deleted configure for command", ephemeral=True)
 
@@ -171,7 +173,7 @@ class Moderation(commands.Cog):
             )
             return
 
-        await UsagiCogs.delete_module_name(
+        await UsagiCogs.delete(
             guild_id=guild_id,
             module_name=module,
         )
@@ -182,6 +184,75 @@ class Moderation(commands.Cog):
 
         await ctx.respond(
             f"The `{module}` module has been disabled.", ephemeral=True
+        )
+        return
+
+    @commands.slash_command(name="add_moder_role", description="Add new moder role for guild")
+    @discord.commands.option(
+        name="member_role",
+        description="Pick a Role!",
+        required=True,
+    )
+    async def add_new_moder_role(
+            self,
+            ctx,
+            member_role: Union[discord.Role],
+    ) -> None:
+        guild_id = ctx.guild.id
+        moder_roles = ctx.bot.moder_roles
+        if (
+            guild_id in moder_roles and
+            member_role.id in moder_roles[guild_id]
+        ):
+            await ctx.respond("This role already added.", ephemeral=True)
+            return
+
+        await UsagiModerRoles.create(
+            guild_id=guild_id,
+            moder_role_id=member_role.id,
+        )
+        if guild_id in moder_roles:
+            moder_roles[guild_id].append(member_role.id)
+        else:
+            moder_roles[guild_id] = [member_role.id]
+
+        await ctx.respond(
+            f"The `{member_role}` role has been added.", ephemeral=True
+        )
+        return
+
+    @commands.slash_command(name="remove_moder_role", description="Remove moder role from guild")
+    @discord.commands.option(
+        name="member_role",
+        description="Pick a Role!",
+        required=True,
+    )
+    async def remove_moder_role(
+            self,
+            ctx,
+            member_role: Union[discord.Role],
+    ) -> None:
+        guild_id = ctx.guild.id
+        moder_roles = ctx.bot.moder_roles
+
+        if (
+            guild_id not in moder_roles or
+            (guild_id in moder_roles and member_role.id not in moder_roles[guild_id])
+        ):
+            await ctx.respond("This role isn't moderation.", ephemeral=True)
+            return
+
+        await UsagiModerRoles.delete(
+            guild_id=guild_id,
+            moder_role_id=member_role.id,
+        )
+
+        moder_roles[guild_id].remove(member_role.id)
+        if len(moder_roles[guild_id]) == 0:
+            del moder_roles[guild_id]
+
+        await ctx.respond(
+            f"The `{member_role}` role has been removed.", ephemeral=True
         )
         return
 

@@ -4,7 +4,7 @@ import discord
 from discord.ext.commands._types import Error
 
 from usagiBot.env import BOT_OWNER
-from usagiBot.db.models import UsagiConfig, UsagiCogs
+from usagiBot.db.models import UsagiConfig, UsagiCogs, UsagiModerRoles
 
 
 async def error_notification_to_owner(ctx: discord.ext.commands.Context, error: Error, app_command: bool = False):
@@ -61,7 +61,7 @@ async def check_command_tag_in_db(ctx: discord.ext.commands.Context, command_tag
     :param command_tag: Command name tag
     :return: Bool
     """
-    config = await UsagiConfig.get_command_tag(guild_id=ctx.guild.id, command_tag=command_tag)
+    config = await UsagiConfig.get(guild_id=ctx.guild.id, command_tag=command_tag)
     if config:
         return True
 
@@ -87,7 +87,7 @@ def check_arg_in_command_tags(
 async def init_cogs_settings() -> Dict:
     """
     Init and load cogs settings from db
-    :return:
+    :return: dict of settings
     """
     cogs_settings = {}
     copy_from_db = await UsagiCogs.get_all()
@@ -103,13 +103,20 @@ async def init_cogs_settings() -> Dict:
     return cogs_settings
 
 
-def check_cog_whitelist(cog, ctx):
-    guild_cogs_settings = ctx.bot.guild_cogs_settings
-    guild_id = ctx.guild.id
-    cog_name = cog.qualified_name
+async def init_moder_roles() -> Dict:
+    """
+    Init and load moders from db
+    :return: Dict of moders
+    """
+    moder_roles = {}
+    copy_from_db = await UsagiModerRoles.get_all()
+    for item in copy_from_db:
+        guild_id = item.guild_id
+        moder_role_id = item.moder_role_id
 
-    if guild_id in guild_cogs_settings and cog_name in guild_cogs_settings[guild_id]:
-        return guild_cogs_settings[guild_id][cog_name]
+        if guild_id in moder_roles.keys():
+            moder_roles[guild_id].append(moder_role_id)
+        else:
+            moder_roles[guild_id] = [moder_role_id]
 
-    return False
-
+    return moder_roles

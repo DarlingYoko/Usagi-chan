@@ -13,3 +13,10 @@ class UsagiModuleDisabled(CommandError):
 
     This inherits from :exc:`CommandError`
     """
+
+
+class UsagiCallFromNotModer(CommandError):
+    """Exception raised when the command was called not by Moder member
+
+    This inherits from :exc:`CommandError`
+    """

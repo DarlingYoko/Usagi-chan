@@ -5,9 +5,11 @@ from discord.ext import commands
 from usagiBot.src.UsagiUtils import (
     error_notification_to_owner,
     load_all_command_tags,
-    init_cogs_settings
+    init_cogs_settings,
+    init_moder_roles
 )
-from usagiBot.src.UsagiErrors import UsagiNotSetUpError, UsagiModuleDisabled
+from usagiBot.src.UsagiErrors import *
+from usagiBot.db.models import create_tables
 
 
 class Events(commands.Cog):
@@ -19,23 +21,28 @@ class Events(commands.Cog):
     async def on_ready(self):
         await load_all_command_tags(self.bot)
         self.bot.guild_cogs_settings = await init_cogs_settings()
+        self.bot.moder_roles = await init_moder_roles()
+        print(self.bot.moder_roles)
+        await create_tables()
         self.bot.logger.info("---------NEW SESSION----------")
         self.bot.logger.info(f"Logged in as {self.bot.user.name}")
         self.bot.logger.info(f"discord.py API version: {discord.__version__}")
         self.bot.logger.info(f"Python version: {platform.python_version()}")
         self.bot.logger.info(f"Running on: {platform.system()} {platform.release()} ({os.name})")
         self.bot.logger.info(f"Loaded command tags: {self.bot.command_tags}")
-        self.bot.logger.info(f"Connected to database ")
+        self.bot.logger.info(f"Connected to database.")
+        self.bot.logger.info(f"Settings loaded.")
+        self.bot.logger.info(f"Moder roles loaded.")
         self.bot.logger.info("-------------------")
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):
         if isinstance(error, commands.CommandNotFound):
-            await ctx.reply("Такой команды не существует.", delete_after=2 * 60)
+            await ctx.reply("This command doesn't exist.", delete_after=2 * 60)
         elif isinstance(error, commands.CommandOnCooldown):
             retry_after = float(error.retry_after)
             await ctx.reply(
-                f"Эту команду ты сможешь использовать через {retry_after:.0f}s",
+                f"You can use this command in {retry_after:.0f}s",
                 delete_after=2 * 60,
             )
         elif isinstance(error, UsagiNotSetUpError):
@@ -48,11 +55,15 @@ class Events(commands.Cog):
                 "This command is disabled. Contact the server administration.",
                 delete_after=2 * 60,
             )
+        elif isinstance(error, UsagiCallFromNotModer):
+            await ctx.reply(
+                "You don't have permissions to use this command.",
+                delete_after=2 * 60,
+            )
         elif isinstance(error, discord.errors.CheckFailure):
             await ctx.reply("Some requirements were not met.", delete_after=2 * 60)
         else:
             await error_notification_to_owner(ctx, error)
-
         if not isinstance(ctx.message.channel, discord.DMChannel):
             await ctx.message.delete(delay=2*60)
 
@@ -68,7 +79,17 @@ class Events(commands.Cog):
         elif isinstance(error, commands.CommandOnCooldown):
             retry_after = float(error.retry_after)
             await ctx.respond(
-                f"Эту команду ты сможешь использовать через {retry_after:.0f}s",
+                f"You can use this command in {retry_after:.0f}s",
+                ephemeral=True,
+            )
+        elif isinstance(error, UsagiModuleDisabled):
+            await ctx.respond(
+                "This command is disabled. Contact the server administration.",
+                ephemeral=True,
+            )
+        elif isinstance(error, UsagiCallFromNotModer):
+            await ctx.respond(
+                "You don't have permissions to use this command.",
                 ephemeral=True,
             )
         else:
