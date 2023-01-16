@@ -1,7 +1,5 @@
-from typing import Callable
-
 from discord.ext import commands
-from discord.ext.commands.core import T
+from discord import DMChannel, ApplicationContext
 
 from usagiBot.src.UsagiUtils import check_command_tag_in_db
 from usagiBot.src.UsagiErrors import UsagiNotSetUpError, UsagiCallFromNotModer
@@ -23,6 +21,13 @@ def check_is_already_set_up():
 
 
 def check_cog_whitelist(cog, ctx) -> bool:
+
+    if isinstance(ctx, ApplicationContext):
+        channel = ctx.channel
+    else:
+        channel = ctx.message.channel
+    if isinstance(channel, DMChannel):
+        return True
     guild_cogs_settings = ctx.bot.guild_cogs_settings
     guild_id = ctx.guild.id
     cog_name = cog.qualified_name
