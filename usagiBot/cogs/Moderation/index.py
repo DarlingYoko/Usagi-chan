@@ -29,6 +29,9 @@ class Moderation(commands.Cog):
     def __init__(self, bot):
         pass
 
+    def cog_check(self, ctx):
+        return check_member_is_moder(ctx)
+
     @commands.slash_command(name="set_up_command", description="Set up dettings for command")
     @discord.commands.option(
         name="command",
@@ -36,7 +39,6 @@ class Moderation(commands.Cog):
         autocomplete=get_command_tags,
         required=True,
     )
-    @check_member_is_moder()
     async def add_config_for_command(
         self,
         ctx,
@@ -255,6 +257,25 @@ class Moderation(commands.Cog):
             f"The `{member_role}` role has been removed.", ephemeral=True
         )
         return
+
+    @commands.slash_command(name="show_moder_roles", description="Show all moder roles from that guild")
+    async def remove_moder_role(
+            self,
+            ctx,
+    ) -> None:
+        guild_id = ctx.guild.id
+        moder_roles = ctx.bot.moder_roles
+        if guild_id not in moder_roles:
+            await ctx.respond("This guild doesn't have any Moderation roles", ephemeral=True)
+            return
+
+        result_text = "All moderation roles:\n"
+        counter = 1
+        for role_id in moder_roles[guild_id]:
+            result_text += f"{counter}. <@&{role_id}>\n"
+            counter += 1
+
+        await ctx.respond(result_text, ephemeral=True)
 
 
 def setup(bot):

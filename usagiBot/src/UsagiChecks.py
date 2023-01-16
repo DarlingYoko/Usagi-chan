@@ -33,21 +33,19 @@ def check_cog_whitelist(cog, ctx) -> bool:
     return False
 
 
-def check_member_is_moder() -> Callable[[T], T]:
-    async def predicate(ctx):
-        moder_roles = ctx.bot.moder_roles
-        guild_id = ctx.guild.id
-        member_roles = ctx.author.roles
+async def check_member_is_moder(ctx):
+    moder_roles = ctx.bot.moder_roles
+    guild_id = ctx.guild.id
+    member_roles = ctx.author.roles
 
-        if guild_id in moder_roles:
-            for role_id in moder_roles[guild_id]:
-                for member_role in member_roles:
-                    if role_id == member_role.id:
-                        return True
+    if guild_id in moder_roles:
+        for role_id in moder_roles[guild_id]:
+            for member_role in member_roles:
+                if role_id == member_role.id:
+                    return True
 
-        if ctx.author.id == 290166276796448768:
-            return True
+    if ctx.author.id == 290166276796448768:
+        return True
 
-        raise UsagiCallFromNotModer()
+    raise UsagiCallFromNotModer()
 
-    return commands.check(predicate)
