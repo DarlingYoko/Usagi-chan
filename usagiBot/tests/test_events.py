@@ -19,7 +19,7 @@ class TestEventsMethods(IsolatedAsyncioTestCase):
 
     async def test_command_not_found(self) -> None:
         await self.Events.on_command_error(self.ctx, commands.CommandNotFound())
-        self.ctx.reply.assert_called_with("Такой команды не существует.", delete_after=120)
+        self.ctx.reply.assert_called_with("This command doesn't exist.", delete_after=120)
 
     async def test_command_on_cooldown(self) -> None:
         error = commands.CommandOnCooldown(
@@ -28,7 +28,7 @@ class TestEventsMethods(IsolatedAsyncioTestCase):
             type=commands.BucketType.user
         )
         await self.Events.on_command_error(self.ctx, error)
-        self.ctx.reply.assert_called_with("Эту команду ты сможешь использовать через 60s", delete_after=120)
+        self.ctx.reply.assert_called_with("You can use this command in 60s", delete_after=120)
 
     async def test_on_command_error(self) -> None:
         user = mock.AsyncMock()
@@ -45,6 +45,7 @@ class TestEventsMethods(IsolatedAsyncioTestCase):
                              f"> **User** - test_author_mention\n" + \
                              f"> **Channel** - test_channel\n" + \
                              f"> **Error** - test_error\n" + \
+                             f"> **Error type** - <class 'str'>\n" + \
                              f"> **Message** - test_message\n" + \
                              f"> **Args** - test_args\n" + \
                              f"> **Kwargs** - test_kwargs\n"
