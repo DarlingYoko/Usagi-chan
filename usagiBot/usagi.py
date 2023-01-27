@@ -20,6 +20,7 @@ logging.basicConfig(format="%(asctime)s - %(message)s", level=logging.INFO)
 
 # Define variables
 bot.command_tags = []
+bot.wordle_games = {}
 
 # Define cogs
 for cog_name in os.listdir(COGS_DIR):

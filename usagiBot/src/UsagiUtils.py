@@ -1,10 +1,11 @@
+from datetime import datetime
 from typing import List, Dict
 
 import discord
 from discord.ext.commands._types import Error
 
 from usagiBot.env import BOT_OWNER
-from usagiBot.db.models import UsagiConfig, UsagiCogs, UsagiModerRoles
+from usagiBot.db.models import UsagiCogs, UsagiModerRoles
 
 
 async def error_notification_to_owner(ctx: discord.ext.commands.Context, error: Error, app_command: bool = False):
@@ -52,20 +53,6 @@ async def load_all_command_tags(bot: discord.ext.commands.Bot) -> None:
                 command_tags.append(choice)
 
     bot.command_tags = command_tags
-
-
-async def check_command_tag_in_db(ctx: discord.ext.commands.Context, command_tag: str) -> bool:
-    """
-    Check for the presence of the command tag in the database
-    :param ctx: discord Context
-    :param command_tag: Command name tag
-    :return: Bool
-    """
-    config = await UsagiConfig.get(guild_id=ctx.guild.id, command_tag=command_tag)
-    if config:
-        return True
-
-    return False
 
 
 def check_arg_in_command_tags(
@@ -120,3 +107,56 @@ async def init_moder_roles() -> Dict:
             moder_roles[guild_id] = [moder_role_id]
 
     return moder_roles
+
+
+def get_embed(
+    embed=None,
+    title="",
+    description="",
+    color=0xf08080,
+    url_image=None,
+    thumbnail=None,
+    footer=None,
+    author_name=None,
+    author_icon_URL=None,
+    fields=None,
+    timestamp=datetime.utcnow(),
+):
+    if not embed:
+        embed = discord.Embed()
+
+    embed.color = color
+
+    if title:
+        embed.title = title
+
+    if description:
+        embed.description = description
+
+    if url_image:
+        embed.set_image(url=url_image)
+
+    if thumbnail:
+        embed.set_thumbnail(url=thumbnail)
+
+    if footer:
+        embed.set_footer(text=footer[0], icon_url=footer[1])
+
+    if author_name:
+        embed.set_author(name=author_name)
+
+    if author_icon_URL:
+        embed.set_author(name=embed.author.name, icon_url=author_icon_URL)
+
+    if title:
+        embed.title = title
+
+    if timestamp:
+        embed.timestamp = timestamp
+
+    if fields:
+        embed.clear_fields()
+        for field in fields:
+            embed.add_field(name=field['name'], value=field['value'], inline=field['inline'])
+
+    return embed
