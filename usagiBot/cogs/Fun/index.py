@@ -5,7 +5,7 @@ from usagiBot.cogs.Fun.fun_utils import get_exchange_rate_data
 from discord.ext import commands
 from usagiBot.db.models import UsagiConfig
 from usagiBot.src.UsagiChecks import check_is_already_set_up, check_cog_whitelist
-from usagiBot.src.UsagiErrors import UsagiModuleDisabled
+from usagiBot.src.UsagiErrors import UsagiModuleDisabledError
 
 
 class Fun(commands.Cog):
@@ -15,7 +15,7 @@ class Fun(commands.Cog):
     def cog_check(self, ctx):
         if check_cog_whitelist(self, ctx):
             return True
-        raise UsagiModuleDisabled()
+        raise UsagiModuleDisabledError()
 
     # Default commands
     @commands.command(

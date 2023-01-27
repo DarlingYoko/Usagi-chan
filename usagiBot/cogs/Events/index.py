@@ -19,11 +19,10 @@ class Events(commands.Cog):
     # Define main events
     @commands.Cog.listener()
     async def on_ready(self):
+        await create_tables()
         await load_all_command_tags(self.bot)
         self.bot.guild_cogs_settings = await init_cogs_settings()
         self.bot.moder_roles = await init_moder_roles()
-        print(self.bot.moder_roles)
-        await create_tables()
         self.bot.logger.info("---------NEW SESSION----------")
         self.bot.logger.info(f"Logged in as {self.bot.user.name}")
         self.bot.logger.info(f"discord.py API version: {discord.__version__}")
@@ -50,14 +49,19 @@ class Events(commands.Cog):
                 "This command was not configured. Contact the server administration.",
                 delete_after=2 * 60,
             )
-        elif isinstance(error, UsagiModuleDisabled):
+        elif isinstance(error, UsagiModuleDisabledError):
             await ctx.reply(
                 "This command is disabled. Contact the server administration.",
                 delete_after=2 * 60,
             )
-        elif isinstance(error, UsagiCallFromNotModer):
+        elif isinstance(error, UsagiCallFromNotModerError):
             await ctx.reply(
                 "You don't have permissions to use this command.",
+                delete_after=2 * 60,
+            )
+        elif isinstance(error, UsagiCallFromWrongChannelError):
+            await ctx.reply(
+                f"This is the wrong channel to send this command\nTry this one: <#{error.channel_id}>",
                 delete_after=2 * 60,
             )
         elif isinstance(error, discord.errors.CheckFailure):
@@ -82,14 +86,19 @@ class Events(commands.Cog):
                 f"You can use this command in {retry_after:.0f}s",
                 ephemeral=True,
             )
-        elif isinstance(error, UsagiModuleDisabled):
+        elif isinstance(error, UsagiModuleDisabledError):
             await ctx.respond(
                 "This command is disabled. Contact the server administration.",
                 ephemeral=True,
             )
-        elif isinstance(error, UsagiCallFromNotModer):
+        elif isinstance(error, UsagiCallFromNotModerError):
             await ctx.respond(
                 "You don't have permissions to use this command.",
+                ephemeral=True,
+            )
+        elif isinstance(error, UsagiCallFromWrongChannelError):
+            await ctx.respond(
+                f"This is the wrong channel to send this command\nTry this one: <#{error.channel_id}>",
                 ephemeral=True,
             )
         else:

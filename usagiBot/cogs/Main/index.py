@@ -1,34 +1,83 @@
 import discord
 from discord.ext import commands
-from usagiBot.src.UsagiChecks import check_cog_whitelist
-from usagiBot.src.UsagiErrors import UsagiModuleDisabled
-from datetime import timedelta
+from unittest.mock import MagicMock
+
+from usagiBot.src.UsagiErrors import *
+from usagiBot.db.models import UsagiConfig
 
 
 class Main(commands.Cog):
     def __init__(self, bot):
         pass
 
-    def cog_check(self, ctx):
-        if check_cog_whitelist(self, ctx):
-            return True
-        raise UsagiModuleDisabled()
-
-    @commands.slash_command(name="sleep", description="Go to sleep for N hours")
-    @discord.commands.option(
-        name="hours",
-        description="Insert sleep hours!",
-        autocomplete=lambda x: range(2, 25, 2),
-        required=True,
-    )
-    async def go_sleep(
+    @commands.slash_command(name="help", description="Show help for commands")
+    async def help_command(
             self,
             ctx,
-            hours: int,
     ) -> None:
-        duration = timedelta(hours=hours)
-        await ctx.author.timeout_for(duration=duration, reason="Timeout for sleep")
-        await ctx.respond(f"Good night, see you in {hours} hours.", ephemeral=True)
+        types = {
+            discord.ext.commands.core.Command: "Default commands",
+            discord.commands.core.SlashCommand: "Slash commands",
+            discord.commands.core.MessageCommand: "Message commands",
+            discord.commands.core.UserCommand: "User commands",
+            discord.commands.SlashCommandGroup: "Slash command group"
+        }
+        skip_cogs = ["events"]
+        skip_commands = ["help"]
+        answer = ""
+
+        for cog_name, cog in ctx.bot.cogs.items():
+            if cog_name in skip_cogs:
+                continue
+            if cog:
+                try:
+                    cog.cog_check(ctx)
+                except UsagiModuleDisabledError:
+                    continue
+                answer += f"**{cog.qualified_name}**\n"
+                commands_dict = {}
+                for command in cog.get_commands():
+                    if command.name in skip_commands:
+                        continue
+                    command_dict = {
+                        "name": command.name,
+                        "set_up": True,
+                        "channel_id": None,
+                    }
+                    for check in command.checks:
+                        try:
+                            mock_ctx = MagicMock()
+                            mock_ctx.command = command
+                            mock_ctx.guild.id = ctx.guild.id
+                            response = await check(mock_ctx)
+
+                            if isinstance(response, UsagiConfig):
+                                command_dict["channel_id"] = response.generic_id
+
+                        except discord.errors.CheckFailure:
+                            pass
+                        except UsagiNotSetUpError:
+                            command_dict["set_up"] = False
+                        except UsagiCallFromWrongChannelError as e:
+                            command_dict["channel_id"] = e.channel_id
+
+                    if types[type(command)] in commands_dict.keys():
+                        commands_dict[types[type(command)]].append(command_dict)
+                    else:
+                        commands_dict[types[type(command)]] = [command_dict]
+                for item, value in commands_dict.items():
+                    answer += f"\t*{item}*\n"
+                    for command in value:
+                        answer += f"> \t\t{command['name']} "
+                        if not command["set_up"]:
+                            answer += "**-> command isn't configured**"
+                        if command["channel_id"]:
+                            answer += f"**-> <#{command['channel_id']}>**"
+                        answer += "\n"
+                    answer += "\n"
+                answer += "\n"
+
+        await ctx.respond(answer, ephemeral=True)
 
 
 def setup(bot):

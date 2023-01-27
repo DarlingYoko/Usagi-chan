@@ -1,8 +1,10 @@
 import discord
 from discord.ext import commands
+
 from usagiBot.db.models import UsagiConfig, UsagiCogs, UsagiModerRoles
 from usagiBot.src.UsagiUtils import check_arg_in_command_tags
 from usagiBot.src.UsagiChecks import check_member_is_moder
+
 from typing import Union, List
 
 
@@ -17,7 +19,7 @@ def get_bot_cogs(ctx: discord.AutocompleteContext) -> List:
     """
     Returns a list of command tags.
     """
-    no_access_cogs = ["Events", "Moderation"]
+    no_access_cogs = ["Events", "Moderation", "Main"]
     cogs = []
     for name in ctx.bot.cogs:
         if name not in no_access_cogs:
@@ -45,14 +47,14 @@ class Moderation(commands.Cog):
         command: str,
         channel: Union[discord.TextChannel, discord.VoiceChannel],
     ) -> None:
-
         if not check_arg_in_command_tags(command, ctx.bot.command_tags):
             await ctx.respond(
                 "This argument does not exist for commands.", ephemeral=True
             )
             return
-
+        print("UsagiConfig --", UsagiConfig)
         command_config_exist = await UsagiConfig.get(guild_id=ctx.guild.id, command_tag=command)
+        print(command_config_exist)
         text_result = "Successfully configured channel for command"
         if command_config_exist:
             await UsagiConfig.update(
@@ -213,7 +215,7 @@ class Moderation(commands.Cog):
             guild_id=guild_id,
             moder_role_id=member_role.id,
         )
-        if guild_id in moder_roles:
+        if moder_roles.get(guild_id) is not None:
             moder_roles[guild_id].append(member_role.id)
         else:
             moder_roles[guild_id] = [member_role.id]
@@ -238,8 +240,8 @@ class Moderation(commands.Cog):
         moder_roles = ctx.bot.moder_roles
 
         if (
-            guild_id not in moder_roles or
-            (guild_id in moder_roles and member_role.id not in moder_roles[guild_id])
+            moder_roles.get(guild_id) is None or
+            (moder_roles.get(guild_id) is not None and member_role.id not in moder_roles[guild_id])
         ):
             await ctx.respond("This role isn't moderation.", ephemeral=True)
             return
