@@ -1,4 +1,5 @@
 import discord
+from discord import SlashCommandGroup
 from discord.ext import commands
 
 from usagiBot.db.models import UsagiConfig, UsagiCogs, UsagiModerRoles
@@ -34,7 +35,27 @@ class Moderation(commands.Cog):
     def cog_check(self, ctx):
         return check_member_is_moder(ctx)
 
-    @commands.slash_command(name="set_up_command", description="Set up dettings for command")
+    setup = SlashCommandGroup(
+        name="setup",
+        description="Customize Usagi-chan perfectly for your server!",
+    )
+
+    command_setup = setup.create_subgroup(
+        name="command",
+        description="Set up all the commands that are needed on the guild!",
+    )
+
+    role_setup = setup.create_subgroup(
+        name="role",
+        description="Set up roles that are needed on the guild!",
+    )
+
+    module_setup = setup.create_subgroup(
+        name="module",
+        description="Set up modules that are needed on the guild!",
+    )
+
+    @command_setup.command(name="add", description="Add settings for command.")
     @discord.commands.option(
         name="command",
         description="Pick a command!",
@@ -52,10 +73,8 @@ class Moderation(commands.Cog):
                 "This argument does not exist for commands.", ephemeral=True
             )
             return
-        print("UsagiConfig --", UsagiConfig)
         command_config_exist = await UsagiConfig.get(guild_id=ctx.guild.id, command_tag=command)
-        print(command_config_exist)
-        text_result = "Successfully configured channel for command"
+        text_result = "Successfully configured channel for command."
         if command_config_exist:
             await UsagiConfig.update(
                 id=command_config_exist.id,
@@ -63,7 +82,7 @@ class Moderation(commands.Cog):
                 command_tag=command,
                 generic_id=channel.id
             )
-            text_result = "Successfully reconfigured channel for command"
+            text_result = "Successfully reconfigured channel for command."
         else:
             await UsagiConfig.create(
                 guild_id=ctx.guild.id,
@@ -73,9 +92,7 @@ class Moderation(commands.Cog):
 
         await ctx.respond(content=text_result, ephemeral=True)
 
-    @commands.slash_command(
-        name="delete_settings", description="Delete settings for command"
-    )
+    @command_setup.command(name="remove", description="Remove settings for command.")
     @discord.commands.option(
         name="command",
         description="Pick a command!",
@@ -90,16 +107,17 @@ class Moderation(commands.Cog):
 
         if not check_arg_in_command_tags(command, ctx.bot.command_tags):
             await ctx.respond(
-                "This argument does not exist for commands.", ephemeral=True
+                content="This argument does not exist for commands.",
+                ephemeral=True
             )
             return
 
         await UsagiConfig.delete(guild_id=ctx.guild.id, command_tag=command)
 
-        await ctx.respond("Successfully deleted configure for command", ephemeral=True)
+        await ctx.respond(content="Successfully deleted configure for command.", ephemeral=True)
 
-    @commands.slash_command(
-        name="enable_module", description="Enable module in bot"
+    @module_setup.command(
+        name="enable", description="Enable module in Usagi-chan."
     )
     @discord.commands.option(
         name="module",
@@ -117,7 +135,8 @@ class Moderation(commands.Cog):
 
         if module not in get_bot_cogs(ctx):
             await ctx.respond(
-                "This module is't available.", ephemeral=True
+                content="This module isn't available.",
+                ephemeral=True
             )
             return
 
@@ -126,7 +145,8 @@ class Moderation(commands.Cog):
             module in guild_cogs_settings[guild_id]
         ):
             await ctx.respond(
-                "This module already enabled.", ephemeral=True
+                content="This module already enabled.",
+                ephemeral=True
             )
             return
 
@@ -141,12 +161,13 @@ class Moderation(commands.Cog):
             guild_cogs_settings[guild_id] = {module: True}
 
         await ctx.respond(
-            f"The `{module}` module has been enabled.", ephemeral=True
+            content=f"The `{module}` module has been enabled.",
+            ephemeral=True
         )
         return
 
-    @commands.slash_command(
-        name="disable_module", description="Disable module in bot"
+    @module_setup.command(
+        name="disable", description="Disable module in Usagi-chan."
     )
     @discord.commands.option(
         name="module",
@@ -164,7 +185,8 @@ class Moderation(commands.Cog):
 
         if module not in get_bot_cogs(ctx):
             await ctx.respond(
-                "This module is't available.", ephemeral=True
+                content="This module isn't available.",
+                ephemeral=True
             )
             return
 
@@ -173,7 +195,8 @@ class Moderation(commands.Cog):
             (guild_id in guild_cogs_settings and module not in guild_cogs_settings[guild_id])
         ):
             await ctx.respond(
-                "This module isn't enabled.", ephemeral=True
+                content="This module isn't enabled.",
+                ephemeral=True
             )
             return
 
@@ -183,15 +206,16 @@ class Moderation(commands.Cog):
         )
 
         del guild_cogs_settings[guild_id][module]
-        if len(guild_cogs_settings) == 0:
+        if len(guild_cogs_settings[guild_id]) == 0:
             del guild_cogs_settings[guild_id]
 
         await ctx.respond(
-            f"The `{module}` module has been disabled.", ephemeral=True
+            content=f"The `{module}` module has been disabled.",
+            ephemeral=True
         )
         return
 
-    @commands.slash_command(name="add_moder_role", description="Add new moder role for guild")
+    @role_setup.command(name="add", description="Add new moder role for guild.")
     @discord.commands.option(
         name="member_role",
         description="Pick a Role!",
@@ -208,7 +232,7 @@ class Moderation(commands.Cog):
             guild_id in moder_roles and
             member_role.id in moder_roles[guild_id]
         ):
-            await ctx.respond("This role already added.", ephemeral=True)
+            await ctx.respond(content="This role already added.", ephemeral=True)
             return
 
         await UsagiModerRoles.create(
@@ -221,11 +245,12 @@ class Moderation(commands.Cog):
             moder_roles[guild_id] = [member_role.id]
 
         await ctx.respond(
-            f"The `{member_role}` role has been added.", ephemeral=True
+            content=f"The `{member_role.mention}` role has been added.",
+            ephemeral=True
         )
         return
 
-    @commands.slash_command(name="remove_moder_role", description="Remove moder role from guild")
+    @role_setup.command(name="remove", description="Remove moder role from guild.")
     @discord.commands.option(
         name="member_role",
         description="Pick a Role!",
@@ -243,7 +268,7 @@ class Moderation(commands.Cog):
             moder_roles.get(guild_id) is None or
             (moder_roles.get(guild_id) is not None and member_role.id not in moder_roles[guild_id])
         ):
-            await ctx.respond("This role isn't moderation.", ephemeral=True)
+            await ctx.respond(content="This role isn't moderation.", ephemeral=True)
             return
 
         await UsagiModerRoles.delete(
@@ -256,19 +281,20 @@ class Moderation(commands.Cog):
             del moder_roles[guild_id]
 
         await ctx.respond(
-            f"The `{member_role}` role has been removed.", ephemeral=True
+            content=f"The `{member_role.mention}` role has been removed.",
+            ephemeral=True
         )
         return
 
-    @commands.slash_command(name="show_moder_roles", description="Show all moder roles from that guild")
-    async def remove_moder_role(
+    @role_setup.command(name="show", description="Show all moder roles from that guild.")
+    async def show_moder_roles(
             self,
             ctx,
     ) -> None:
         guild_id = ctx.guild.id
         moder_roles = ctx.bot.moder_roles
         if guild_id not in moder_roles:
-            await ctx.respond("This guild doesn't have any Moderation roles", ephemeral=True)
+            await ctx.respond(content="This guild doesn't have any Moderation roles.", ephemeral=True)
             return
 
         result_text = "All moderation roles:\n"
@@ -277,7 +303,7 @@ class Moderation(commands.Cog):
             result_text += f"{counter}. <@&{role_id}>\n"
             counter += 1
 
-        await ctx.respond(result_text, ephemeral=True)
+        await ctx.respond(content=result_text, ephemeral=True)
 
 
 def setup(bot):
