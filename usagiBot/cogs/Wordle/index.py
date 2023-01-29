@@ -17,7 +17,7 @@ class Wordle(commands.Cog):
         raise UsagiModuleDisabledError()
 
     wordle_game = SlashCommandGroup(
-        name="create_wordle_game",
+        name="wordle_game",
         description="Create new Wordle game!",
         checks=[
             check_correct_channel_command().predicate

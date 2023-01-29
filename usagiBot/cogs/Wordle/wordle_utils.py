@@ -1,16 +1,13 @@
 import discord
 import random
 
-import requests
-from discord.ui import Item
 from easy_pil import Editor
 from PIL import Image, ImageFont
 from discord import File
 
 from usagiBot.env import BOT_ID
-from usagiBot.db.models import UsagiWordleGames
+from usagiBot.db.models import UsagiWordleGames, UsagiWordleResults
 from usagiBot.src.UsagiUtils import get_embed
-from usagiBot.db.models import UsagiWordleResults
 
 
 class WordleAnswer(discord.ui.Modal):
@@ -63,15 +60,18 @@ class WordleAnswer(discord.ui.Modal):
                 green_letters.append(answer[i])
                 letter_blocks.append("green_block")
             elif answer[i] in self.game.word:
-                yellow_letters.append(answer[i])
-                letter_blocks.append("yellow_block")
+                if self.game.word.count(answer[i]) == answer.count(answer[i]):
+                    yellow_letters.append(answer[i])
+                    letter_blocks.append("yellow_block")
+                else:
+                    letter_blocks.append("black_block")
             else:
                 black_letters.append(answer[i])
                 letter_blocks.append("black_block")
 
-        self.game.green_letters = list(set(self.game.green_letters + green_letters))
-        self.game.yellow_letters = list(set(self.game.yellow_letters + yellow_letters))
-        self.game.black_letters = list(set(self.game.black_letters + black_letters))
+        self.game.green_letters = self.game.green_letters + green_letters
+        self.game.yellow_letters = self.game.yellow_letters + yellow_letters
+        self.game.black_letters = self.game.black_letters + black_letters
 
         wordle_image = create_full_wordle_pic(
             word=answer,
@@ -117,12 +117,12 @@ class WordleAnswer(discord.ui.Modal):
 class WordleGame(discord.ui.View):
     def __init__(
             self,
-            embed,
-            word,
-            owner_id,
-            word_language,
-            lives_count,
-            game_id,
+            embed: discord.Embed,
+            word: str,
+            owner_id: int,
+            word_language: str,
+            lives_count: int,
+            game_id: int,
             timeout: int,
     ):
         super().__init__(timeout=timeout)
@@ -215,19 +215,23 @@ You have only [0;36m{lives_count}[0m tries and it's time to spend it![0m
     )
 
     await thread.add_user(ctx.author)
-    await thread.send(
-        embed=embed,
-        file=wordle_image,
-        view=WordleGame(
+    try:
+        await thread.send(
             embed=embed,
-            word=word,
-            owner_id=owner_id,
-            word_language=word_language,
-            lives_count=lives_count,
-            game_id=last_id,
-            timeout=60 * 60,
+            file=wordle_image,
+            view=WordleGame(
+                embed=embed,
+                word=word,
+                owner_id=owner_id,
+                word_language=word_language,
+                lives_count=lives_count,
+                game_id=last_id,
+                timeout=60 * 60,
+            )
         )
-    )
+    except discord.ApplicationCommandInvokeError as e:
+        ctx.bot.logger.INFO(e)
+
     await ctx.respond(f"Your game was created -> {thread.mention}", ephemeral=True)
 
     await UsagiWordleGames.create(
@@ -432,7 +436,7 @@ async def create_finish_game_embed(
     game_author = await interaction.guild.fetch_member(game_author_id)
     if result == "win":
         winner = interaction.user.name
-        discriminator = f"#{interaction.user.discriminator}"
+        discriminator = interaction.user.discriminator
     else:
         winner = "No one"
         discriminator = ""
