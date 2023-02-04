@@ -4,34 +4,19 @@ from unittest import mock
 from unittest import IsolatedAsyncioTestCase
 from sqlalchemy.ext import asyncio
 
-os.environ["DISCORD_TOKEN"] = "test_DISCORD_TOKEN"
-os.environ["DISCORD_TEST_TOKEN"] = "test_DISCORD_TEST_TOKEN"
 os.environ["BOT_OWNER"] = "11111"
 os.environ["BOT_ID"] = "1234567890"
-os.environ["COGS_DIR"] = "test_COGS_DIR"
-os.environ["DATABASE_NAME"] = "test_DATABASE_NAME"
-os.environ["DATABASE_USER"] = "test_DATABASE_USER"
-os.environ["DATABASE_PASS"] = "test_DATABASE_PASS"
-os.environ["DATABASE_HOST"] = "test_DATABASE_HOST"
-os.environ["DATABASE_PORT"] = "test_DATABASE_PORT"
 
 
 class TestWordleMethods(IsolatedAsyncioTestCase):
 
-    @classmethod
-    @mock.patch("usagiBot.db.models.UsagiConfig", new_callable=mock.AsyncMock)
-    @mock.patch("usagiBot.db.models.UsagiCogs", new_callable=mock.AsyncMock)
-    @mock.patch("usagiBot.db.models.UsagiModerRoles", new_callable=mock.AsyncMock)
     @mock.patch.object(asyncio, "create_async_engine")
-    def setUpClass(cls, mock_engine, mock_UsagiModerRoles, mock_UsagiCogs, mock_UsagiConfig) -> None:
+    def setUp(self, mock_engine) -> None:
 
-        from usagiBot.src import UsagiUtils
-        cls.UsagiUtils = UsagiUtils
-
-        cls.bot = mock.AsyncMock()
+        self.bot = mock.AsyncMock()
 
         import usagiBot.cogs.Wordle.wordle_utils as wordle_utils
-        cls.wordle_utils = wordle_utils
+        self.wordle_utils = wordle_utils
 
     def test_check_word_for_reality_in_dict(self):
         self.assertTrue(self.wordle_utils.check_word_for_reality("папка"))
@@ -42,7 +27,7 @@ class TestWordleMethods(IsolatedAsyncioTestCase):
     @mock.patch("random.randint")
     def test_get_word(self, mock_randint):
         mock_randint.return_value = 0
-        self.assertEqual(self.wordle_utils.get_word(length=5), "АББАТ")
+        self.assertEqual(self.wordle_utils.get_word(length=5), "АБЗАЦ")
 
     async def test_create_finish_game_embed(self) -> None:
         game_author = mock.MagicMock()

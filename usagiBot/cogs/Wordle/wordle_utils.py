@@ -293,8 +293,10 @@ def create_pic_for_answer(word: str, blocks: list[str]) -> Editor:
 
     for i in range(len(blocks)):
         background.paste(color_blocks[blocks[i]], (173 * i, 0))
-        if word[i] in ["Й", "Ё"]:
-            background.text((173 * i + 30, 20), word[i], font=font, color="#fff")
+        if word[i] in "ЙЁ":
+            background.text((173 * i + 30, 15), word[i], font=font, color="#fff")
+        elif word[i] in "ШЖЩ":
+            background.text((173 * i + 15, 30), word[i], font=font, color="#fff")
         else:
             background.text((173 * i + 30, 30), word[i], font=font, color="#fff")
 
@@ -354,11 +356,14 @@ def create_pic_for_keyboard(
                     position=(113 * place_counter + shift * layer_counter_place[layer_counter], 118 * layer_counter)
                 )
             up = 30
-            if letter in ["Й", "Ё"]:
-                up = 20
+            left = 25
+            if letter in "ЙЁ":
+                up = 15
+            if letter in "ШЖЩ":
+                left = 20
             blank.text(
                 position=(
-                    113 * place_counter + 25 + shift * layer_counter_place[layer_counter], 118 * layer_counter + up
+                    113 * place_counter + left + shift * layer_counter_place[layer_counter], 118 * layer_counter + up
                 ),
                 text=letter,
                 font=font,
