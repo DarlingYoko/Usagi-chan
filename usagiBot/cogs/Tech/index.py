@@ -16,8 +16,8 @@ class Tech(commands.Cog):
         raise UsagiModuleDisabledError()
 
     @commands.message_command(name="Pin message")
-    async def get_message_id(self, ctx, message: discord.Message) -> None:
-        await message.pin(reason=f"Pinned by {ctx.author}")
+    async def pin_message(self, ctx, message: discord.Message) -> None:
+        await message.pin(reason=f"Pinned by {ctx.author.name}")
         await ctx.respond(f"Message was pinned", ephemeral=True)
 
     @commands.slash_command(name="sleep", description="Go to sleep for N hours")
@@ -32,6 +32,9 @@ class Tech(commands.Cog):
             ctx,
             hours: int,
     ) -> None:
+        if not (2 <= hours <= 24):
+            await ctx.respond("You entered the wrong amount of time.", ephemeral=True)
+            return
         duration = timedelta(hours=hours)
         await ctx.author.timeout_for(duration=duration, reason="Timeout for sleep")
         await ctx.respond(f"Good night, see you in {hours} hours.", ephemeral=True)
