@@ -61,10 +61,11 @@ class Main(commands.Cog):
                         except UsagiCallFromWrongChannelError as e:
                             command_dict["channel_id"] = e.channel_id
 
-                    if types[type(command)] in commands_dict.keys():
-                        commands_dict[types[type(command)]].append(command_dict)
+                    command_type = types.get(type(command))
+                    if command_type in commands_dict.keys():
+                        commands_dict[command_type].append(command_dict)
                     else:
-                        commands_dict[types[type(command)]] = [command_dict]
+                        commands_dict[command_type] = [command_dict]
                 for item, value in commands_dict.items():
                     answer += f"\t*{item}*\n"
                     for command in value:
@@ -76,8 +77,7 @@ class Main(commands.Cog):
                         answer += "\n"
                     answer += "\n"
                 answer += "\n"
-
-        await ctx.respond(answer, ephemeral=True)
+        await ctx.respond(content=answer, ephemeral=True)
 
 
 def setup(bot):
