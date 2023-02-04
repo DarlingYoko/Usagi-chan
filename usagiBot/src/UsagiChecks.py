@@ -1,5 +1,3 @@
-import discord
-
 from discord.ext import commands
 from discord import DMChannel, ApplicationContext
 
@@ -15,12 +13,11 @@ def check_is_already_set_up():
         command_tag = command.__original_kwargs__.get("command_tag")
         if not command_tag:
             raise UsagiNotSetUpError()
-
         config = await UsagiConfig.get(guild_id=ctx.guild.id, command_tag=command_tag)
-        if config:
-            return config
+        if not config:
+            raise UsagiNotSetUpError()
 
-        raise UsagiNotSetUpError()
+        return config
 
     return commands.check(predicate)
 
@@ -28,7 +25,7 @@ def check_is_already_set_up():
 def check_correct_channel_command():
     async def predicate(ctx):
         config = await check_is_already_set_up().predicate(ctx)
-        if config.generic_id == ctx.channel.id:
+        if config and config.generic_id == ctx.channel.id:
             return True
 
         raise UsagiCallFromWrongChannelError(
@@ -51,7 +48,7 @@ def check_cog_whitelist(cog, ctx) -> bool:
     cog_name = cog.qualified_name
 
     if guild_id in guild_cogs_settings and cog_name in guild_cogs_settings[guild_id]:
-        return guild_cogs_settings[guild_id][cog_name]
+        return True
 
     return False
 
@@ -61,11 +58,10 @@ def check_member_is_moder(ctx):
     guild_id = ctx.guild.id
     member_roles = ctx.author.roles
 
-    if guild_id in moder_roles:
-        for role_id in moder_roles[guild_id]:
-            for member_role in member_roles:
-                if role_id == member_role.id:
-                    return True
+    guild_moder_role_ids = moder_roles.get(guild_id, [])
+    member_role_ids = list(map(lambda x: x.id, member_roles))
+    if set(member_role_ids) & set(guild_moder_role_ids):
+        return True
 
     if ctx.author.guild_permissions.administrator:
         return True

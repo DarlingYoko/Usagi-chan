@@ -5,10 +5,8 @@ from discord.ext import commands
 
 
 class TestEventsMethods(IsolatedAsyncioTestCase):
-
-    @mock.patch("usagiBot.db.models.UsagiConfig")
     @mock.patch.object(asyncio, "create_async_engine")
-    def setUp(self, mock_engine, mock_UsagiConfig) -> None:
+    def setUp(self, mock_engine) -> None:
         self.ctx = mock.AsyncMock()
         self.bot = mock.AsyncMock()
 
@@ -40,14 +38,17 @@ class TestEventsMethods(IsolatedAsyncioTestCase):
         self.ctx.args = "test_args"
         self.ctx.kwargs = "test_kwargs"
 
+        self.error = mock.MagicMock()
+        self.error.message = "test_error_message"
+
         test_error_message = "**NEW ERROR OCCURRED**\n" + \
                              f"> **Command** - test_command_name\n" + \
                              f"> **User** - test_author_mention\n" + \
                              f"> **Channel** - test_channel\n" + \
-                             f"> **Error** - test_error\n" + \
-                             f"> **Error type** - <class 'str'>\n" + \
+                             f"> **Error** - test_error_message\n" + \
+                             f"> **Error type** - {type(self.error)}\n" + \
                              f"> **Message** - test_message\n" + \
                              f"> **Args** - test_args\n" + \
                              f"> **Kwargs** - test_kwargs\n"
-        await self.Events.on_command_error(self.ctx, "test_error")
+        await self.Events.on_command_error(self.ctx, self.error)
         user.send.assert_called_with(test_error_message)

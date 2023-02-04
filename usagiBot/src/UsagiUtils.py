@@ -22,7 +22,7 @@ async def error_notification_to_owner(ctx: discord.ext.commands.Context, error: 
             + f"> **Command** - {ctx.command.name}\n"
             + f"> **User** - {ctx.author.mention}\n"
             + f"> **Channel** - {ctx.channel.id}\n"
-            + f"> **Error** - {error}\n"
+            + f"> **Error** - {error.message}\n"
             + f"> **Error type** - {type(error)}\n"
     )
 
@@ -65,10 +65,7 @@ def check_arg_in_command_tags(
     :param tags: all command tags
     :return: bool
     """
-    for tag in tags:
-        if arg == tag.value:
-            return True
-    return False
+    return bool(list(filter(lambda tag: arg == tag.value, tags)))
 
 
 async def init_cogs_settings() -> Dict:
@@ -100,7 +97,6 @@ async def init_moder_roles() -> Dict:
     for item in copy_from_db:
         guild_id = item.guild_id
         moder_role_id = item.moder_role_id
-
         if guild_id in moder_roles.keys():
             moder_roles[guild_id].append(moder_role_id)
         else:
