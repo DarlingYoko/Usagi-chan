@@ -20,9 +20,8 @@ class TestModerationMethods(IsolatedAsyncioTestCase):
         cls.mock_UsagiCogs = mock_UsagiCogs
         cls.mock_UsagiModerRoles = mock_UsagiModerRoles
 
-        from usagiBot.src import UsagiUtils
-        cls.UsagiUtils = UsagiUtils
-        cls.UsagiUtils.check_arg_in_command_tags = mock.MagicMock()
+        cls.patcher = mock.patch("usagiBot.src.UsagiUtils.check_arg_in_command_tags", new=mock.MagicMock())
+        cls.check_arg_in_command_tags = cls.patcher.start()
 
         from usagiBot.cogs.Moderation.index import Moderation
         cls.Moderation = Moderation(cls.bot)
@@ -35,8 +34,12 @@ class TestModerationMethods(IsolatedAsyncioTestCase):
         cls.moder_role.id = "test_moder_role_id"
         cls.moder_role.mention = "test_moder_role_mention"
 
+    @classmethod
+    def tearDownClass(cls):
+        cls.patcher.stop()
+
     async def test_set_up_command_create(self) -> None:
-        self.UsagiUtils.check_arg_in_command_tags.return_value = True
+        self.check_arg_in_command_tags.return_value = True
         self.mock_UsagiConfig.get = mock.AsyncMock()
         self.mock_UsagiConfig.get.return_value = False
 
@@ -50,7 +53,7 @@ class TestModerationMethods(IsolatedAsyncioTestCase):
         self.ctx.respond.assert_called_with(content="Successfully configured channel for command.", ephemeral=True)
 
     async def test_set_up_command_update(self) -> None:
-        self.UsagiUtils.check_arg_in_command_tags.return_value = True
+        self.check_arg_in_command_tags.return_value = True
 
         config = mock.MagicMock()
         config.id = "test_id"
@@ -67,14 +70,14 @@ class TestModerationMethods(IsolatedAsyncioTestCase):
         self.ctx.respond.assert_called_with(content="Successfully reconfigured channel for command.", ephemeral=True)
 
     async def test_delete_config_for_command(self) -> None:
-        self.UsagiUtils.check_arg_in_command_tags.return_value = True
+        self.check_arg_in_command_tags.return_value = True
 
         await self.Moderation.delete_config_for_command(self.ctx, self.test_command)
         self.mock_UsagiConfig.delete.assert_called_with(guild_id=self.ctx.guild.id, command_tag=self.test_command)
         self.ctx.respond.assert_called_with(content="Successfully deleted configure for command.", ephemeral=True)
 
     async def test_delete_config_for_command_not_in_tags(self) -> None:
-        self.UsagiUtils.check_arg_in_command_tags.return_value = False
+        self.check_arg_in_command_tags.return_value = False
 
         await self.Moderation.delete_config_for_command(self.ctx, self.test_command)
         self.ctx.respond.assert_called_with(content="This argument does not exist for commands.", ephemeral=True)
