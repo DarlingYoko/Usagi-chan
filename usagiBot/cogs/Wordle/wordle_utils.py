@@ -60,7 +60,7 @@ class WordleAnswer(discord.ui.Modal):
                 green_letters.append(answer[i])
                 letter_blocks.append("green_block")
             elif answer[i] in self.game.word:
-                if self.game.word.count(answer[i]) == answer.count(answer[i]):
+                if yellow_letters.count(answer[i]) < self.game.word.count(answer[i]):
                     yellow_letters.append(answer[i])
                     letter_blocks.append("yellow_block")
                 else:
