@@ -216,7 +216,7 @@ You have only [0;36m{lives_count}[0m tries and it's time to spend it![0m
 
     await thread.add_user(ctx.author)
     try:
-        await thread.send(
+        message = await thread.send(
             embed=embed,
             file=wordle_image,
             view=WordleGame(
@@ -229,6 +229,7 @@ You have only [0;36m{lives_count}[0m tries and it's time to spend it![0m
                 timeout=60 * 60,
             )
         )
+        await message.pin(reason="Pin new game")
     except discord.ApplicationCommandInvokeError as e:
         ctx.bot.logger.INFO(e)
 
