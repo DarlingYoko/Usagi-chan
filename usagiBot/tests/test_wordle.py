@@ -84,7 +84,7 @@ Created by test_game_author#test_game_author_discriminator[0m[2;32m[4;32m[4;
     async def test_WordleAnswer_continue_play(self, mock_create_full_wordle_pic, mock_end_game) -> None:
         wordle_game = self.wordle_utils.WordleGame(
             embed=mock.MagicMock(),
-            word="ЗАКАЛ",
+            word="ВЬЮГА",
             owner_id=1111,
             word_language="russian",
             lives_count=10,
@@ -96,22 +96,19 @@ Created by test_game_author#test_game_author_discriminator[0m[2;32m[4;32m[4;
                 label="Answer",
                 max_length=len(wordle_game.word),
                 min_length=len(wordle_game.word),
-                value="аюфкй"
+                value="ванга"
             )]
         interaction = mock.AsyncMock()
         await wordle_answer.callback(interaction)
 
-        mock_create_full_wordle_pic.assert_called_with(
-            word="АЮФКЙ",
-            lang="russian",
-            lives_count=9,
-            game_id=123,
-            blocks=["yellow_block", "black_block", "black_block", "yellow_block", "black_block"],
-            green_letters=[],
-            yellow_letters=["А", "К"],
-            black_letters=["Ю", "Ф", "Й"],
-            prev_pic=None,
-        )
+        letter_blocks = ["green_block", "black_block", "black_block", "green_block", "green_block"]
+        green_letters = ["В", "А", "Г"]
+        yellow_letters = []
+        black_letters = ["А", "Н"]
+        self.assertListEqual(letter_blocks, wordle_answer.letter_blocks)
+        self.assertSetEqual(set(green_letters), set(wordle_game.green_letters))
+        self.assertSetEqual(set(yellow_letters), set(wordle_game.yellow_letters))
+        self.assertSetEqual(set(black_letters), set(wordle_game.black_letters))
         mock_end_game.assert_not_called()
 
     async def test_WordleAnswer_fake_word(self) -> None:

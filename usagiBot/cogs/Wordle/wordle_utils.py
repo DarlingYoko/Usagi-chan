@@ -1,3 +1,5 @@
+from more_itertools import locate
+
 import discord
 import random
 
@@ -13,6 +15,7 @@ from usagiBot.src.UsagiUtils import get_embed
 class WordleAnswer(discord.ui.Modal):
     def __init__(self, game, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
+        self.letter_blocks = None
         self.add_item(
             discord.ui.InputText(
                 label="Answer",
@@ -49,36 +52,42 @@ class WordleAnswer(discord.ui.Modal):
                 )
                 return
 
-        green_letters = []
-        yellow_letters = []
-        black_letters = []
-        letter_blocks = []
+        self.letter_blocks = [""] * len(self.game.word)
         self.game.lives_count -= 1
 
-        for i in range(len(answer)):
-            if answer[i] == self.game.word[i]:
-                green_letters.append(answer[i])
-                letter_blocks.append("green_block")
-            elif answer[i] in self.game.word:
-                if yellow_letters.count(answer[i]) < self.game.word.count(answer[i]):
-                    yellow_letters.append(answer[i])
-                    letter_blocks.append("yellow_block")
-                else:
-                    letter_blocks.append("black_block")
-            else:
-                black_letters.append(answer[i])
-                letter_blocks.append("black_block")
+        for letter in list(set(answer)):
+            correct_indices = set(locate(self.game.word, lambda x: x == letter))
+            guessed_indices = set(locate(answer, lambda x: x == letter))
+            guessed_letters = correct_indices & guessed_indices
+            difference_letters = guessed_indices - correct_indices
 
-        self.game.green_letters = self.game.green_letters + green_letters
-        self.game.yellow_letters = self.game.yellow_letters + yellow_letters
-        self.game.black_letters = self.game.black_letters + black_letters
+            new_green_indices = list(guessed_letters)
+            new_yellow_indices = list(difference_letters)[:len(correct_indices) - len(new_green_indices)]
+            new_black_indices = list(difference_letters - set(new_yellow_indices))
+
+            new_green_letters = list(map(lambda x: answer[x], new_green_indices))
+            new_yellow_letters = list(map(lambda x: answer[x], new_yellow_indices))
+            new_black_letters = list(map(lambda x: answer[x], new_black_indices))
+
+            for i in new_green_indices:
+                self.letter_blocks[i] = "green_block"
+
+            for i in new_yellow_indices:
+                self.letter_blocks[i] = "yellow_block"
+
+            for i in new_black_indices:
+                self.letter_blocks[i] = "black_block"
+
+            self.game.green_letters = self.game.green_letters + new_green_letters
+            self.game.yellow_letters = self.game.yellow_letters + new_yellow_letters
+            self.game.black_letters = self.game.black_letters + new_black_letters
 
         wordle_image = create_full_wordle_pic(
             word=answer,
             lang=self.game.word_language,
             lives_count=self.game.lives_count,
             game_id=self.game.game_id,
-            blocks=letter_blocks,
+            blocks=self.letter_blocks,
             green_letters=self.game.green_letters,
             yellow_letters=self.game.yellow_letters,
             black_letters=self.game.black_letters,
@@ -296,7 +305,7 @@ def create_pic_for_answer(word: str, blocks: list[str]) -> Editor:
         background.paste(color_blocks[blocks[i]], (173 * i, 0))
         if word[i] in "ЙЁ":
             background.text((173 * i + 30, 15), word[i], font=font, color="#fff")
-        elif word[i] in "ШЖЩ":
+        elif word[i] in "ШЖЩФЫ":
             background.text((173 * i + 15, 30), word[i], font=font, color="#fff")
         else:
             background.text((173 * i + 30, 30), word[i], font=font, color="#fff")
@@ -360,7 +369,7 @@ def create_pic_for_keyboard(
             left = 25
             if letter in "ЙЁ":
                 up = 15
-            if letter in "ШЖЩ":
+            if letter in "ШЖЩФЫ":
                 left = 20
             blank.text(
                 position=(

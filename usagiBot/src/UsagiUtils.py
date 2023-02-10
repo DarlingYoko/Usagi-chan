@@ -22,7 +22,7 @@ async def error_notification_to_owner(ctx: discord.ext.commands.Context, error: 
             + f"> **Command** - {ctx.command.name}\n"
             + f"> **User** - {ctx.author.mention}\n"
             + f"> **Channel** - {ctx.channel.id}\n"
-            + f"> **Error** - {error.message}\n"
+            + f"> **Error** - {error}\n"
             + f"> **Error type** - {type(error)}\n"
     )
 
