@@ -2,6 +2,8 @@ import discord
 import platform
 import os
 from discord.ext import commands
+from discord.ext.commands import BadColourArgument
+
 from usagiBot.src.UsagiUtils import (
     error_notification_to_owner,
     load_all_command_tags,
@@ -64,6 +66,11 @@ class Events(commands.Cog):
                 f"This is the wrong channel to send this command\nTry this one: <#{error.channel_id}>",
                 delete_after=2 * 60,
             )
+        elif isinstance(error, BadColourArgument):
+            await ctx.reply(
+                "Your color is in wrong format!",
+                delete_after=2 * 60,
+            )
         elif isinstance(error, discord.errors.CheckFailure):
             await ctx.reply("Some requirements were not met.", delete_after=2 * 60)
         else:
@@ -99,6 +106,11 @@ class Events(commands.Cog):
         elif isinstance(error, UsagiCallFromWrongChannelError):
             await ctx.respond(
                 f"This is the wrong channel to send this command\nTry this one: <#{error.channel_id}>",
+                ephemeral=True,
+            )
+        elif isinstance(error, BadColourArgument):
+            await ctx.respond(
+                "Your color is in wrong format!",
                 ephemeral=True,
             )
         else:

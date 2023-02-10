@@ -44,6 +44,17 @@ class ModelAdmin:
                 config = results.scalars().first()
                 return config
 
+    @classmethod
+    async def get(cls, guild_id, user_id):
+        query = select(cls).where(
+            cls.guild_id == guild_id, cls.user_id == user_id
+        )
+        async with async_session() as session:
+            async with session.begin():
+                results = await session.execute(query)
+                config = results.scalars().first()
+                return config
+
 
 class UsagiConfig(Base, ModelAdmin):
     __tablename__ = "usagi_config"
@@ -147,16 +158,40 @@ class UsagiWordleResults(Base, ModelAdmin):
     points = Column(BigInteger)
     count_of_games = Column(BigInteger)
 
+
+class UsagiUnicRoles(Base, ModelAdmin):
+    __tablename__ = "usagi_unic_roles"
+    id = Column(Integer, primary_key=True)
+    guild_id = Column(BigInteger)
+    user_id = Column(BigInteger)
+    role_id = Column(BigInteger)
+
     @classmethod
-    async def get(cls, guild_id, user_id):
+    async def get_all_role_ids_by_user(cls, guild_id, user_id):
         query = select(cls).where(
             cls.guild_id == guild_id, cls.user_id == user_id
         )
         async with async_session() as session:
             async with session.begin():
                 results = await session.execute(query)
-                config = results.scalars().first()
+                config = results.scalars().all()
                 return config
+
+    @classmethod
+    async def delete(cls, guild_id, user_id, role_id):
+        query = (
+            sqlalchemy_delete(cls)
+            .where(
+                cls.guild_id == guild_id,
+                cls.user_id == user_id,
+                cls.role_id == role_id
+            )
+            .execution_options(synchronize_session="fetch")
+        )
+        async with async_session() as session:
+            async with session.begin():
+                await session.execute(query)
+                await session.commit()
 
 
 async def create_tables():
