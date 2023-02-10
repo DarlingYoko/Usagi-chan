@@ -39,7 +39,7 @@ class TestEventsMethods(IsolatedAsyncioTestCase):
         self.ctx.kwargs = "test_kwargs"
 
         self.error = mock.MagicMock()
-        self.error.message = "test_error_message"
+        self.error.__str__.return_value = 'test_error_message'
 
         test_error_message = "**NEW ERROR OCCURRED**\n" + \
                              f"> **Command** - test_command_name\n" + \

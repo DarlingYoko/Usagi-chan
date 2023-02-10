@@ -41,7 +41,7 @@ class TestUtilsMethods(IsolatedAsyncioTestCase):
         self.message = mock.AsyncMock()
 
         self.error = mock.MagicMock()
-        self.error.message = "test_error_message"
+        self.error.__str__.return_value = 'test_error_message'
         self.user = mock.AsyncMock()
         self.ctx.command.name = "test_command_name"
         self.ctx.author.mention = "test_author_mention"
