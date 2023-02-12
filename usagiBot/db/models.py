@@ -1,11 +1,20 @@
 from usagiBot.db.base import Base, async_session, engine
-from sqlalchemy import Text, BigInteger, Boolean, Column, Integer
+from sqlalchemy import Text, BigInteger, Boolean, Column, Integer, DateTime, and_
 from sqlalchemy import update as sqlalchemy_update
 from sqlalchemy import delete as sqlalchemy_delete
 from sqlalchemy.future import select
 
 
 class ModelAdmin:
+
+    @classmethod
+    def generate_conditions(cls, kwargs):
+        conditions = [
+            getattr(cls, attr) == kwargs.get(attr)
+            for attr in kwargs.keys()
+        ]
+        return conditions
+
     @classmethod
     async def create(cls, **kwargs):
         async with async_session() as session:
@@ -27,6 +36,39 @@ class ModelAdmin:
                 await session.commit()
 
     @classmethod
+    async def delete(cls, **kwargs):
+        conditions = cls.generate_conditions(kwargs)
+        query = (
+            sqlalchemy_delete(cls)
+            .where(and_(*conditions))
+            .execution_options(synchronize_session="fetch")
+        )
+        async with async_session() as session:
+            async with session.begin():
+                await session.execute(query)
+                await session.commit()
+
+    @classmethod
+    async def get(cls, **kwargs):
+        conditions = cls.generate_conditions(kwargs)
+        query = select(cls).where(and_(*conditions))
+        async with async_session() as session:
+            async with session.begin():
+                results = await session.execute(query)
+                response = results.scalars().first()
+                return response
+
+    @classmethod
+    async def get_all_by(cls, **kwargs):
+        conditions = cls.generate_conditions(kwargs)
+        query = select(cls).where(and_(*conditions))
+        async with async_session() as session:
+            async with session.begin():
+                results = await session.execute(query)
+                config = results.scalars().all()
+                return config
+
+    @classmethod
     async def get_all(cls):
         query = select(cls)
         async with async_session() as session:
@@ -44,17 +86,6 @@ class ModelAdmin:
                 config = results.scalars().first()
                 return config
 
-    @classmethod
-    async def get(cls, guild_id, user_id):
-        query = select(cls).where(
-            cls.guild_id == guild_id, cls.user_id == user_id
-        )
-        async with async_session() as session:
-            async with session.begin():
-                results = await session.execute(query)
-                config = results.scalars().first()
-                return config
-
 
 class UsagiConfig(Base, ModelAdmin):
     __tablename__ = "usagi_config"
@@ -63,29 +94,6 @@ class UsagiConfig(Base, ModelAdmin):
     guild_id = Column(BigInteger)
     command_tag = Column(Text)
     generic_id = Column(BigInteger)
-
-    @classmethod
-    async def delete(cls, guild_id, command_tag):
-        query = (
-            sqlalchemy_delete(cls)
-            .where(cls.guild_id == guild_id, cls.command_tag == command_tag)
-            .execution_options(synchronize_session="fetch")
-        )
-        async with async_session() as session:
-            async with session.begin():
-                await session.execute(query)
-                await session.commit()
-
-    @classmethod
-    async def get(cls, guild_id, command_tag):
-        query = select(cls).where(
-            cls.guild_id == guild_id, cls.command_tag == command_tag
-        )
-        async with async_session() as session:
-            async with session.begin():
-                results = await session.execute(query)
-                config = results.scalars().first()
-                return config
 
 
 class UsagiCogs(Base, ModelAdmin):
@@ -96,18 +104,6 @@ class UsagiCogs(Base, ModelAdmin):
     module_name = Column(Text)
     access = Column(Boolean)
 
-    @classmethod
-    async def delete(cls, guild_id, module_name):
-        query = (
-            sqlalchemy_delete(cls)
-            .where(cls.guild_id == guild_id, cls.module_name == module_name)
-            .execution_options(synchronize_session="fetch")
-        )
-        async with async_session() as session:
-            async with session.begin():
-                await session.execute(query)
-                await session.commit()
-
 
 class UsagiModerRoles(Base, ModelAdmin):
     __tablename__ = "usagi_moder_roles"
@@ -115,18 +111,6 @@ class UsagiModerRoles(Base, ModelAdmin):
     id = Column(Integer, primary_key=True)
     guild_id = Column(BigInteger)
     moder_role_id = Column(BigInteger)
-
-    @classmethod
-    async def delete(cls, guild_id, moder_role_id):
-        query = (
-            sqlalchemy_delete(cls)
-            .where(cls.guild_id == guild_id, cls.moder_role_id == moder_role_id)
-            .execution_options(synchronize_session="fetch")
-        )
-        async with async_session() as session:
-            async with session.begin():
-                await session.execute(query)
-                await session.commit()
 
 
 class UsagiWordleGames(Base, ModelAdmin):
@@ -137,17 +121,6 @@ class UsagiWordleGames(Base, ModelAdmin):
     word = Column(Text)
     owner_id = Column(BigInteger)
     thread_id = Column(BigInteger)
-
-    @classmethod
-    async def get(cls, guild_id, thread_id):
-        query = select(cls).where(
-            cls.guild_id == guild_id, cls.thread_id == thread_id
-        )
-        async with async_session() as session:
-            async with session.begin():
-                results = await session.execute(query)
-                config = results.scalars().first()
-                return config
 
 
 class UsagiWordleResults(Base, ModelAdmin):
@@ -166,32 +139,14 @@ class UsagiUnicRoles(Base, ModelAdmin):
     user_id = Column(BigInteger)
     role_id = Column(BigInteger)
 
-    @classmethod
-    async def get_all_role_ids_by_user(cls, guild_id, user_id):
-        query = select(cls).where(
-            cls.guild_id == guild_id, cls.user_id == user_id
-        )
-        async with async_session() as session:
-            async with session.begin():
-                results = await session.execute(query)
-                config = results.scalars().all()
-                return config
 
-    @classmethod
-    async def delete(cls, guild_id, user_id, role_id):
-        query = (
-            sqlalchemy_delete(cls)
-            .where(
-                cls.guild_id == guild_id,
-                cls.user_id == user_id,
-                cls.role_id == role_id
-            )
-            .execution_options(synchronize_session="fetch")
-        )
-        async with async_session() as session:
-            async with session.begin():
-                await session.execute(query)
-                await session.commit()
+class UsagiTwitchNotify(Base, ModelAdmin):
+    __tablename__ = "usagi_twitch_notify"
+    id = Column(Integer, primary_key=True)
+    guild_id = Column(BigInteger)
+    user_id = Column(BigInteger)
+    twitch_username = Column(Text)
+    last_time_start = Column(DateTime)
 
 
 async def create_tables():
