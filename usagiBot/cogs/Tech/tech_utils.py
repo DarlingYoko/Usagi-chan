@@ -11,7 +11,7 @@ async def get_user_roles(ctx: discord.AutocompleteContext) -> List:
     Returns a list of user roles.
     """
     guild = ctx.interaction.guild
-    role_ids = await UsagiUnicRoles.get_all_role_ids_by_user(
+    role_ids = await UsagiUnicRoles.get_all_by(
         guild_id=guild.id,
         user_id=ctx.interaction.user.id,
     )

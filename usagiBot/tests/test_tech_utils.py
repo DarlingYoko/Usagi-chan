@@ -35,10 +35,10 @@ class TestTechUtils(IsolatedAsyncioTestCase):
         import usagiBot.cogs.Tech.tech_utils as tech_utils
         importlib.reload(tech_utils)
 
-        mock_UsagiUnicRoles.get_all_role_ids_by_user.return_value = role_ids
+        mock_UsagiUnicRoles.get_all_by.return_value = role_ids
         guessed_result = await tech_utils.get_user_roles(ctx)
 
-        mock_UsagiUnicRoles.get_all_role_ids_by_user.assert_called_with(
+        mock_UsagiUnicRoles.get_all_by.assert_called_with(
             guild_id="test_guild_id",
             user_id="test_user_id",
         )
@@ -52,7 +52,7 @@ class TestTechUtils(IsolatedAsyncioTestCase):
     @mock.patch("usagiBot.db.models.UsagiUnicRoles", new_callable=mock.AsyncMock)
     @mock.patch.object(asyncio, "create_async_engine")
     async def test_get_user_roles_no_roles(self, mock_engine, mock_UsagiUnicRoles) -> None:
-        mock_UsagiUnicRoles.get_all_role_ids_by_user.return_value = None
+        mock_UsagiUnicRoles.get_all_by.return_value = None
         import usagiBot.cogs.Tech.tech_utils as tech_utils
         importlib.reload(tech_utils)
         ctx = mock.AsyncMock()
