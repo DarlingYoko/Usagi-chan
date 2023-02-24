@@ -74,7 +74,7 @@ class Events(commands.Cog):
         elif isinstance(error, discord.errors.CheckFailure):
             await ctx.reply("Some requirements were not met.", delete_after=2 * 60)
         else:
-            await error_notification_to_owner(ctx, error)
+            await error_notification_to_owner(ctx, error, self.bot)
         if not isinstance(ctx.message.channel, discord.DMChannel):
             await ctx.message.delete(delay=2*60)
 
@@ -114,7 +114,7 @@ class Events(commands.Cog):
                 ephemeral=True,
             )
         else:
-            await error_notification_to_owner(ctx, error, app_command=True)
+            await error_notification_to_owner(ctx, error, self.bot, app_command=True)
 
 
 def setup(bot):

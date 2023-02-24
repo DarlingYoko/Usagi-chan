@@ -12,3 +12,8 @@ DATABASE_USER = os.environ.get("DATABASE_USER")
 DATABASE_PASS = os.environ.get("DATABASE_PASS")
 DATABASE_HOST = os.environ.get("DATABASE_HOST")
 DATABASE_PORT = os.environ.get("DATABASE_PORT")
+
+TWITCH_TOKEN = os.environ.get("TWITCH_TOKEN")
+REFRESH_TOKEN = os.environ.get("REFRESH_TOKEN")
+CLIENT_ID = os.environ.get("CLIENT_ID")
+CLIENT_SECRET = os.environ.get("CLIENT_SECRET")

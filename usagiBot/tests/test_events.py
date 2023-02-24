@@ -8,7 +8,7 @@ class TestEventsMethods(IsolatedAsyncioTestCase):
     @mock.patch.object(asyncio, "create_async_engine")
     def setUp(self, mock_engine) -> None:
         self.ctx = mock.AsyncMock()
-        self.bot = mock.AsyncMock()
+        self.bot = mock.MagicMock()
 
         from usagiBot.cogs.Events.index import Events
 

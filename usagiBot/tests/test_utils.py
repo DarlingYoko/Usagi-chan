@@ -53,11 +53,11 @@ class TestUtilsMethods(IsolatedAsyncioTestCase):
         self.ctx.bot.fetch_user.return_value = self.user
 
     async def test_error_notification_to_owner(self) -> None:
-        await self.Usagi_Utils.error_notification_to_owner(ctx=self.ctx, error=self.error)
+        await self.Usagi_Utils.error_notification_to_owner(ctx=self.ctx, error=self.error, bot=self.bot)
         self.user.send.assert_called_with(f"**NEW ERROR OCCURRED**\n> **Command** - test_command_name\n> **User** - test_author_mention\n> **Channel** - test_channel_id\n> **Error** - test_error_message\n> **Error type** - {type(self.error)}\n> **Message** - test_message_id\n> **Args** - test_args\n> **Kwargs** - test_kwargs\n")
 
     async def test_error_notification_to_owner_app_command(self) -> None:
-        await self.Usagi_Utils.error_notification_to_owner(ctx=self.ctx, error=self.error, app_command=True)
+        await self.Usagi_Utils.error_notification_to_owner(ctx=self.ctx, error=self.error, bot=self.bot, app_command=True)
         self.user.send.assert_called_with(f"**NEW ERROR OCCURRED**\n> **Command** - test_command_name\n> **User** - test_author_mention\n> **Channel** - test_channel_id\n> **Error** - test_error_message\n> **Error type** - {type(self.error)}\n")
 
     async def test_load_all_command_tags(self) -> None:

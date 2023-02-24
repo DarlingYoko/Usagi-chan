@@ -8,7 +8,7 @@ from usagiBot.env import BOT_OWNER
 from usagiBot.db.models import UsagiCogs, UsagiModerRoles
 
 
-async def error_notification_to_owner(ctx: discord.ext.commands.Context, error: Error, app_command: bool = False):
+async def error_notification_to_owner(ctx: discord.ext.commands.Context, error: Error, bot: discord.Bot, app_command: bool = False):
     """
     Send error log to bot owner
     :param ctx: Discord Context
@@ -33,6 +33,7 @@ async def error_notification_to_owner(ctx: discord.ext.commands.Context, error: 
                 + f"> **Kwargs** - {ctx.kwargs}\n"
         )
     await owner.send(error_message)
+    bot.logger.error(error)
 
 
 async def load_all_command_tags(bot: discord.ext.commands.Bot) -> None:
@@ -76,14 +77,7 @@ async def init_cogs_settings() -> Dict:
     cogs_settings = {}
     copy_from_db = await UsagiCogs.get_all()
     for item in copy_from_db:
-        guild_id = item.guild_id
-        module_name = item.module_name
-        access = item.access
-        if guild_id in cogs_settings.keys():
-            cogs_settings[guild_id][module_name] = access
-        else:
-            cogs_settings[guild_id] = {module_name: access}
-
+        cogs_settings.setdefault(item.guild_id, {})[item.module_name] = item.access
     return cogs_settings
 
 
@@ -95,13 +89,7 @@ async def init_moder_roles() -> Dict:
     moder_roles = {}
     copy_from_db = await UsagiModerRoles.get_all()
     for item in copy_from_db:
-        guild_id = item.guild_id
-        moder_role_id = item.moder_role_id
-        if guild_id in moder_roles.keys():
-            moder_roles[guild_id].append(moder_role_id)
-        else:
-            moder_roles[guild_id] = [moder_role_id]
-
+        moder_roles.setdefault(item.guild_id, []).append(item.moder_role_id)
     return moder_roles
 
 
