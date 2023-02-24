@@ -36,6 +36,20 @@ class ModelAdmin:
                 await session.commit()
 
     @classmethod
+    async def update_all(cls, conditions, new_values):
+        conditions = cls.generate_conditions(conditions)
+        query = (
+            sqlalchemy_update(cls)
+            .where(and_(*conditions))
+            .values(**new_values)
+            .execution_options(synchronize_session="fetch")
+        )
+        async with async_session() as session:
+            async with session.begin():
+                await session.execute(query)
+                await session.commit()
+
+    @classmethod
     async def delete(cls, **kwargs):
         conditions = cls.generate_conditions(kwargs)
         query = (
@@ -146,7 +160,7 @@ class UsagiTwitchNotify(Base, ModelAdmin):
     guild_id = Column(BigInteger)
     user_id = Column(BigInteger)
     twitch_username = Column(Text)
-    last_time_start = Column(DateTime)
+    started_at = Column(DateTime)
 
 
 async def create_tables():
