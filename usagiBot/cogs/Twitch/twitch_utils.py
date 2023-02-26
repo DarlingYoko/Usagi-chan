@@ -1,5 +1,4 @@
 import textwrap
-
 import discord
 import requests
 
@@ -16,6 +15,7 @@ from easy_pil import Editor
 from PIL import Image, ImageFont, ImageOps
 from discord import File
 from twitchAPI.helper import first
+from io import BytesIO
 
 
 async def twitch_auth() -> Twitch:
@@ -70,7 +70,7 @@ def gen_pic(stream, icon_url):
     mask = Image.open("./usagiBot/files/photo/mask2.png").convert("L")
     image = Image.open(requests.get(icon_url, stream=True).raw)
 
-    background = Editor(Image.new("RGBA", (1050, 260), (0, 0, 0, 0)))
+    background = Editor(Image.new("RGBA", (1050, 1050), (0, 0, 0, 0)))
 
     font_bold = ImageFont.truetype(
         font="./usagiBot/files/fonts/Inter-Bold.ttf", size=30
@@ -90,7 +90,7 @@ def gen_pic(stream, icon_url):
 
     background.text((245, 15), stream.user_name, font=font_bold_big, color="white")
 
-    lines = textwrap.wrap(stream_title, width=60)
+    lines = textwrap.wrap(stream_title, width=40)
     y_text = 80
     for line in lines:
         width, height = font_bold.getsize(line)
@@ -100,6 +100,14 @@ def gen_pic(stream, icon_url):
     background.text((245, y_text + 20), game, font=font_regular, color="#bf94ff")
     background.text((90, 205), viewer_count, font=font_bold_big, color="#ff8280")
 
-    file = File(fp=background.image_bytes, filename=f"{stream.user_login}_image.png")
+    new_background = Image.open(background.image_bytes)
+    crop = 300 if y_text + 80 > 260 else 260
+    new_background = new_background.crop((0, 0, 1050, crop))
+
+    _bytes = BytesIO()
+    new_background.save(_bytes, "png")
+    _bytes.seek(0)
+
+    file = File(fp=_bytes, filename=f"{stream.user_login}_image.png")
 
     return file

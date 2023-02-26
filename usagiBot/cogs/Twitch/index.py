@@ -25,7 +25,7 @@ class Twitch(commands.Cog):
         await self.bot.wait_until_ready()
         self.bot.logger.info(f"Logged in Twitch.")
 
-    @tasks.loop(minutes=1)
+    @tasks.loop(minutes=5)
     async def twitch_notify_loop(self):
         all_streams = await UsagiTwitchNotify.get_all()
         twitch_notify = {}
@@ -47,7 +47,7 @@ class Twitch(commands.Cog):
                 {"followers": [], "started_at": stream.started_at},
             )
             username_notify["followers"].append(stream.user_id)
-            username_notify["started_at"] = min(
+            username_notify["started_at"] = max(
                 username_notify["started_at"], stream.started_at
             )
 
@@ -73,7 +73,7 @@ class Twitch(commands.Cog):
                 )
                 followers = (
                     " ".join(list(map(lambda x: f"<@{x}>", info["followers"])))
-                    + "<a:dinkDonk:865127621112102953>"
+                    + " <a:dinkDonk:865127621112102953>"
                 )
                 embed, image = get_notify_src(
                     stream, update_streamer[streamer]["icon_url"]
@@ -136,9 +136,9 @@ class Twitch(commands.Cog):
             guild_id=ctx.guild.id,
             user_id=ctx.author.id,
             twitch_username=streamer_name,
-            started_at=datetime.utcnow().replace(tzinfo=None),
+            started_at=datetime(year=2001, day=21, month=3).replace(tzinfo=None),
         )
-        await ctx.respond(f"Followed you to **{user.user_name}**", ephemeral=True)
+        await ctx.respond(f"Followed you to **{streamer_name}**", ephemeral=True)
 
     @twitch_notify.command(name="unfollow", description="Unfollow from streamer.")
     @discord.commands.option(

@@ -89,7 +89,7 @@ class TestTwitch(IsolatedAsyncioTestCase):
 
         self.assertEqual(notify_channel.send.call_count, 1)
 
-    @freeze_time("2023-01-14")
+    @freeze_time("2001-03-21")
     async def test_follow_streamer(self) -> None:
         self.mock_first.return_value = mock.MagicMock(user_name="yoko_0")
         self.mock_UsagiTwitchNotify.get.return_value = None
@@ -105,7 +105,7 @@ class TestTwitch(IsolatedAsyncioTestCase):
             guild_id="test_guild_id",
             user_id="test_user_id",
             twitch_username="yoko_0",
-            started_at=datetime(year=2023, month=1, day=14),
+            started_at=datetime(year=2001, month=3, day=21),
         )
         self.ctx.respond.assert_called_with(
             f"Followed you to **yoko_0**", ephemeral=True
