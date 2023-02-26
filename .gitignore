@@ -1,7 +1,9 @@
-usagi-variables.env
+
 .idea
 /.pytest_cache/
 /usagiBot/tests/.pytest_cache/
 /venv/
 __pycache__
 /.coverage
+./usagi-variables.env
+/usagi-variables.env
