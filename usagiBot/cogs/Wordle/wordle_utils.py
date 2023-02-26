@@ -298,7 +298,7 @@ def create_pic_for_answer(word: str, blocks: list[str]) -> Editor:
         "yellow_block": yellow_block,
         "black_block": black_block,
     }
-    background = Editor(Image.new("RGBA", (173 * len(blocks), 153), (255, 255, 255, 0)))
+    background = Editor(Image.new("RGBA", (173 * len(blocks), 153), (0, 0, 0, 0)))
     font = ImageFont.truetype(font="./usagiBot/files/fonts/genshin.ttf", size=120)
 
     for i in range(len(blocks)):
@@ -392,7 +392,7 @@ def create_blank_words(length: int) -> Editor:
     :return:
     """
     blank_block = Image.open("./usagiBot/files/photo/wordle/blank_block.png").resize((153, 153))
-    background = Editor(Image.new("RGBA", (173 * length + 1600, 173 * (length + 1)), (255, 255, 255, 0)))
+    background = Editor(Image.new("RGBA", (173 * length + 1600, 173 * (length + 1)), (0, 0, 0, 0)))
     for i in range(length + 1):
         for j in range(length):
             background.paste(blank_block, (173 * j, 173 * i))
