@@ -5,7 +5,7 @@ from discord.ext import commands, tasks
 
 from usagiBot.cogs.Twitch.twitch_utils import *
 from usagiBot.db.models import UsagiTwitchNotify, UsagiConfig
-from usagiBot.src.UsagiChecks import check_cog_whitelist, check_correct_channel_command
+from usagiBot.src.UsagiChecks import check_cog_whitelist
 from usagiBot.src.UsagiErrors import UsagiModuleDisabledError
 
 
@@ -99,7 +99,7 @@ class Twitch(commands.Cog):
     twitch_notify = SlashCommandGroup(
         name="twitch_notify",
         description="Add your favorite streamer and get notified when it goes live!",
-        checks=[check_correct_channel_command().predicate],
+        # checks=[сheck_correct_channel_command().predicate],
         command_tag="twitch_notify",
     )
 
