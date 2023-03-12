@@ -16,20 +16,20 @@ class TestMainMethods(IsolatedAsyncioTestCase):
 
         self.message = mock.AsyncMock()
 
-    async def test_pin_message(self) -> None:
+    async def test_help_command(self) -> None:
         main_cog = mock.MagicMock()
         main_cog.qualified_name = "Main"
-        command_1 = mock.MagicMock()
+        command_1 = mock.MagicMock(__original_kwargs__={})
         command_1.name = "main_command_1"
-        command_2 = mock.MagicMock()
+        command_2 = mock.MagicMock(__original_kwargs__={})
         command_2.name = "main_command_2"
         main_cog.get_commands.return_value = [command_1, command_2]
 
         fun_cog = mock.MagicMock()
         fun_cog.qualified_name = "Fun"
-        command_3 = mock.MagicMock()
+        command_3 = mock.MagicMock(__original_kwargs__={})
         command_3.name = "fun_command_3"
-        command_4 = mock.MagicMock()
+        command_4 = mock.MagicMock(__original_kwargs__={})
         command_4.name = "fun_command_4"
         fun_cog.get_commands.return_value = [command_3, command_4]
         self.ctx.bot.cogs = {

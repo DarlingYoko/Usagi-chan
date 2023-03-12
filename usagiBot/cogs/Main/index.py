@@ -44,28 +44,18 @@ class Main(commands.Cog):
                         "set_up": True,
                         "channel_id": None,
                     }
-                    for check in command.checks:
-                        try:
-                            mock_ctx = MagicMock()
-                            mock_ctx.command = command
-                            mock_ctx.guild.id = ctx.guild.id
-                            response = await check(mock_ctx)
-
-                            if isinstance(response, UsagiConfig):
-                                command_dict["channel_id"] = response.generic_id
-
-                        except discord.errors.CheckFailure:
-                            pass
-                        except UsagiNotSetUpError:
+                    command_tag = command.__original_kwargs__.get("command_tag")
+                    if command_tag:
+                        config = await UsagiConfig.get(guild_id=ctx.guild.id, command_tag=command_tag)
+                        if not config:
                             command_dict["set_up"] = False
-                        except UsagiCallFromWrongChannelError as e:
-                            command_dict["channel_id"] = e.channel_id
+                        else:
+                            command_dict["channel_id"] = config.generic_id
 
                     command_type = types.get(type(command))
-                    if command_type in commands_dict.keys():
-                        commands_dict[command_type].append(command_dict)
-                    else:
-                        commands_dict[command_type] = [command_dict]
+                    command_list = commands_dict.setdefault(command_type, [])
+                    command_list.append(command_dict)
+
                 for item, value in commands_dict.items():
                     answer += f"\t*{item}*\n"
                     for command in value:
