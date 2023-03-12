@@ -2,8 +2,8 @@ import os
 
 BOT_TOKEN = os.environ.get("DISCORD_TOKEN")
 TEST_BOT_TOKEN = os.environ.get("DISCORD_TEST_TOKEN")
-BOT_OWNER = os.environ.get("BOT_OWNER")
-BOT_ID = os.environ.get("BOT_ID")
+BOT_OWNER = int(os.environ.get("BOT_OWNER"))
+BOT_ID = int(os.environ.get("BOT_ID"))
 
 COGS_DIR = os.environ.get("COGS_DIR")
 

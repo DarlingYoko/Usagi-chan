@@ -8,7 +8,8 @@ from usagiBot.env import BOT_OWNER
 from usagiBot.db.models import UsagiCogs, UsagiModerRoles
 
 
-async def error_notification_to_owner(ctx: discord.ext.commands.Context, error: Error, bot: discord.Bot, app_command: bool = False):
+async def error_notification_to_owner(ctx: discord.ext.commands.Context, error: Error, bot: discord.Bot,
+                                      app_command: bool = False):
     """
     Send error log to bot owner
     :param ctx: Discord Context
@@ -141,6 +142,6 @@ def get_embed(
     if fields:
         embed.clear_fields()
         for field in fields:
-            embed.add_field(name=field['name'], value=field['value'], inline=field['inline'])
+            embed.add_field(name=field.name, value=field.value, inline=field.inline)
 
     return embed

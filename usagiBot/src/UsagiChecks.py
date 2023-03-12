@@ -3,6 +3,7 @@ from discord import DMChannel, ApplicationContext
 
 from usagiBot.src.UsagiErrors import *
 from usagiBot.db.models import UsagiConfig
+from usagiBot.env import BOT_OWNER
 
 
 def check_is_already_set_up():
@@ -70,4 +71,10 @@ def check_member_is_moder(ctx):
         return True
 
     raise UsagiCallFromNotModerError()
+
+
+def is_owner():
+    async def predicate(ctx):
+        return ctx.author.id == BOT_OWNER
+    return commands.check(predicate)
 

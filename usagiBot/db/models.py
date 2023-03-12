@@ -163,6 +163,18 @@ class UsagiTwitchNotify(Base, ModelAdmin):
     started_at = Column(DateTime)
 
 
+class UsagiGenshin(Base, ModelAdmin):
+    __tablename__ = "usagi_genshin"
+    id = Column(Integer, primary_key=True)
+    guild_id = Column(BigInteger)
+    user_id = Column(BigInteger)
+    cookies = Column(Text)
+    resin_sub = Column(Boolean)
+    resin_sub_notified = Column(Boolean)
+    daily_sub = Column(Boolean)
+    code_sub = Column(Boolean)
+
+
 async def create_tables():
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
