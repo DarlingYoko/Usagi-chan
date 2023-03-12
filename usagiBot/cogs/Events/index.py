@@ -30,7 +30,7 @@ class Events(commands.Cog):
         self.bot.logger.info(f"discord.py API version: {discord.__version__}")
         self.bot.logger.info(f"Python version: {platform.python_version()}")
         self.bot.logger.info(f"Running on: {platform.system()} {platform.release()} ({os.name})")
-        self.bot.logger.info(f"Loaded command tags: {self.bot.command_tags}")
+        self.bot.logger.info(f"Loaded command tags.")
         self.bot.logger.info(f"Connected to database.")
         self.bot.logger.info(f"Settings loaded.")
         self.bot.logger.info(f"Moder roles loaded.")

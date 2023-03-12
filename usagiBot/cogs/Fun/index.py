@@ -94,10 +94,6 @@ class Fun(commands.Cog):
         await ctx.reply(f"Твой iq = {user_iq}\n{key}")
 
     # Slash commands
-    @commands.slash_command(name="resin", description="Get Resin")
-    async def test_resin(self, ctx) -> None:
-        await ctx.respond(content="It's empty here, come back later", ephemeral=True)
-
     @commands.slash_command(name="roll", description="Generate random number from to")
     async def roll_random_number(self, ctx, from_: int, to_: int) -> None:
         if to_ < from_:
