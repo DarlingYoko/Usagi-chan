@@ -11,6 +11,7 @@ import yt_dlp as youtube_dl
 from async_timeout import timeout
 from discord.ext import commands, bridge
 from discord import SlashCommandGroup
+from usagiBot.src.UsagiUtils import get_embed
 
 import subprocess
 import shutil
@@ -375,10 +376,9 @@ class Song:
             self.pause_duration += time.time() - self.pause_time
             self.pause_time = time.time()
         embed = (
-            discord.Embed(
+            get_embed(
                 title=loc["song_embed"]["title"],
                 description=loc["song_embed"]["description"].format(self.source.title),
-                color=discord.Color.blurple(),
             )
             .add_field(
                 name=loc["song_embed"]["video_length"],
@@ -396,7 +396,7 @@ class Song:
                 name=loc["song_embed"]["video_player"], value=self.requester.mention
             )
         )
-        # If it is not a file, it is a youtube video
+        # If it is not a file, it is a YouTube video
         if not self.isFile:
             embed.add_field(
                 name=loc["song_embed"]["uploader"],
@@ -814,22 +814,22 @@ class VoiceState:
                 await asyncio.sleep(0.25)
                 self.start_time = time.time()
                 self.current.starttime = time.time()
-                if not self.forbidden:
-                    self.message = await self.current.source.channel.send(
-                        embed=self.current.create_embed("play"),
-                        view=PlayerControlView(self.bot, self),
-                    )
+                # if not self.forbidden:
+                #     self.message = await self.current.source.channel.send(
+                #         embed=self.current.create_embed("play"),
+                #         view=PlayerControlView(self.bot, self),
+                #     )
                 self.forbidden = False
                 self.voice.play(self.current.source, after=self.play_next_song)
                 # Create task for updating volume
                 self.volume_updater = self.bot.loop.create_task(self.update_volume())
                 await self.next.wait()
                 # Delete the message of the song playing
-                if not self.forbidden:
-                    try:
-                        await self.message.delete()
-                    except:
-                        pass
+                # if not self.forbidden:
+                #     try:
+                #         await self.message.delete()
+                #     except:
+                #         pass
 
     def play_next_song(self, error=None):
         end_time = time.time()
@@ -1231,7 +1231,7 @@ class PlayerControlView(discord.ui.View):
             self.voice_state.current.paused = False
             self.children[0].emoji = "⏸"
             self.children[0].label = loc["btn_label"]["pause"]
-        await interaction.message.edit(view=self)
+        await interaction.edit_original_response(view=self)
 
     @discord.ui.button(
         label=loc["btn_label"]["skip"],
@@ -1293,7 +1293,7 @@ class PlayerControlView(discord.ui.View):
             if self.voice_state.loopqueue
             else loc["loop"]["enable_loopqueue"]
         )
-        await interaction.message.edit(view=self)
+        await interaction.edit_original_response(view=self)
 
     @discord.ui.button(
         label=loc["btn_label"]["loopqueue"],
@@ -1331,7 +1331,7 @@ class PlayerControlView(discord.ui.View):
             if self.voice_state.loopqueue
             else loc["loop"]["enable_loopqueue"]
         )
-        await interaction.message.edit(view=self)
+        await interaction.edit_original_response(view=self)
 
     @discord.ui.button(
         label=loc["btn_label"]["queue"],
@@ -1348,10 +1348,12 @@ class PlayerControlView(discord.ui.View):
                 return interaction.response.send_message(
                     embed=discord.Embed(
                         title=loc["messages"]["empty_queue"], color=0xFF0000
-                    )
+                    ),
+                    ephemeral=True
                 )
             return await interaction.response.send_message(
-                loc["messages"]["empty_queue"]
+                loc["messages"]["empty_queue"],
+                ephemeral=True
             )
 
         # Invoking queue while the bot is retrieving another song will cause error, wait for 1 second
@@ -1377,7 +1379,8 @@ class PlayerControlView(discord.ui.View):
                     ),
                 ),
                 "url",
-            )
+            ),
+            ephemeral=True
         )
 
 
@@ -1641,9 +1644,7 @@ class Music(commands.Cog):
                 await ctx.me.edit(suppress=False)
             except Exception as e:
                 print(f"ERROR - {e}")
-                await ctx.respond(
-                    loc["messages"]["require_mute"], ephemeral=True
-                )
+                await ctx.respond(loc["messages"]["require_mute"], ephemeral=True)
 
     @music.command(name="leave", description=loc["descriptions"]["leave"])
     async def leave(self, ctx):
@@ -1680,10 +1681,10 @@ class Music(commands.Cog):
     async def now(self, ctx):
         # Display currently playing song
         if ctx.voice_state.current is None:
-            return await ctx.respond(
-                loc["messages"]["no_playing"], ephemeral=True
-            )
-        await ctx.respond(embed=ctx.voice_state.current.create_embed("now"), ephemeral=True)
+            return await ctx.respond(loc["messages"]["no_playing"], ephemeral=True)
+        await ctx.respond(
+            embed=ctx.voice_state.current.create_embed("now"), ephemeral=True
+        )
 
     @music.command(name="pause", description=loc["descriptions"]["pause"])
     async def pause(self, ctx):
@@ -1789,9 +1790,7 @@ class Music(commands.Cog):
                     loc["messages"]["enter_before_play"], ephemeral=True
                 )
         if not ctx.voice_state.is_playing:
-            return await ctx.respond(
-                loc["messages"]["no_playing"], ephemeral=True
-            )
+            return await ctx.respond(loc["messages"]["no_playing"], ephemeral=True)
 
         if isinstance(ctx, discord.ext.commands.Context):
             await ctx.message.add_reaction("⏭")
@@ -1810,9 +1809,7 @@ class Music(commands.Cog):
         if page < 1:
             page = 1
         if len(ctx.voice_state.songs) == 0 and ctx.voice_state.current is None:
-            return await ctx.respond(
-                loc["messages"]["empty_queue"], ephemeral=True
-            )
+            return await ctx.respond(loc["messages"]["empty_queue"], ephemeral=True)
 
         # Invoking queue while the bot is retrieving another song will cause error, wait for 1 second
         while ctx.voice_state.current is None or isinstance(
@@ -1838,7 +1835,7 @@ class Music(commands.Cog):
                 ),
                 "url",
             ),
-            ephemeral=True
+            ephemeral=True,
         )
 
     @music.command(name="shuffle", description=loc["descriptions"]["shuffle"])
@@ -1857,9 +1854,7 @@ class Music(commands.Cog):
                 loc["messages"]["enter_before_play"], ephemeral=True
             )
         if len(ctx.voice_state.songs) == 0:
-            return await ctx.respond(
-                loc["messages"]["empty_queue"], ephemeral=True
-            )
+            return await ctx.respond(loc["messages"]["empty_queue"], ephemeral=True)
 
         ctx.voice_state.songs.shuffle()
         if isinstance(ctx, discord.ext.commands.Context):
@@ -1893,18 +1888,14 @@ class Music(commands.Cog):
         if ctx.voice_state.voice.channel != ctx.author.voice.channel:
             return
         if len(ctx.voice_state.songs) == 0:
-            return await ctx.respond(
-                loc["messages"]["empty_queue"], ephemeral=True
-            )
+            return await ctx.respond(loc["messages"]["empty_queue"], ephemeral=True)
         name = ctx.voice_state.songs[index - 1]
         ctx.voice_state.songs.remove(index - 1)
 
         if isinstance(ctx, discord.ext.commands.Context):
             await ctx.message.add_reaction("✅")
         else:
-            await ctx.respond(
-                loc["messages"]["removed"].format(name), ephemeral=True
-            )
+            await ctx.respond(loc["messages"]["removed"].format(name), ephemeral=True)
 
     @music.command(name="loop", description=loc["descriptions"]["loop"])
     async def loop(self, ctx):
@@ -1933,7 +1924,7 @@ class Music(commands.Cog):
                 if ctx.voice_state.loop
                 else loc["messages"]["disable_loop"]
             ),
-            ephemeral=True
+            ephemeral=True,
         )
 
     @music.command(name="play", description=loc["descriptions"]["play"])
@@ -1980,7 +1971,9 @@ class Music(commands.Cog):
 
         loop = self.bot.loop
         try:
-            msg = await ctx.respond(loc["messages"]["searching"].format(link), ephemeral=True)
+            msg = await ctx.respond(
+                loc["messages"]["searching"].format(link), ephemeral=True
+            )
             if isinstance(msg, discord.WebhookMessage):
                 respond = msg.edit
             else:
@@ -1992,9 +1985,7 @@ class Music(commands.Cog):
                 )
                 data = await loop.run_in_executor(None, partial)
                 if data is None:
-                    return await respond(
-                        content=loc["not_found"].format(link)
-                    )
+                    return await respond(content=loc["not_found"].format(link))
                 entries = data["entries"]
                 playlist = []
                 for pos, song in enumerate(entries):
@@ -2087,7 +2078,9 @@ class Music(commands.Cog):
                             content=loc["messages"]["cannot_add_invalid_file"]
                         )
                     await respond(
-                        content=loc["messages"]["added_song"].format(title.replace("_", "\\_"))
+                        content=loc["messages"]["added_song"].format(
+                            title.replace("_", "\\_")
+                        )
                     )
                 else:
                     try:
@@ -2105,9 +2098,7 @@ class Music(commands.Cog):
                         if len(data["entries"]) > 0:
                             data = data["entries"][0]
                         else:
-                            return await respond(
-                                content=loc["not_found"].format(link)
-                            )
+                            return await respond(content=loc["not_found"].format(link))
                     # Add the song to the pending list
                     try:
                         duration = int(data["duration"])
@@ -2196,9 +2187,7 @@ class Music(commands.Cog):
         except Exception as e:
             print(f"ERROR - {e}")
         del self.voice_states[ctx.guild.id]
-        await ctx.respond(
-            loc["messages"]["reloaded"], ephemeral=True
-        )
+        await ctx.respond(loc["messages"]["reloaded"], ephemeral=True)
 
     @music.command(name="loopqueue", description=loc["descriptions"]["loopqueue"])
     async def loopqueue(self, ctx):
@@ -2238,7 +2227,7 @@ class Music(commands.Cog):
                 if ctx.voice_state.loopqueue
                 else loc["messages"]["disable_loopqueue"]
             ),
-            ephemeral=True
+            ephemeral=True,
         )
 
     @music.command(name="seek", description=loc["descriptions"]["seek"])
@@ -2341,20 +2330,26 @@ class Music(commands.Cog):
                 "local@" in current.source.url,
                 not ("youtube" in domain or "youtu.be" in domain),
             )
-            await ctx.respond(
-                loc["messages"]["seekto"].format(seconds), ephemeral=True
-            )
+            await ctx.respond(loc["messages"]["seekto"].format(seconds), ephemeral=True)
         else:
             await ctx.respond(loc["messages"]["no_playing"], ephemeral=True)
 
     @music.command(name="musicversion", description=loc["descriptions"]["musicversion"])
-    async def musicversion(self, ctx):
+    async def music_version(self, ctx):
         await ctx.respond(
             embed=discord.Embed(title=loc["cog_name"])
             .add_field(name=loc["author"], value="<@127312771888054272>")
             .add_field(name=loc["cog_github"], value=loc["cog_github_link"])
             .add_field(name=loc["cog_language"], value=language),
-            ephemeral=True
+            ephemeral=True,
+        )
+
+    @music.command(name="player")
+    async def get_song_player(self, ctx):
+        await ctx.respond(
+            embed=ctx.voice_state.current.create_embed("now"),
+            view=PlayerControlView(self.bot, self.voice_states[ctx.guild.id]),
+            ephemeral=True,
         )
 
 
