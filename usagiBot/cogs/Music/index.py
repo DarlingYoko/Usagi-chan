@@ -1683,7 +1683,7 @@ class Music(commands.Cog):
             return await ctx.respond(
                 loc["messages"]["no_playing"], ephemeral=True
             )
-        await ctx.respond(embed=ctx.voice_state.current.create_embed("now"))
+        await ctx.respond(embed=ctx.voice_state.current.create_embed("now"), ephemeral=True)
 
     @music.command(name="pause", description=loc["descriptions"]["pause"])
     async def pause(self, ctx):
@@ -1980,7 +1980,11 @@ class Music(commands.Cog):
 
         loop = self.bot.loop
         try:
-            await ctx.respond(loc["messages"]["searching"].format(link), ephemeral=True)
+            msg = await ctx.respond(loc["messages"]["searching"].format(link), ephemeral=True)
+            if isinstance(msg, discord.WebhookMessage):
+                respond = msg.edit
+            else:
+                respond = msg.edit_original_response
             # Supports playing a playlist but it must be like https://youtube.com/playlist?
             if "/playlist?" in link and ("youtu.be" in link or "youtube.com" in link):
                 partial = functools.partial(
@@ -1988,8 +1992,8 @@ class Music(commands.Cog):
                 )
                 data = await loop.run_in_executor(None, partial)
                 if data is None:
-                    return await ctx.respond(
-                        loc["not_found"].format(link), ephemeral=True
+                    return await respond(
+                        content=loc["not_found"].format(link)
                     )
                 entries = data["entries"]
                 playlist = []
@@ -2022,9 +2026,8 @@ class Music(commands.Cog):
                             "duration": duration,
                         }
                     )
-                await ctx.respond(
-                    loc["messages"]["added_multiple_song"].format(songs + 1),
-                    ephemeral=True,
+                await respond(
+                    content=loc["messages"]["added_multiple_song"].format(songs + 1)
                 )
             else:
                 # Just a single song
@@ -2044,8 +2047,8 @@ class Music(commands.Cog):
                             if len(data["entries"]) > 0:
                                 data = data["entries"][0]
                             else:
-                                return await ctx.respond(
-                                    loc["not_found"].format(link), ephemeral=True
+                                return await respond(
+                                    content=loc["not_found"].format(link)
                                 )
                         title = data["title"]
                         if "duration" in data:
@@ -2080,12 +2083,11 @@ class Music(commands.Cog):
                             )
                     except Exception as e:
                         print(f"ERROR - {e}")
-                        return await ctx.respond(
-                            loc["messages"]["cannot_add_invalid_file"], ephemeral=True
+                        return await respond(
+                            content=loc["messages"]["cannot_add_invalid_file"]
                         )
-                    await ctx.respond(
-                        loc["messages"]["added_song"].format(title.replace("_", "\\_")),
-                        ephemeral=True,
+                    await respond(
+                        content=loc["messages"]["added_song"].format(title.replace("_", "\\_"))
                     )
                 else:
                     try:
@@ -2096,15 +2098,15 @@ class Music(commands.Cog):
                     except Exception as e:
                         # Get the error message from dictionary, if it doesn't exist in dict, return the original error message
                         message = error_messages.get(str(e), str(e))
-                        return await ctx.respond(
-                            loc["messages"]["error"].format(message), ephemeral=True
+                        return await respond(
+                            content=loc["messages"]["error"].format(message)
                         )
                     if "entries" in data:
                         if len(data["entries"]) > 0:
                             data = data["entries"][0]
                         else:
-                            return await ctx.respond(
-                                loc["not_found"].format(link), ephemeral=True
+                            return await respond(
+                                content=loc["not_found"].format(link)
                             )
                     # Add the song to the pending list
                     try:
@@ -2120,9 +2122,8 @@ class Music(commands.Cog):
                             "duration": duration,
                         }
                     )
-                    await ctx.respond(
-                        loc["messages"]["added_song"].format(data["title"]),
-                        ephemeral=True
+                    await respond(
+                        content=loc["messages"]["added_song"].format(data["title"])
                     )
             ctx.voice_state.stopped = False
         except YTDLError as e:
