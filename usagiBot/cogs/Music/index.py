@@ -1474,7 +1474,7 @@ class Music(commands.Cog):
 
     music = SlashCommandGroup(
         name="music",
-        description="Listen any music!",
+        description="Listen any music from YouTube!",
     )
 
     # Get the voice state from dictionary, create if it does not exist
@@ -1593,7 +1593,12 @@ class Music(commands.Cog):
         await ctx.me.edit(deafen=True)
 
     @music.command(name="summon", description=loc["descriptions"]["summon"])
-    async def summon(self, ctx, channel=None):
+    @discord.commands.option(
+        name="channel",
+        description="Choose channel to summon Usagi",
+        required=True,
+    )
+    async def summon(self, ctx, channel: discord.VoiceChannel):
         # Only allow members with "Move member" permission to use this command
         if (
             not ctx.author.guild_permissions.move_members
@@ -1604,29 +1609,7 @@ class Music(commands.Cog):
             )
         # Summon the bot to other channel or the current channel
 
-        # Didn't join a channel or specify a channel to join
-        if not channel and not ctx.author.voice:
-            return await ctx.respond(
-                loc["messages"]["no_target_or_joined_voice"], ephemeral=True
-            )
-        channel_find = None
-        # Try to find the channel
-        try:
-            channel_find = ctx.guild.get_channel(int(channel))
-        except Exception as e:
-            print(f"ERROR - {e}")
-            try:
-                channel_find = ctx.guild.get_channel(int(channel[2:-1]))
-            except Exception as e:
-                print(f"ERROR - {e}")
-                if not ctx.author.voice:
-                    return await ctx.respond(
-                        loc["messages"]["voice_not_found"], ephemeral=True
-                    )
-        if channel_find is None and ctx.author.voice.channel is None:
-            return await ctx.respond(loc["messages"]["voice_not_found"], ephemeral=True)
-
-        destination = channel_find or ctx.author.voice.channel
+        destination = channel
 
         # Check permission
         if not destination.permissions_for(ctx.me).connect:
@@ -1647,7 +1630,7 @@ class Music(commands.Cog):
         else:
             # Not in any channel, use connect instead
             ctx.voice_state.voice = await destination.connect()
-            msg = await ctx.respond(
+            await ctx.respond(
                 loc["messages"]["joined"].format(destination.name),
                 ephemeral=True,
             )
@@ -1817,15 +1800,14 @@ class Music(commands.Cog):
         ctx.voice_state.skip()
 
     @music.command(name="queue", description=loc["descriptions"]["queue"])
-    async def queue(self, ctx, page=None):
+    @discord.commands.option(
+        name="page",
+        description="Choose page of queue.",
+        required=True,
+    )
+    async def queue(self, ctx, page: int):
         # Shows the queue, add page number to view different pages
-        if page is not None:
-            try:
-                page = int(page)
-            except Exception as e:
-                print(f"ERROR - {e}")
-                page = 1
-        else:
+        if page < 1:
             page = 1
         if len(ctx.voice_state.songs) == 0 and ctx.voice_state.current is None:
             return await ctx.respond(
@@ -1886,16 +1868,13 @@ class Music(commands.Cog):
             await ctx.respond(loc["messages"]["shuffled"], ephemeral=True)
 
     @music.command(name="remove", description=loc["descriptions"]["remove"])
-    async def remove(self, ctx, index=None):
-        if index is None:
-            return await ctx.respond(
-                loc["messages"]["invalid_song_number"], ephemeral=True
-            )
-        # Try to parse the index of the song that is going to be removed
-        try:
-            index = int(index)
-        except Exception as e:
-            print(f"ERROR - {e}")
+    @discord.commands.option(
+        name="index",
+        description="Choose track to remove.",
+        required=True,
+    )
+    async def remove(self, ctx, index: int):
+        if index < 1:
             return await ctx.respond(
                 loc["messages"]["invalid_song_number"], ephemeral=True
             )
@@ -1963,7 +1942,7 @@ class Music(commands.Cog):
         description="Enter music link!",
         required=True,
     )
-    async def play(self, ctx, link):
+    async def play(self, ctx, link: str):
         # Plays a song, mostly from YouTube
         """Plays a song.
         If there are songs in the queue, this will be queued until the
@@ -2150,12 +2129,13 @@ class Music(commands.Cog):
             await ctx.respond(loc["messages"]["error"].format(str(e)), ephemeral=True)
 
     @music.command(name="search", description=loc["descriptions"]["search"])
-    async def search(self, ctx, keyword=None):
+    @discord.commands.option(
+        name="keyword",
+        description="Search any music/video in YouTube.",
+        required=True,
+    )
+    async def search(self, ctx, keyword: str):
         # Search from YouTube and returns 10 songs
-        if keyword is None:
-            return await ctx.respond(
-                loc["messages"]["play_no_keyword"], ephemeral=True
-            )
         originalkeyword = keyword
         keyword = "ytsearch10:" + keyword
         data = YTDLSource.ytdl_playlist.extract_info(keyword, download=False)
@@ -2261,7 +2241,12 @@ class Music(commands.Cog):
         )
 
     @music.command(name="seek", description=loc["descriptions"]["seek"])
-    async def seek(self, ctx, seconds=None):
+    @discord.commands.option(
+        name="seconds",
+        description="Seek to any place in song.",
+        required=True,
+    )
+    async def seek(self, ctx, seconds: int):
         if not ctx.debug["debug"]:
             # If the user invoking this command is not in the same channel, return error
             if (

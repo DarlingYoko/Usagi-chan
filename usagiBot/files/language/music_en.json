@@ -65,7 +65,7 @@
         "not_in_same_voice": "You are not in the same voice channel.",
         "empty_queue": "Empty queue.",
         "only_move_member_allowed": "Only members with \"Move Member\" permission are allowed to use this command.",
-        "no_target_or_joined_voice": "You are neither connected to a voice channel nor specified a channel to join.",
+        "no_target_or_joined_voice": "You are neither connected to a voice channel.",
         "voice_not_found": "Unable to find the specific channel.",
         "left": "Bot left the voice channel.",
         "volume_invalid": "Unable to parse the volume.",
