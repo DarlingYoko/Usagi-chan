@@ -15,27 +15,11 @@ class GenshinAPI:
     def __init__(self):
         self.client = genshin.Client(game=genshin.Game.GENSHIN)
 
-    def parse_cookies(self, cookies) -> dict:
-        """
-        Converts raw cookies to dict
-        """
-        cookies_kwargs = ["cookie_token", "account_id", "ltuid", "ltoken"]
-        parsed_cookies = {}
-        for cookie in cookies:
-            if any([x in cookie for x in cookies_kwargs]):
-                cookie = cookie.split("=")
-                cookie_name = cookie[0].replace("'", "")
-                cookie_data = cookie[1].replace("'", "").replace(";", "")
-                parsed_cookies[cookie_name] = cookie_data
-        return parsed_cookies
-
     async def set_cookies(self, guild_id, user_id) -> bool:
         user = await UsagiGenshin.get(guild_id=guild_id, user_id=user_id)
         if user is None:
             return False
-        cookies = user.cookies.split()
-        parsed_cookies = self.parse_cookies(cookies)
-        self.client.set_cookies(cookies=parsed_cookies)
+        self.client.set_cookies(user.cookies)
         return True
 
     async def new_user_auth(self, guild_id, user_id, cookies):
@@ -107,7 +91,8 @@ def generate_resin_fields(data) -> list[discord.EmbedField]:
     resin_count = resin_text.substitute({"count": data.current_resin})
     realm_count = realm_text.substitute({"count": data.current_realm_currency})
 
-    daily_withdrawn = ":white_check_mark:" if data.claimed_commission_reward else ":x:"
+    daily_withdrawn = "<:greenTick:874767321007276143>" if data.claimed_commission_reward \
+        else "<:redThick:874767320915005471>"
 
     fields = [
         discord.EmbedField(
@@ -151,9 +136,9 @@ def generate_notes_fields(user) -> list[discord.EmbedField]:
         presentation_date += timedelta(weeks=6)
     presentation_date = int(presentation_date.timestamp())
 
-    resin_notify = ":white_check_mark:" if user.resin_sub else ":x:"
-    daily_reward = ":white_check_mark:" if user.daily_sub else ":x:"
-    auto_redeem_code = ":white_check_mark:" if user.code_sub else ":x:"
+    resin_notify = "<:greenTick:874767321007276143>" if user.resin_sub else "<:redThick:874767320915005471>"
+    daily_reward = "<:greenTick:874767321007276143>" if user.daily_sub else "<:redThick:874767320915005471>"
+    auto_redeem_code = "<:greenTick:874767321007276143>" if user.code_sub else "<:redThick:874767320915005471>"
 
     fields = [
         discord.EmbedField(

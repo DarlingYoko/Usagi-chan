@@ -228,7 +228,7 @@ class TestFunMethods(IsolatedAsyncioTestCase):
         self.assertEqual(fields[1].inline, True)
         self.assertEqual(fields[2].name, "Dailies:")
         self.assertEqual(
-            fields[2].value, "_ _\nCompleted: 4\nWithdrawn: :white_check_mark:"
+            fields[2].value, "_ _\nCompleted: 4\nWithdrawn: <:greenTick:874767321007276143>"
         )
         self.assertEqual(fields[2].inline, True)
 
@@ -242,15 +242,15 @@ class TestFunMethods(IsolatedAsyncioTestCase):
         fields = self.genshin_utils.generate_notes_fields(user)
         self.assertEqual(fields[0].name, "_ _")
         self.assertEqual(
-            fields[0].value, "**Notification\n of resin: **:white_check_mark:"
+            fields[0].value, "**Notification\n of resin: **<:greenTick:874767321007276143>"
         )
         self.assertEqual(fields[0].inline, True)
         self.assertEqual(fields[1].name, "_ _")
-        self.assertEqual(fields[1].value, "**Claiming\n daily rewards: **:x:")
+        self.assertEqual(fields[1].value, "**Claiming\n daily rewards: **<:redThick:874767320915005471>")
         self.assertEqual(fields[1].inline, True)
         self.assertEqual(fields[2].name, "_ _")
         self.assertEqual(
-            fields[2].value, "**Auto redeeming\n codes: **:white_check_mark:"
+            fields[2].value, "**Auto redeeming\n codes: **<:greenTick:874767321007276143>"
         )
         self.assertEqual(fields[2].inline, True)
         self.assertEqual(fields[3].name, "_ _\nAbyss reset:")
