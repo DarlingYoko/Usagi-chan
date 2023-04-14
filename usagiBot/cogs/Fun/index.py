@@ -30,6 +30,10 @@ class Fun(commands.Cog):
     async def pong_to_usagi(self, ctx) -> None:
         await ctx.reply(f"Are u sure? Ok, ping. <a:peepoWew:858320256745078834>")
 
+    @commands.command(name="link")
+    async def get_stats_link(self, ctx) -> None:
+        await ctx.reply("Here will be a link to my website, but now it's empty.")
+
     @commands.command(name="яишенка", aliases=["глазунья"])
     async def how_to_make_fried_eggs(self, ctx) -> None:
         answer = (
@@ -86,7 +90,7 @@ class Fun(commands.Cog):
             "Мдааааа, какой же ты тупой": 50 > user_iq > 1,
         }
 
-        # key = ""
+        key = ""
         for key, value in answers.items():
             if value:
                 break
