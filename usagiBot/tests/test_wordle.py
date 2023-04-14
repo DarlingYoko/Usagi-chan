@@ -1,7 +1,8 @@
-import discord, os
-
-from unittest import mock
 from unittest import IsolatedAsyncioTestCase
+from unittest import mock
+
+import discord
+import os
 from sqlalchemy.ext import asyncio
 
 os.environ["BOT_OWNER"] = "11111"
@@ -9,13 +10,12 @@ os.environ["BOT_ID"] = "1234567890"
 
 
 class TestWordleMethods(IsolatedAsyncioTestCase):
-
     @mock.patch.object(asyncio, "create_async_engine")
     def setUp(self, mock_engine) -> None:
-
         self.bot = mock.AsyncMock()
 
         import usagiBot.cogs.Wordle.wordle_utils as wordle_utils
+
         self.wordle_utils = wordle_utils
 
     def test_check_word_for_reality_in_dict(self):
@@ -43,11 +43,11 @@ class TestWordleMethods(IsolatedAsyncioTestCase):
         interaction.user = winner
 
         title = "Wordle Game #123 finished."
-        description = f'''```ansi
+        description = f"""```ansi
 [0;2m[0m[0;2mWinner — test_winner#test_winner_discriminator[0m[2;32m[0m
 [0;2mWord — [0;32m[0;34m[0;36m[0;34m[0;32m[0;35mЖОПАС[0m[0;32m[0m[0;34m[0m[0;36m[0m[0;34m[0m[0;32m[0m
 Created by test_game_author#test_game_author_discriminator[0m[2;32m[4;32m[4;32m[0;32m[0m[4;32m[0m[4;32m[0m[2;32m[0m
-```'''
+```"""
         response_embed = await self.wordle_utils.create_finish_game_embed(
             interaction=interaction,
             result="win",
@@ -81,7 +81,9 @@ Created by test_game_author#test_game_author_discriminator[0m[2;32m[4;32m[4;
 
     @mock.patch("usagiBot.cogs.Wordle.wordle_utils.end_game")
     @mock.patch("usagiBot.cogs.Wordle.wordle_utils.create_full_wordle_pic")
-    async def test_WordleAnswer_continue_play(self, mock_create_full_wordle_pic, mock_end_game) -> None:
+    async def test_WordleAnswer_continue_play(
+        self, mock_create_full_wordle_pic, mock_end_game
+    ) -> None:
         wordle_game = self.wordle_utils.WordleGame(
             embed=mock.MagicMock(),
             word="ВЬЮГА",
@@ -91,17 +93,27 @@ Created by test_game_author#test_game_author_discriminator[0m[2;32m[4;32m[4;
             game_id=123,
             timeout=180,
         )
-        wordle_answer = self.wordle_utils.WordleAnswer(game=wordle_game, title="Your answer!")
-        wordle_answer.children = [discord.ui.InputText(
+        wordle_answer = self.wordle_utils.WordleAnswer(
+            game=wordle_game, title="Your answer!"
+        )
+        wordle_answer.children = [
+            discord.ui.InputText(
                 label="Answer",
                 max_length=len(wordle_game.word),
                 min_length=len(wordle_game.word),
-                value="ванга"
-            )]
+                value="ванга",
+            )
+        ]
         interaction = mock.AsyncMock()
         await wordle_answer.callback(interaction)
 
-        letter_blocks = ["green_block", "black_block", "black_block", "green_block", "green_block"]
+        letter_blocks = [
+            "green_block",
+            "black_block",
+            "black_block",
+            "green_block",
+            "green_block",
+        ]
         green_letters = ["В", "А", "Г"]
         yellow_letters = []
         black_letters = ["А", "Н"]
@@ -121,19 +133,23 @@ Created by test_game_author#test_game_author_discriminator[0m[2;32m[4;32m[4;
             game_id=123,
             timeout=180,
         )
-        wordle_answer = self.wordle_utils.WordleAnswer(game=wordle_game, title="Your answer!")
-        wordle_answer.children = [discord.ui.InputText(
-            label="Answer",
-            max_length=len(wordle_game.word),
-            min_length=len(wordle_game.word),
-            value="ABOBA"
-        )]
+        wordle_answer = self.wordle_utils.WordleAnswer(
+            game=wordle_game, title="Your answer!"
+        )
+        wordle_answer.children = [
+            discord.ui.InputText(
+                label="Answer",
+                max_length=len(wordle_game.word),
+                min_length=len(wordle_game.word),
+                value="ABOBA",
+            )
+        ]
         interaction = mock.AsyncMock()
         await wordle_answer.callback(interaction)
 
         interaction.response.send_message.assert_called_with(
             "This word is not in the dictionary <a:Tssk:883736146578915338>",
-            ephemeral=True
+            ephemeral=True,
         )
 
     async def test_WordleAnswer_symbols_in_word(self) -> None:
@@ -146,19 +162,22 @@ Created by test_game_author#test_game_author_discriminator[0m[2;32m[4;32m[4;
             game_id=123,
             timeout=180,
         )
-        wordle_answer = self.wordle_utils.WordleAnswer(game=wordle_game, title="Your answer!")
-        wordle_answer.children = [discord.ui.InputText(
-            label="Answer",
-            max_length=len(wordle_game.word),
-            min_length=len(wordle_game.word),
-            value="AB%BA"
-        )]
+        wordle_answer = self.wordle_utils.WordleAnswer(
+            game=wordle_game, title="Your answer!"
+        )
+        wordle_answer.children = [
+            discord.ui.InputText(
+                label="Answer",
+                max_length=len(wordle_game.word),
+                min_length=len(wordle_game.word),
+                value="AB%BA",
+            )
+        ]
         interaction = mock.AsyncMock()
         await wordle_answer.callback(interaction)
 
         interaction.response.send_message.assert_called_with(
-            "Your word contains symbols, pls guess real word.",
-            ephemeral=True
+            "Your word contains symbols, pls guess real word.", ephemeral=True
         )
 
     @mock.patch("usagiBot.cogs.Wordle.wordle_utils.end_game")
@@ -172,13 +191,17 @@ Created by test_game_author#test_game_author_discriminator[0m[2;32m[4;32m[4;
             game_id=213123,
             timeout=180,
         )
-        wordle_answer = self.wordle_utils.WordleAnswer(game=wordle_game, title="Your answer!")
-        wordle_answer.children = [discord.ui.InputText(
-            label="Answer",
-            max_length=len(wordle_game.word),
-            min_length=len(wordle_game.word),
-            value="ручка"
-        )]
+        wordle_answer = self.wordle_utils.WordleAnswer(
+            game=wordle_game, title="Your answer!"
+        )
+        wordle_answer.children = [
+            discord.ui.InputText(
+                label="Answer",
+                max_length=len(wordle_game.word),
+                min_length=len(wordle_game.word),
+                value="ручка",
+            )
+        ]
         interaction = mock.AsyncMock()
         await wordle_answer.callback(interaction)
 
@@ -202,13 +225,17 @@ Created by test_game_author#test_game_author_discriminator[0m[2;32m[4;32m[4;
             game_id=321,
             timeout=180,
         )
-        wordle_answer = self.wordle_utils.WordleAnswer(game=wordle_game, title="Your answer!")
-        wordle_answer.children = [discord.ui.InputText(
-            label="Answer",
-            max_length=len(wordle_game.word),
-            min_length=len(wordle_game.word),
-            value="зайчиф"
-        )]
+        wordle_answer = self.wordle_utils.WordleAnswer(
+            game=wordle_game, title="Your answer!"
+        )
+        wordle_answer.children = [
+            discord.ui.InputText(
+                label="Answer",
+                max_length=len(wordle_game.word),
+                min_length=len(wordle_game.word),
+                value="зайчиф",
+            )
+        ]
         interaction = mock.AsyncMock()
         await wordle_answer.callback(interaction)
 
@@ -219,7 +246,3 @@ Created by test_game_author#test_game_author_discriminator[0m[2;32m[4;32m[4;
             game_author_id=2222,
             game_id=321,
         )
-
-
-
-
