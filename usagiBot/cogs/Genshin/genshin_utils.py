@@ -28,7 +28,7 @@ class GenshinAPI:
             await self.client.get_genshin_user(701700971)
         except genshin.InvalidCookies:
             return False
-        user = await UsagiGenshin.get(user_id=user_id)
+        user = await UsagiGenshin.get(guild_id=guild_id, user_id=user_id)
         if user is None:
             await UsagiGenshin.create(
                 guild_id=guild_id,

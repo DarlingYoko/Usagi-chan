@@ -163,7 +163,7 @@ class Genshin(commands.Cog):
         data = await genshin_api.get_user_data(guild_id=ctx.guild.id, user_id=user_id)
         if not data:
             await ctx.respond(
-                content="You are not logged in. Pls go `/geshin auth`", ephemeral=True
+                content="You are not logged in. Pls go `/genshin auth`", ephemeral=True
             )
             return
 
@@ -183,7 +183,7 @@ class Genshin(commands.Cog):
         user = await UsagiGenshin.get(guild_id=ctx.guild.id, user_id=ctx.user.id)
         if user is None:
             await ctx.respond(
-                content="You are not logged in. Pls go `/geshin auth`", ephemeral=True
+                content="You are not logged in. Pls go `/genshin auth`", ephemeral=True
             )
             return
 
@@ -211,7 +211,7 @@ class Genshin(commands.Cog):
         )
         if cookies_response is False:
             await ctx.respond(
-                content="You are not logged in. Pls go `/geshin auth`", ephemeral=True
+                content="You are not logged in. Pls go `/genshin auth`", ephemeral=True
             )
             return
         redeem_response = await genshin_api.redeem_code(code)
