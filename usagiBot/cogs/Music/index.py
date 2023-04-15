@@ -330,6 +330,7 @@ class VoiceState:
         self.next = asyncio.Event()
         self.next_song = None
         self.songs = SongQueue()
+        self.message = None
 
         self._loop = False
         self._volume = 0.5
@@ -674,22 +675,22 @@ class VoiceState:
                 await asyncio.sleep(0.25)
                 self.start_time = time.time()
                 self.current.start_time = time.time()
-                # if not self.forbidden:
-                #     self.message = await self.current.source.channel.send(
-                #         embed=self.current.create_embed("play"),
-                #         view=PlayerControlView(self.bot, self),
-                #     )
+                if not self.forbidden:
+                    self.message = await self.current.source.channel.send(
+                        embed=self.current.create_embed("play"),
+                        view=PlayerControlView(self.bot, self),
+                    )
                 self.forbidden = False
                 self.voice.play(self.current.source, after=self.play_next_song)
                 # Create a task for updating volume
                 self.volume_updater = self.bot.loop.create_task(self.update_volume())
                 await self.next.wait()
                 # Delete the message of the song playing
-                # if not self.forbidden:
-                #     try:
-                #         await self.message.delete()
-                #     except:
-                #         pass
+                if not self.forbidden:
+                    try:
+                        await self.message.delete()
+                    except Exception as e:
+                        print("ERROR 123- ", e)
 
     def play_next_song(self, error=None):
         end_time = time.time()
@@ -1123,18 +1124,13 @@ class StopVoteView(discord.ui.View):
         emoji="<:redThick:874767320915005471>",
     )
     async def no_btn(self, button, interaction):
-        if interaction.user not in self.voice_state.voice.channel.members:
-            return await interaction.response.send(
-                embed=get_embed(
-                    title="You are not in the same voice channel.",
-                    color=discord.Color.red(),
-                ),
-                ephemeral=True,
-            )
+        user_in_voice = await check_user_in_voice_interaction(self, interaction)
+        if not user_in_voice:
+            return
         await interaction.response.defer()
 
         if interaction.user in self.voting["disagree"]:
-            return await interaction.response.send_message(
+            return await interaction.followup.send(
                 embed=get_embed(
                     title="You already voted against stop.", color=discord.Color.red()
                 ),
@@ -1186,7 +1182,7 @@ class PlayerControlView(discord.ui.View):
             self.voice_state.current.pause_time = time.time()
             self.voice_state.current.paused = True
             get_children_by_id(self.children, "0").emoji = "▶"
-            get_children_by_id(self.children, "0").label = ("Resume",)
+            get_children_by_id(self.children, "0").label = "Resume"
         elif self.voice_state.is_playing and self.voice_state.voice.is_paused():
             self.voice_state.voice.resume()
             # Updates internal data for handling song progress that was paused
@@ -1233,14 +1229,12 @@ class PlayerControlView(discord.ui.View):
             )
             self.voice_state.skip()
             await asyncio.sleep(3)
-            await interaction.edit_original_response(
-                embed=self.voice_state.current.create_embed("now"), view=self
-            )
         else:
             await msg.edit(
                 embed=get_embed(title="Skip canceled", color=discord.Color.red()),
                 view=None,
             )
+        await msg.delete(delay=10)
 
     @discord.ui.button(
         label="Stop",
@@ -1284,6 +1278,7 @@ class PlayerControlView(discord.ui.View):
                 embed=get_embed(title="Stop canceled", color=discord.Color.red()),
                 view=None,
             )
+        await msg.delete(delay=10)
 
     @discord.ui.button(
         label="Loop",
@@ -1403,11 +1398,10 @@ class Music(commands.Cog):
                     except Exception as e:
                         print(f"ERROR 16- {e}")
                         duration = "Unknown"
-                    queue += (
-                        f"`{i + 1}.` [**{song['title']}**]({url}{song[song_id]}) ({duration})\n",
-                    )
+                    queue += f"`{i + 1}.` [**{song['title']}**]({url}{song[song_id]}) ({duration})\n"
+
         else:
-            queue = ("No songs in queue...",)
+            queue = "No songs in queue..."
         embed = (
             get_embed(title=header, description=description)
             .add_field(
@@ -1737,10 +1731,10 @@ class Music(commands.Cog):
 
         vote_view = StopVoteView(
             self.bot,
-            self.voice_state,
+            ctx.voice_state,
             {"agree": [ctx.user], "disagree": []},
         )
-        msg = await ctx.send(
+        await ctx.send_followup(
             embed=get_embed(
                 title="Stop current queue?",
                 description=f"Votes to Stop - 1",
@@ -1749,7 +1743,7 @@ class Music(commands.Cog):
         )
         await asyncio.sleep(10)
         if vote_view.votes > 0:
-            await msg.edit(
+            await ctx.edit(
                 embed=get_embed(title="Stop approved", color=discord.Color.green()),
                 view=None,
             )
@@ -1763,16 +1757,17 @@ class Music(commands.Cog):
                     ephemeral=True,
                 )
         else:
-            await msg.edit(
+            await ctx.edit(
                 embed=get_embed(title="Stop canceled", color=discord.Color.red()),
                 view=None,
             )
+        await ctx.delete(delay=10)
 
     @music.command(
         name="skip",
         description="Skip current song",
     )
-    async def skips(self, ctx):
+    async def skip(self, ctx):
         # Skips the current song
         user_in_voice = await check_user_in_voice(ctx)
         if not user_in_voice:
@@ -1791,28 +1786,30 @@ class Music(commands.Cog):
 
         vote_view = SkipVoteView(
             self.bot,
-            self.voice_state,
+            ctx.voice_state,
             {"agree": [ctx.user], "disagree": []},
         )
-        msg = await ctx.send(
+        await ctx.send_followup(
             embed=get_embed(
                 title="Skip current song?",
-                description=f"```{self.voice_state.current.source.title}```\nVotes to skip - 1",
+                description=f"```{ctx.voice_state.current.source.title}```\nVotes to skip - 1",
             ),
             view=vote_view,
         )
         await asyncio.sleep(10)
         if vote_view.votes > 0:
-            await msg.edit(
+            await ctx.edit(
                 embed=get_embed(title="Skip approved", color=discord.Color.green()),
                 view=None,
             )
-            self.voice_state.skip()
+            ctx.voice_state.skip()
         else:
-            await msg.edit(
+            await ctx.edit(
                 embed=get_embed(title="Skip canceled", color=discord.Color.red()),
                 view=None,
             )
+
+        await ctx.delete(delay=10)
 
     @music.command(name="queue", description="Show song queue")
     @discord.commands.option(
@@ -2334,26 +2331,26 @@ class Music(commands.Cog):
                 ephemeral=True,
             )
 
-    @music.command(name="player")
-    async def get_song_player(self, ctx):
-        user_in_voice = await check_user_in_voice(ctx)
-        if not user_in_voice:
-            return
-
-        if not ctx.voice_state.is_playing:
-            return await ctx.respond(
-                embed=get_embed(
-                    title="There is no songs playing right now.",
-                    color=discord.Color.red(),
-                ),
-                ephemeral=True,
-            )
-
-        await ctx.respond(
-            embed=ctx.voice_state.current.create_embed("now"),
-            view=PlayerControlView(self.bot, self.voice_states[ctx.guild.id]),
-            ephemeral=True,
-        )
+    # @music.command(name="player")
+    # async def get_song_player(self, ctx):
+    #     user_in_voice = await check_user_in_voice(ctx)
+    #     if not user_in_voice:
+    #         return
+    #
+    #     if not ctx.voice_state.is_playing:
+    #         return await ctx.respond(
+    #             embed=get_embed(
+    #                 title="There is no songs playing right now.",
+    #                 color=discord.Color.red(),
+    #             ),
+    #             ephemeral=True,
+    #         )
+    #
+    #     await ctx.respond(
+    #         embed=ctx.voice_state.current.create_embed("now"),
+    #         view=PlayerControlView(self.bot, self.voice_states[ctx.guild.id]),
+    #         ephemeral=True,
+    #     )
 
 
 def setup(bot):
