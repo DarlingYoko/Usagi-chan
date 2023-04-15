@@ -175,6 +175,21 @@ class UsagiGenshin(Base, ModelAdmin):
     code_sub = Column(Boolean)
 
 
+class UsagiSaveRoles(Base, ModelAdmin):
+    __tablename__ = "Usagi_save_roles"
+    id = Column(Integer, primary_key=True)
+    guild_id = Column(BigInteger)
+    saving_roles = Column(Boolean)
+
+
+class UsagiMemberRoles(Base, ModelAdmin):
+    __tablename__ = "Usagi_member_roles"
+    id = Column(Integer, primary_key=True)
+    guild_id = Column(BigInteger)
+    user_id = Column(BigInteger)
+    roles = Column(Text)
+
+
 async def create_tables():
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)

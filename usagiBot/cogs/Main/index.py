@@ -3,7 +3,8 @@ from discord.ext import commands
 from unittest.mock import MagicMock
 
 from usagiBot.src.UsagiErrors import *
-from usagiBot.db.models import UsagiConfig
+from usagiBot.db.models import UsagiConfig, UsagiSaveRoles
+from usagiBot.src.UsagiUtils import get_embed
 
 
 class Main(commands.Cog):
@@ -68,6 +69,39 @@ class Main(commands.Cog):
                     answer += "\n"
                 answer += "\n"
         await ctx.respond(content=answer, ephemeral=True)
+
+    @commands.slash_command(
+        name="save_roles",
+        description="Toggle saving roles on user leave guild",
+        command_tag="save_roles_on_leave",
+    )
+    async def save_roles_on_leave(self, ctx) -> None:
+        saving = await UsagiSaveRoles.get(guild_id=ctx.guild.id)
+        if saving is None:
+            await UsagiSaveRoles.create(guild_id=ctx.guild.id, saving_roles=True)
+            return await ctx.respond(
+                embed=get_embed(
+                    title="Enabled saving roles on member leave.",
+                    color=discord.Color.green()
+                )
+            )
+        else:
+            if saving.saving_roles:
+                await UsagiSaveRoles.update(id=saving.id, saving_roles=False)
+                return await ctx.respond(
+                    embed=get_embed(
+                        title="Disabled saving roles on member leave.",
+                        color=discord.Color.green()
+                    )
+                )
+            else:
+                await UsagiSaveRoles.update(id=saving.id, saving_roles=True)
+                return await ctx.respond(
+                    embed=get_embed(
+                        title="Enabled saving roles on member leave.",
+                        color=discord.Color.green()
+                    )
+                )
 
 
 def setup(bot):

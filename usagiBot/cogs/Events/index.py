@@ -8,10 +8,10 @@ from usagiBot.src.UsagiUtils import (
     error_notification_to_owner,
     load_all_command_tags,
     init_cogs_settings,
-    init_moder_roles
+    init_moder_roles, get_embed
 )
 from usagiBot.src.UsagiErrors import *
-from usagiBot.db.models import create_tables
+from usagiBot.db.models import create_tables, UsagiConfig, UsagiSaveRoles, UsagiMemberRoles
 
 
 class Events(commands.Cog):
@@ -115,6 +115,63 @@ class Events(commands.Cog):
             )
         else:
             await error_notification_to_owner(ctx, error, self.bot, app_command=True)
+
+    @commands.Cog.listener()
+    async def on_member_join(self, member):
+        saving = await UsagiSaveRoles.get(guild_id=member.guild.id)
+        if saving is None or saving is False:
+            return
+
+        command_tag = "save_roles_on_leave"
+        config = await UsagiConfig.get(guild_id=member.guild.id, command_tag=command_tag)
+        if config is None:
+            return
+
+        saved_roles = await UsagiMemberRoles.get(guild_id=member.guild.id, user_id=member.id)
+        if saved_roles is None:
+            return
+
+        roles = map(lambda role_id: member.guild.get_role(int(role_id)), saved_roles.split(","))
+        await member.add_roles(roles)
+
+        channel = await member.guild.fetch_channel(config.generic_id)
+        await channel.send(
+            embed=get_embed(
+                title=f"Returned all roles to {member.mention}"
+            )
+        )
+
+    @commands.Cog.listener()
+    async def on_member_remove(self, member):
+        saving = await UsagiSaveRoles.get(guild_id=member.guild.id)
+        if saving is None or saving is False:
+            return
+
+        command_tag = "save_roles_on_leave"
+        config = await UsagiConfig.get(guild_id=member.guild.id, command_tag=command_tag)
+        if config is None:
+            return
+
+        user_roles = ",".join(list(filter(lambda role: role.is_assignable(), member.roles)))
+        saved_roles = await UsagiMemberRoles.get(guild_id=member.guild.id, user_id=member.id)
+        if saved_roles is None:
+            await UsagiMemberRoles.create(
+                guild_id=member.guild.id,
+                user_id=member.id,
+                roles=user_roles
+            )
+        else:
+            await UsagiMemberRoles.update(
+                id=saved_roles.id,
+                roles=user_roles
+            )
+
+        channel = await member.guild.fetch_channel(config.generic_id)
+        await channel.send(
+            embed=get_embed(
+                title=f"Saved all roles for {member.mention}"
+            )
+        )
 
 
 def setup(bot):
