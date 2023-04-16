@@ -5,13 +5,12 @@ from usagiBot.src.CustomHelpCommand import CustomHelpCommand
 
 
 # Define bot
-intents = discord.Intents.default()
-intents.message_content = True
+intents = discord.Intents.all()
 bot = commands.Bot(
     command_prefix="?",
     intents=intents,
     help_command=CustomHelpCommand(),
-    debug_guilds=[733631069542416384, 955858929496231976],
+    debug_guilds=[733631069542416384, 858053936313008129],
 )
 
 # Define logger
