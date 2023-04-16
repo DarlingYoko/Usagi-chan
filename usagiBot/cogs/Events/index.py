@@ -118,26 +118,31 @@ class Events(commands.Cog):
 
     @commands.Cog.listener()
     async def on_member_join(self, member):
-        saving = await UsagiSaveRoles.get(guild_id=member.guild.id)
+        guild = member.guild
+        saving = await UsagiSaveRoles.get(guild_id=guild.id)
         if saving is None or saving is False:
             return
 
         command_tag = "save_roles_on_leave"
-        config = await UsagiConfig.get(guild_id=member.guild.id, command_tag=command_tag)
+        config = await UsagiConfig.get(guild_id=guild.id, command_tag=command_tag)
         if config is None:
             return
 
-        saved_roles = await UsagiMemberRoles.get(guild_id=member.guild.id, user_id=member.id)
+        saved_roles = await UsagiMemberRoles.get(guild_id=guild.id, user_id=member.id)
         if saved_roles is None:
             return
 
-        roles = map(lambda role_id: member.guild.get_role(int(role_id)), saved_roles.split(","))
-        await member.add_roles(roles)
+        roles_id = saved_roles.roles.split(",")
+        if roles_id == [""]:
+            return
+        roles = map(lambda role_id: guild.get_role(int(role_id)), roles_id)
+        await member.add_roles(*roles)
 
-        channel = await member.guild.fetch_channel(config.generic_id)
+        channel = await guild.fetch_channel(config.generic_id)
         await channel.send(
             embed=get_embed(
-                title=f"Returned all roles to {member.mention}"
+                title="Returned all roles to",
+                description=f"{member.mention}"
             )
         )
 
@@ -152,24 +157,26 @@ class Events(commands.Cog):
         if config is None:
             return
 
-        user_roles = ",".join(list(filter(lambda role: role.is_assignable(), member.roles)))
+        user_roles = filter(lambda role: role.is_assignable(), member.roles)
+        str_user_roles = ",".join(map(lambda role: str(role.id), user_roles))
         saved_roles = await UsagiMemberRoles.get(guild_id=member.guild.id, user_id=member.id)
         if saved_roles is None:
             await UsagiMemberRoles.create(
                 guild_id=member.guild.id,
                 user_id=member.id,
-                roles=user_roles
+                roles=str_user_roles
             )
         else:
             await UsagiMemberRoles.update(
                 id=saved_roles.id,
-                roles=user_roles
+                roles=str_user_roles
             )
 
         channel = await member.guild.fetch_channel(config.generic_id)
         await channel.send(
             embed=get_embed(
-                title=f"Saved all roles for {member.mention}"
+                title="Saved all roles for",
+                description=f"{member.mention}"
             )
         )
 
