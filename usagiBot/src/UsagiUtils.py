@@ -8,6 +8,24 @@ from usagiBot.env import BOT_OWNER
 from usagiBot.db.models import UsagiCogs, UsagiModerRoles
 
 
+class UsagiEmbed(discord.Embed):
+    def __eq__(self, other):
+        if isinstance(self, other.__class__):
+            if len(self._fields) != len(other._fields):
+                return False
+            for i in range(len(self._fields)):
+                if (
+                    self._fields[i].name != other._fields[i].name
+                    and self._fields[i].value != other._fields[i].value
+                    and self._fields[i].inline != other._fields[i].inline
+                ):
+                    return False
+
+            result = self.title == other.title and self.description == other.description
+            return result
+        return False
+
+
 async def error_notification_to_owner(ctx: discord.ext.commands.Context, error: Error, bot: discord.Bot,
                                       app_command: bool = False):
     """
@@ -95,20 +113,20 @@ async def init_moder_roles() -> Dict:
 
 
 def get_embed(
-    embed=None,
-    title="",
-    description="",
-    color=0xf08080,
-    url_image=None,
-    thumbnail=None,
-    footer=None,
-    author_name=None,
-    author_icon_URL=None,
-    fields=None,
+    embed: discord.Embed = None,
+    title: str = "",
+    description: str = "",
+    color: discord.Colour = 0xF08080,
+    url_image: str = None,
+    thumbnail: str = None,
+    footer: str = None,
+    author_name: str = None,
+    author_icon_URL: str = None,
+    fields: List[discord.EmbedField] = None,
     timestamp=datetime.utcnow(),
 ):
     if not embed:
-        embed = discord.Embed()
+        embed = UsagiEmbed()
 
     embed.color = color
 

@@ -14,6 +14,9 @@ class TestMainMethods(IsolatedAsyncioTestCase):
         self.ctx = mock.AsyncMock()
         self.ctx.author.name = "test_author"
 
+        from usagiBot.src.UsagiUtils import get_embed
+        self.get_embed = get_embed
+
         self.message = mock.AsyncMock()
 
     async def test_help_command(self) -> None:
@@ -21,21 +24,26 @@ class TestMainMethods(IsolatedAsyncioTestCase):
         main_cog.qualified_name = "Main"
         command_1 = mock.MagicMock(__original_kwargs__={})
         command_1.name = "main_command_1"
+        command_1.parent = None
+        command_1.description = "description_1"
         command_2 = mock.MagicMock(__original_kwargs__={})
         command_2.name = "main_command_2"
+        command_2.parent = None
+        command_2.description = "description_2"
         main_cog.get_commands.return_value = [command_1, command_2]
 
         fun_cog = mock.MagicMock()
-        fun_cog.qualified_name = "Fun"
-        command_3 = mock.MagicMock(__original_kwargs__={})
-        command_3.name = "fun_command_3"
-        command_4 = mock.MagicMock(__original_kwargs__={})
-        command_4.name = "fun_command_4"
-        fun_cog.get_commands.return_value = [command_3, command_4]
         self.ctx.bot.cogs = {
             "Main": main_cog,
             "Fun": fun_cog,
         }
-        await self.Main.help_command(self.ctx)
+        await self.Main.help_command(self.ctx, "Main")
+        embed = self.get_embed(
+            title="**Main**"
+        )
+        embed.add_field(name="_ _\n**None**", value="_ _")
+        embed.add_field(name="main_command_1", value="Configured - No needed\ndescription_1")
+        embed.add_field(name="main_command_2", value="Configured - No needed\ndescription_2")
+        self.ctx.respond.assert_called_with(embed=embed, ephemeral=True)
 
-        self.ctx.respond.assert_called_with(content="**Main**\n\t*None*\n> \t\tmain_command_1 \n> \t\tmain_command_2 \n\n\n**Fun**\n\t*None*\n> \t\tfun_command_3 \n> \t\tfun_command_4 \n\n\n", ephemeral=True)
+
