@@ -1885,7 +1885,8 @@ class Music(commands.Cog):
 
         await ctx.respond(
             embed=get_embed(
-                title=f"Song `{name}` removed.",
+                title=f"Song removed.",
+                description=f"{name}",
                 color=discord.Color.green(),
             ),
             ephemeral=True,
