@@ -1,5 +1,5 @@
 from usagiBot.db.base import Base, async_session, engine
-from sqlalchemy import Text, BigInteger, Boolean, Column, Integer, DateTime, and_
+from sqlalchemy import Text, BigInteger, Boolean, Column, Integer, DateTime, ForeignKey, and_
 from sqlalchemy import update as sqlalchemy_update
 from sqlalchemy import delete as sqlalchemy_delete
 from sqlalchemy.future import select
@@ -176,18 +176,36 @@ class UsagiGenshin(Base, ModelAdmin):
 
 
 class UsagiSaveRoles(Base, ModelAdmin):
-    __tablename__ = "Usagi_save_roles"
+    __tablename__ = "usagi_save_roles"
     id = Column(Integer, primary_key=True)
     guild_id = Column(BigInteger)
     saving_roles = Column(Boolean)
 
 
 class UsagiMemberRoles(Base, ModelAdmin):
-    __tablename__ = "Usagi_member_roles"
+    __tablename__ = "usagi_member_roles"
     id = Column(Integer, primary_key=True)
     guild_id = Column(BigInteger)
     user_id = Column(BigInteger)
     roles = Column(Text)
+
+
+class UsagiAutoRoles(Base, ModelAdmin):
+    __tablename__ = "usagi_auto_roles"
+    id = Column(Integer, primary_key=True)
+    guild_id = Column(BigInteger)
+    channel_id = Column(BigInteger)
+    message_id = Column(Text, unique=True)
+    name = Column(Text)
+
+
+class UsagiAutoRolesData(Base, ModelAdmin):
+    __tablename__ = "usagi_auto_roles_data"
+    id = Column(Integer, primary_key=True)
+    message_id = Column(Text, ForeignKey('usagi_auto_roles.message_id'))
+    role_id = Column(BigInteger)
+    emoji_id = Column(BigInteger)
+    description = Column(Text)
 
 
 async def create_tables():

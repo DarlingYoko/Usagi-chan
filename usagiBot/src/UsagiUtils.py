@@ -5,7 +5,7 @@ import discord
 from discord.ext.commands._types import Error
 
 from usagiBot.env import BOT_OWNER
-from usagiBot.db.models import UsagiCogs, UsagiModerRoles
+from usagiBot.db.models import UsagiCogs, UsagiModerRoles, UsagiAutoRoles
 
 
 class UsagiEmbed(discord.Embed):
@@ -32,6 +32,7 @@ async def error_notification_to_owner(ctx: discord.ext.commands.Context, error: 
     Send error log to bot owner
     :param ctx: Discord Context
     :param error: Error
+    :bot: Bot object
     :param app_command: Is command application
     :return:
     """
@@ -55,7 +56,7 @@ async def error_notification_to_owner(ctx: discord.ext.commands.Context, error: 
     bot.logger.error(error)
 
 
-async def load_all_command_tags(bot: discord.ext.commands.Bot) -> None:
+async def load_all_command_tags(bot: discord.ext.commands.Bot) -> List[discord.commands.options.OptionChoice]:
     """
     Loads all command tags into bot
     :param bot:
@@ -72,7 +73,7 @@ async def load_all_command_tags(bot: discord.ext.commands.Bot) -> None:
                 )
                 command_tags.append(choice)
 
-    bot.command_tags = command_tags
+    return command_tags
 
 
 def check_arg_in_command_tags(
@@ -110,6 +111,15 @@ async def init_moder_roles() -> Dict:
     for item in copy_from_db:
         moder_roles.setdefault(item.guild_id, []).append(item.moder_role_id)
     return moder_roles
+
+
+async def init_auto_roles() -> Dict:
+    payload = {}
+    auto_roles = await UsagiAutoRoles.get_all()
+    for role in auto_roles:
+        guild_payload = payload.setdefault(role.guild_id, {})
+        guild_payload.setdefault(role.message_id, {"name": role.name, "channel_id": role.channel_id})
+    return payload
 
 
 def get_embed(

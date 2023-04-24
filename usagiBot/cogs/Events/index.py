@@ -8,10 +8,12 @@ from usagiBot.src.UsagiUtils import (
     error_notification_to_owner,
     load_all_command_tags,
     init_cogs_settings,
-    init_moder_roles, get_embed
+    init_moder_roles,
+    get_embed,
+    init_auto_roles
 )
 from usagiBot.src.UsagiErrors import *
-from usagiBot.db.models import create_tables, UsagiConfig, UsagiSaveRoles, UsagiMemberRoles
+from usagiBot.db.models import create_tables, UsagiConfig, UsagiSaveRoles, UsagiMemberRoles, UsagiAutoRolesData
 
 
 class Events(commands.Cog):
@@ -22,9 +24,10 @@ class Events(commands.Cog):
     @commands.Cog.listener()
     async def on_ready(self):
         await create_tables()
-        await load_all_command_tags(self.bot)
+        self.bot.command_tags = await load_all_command_tags(self.bot)
         self.bot.guild_cogs_settings = await init_cogs_settings()
         self.bot.moder_roles = await init_moder_roles()
+        self.bot.auto_roles = await init_auto_roles()
         self.bot.logger.info("---------NEW SESSION----------")
         self.bot.logger.info(f"Logged in as {self.bot.user.name}")
         self.bot.logger.info(f"discord.py API version: {discord.__version__}")
@@ -179,6 +182,70 @@ class Events(commands.Cog):
                 description=f"{member.mention}"
             )
         )
+
+    @commands.Cog.listener()
+    async def on_raw_reaction_add(self, payload):
+        message_id = str(payload.message_id)
+        user_id = payload.user_id
+        emoji = payload.emoji
+        guild_id = payload.guild_id
+
+        if user_id == self.bot.user.id:
+            return
+        auto_roles = self.bot.auto_roles.get(guild_id, {})
+        role_data = auto_roles.get(message_id, None)
+
+        if role_data is None:
+            return
+        role = await UsagiAutoRolesData.get(message_id=message_id, emoji_id=emoji.id)
+        if role is None:
+            return
+
+        guild = await self.bot.fetch_guild(guild_id)
+        role = guild.get_role(role.role_id)
+        user = await guild.fetch_member(user_id)
+        try:
+            await user.add_roles(role)
+        except discord.errors.Forbidden:
+            channel = await guild.fetch_channel(role_data["channel_id"])
+            await channel.send(
+                embed=get_embed(
+                    title="Cannot give roles as my role has lower position.",
+                    color=discord.Color.red()
+                )
+            )
+
+    @commands.Cog.listener()
+    async def on_raw_reaction_remove(self, payload):
+        message_id = str(payload.message_id)
+        user_id = payload.user_id
+        emoji = payload.emoji
+        guild_id = payload.guild_id
+
+        if user_id == self.bot.user.id:
+            return
+        auto_roles = self.bot.auto_roles.get(guild_id, {})
+        role_data = auto_roles.get(message_id, None)
+
+        if role_data is None:
+            return
+        role = await UsagiAutoRolesData.get(message_id=message_id, emoji_id=emoji.id)
+        if role is None:
+            return
+
+        guild = await self.bot.fetch_guild(guild_id)
+        role = guild.get_role(role.role_id)
+        user = await guild.fetch_member(user_id)
+        try:
+            await user.remove_roles(role)
+        except discord.errors.Forbidden:
+            channel = await guild.fetch_channel(role_data["channel_id"])
+            await channel.send(
+                embed=get_embed(
+                    title="Cannot remove roles as my role has lower position.",
+                    color=discord.Color.red()
+                )
+            )
 
 
 def setup(bot):
