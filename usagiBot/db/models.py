@@ -208,6 +208,14 @@ class UsagiAutoRolesData(Base, ModelAdmin):
     description = Column(Text)
 
 
+class UsagiTimer(Base, ModelAdmin):
+    __tablename__ = "usagi_timer"
+    id = Column(Integer, primary_key=True)
+    guild_id = Column(BigInteger)
+    channel_id = Column(BigInteger)
+    date = Column(DateTime)
+
+
 async def create_tables():
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)

@@ -1,12 +1,13 @@
+from datetime import datetime
 from typing import List
 
 import discord
-from discord.ext import commands
+from discord.ext import commands, tasks
 from discord.commands import SlashCommandGroup
 
 from usagiBot.src.UsagiChecks import check_correct_channel_command, check_member_is_moder
 from usagiBot.src.UsagiErrors import *
-from usagiBot.db.models import UsagiConfig, UsagiSaveRoles, UsagiAutoRoles, UsagiAutoRolesData
+from usagiBot.db.models import UsagiConfig, UsagiSaveRoles, UsagiAutoRoles, UsagiAutoRolesData, UsagiTimer
 from usagiBot.src.UsagiUtils import get_embed
 
 
@@ -28,6 +29,22 @@ async def get_auto_role_messages(
     return names
 
 
+async def get_timers(
+        ctx: discord.AutocompleteContext,
+) -> List[discord.OptionChoice]:
+    """
+    Returns a list of command tags.
+    """
+    timers = await UsagiTimer.get_all_by(guild_id=ctx.interaction.guild_id)
+    guild = ctx.bot.get_guild(ctx.interaction.guild_id)
+    timer_names = []
+    for timer in timers:
+        channel = await guild.fetch_channel(timer.channel_id)
+        timer_names.append(discord.OptionChoice(name=channel.name, value=str(timer.channel_id)))
+
+    return timer_names
+
+
 async def get_roles_from_message(ctx: discord.AutocompleteContext) -> List[discord.OptionChoice]:
     picked_message = ctx.options["message"]
     role_data = await UsagiAutoRolesData.get_all_by(message_id=picked_message)
@@ -42,6 +59,25 @@ async def get_roles_from_message(ctx: discord.AutocompleteContext) -> List[disco
 class Main(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.update_timer.start()
+
+    @tasks.loop(minutes=30)
+    async def update_timer(self):
+        timers = await UsagiTimer.get_all()
+        time_now = datetime.now()
+
+        for timer in timers:
+            guild = await self.bot.fetch_guild(timer.guild_id)
+            channel = await guild.fetch_channel(timer.channel_id)
+            delta = timer.date - time_now
+            s = delta.seconds
+            hours, remainder = divmod(s, 3600)
+            minutes, seconds = divmod(remainder, 60)
+            time = ""
+            if delta.days:
+                time += f"{delta.days} d."
+            time += f" {hours} h. {minutes} m."
+            await channel.edit(name=time, reason="Update timer.")
 
     @commands.slash_command(name="help", description="Show help for commands")
     @discord.commands.option(
@@ -130,6 +166,83 @@ class Main(commands.Cog):
                 value += command["description"]
                 embed.add_field(name=command["name"], value=value, inline=False)
         await ctx.respond(embed=embed, ephemeral=True)
+
+    timer_group = SlashCommandGroup(
+        name="timer",
+        description="Set countdown timer for any event!",
+        checks=[
+            check_member_is_moder
+        ],
+    )
+
+    @timer_group.command(name="add", description="Add timer to date")
+    @discord.commands.option(
+        name="date",
+        description="Enter date in `%m.%d.%Y %H:%M:%S` format.",
+        required=True,
+    )
+    async def add_timer(
+            self,
+            ctx,
+            channel: discord.VoiceChannel,
+            date: str,
+    ) -> None:
+        try:
+            datetime_obj = datetime.strptime(date, "%m.%d.%Y %H:%M:%S")
+        except ValueError:
+            return await ctx.respond(
+                embed=get_embed(
+                    title=f"Time data `{date}` does not match format `%m.%d.%Y %H:%M:%S`",
+                    color=discord.Color.red()
+                ),
+                ephemeral=True
+            )
+
+        timer = await UsagiTimer.get(guild_id=ctx.guild.id, channel_id=channel.id)
+        response = "Added new timer"
+        if timer:
+            await UsagiTimer.update(id=timer.id, date=datetime_obj)
+            response = "Changed timer"
+        else:
+            await UsagiTimer.create(guild_id=ctx.guild.id, channel_id=channel.id, date=datetime_obj)
+        await ctx.respond(
+            embed=get_embed(
+                title=response,
+                color=discord.Color.green()
+            ),
+            ephemeral=True
+        )
+
+    @timer_group.command(name="remove", description="Add timer to date")
+    @discord.commands.option(
+        name="timer",
+        description="Select timer to remove",
+        autocomplete=get_timers,
+        required=True,
+    )
+    async def remove_timer(
+            self,
+            ctx,
+            timer: str,
+    ) -> None:
+        old_timer = await UsagiTimer.get(guild_id=ctx.guild.id, channel_id=int(timer))
+        if old_timer is None:
+            return await ctx.respond(
+                embed=get_embed(
+                    title=f"There is no timer in that channel",
+                    color=discord.Color.red()
+                ),
+                ephemeral=True
+            )
+
+        await UsagiTimer.delete(id=old_timer.id)
+        await ctx.respond(
+            embed=get_embed(
+                title="Successfully removed",
+                color=discord.Color.green()
+            ),
+            ephemeral=True
+        )
 
     @commands.slash_command(
         name="save_roles",
@@ -353,13 +466,14 @@ class Main(commands.Cog):
     @discord.commands.option(
         name="role",
         description="Pick a role to remove",
+        autocomplete=get_roles_from_message,
         required=True,
     )
     async def remove_reaction_role(
             self,
             ctx,
             message: str,
-            role: discord.Role,
+            role: str,
     ):
         auto_roles = ctx.bot.auto_roles.get(ctx.guild_id, {})
         message_id = message
@@ -386,17 +500,13 @@ class Main(commands.Cog):
 
         payload = await UsagiAutoRolesData.get_all_by(message_id=message_id)
         text = ""
-        counter = 1
         old_emoji = None
-        if payload is not None:
-            for entity in payload:
-                if entity.role_id == role.id:
-                    old_emoji = await ctx.guild.fetch_emoji(entity.emoji_id)
-                    continue
-                payload_emoji = await ctx.guild.fetch_emoji(entity.emoji_id)
-                text += f"{counter}. <@&{entity.role_id}> – {entity.description} – {payload_emoji}\n"
-                counter += 1
-
+        for counter, entity in enumerate(payload, start=1):
+            if entity.role_id == int(role):
+                old_emoji = await ctx.guild.fetch_emoji(entity.emoji_id)
+                continue
+            payload_emoji = await ctx.guild.fetch_emoji(entity.emoji_id)
+            text += f"{counter}. <@&{entity.role_id}> – {entity.description} – {payload_emoji}\n"
         embed = get_embed(
             title=role_data["name"],
             description=text
@@ -404,9 +514,9 @@ class Main(commands.Cog):
 
         await msg.edit(embed=embed)
         await msg.clear_reaction(old_emoji)
-        await UsagiAutoRolesData.remove(
+        await UsagiAutoRolesData.delete(
             message_id=message_id,
-            role_id=role.id,
+            role_id=int(role),
         )
 
         await ctx.respond(
