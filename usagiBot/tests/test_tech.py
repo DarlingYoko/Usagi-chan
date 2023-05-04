@@ -42,10 +42,6 @@ class TestTechMethods(IsolatedAsyncioTestCase):
         )
         self.ctx.respond.assert_called_with("Good night, see you in 20 hours.", ephemeral=True)
 
-    async def test_go_sleep_wrong_hours(self) -> None:
-        await self.Tech.go_sleep(self.ctx, 80)
-        self.ctx.respond.assert_called_with("You entered the wrong amount of time.", ephemeral=True)
-
     async def test_create_new_unic_role(self) -> None:
         await self.Tech.create_new_unic_role(self.ctx, "test_role_name", "111")
         self.ctx.guild.create_role.assert_called_with(

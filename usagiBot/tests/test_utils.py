@@ -72,7 +72,7 @@ class TestUtilsMethods(IsolatedAsyncioTestCase):
         main_cog.get_commands.return_value = [command_1, command_2]
         self.bot.cogs.items.return_value = [("Main", main_cog)]
 
-        await self.Usagi_Utils.load_all_command_tags(self.bot)
+        self.bot.command_tags = await self.Usagi_Utils.load_all_command_tags(self.bot)
         self.assertEqual(self.bot.command_tags[0].name, "main_command_1")
         self.assertEqual(self.bot.command_tags[0].value, "command_tag_command_1")
         self.assertEqual(self.bot.command_tags[1].name, "main_command_2")
