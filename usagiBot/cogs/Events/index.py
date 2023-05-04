@@ -1,7 +1,9 @@
+import re
+
 import discord
 import platform
 import os
-from discord.ext import commands
+from discord.ext import commands, tasks
 from discord.ext.commands import BadColourArgument
 
 from usagiBot.src.UsagiUtils import (
@@ -13,12 +15,66 @@ from usagiBot.src.UsagiUtils import (
     init_auto_roles
 )
 from usagiBot.src.UsagiErrors import *
-from usagiBot.db.models import create_tables, UsagiConfig, UsagiSaveRoles, UsagiMemberRoles, UsagiAutoRolesData
+from usagiBot.db.models import (
+    create_tables,
+    UsagiConfig,
+    UsagiSaveRoles,
+    UsagiMemberRoles,
+    UsagiAutoRolesData,
+    UsagiBackup
+)
 
 
 class Events(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.bot.messages_dump = {}
+        self.dump_data.start()
+
+    @tasks.loop(minutes=30)
+    async def dump_data(self):
+        backup = await UsagiBackup.get_all()
+
+        delete_ids = []
+        insert_mappings = []
+
+        for user in backup:
+            exist_user = self.bot.messages_dump \
+                .get(user.guild_id, {}) \
+                .get(user.channel_id, {}) \
+                .get(user.user_id, None)
+
+            if exist_user is not None:
+                insert_mappings.append(UsagiBackup(
+                    guild_id=user.guild_id,
+                    channel_id=user.channel_id,
+                    user_id=user.user_id,
+                    messages=exist_user["messages"] + user.messages,
+                    images=exist_user["images"] + user.images,
+                    gifs=exist_user["gifs"] + user.gifs,
+                    emojis=exist_user["emojis"] + user.emojis,
+                    stickers=exist_user["stickers"] + user.stickers,
+                ))
+                delete_ids.append(user.id)
+
+                del self.bot.messages_dump[user.guild_id][user.channel_id][user.user_id]
+        for guild in self.bot.messages_dump.keys():
+            for channel in self.bot.messages_dump[guild].keys():
+                for user in self.bot.messages_dump[guild][channel].keys():
+                    user_data = self.bot.messages_dump[guild][channel][user]
+                    insert_mappings.append(UsagiBackup(
+                        guild_id=guild,
+                        channel_id=channel,
+                        user_id=user,
+                        messages=user_data["messages"],
+                        images=user_data["images"],
+                        gifs=user_data["gifs"],
+                        emojis=user_data["emojis"],
+                        stickers=user_data["stickers"],
+                    ))
+
+        await UsagiBackup.delete_all(delete_ids)
+        await UsagiBackup.insert_mappings(insert_mappings)
 
     # Define main events
     @commands.Cog.listener()
@@ -246,6 +302,42 @@ class Events(commands.Cog):
                     color=discord.Color.red()
                 )
             )
+
+    @commands.Cog.listener()
+    async def on_message(self, message):
+        if message.author == self.bot.user or message.author.bot:
+            return
+
+        user_id = message.author.id
+        channel_id = message.channel.id
+        guild_id = message.guild.id
+
+        guild = self.bot.messages_dump.setdefault(guild_id, {})
+        channel = guild.setdefault(channel_id, {})
+        member = channel.setdefault(user_id, {
+            "messages": 0,
+            "images": 0,
+            "gifs": 0,
+            "emojis": 0,
+            "stickers": 0
+        })
+        member["messages"] += 1
+
+        if message.attachments:
+            for attachment in message.attachments:
+                if attachment.content_type in ["image/png", "image/jpeg", "image/jpg"]:
+                    member["images"] += 1
+                if attachment.content_type in ["image/gif"]:
+                    member["gifs"] += 1
+
+        if ".gif" in message.content:
+            member["gifs"] += 1
+
+        if re.search("<*:*:*>", message.content):
+            member["emojis"] += 1
+
+        if message.stickers:
+            member["stickers"] += len(message.stickers)
 
 
 def setup(bot):

@@ -23,6 +23,13 @@ class ModelAdmin:
                 await session.commit()
 
     @classmethod
+    async def insert_mappings(cls, mappings):
+        async with async_session() as session:
+            async with session.begin():
+                session.add_all(mappings)
+                return True
+
+    @classmethod
     async def update(cls, id, **kwargs):
         query = (
             sqlalchemy_update(cls)
@@ -55,6 +62,18 @@ class ModelAdmin:
         query = (
             sqlalchemy_delete(cls)
             .where(and_(*conditions))
+            .execution_options(synchronize_session="fetch")
+        )
+        async with async_session() as session:
+            async with session.begin():
+                await session.execute(query)
+                await session.commit()
+
+    @classmethod
+    async def delete_all(cls, ids):
+        query = (
+            sqlalchemy_delete(cls)
+            .where(cls.id.in_(ids))
             .execution_options(synchronize_session="fetch")
         )
         async with async_session() as session:
@@ -214,6 +233,19 @@ class UsagiTimer(Base, ModelAdmin):
     guild_id = Column(BigInteger)
     channel_id = Column(BigInteger)
     date = Column(DateTime)
+
+
+class UsagiBackup(Base, ModelAdmin):
+    __tablename__ = "usagi_backup"
+    id = Column(Integer, primary_key=True)
+    guild_id = Column(BigInteger)
+    channel_id = Column(BigInteger)
+    user_id = Column(BigInteger)
+    messages = Column(BigInteger)
+    images = Column(BigInteger)
+    gifs = Column(BigInteger)
+    emojis = Column(BigInteger)
+    stickers = Column(BigInteger)
 
 
 async def create_tables():
