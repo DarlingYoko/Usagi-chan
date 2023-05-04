@@ -153,18 +153,16 @@ class Main(commands.Cog):
             command_list.append(command_dict)
 
         for item, value in commands_dict.items():
-            embed.add_field(name=f"_ _\n**{item}**", value="_ _")
+            embed.add_field(name=f"_ _\n**{item}**", value="_ _", inline=False)
             for command in value:
                 value = ""
                 if command["set_up"]:
                     if command["channel_id"]:
                         value += f"Configured - <#{command['channel_id']}>\n"
-                    else:
-                        value += "Configured - No needed\n"
                 else:
                     value += "Configured - <:redThick:874767320915005471>\n"
                 value += command["description"]
-                embed.add_field(name=command["name"], value=value, inline=False)
+                embed.add_field(name=command["name"], value=value, inline=True)
         await ctx.respond(embed=embed, ephemeral=True)
 
     timer_group = SlashCommandGroup(
