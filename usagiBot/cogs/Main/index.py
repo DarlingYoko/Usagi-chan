@@ -418,6 +418,14 @@ class Main(commands.Cog):
                 ),
                 ephemeral=True
             )
+        if len(msg.reactions) == 0:
+            return await ctx.respond(
+                embed=get_embed(
+                    title="This message already had 20 reactions.",
+                    color=discord.Color.red()
+                ),
+                ephemeral=True
+            )
 
         payload = await UsagiAutoRolesData.get_all_by(message_id=message_id)
         text = ""
