@@ -5,7 +5,6 @@ import platform
 import os
 from discord.ext import commands, tasks
 from discord.ext.commands import BadColourArgument
-from pycord18n.extension import _
 
 from usagiBot.src.UsagiUtils import (
     error_notification_to_owner,
@@ -104,10 +103,13 @@ class Events(commands.Cog):
         self.bot.logger.info(f"Settings loaded.")
         self.bot.logger.info(f"Moder roles loaded.")
         self.bot.logger.info("-------------------")
+        await self.bot.change_presence(
+            status=discord.Status.online,
+            activity=discord.Game("/help | ver 2.0 | NEW RELEASE!!"))
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):
-        user_lang = self.bot.language.get(ctx.user.id, "en")
+        user_lang = self.bot.language.get(ctx.author.id, "en")
         if isinstance(error, commands.CommandNotFound):
             await ctx.reply(
                 self.bot.i18n.get_text("This command doesn't exist", user_lang),
@@ -158,7 +160,7 @@ class Events(commands.Cog):
 
     @commands.Cog.listener()
     async def on_application_command_error(self, ctx, error):
-        user_lang = self.bot.language.get(ctx.user.id, "en")
+        user_lang = self.bot.language.get(ctx.author.id, "en")
         if isinstance(error, discord.errors.CheckFailure):
             await ctx.respond(
                 self.bot.i18n.get_text("Some requirements were not met.", user_lang),
@@ -334,6 +336,8 @@ class Events(commands.Cog):
         if message.author == self.bot.user or message.author.bot:
             return
 
+        if isinstance(message.channel, discord.channel.DMChannel):
+            return
         user_id = message.author.id
         channel_id = message.channel.id
         guild_id = message.guild.id
