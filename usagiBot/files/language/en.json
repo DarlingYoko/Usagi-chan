@@ -40,9 +40,9 @@
     "resin_cap": "{resin_count}160 resin\n<t:{resin_timer}:R>",
     "realm_cap": "{realm_count}{max_realm_currency} realm\n<t:{realm_timer}:R>",
     "Completed": "_ _\nCompleted: {completed_commissions}\nWithdrawn: {daily_withdrawn}",
-    "resin_notify": "**Notification\n of resin: **{resin_notify}",
-    "daily_reward": "**Claiming\n daily rewards: **{daily_reward}",
-    "**Auto redeeming": "**Auto redeeming\n codes: **{auto_redeem_code}",
+    "resin_notify_text": "**Notification\n of resin: **{resin_notify}",
+    "daily_reward_text": "**Claiming\n daily rewards: **{daily_reward}",
+    "Auto redeeming": "**Auto redeeming\n codes: **{auto_redeem_code}",
     "Abyss reset": "_ _\nAbyss reset:",
     "Presentation": "_ _\nPresentation:",
     "New patch": "_ _\nNew patch:",
@@ -125,5 +125,5 @@
     "Answer": "Answer",
     "This word is not in the dictionary": "This word is not in the dictionary <a:Tssk:883736146578915338>",
     "No one": "No one",
-    "Wordle Game finished.": "Wordle Game #{game} finished."
+    "Wordle Game finished": "Wordle Game #{game} finished."
 }

@@ -40,9 +40,9 @@
     "resin_cap": "{resin_count}160 смолы\n<t:{resin_timer}:R>",
     "realm_cap": "{realm_count}{max_realm_currency} монет\n<t:{realm_timer}:R>",
     "Completed": "_ _\nВыполнено: {completed_commissions}\nПолучена награда: {daily_withdrawn}",
-    "resin_notify": "**Уведомление\n о смола: **{resin_notify}",
-    "daily_reward": "**Забор\n дейли отметок: **{daily_reward}",
-    "**Auto redeeming": "**Авто получение\n кодов: **{auto_redeem_code}",
+    "resin_notify_text": "**Уведомление\n о смола: **{resin_notify}",
+    "daily_reward_text": "**Забор\n дейли отметок: **{daily_reward}",
+    "Auto redeeming": "**Авто получение\n кодов: **{auto_redeem_code}",
     "Abyss reset": "_ _\nОбновление бездны:",
     "Presentation": "_ _\nПрезентация:",
     "New patch": "_ _\nНовый патч:",
@@ -125,5 +125,5 @@
     "Answer": "Ответ",
     "This word is not in the dictionary": "Этого слова нет в словаре <a:Tssk:883736146578915338>",
     "No one": "Никто",
-    "Wordle Game finished.": "Вордли Игра #{game} закончена."
+    "Wordle Game finished": "Вордли Игра #{game} закончена."
 }
