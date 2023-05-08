@@ -5,7 +5,7 @@ import discord
 from discord.ext.commands._types import Error
 
 from usagiBot.env import BOT_OWNER
-from usagiBot.db.models import UsagiCogs, UsagiModerRoles, UsagiAutoRoles
+from usagiBot.db.models import UsagiCogs, UsagiModerRoles, UsagiAutoRoles, UsagiLanguage
 
 
 class UsagiEmbed(discord.Embed):
@@ -120,6 +120,11 @@ async def init_auto_roles() -> Dict:
         guild_payload = payload.setdefault(role.guild_id, {})
         guild_payload.setdefault(role.message_id, {"name": role.name, "channel_id": role.channel_id})
     return payload
+
+
+async def init_language() -> Dict:
+    langs = await UsagiLanguage.get_all()
+    return {lang.user_id: lang.lang for lang in langs}
 
 
 def get_embed(

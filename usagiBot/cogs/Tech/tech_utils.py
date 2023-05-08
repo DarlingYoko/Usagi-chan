@@ -2,6 +2,7 @@ from typing import List
 
 import discord
 from discord import OptionChoice
+from pycord18n.extension import _
 
 from usagiBot.db.models import UsagiUnicRoles
 
@@ -30,7 +31,7 @@ async def get_user_role(ctx, role_id):
     user_roles = await get_user_roles(ctx)
     user_role_ids = list(map(lambda x: int(x.value), user_roles))
     if role_id not in user_role_ids:
-        await ctx.respond("It's not your role or you didn't create it", ephemeral=True)
+        await ctx.respond(_("It's not your role or you didn't create it"), ephemeral=True)
         return None
     role = ctx.guild.get_role(role_id)
     return role

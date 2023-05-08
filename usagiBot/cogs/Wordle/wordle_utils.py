@@ -11,20 +11,21 @@ from usagiBot.env import BOT_ID
 from usagiBot.db.models import UsagiWordleGames, UsagiWordleResults
 from usagiBot.src.UsagiUtils import get_embed
 
+from pycord18n.extension import _
+
 
 class WordleAnswer(discord.ui.Modal):
     def __init__(self, game, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.letter_blocks = None
+        self.game = game
         self.add_item(
             discord.ui.InputText(
-                label="Answer",
+                label=self.game.bot.i18n.get_text("Answer", self.game.user_lang),
                 max_length=len(game.word),
                 min_length=len(game.word),
             )
-
         )
-        self.game = game
         # self.add_item(discord.ui.InputText(label="Long Input", style=discord.InputTextStyle.long))
 
     async def callback(self, interaction: discord.Interaction):
@@ -38,8 +39,8 @@ class WordleAnswer(discord.ui.Modal):
             check_reality = check_word_for_reality(answer)
             if not check_reality:
                 await interaction.response.send_message(
-                    "This word is not in the dictionary <a:Tssk:883736146578915338>",
-                    ephemeral=True
+                    self.game.bot.i18n.get_text("This word is not in the dictionary", self.game.user_lang),
+                    ephemeral=True,
                 )
                 return
 
@@ -47,7 +48,7 @@ class WordleAnswer(discord.ui.Modal):
             letter_ascii = ord(i)
             if not (65 <= letter_ascii <= 90) and not (1040 <= letter_ascii <= 1071):
                 await interaction.response.send_message(
-                    "Your word contains symbols, pls guess real word.",
+                    self.game.bot.i18n.get_text("Your word contains symbols", self.game.user_lang),
                     ephemeral=True
                 )
                 return
@@ -62,7 +63,9 @@ class WordleAnswer(discord.ui.Modal):
             difference_letters = guessed_indices - correct_indices
 
             new_green_indices = list(guessed_letters)
-            new_yellow_indices = list(difference_letters)[:len(correct_indices) - len(new_green_indices)]
+            new_yellow_indices = list(difference_letters)[
+                : len(correct_indices) - len(new_green_indices)
+            ]
             new_black_indices = list(difference_letters - set(new_yellow_indices))
 
             new_green_letters = list(map(lambda x: answer[x], new_green_indices))
@@ -96,7 +99,7 @@ class WordleAnswer(discord.ui.Modal):
         embed = get_embed(
             title=self.game.embed.title,
             description=self.game.embed.description,
-            url_image=f"attachment://Usagi_wordle_game_{self.game.game_id}_{self.game.lives_count}.png"
+            url_image=f"attachment://Usagi_wordle_game_{self.game.game_id}_{self.game.lives_count}.png",
         )
         self.game.embed = embed
         self.game.image = wordle_image
@@ -110,7 +113,7 @@ class WordleAnswer(discord.ui.Modal):
                 word=self.game.word,
                 game_author_id=self.game.owner_id,
                 lives_count=self.game.lives_count,
-                game_id=self.game.game_id,
+                game=self.game,
             )
         elif self.game.lives_count == 0:
             # lose condition
@@ -119,20 +122,22 @@ class WordleAnswer(discord.ui.Modal):
                 result="lose",
                 word=self.game.word,
                 game_author_id=self.game.owner_id,
-                game_id=self.game.game_id,
+                game=self.game,
             )
 
 
 class WordleGame(discord.ui.View):
     def __init__(
-            self,
-            embed: discord.Embed,
-            word: str,
-            owner_id: int,
-            word_language: str,
-            lives_count: int,
-            game_id: int,
-            timeout: int,
+        self,
+        embed: discord.Embed,
+        word: str,
+        owner_id: int,
+        word_language: str,
+        lives_count: int,
+        game_id: int,
+        timeout: int,
+        bot,
+        user_lang: str,
     ):
         super().__init__(timeout=timeout)
         self.embed = embed
@@ -147,6 +152,8 @@ class WordleGame(discord.ui.View):
         self.yellow_letters = []
         self.black_letters = []
         self.prev_pic_url = None
+        self.bot = bot
+        self.user_lang = user_lang
 
     @discord.ui.button(
         label="Guess",
@@ -160,24 +167,36 @@ class WordleGame(discord.ui.View):
         :return:
         """
         if interaction.user.id == self.owner_id:
-            # owner answered
-            await interaction.response.send_message("You guessed a word, you can't guess!", ephemeral=True)
+            # the owner answered
+            await interaction.response.send_message(
+                self.bot.i18n.get_text("You guessed a word", self.user_lang), ephemeral=True
+            )
             return
-        await interaction.response.send_modal(WordleAnswer(game=self, title="Your answer!"))
+        await interaction.response.send_modal(
+            WordleAnswer(
+                game=self,
+                title=self.bot.i18n.get_text("Your answer", self.user_lang)
+            )
+        )
 
 
 async def generate_new_wordle_game(
-        ctx: discord.ApplicationContext,
-        word: str,
-        game_type: str) -> None:
+    ctx: discord.ApplicationContext,
+    word: str,
+    game_type: str,
+    bot,
+    user_lang: str,
+) -> None:
     """
-    Create new game with params
+    Create a new game with params
     :param ctx: Application Context
     :param word: Word for game
     :param game_type: manual or auto game
+    :param bot: bot instanse
+    :param user_lang: user language
     :return:
     """
-    game_by = "by" if game_type == "manual" else "for"
+    game_by = _("by") if game_type == "manual" else _("for")
     owner_id = ctx.author.id if game_type == "manual" else int(BOT_ID)
 
     first_letter = ord(word[0].upper())
@@ -192,16 +211,25 @@ async def generate_new_wordle_game(
     else:
         last_id = 1
 
-    description = (
-        f'''<a:sparkles:934435764564013076><a:sparkles:934435764564013076>
+    description_en = f"""<a:sparkles:934435764564013076><a:sparkles:934435764564013076>
 **Game #{last_id}** created {game_by} <@{ctx.author.id}>.
 ```ansi
 [2;30m[0m[0;2mThe word contains — [0;36m{len(word)}[0m letters.
 In {word_language} language.
 You have only [0;36m{lives_count}[0m tries and it's time to spend it![0m
 ```
-<a:sparkles:934435764564013076><a:sparkles:934435764564013076>'''
-    )
+<a:sparkles:934435764564013076><a:sparkles:934435764564013076>"""
+
+    description_ru = f"""<a:sparkles:934435764564013076><a:sparkles:934435764564013076>
+**Игра #{last_id}** создана {game_by} <@{ctx.author.id}>.
+```ansi
+[2;30m[0m[0;2mСлово содержит — [0;36m{len(word)}[0m букв.
+В {word_language} языке.
+У вас есть только [0;36m{lives_count}[0m попытко и сейчас самое время их тратить![0m
+```
+<a:sparkles:934435764564013076><a:sparkles:934435764564013076>"""
+
+    description = description_en if user_lang == "en" else description_ru
 
     wordle_image = create_full_wordle_pic(
         word=word,
@@ -210,17 +238,15 @@ You have only [0;36m{lives_count}[0m tries and it's time to spend it![0m
         game_id=last_id,
     )
     embed = get_embed(
-        title="New Wordle game!",
+        title=_("New Wordle game!"),
         description=description,
-        url_image=f"attachment://Usagi_wordle_game_{last_id}_{lives_count}.png"
+        url_image=f"attachment://Usagi_wordle_game_{last_id}_{lives_count}.png",
     )
 
-    thread_name = f"Wordle Game #{last_id}"
+    thread_name = _("Wordle Game last_id").format(last_id=last_id)
     thread_type = discord.ChannelType.public_thread
     thread = await ctx.channel.create_thread(
-        name=thread_name,
-        type=thread_type,
-        auto_archive_duration=1 * 60 * 24 * 3
+        name=thread_name, type=thread_type, auto_archive_duration=1 * 60 * 24 * 3
     )
 
     await thread.add_user(ctx.author)
@@ -236,13 +262,15 @@ You have only [0;36m{lives_count}[0m tries and it's time to spend it![0m
                 lives_count=lives_count,
                 game_id=last_id,
                 timeout=60 * 60,
-            )
+                bot=bot,
+                user_lang=user_lang,
+            ),
         )
         await message.pin(reason="Pin new game")
     except discord.ApplicationCommandInvokeError as e:
         ctx.bot.logger.INFO(e)
 
-    await ctx.respond(f"Your game was created -> {thread.mention}", ephemeral=True)
+    await ctx.respond(_("Your game was created thread").format(thread=thread.mention), ephemeral=True)
 
     await UsagiWordleGames.create(
         guild_id=ctx.guild.id,
@@ -258,7 +286,7 @@ def get_word(length: int) -> str | None:
     :param length: Length of word
     :return: New word
     """
-    with open("./usagiBot/files/dicts/russian.txt", 'r', encoding="utf8") as f:
+    with open("./usagiBot/files/dicts/russian.txt", "r", encoding="utf8") as f:
         words = f.readline().split(",")
 
     words = list(filter(lambda x: len(x) == length, words))
@@ -290,9 +318,15 @@ def create_pic_for_answer(word: str, blocks: list[str]) -> Editor:
     :param blocks: Colors for word
     :return: New word image
     """
-    green_block = Image.open("./usagiBot/files/photo/wordle/green_block.png").resize((153, 153))
-    yellow_block = Image.open("./usagiBot/files/photo/wordle/yellow_block.png").resize((153, 153))
-    black_block = Image.open("./usagiBot/files/photo/wordle/black_block.png").resize((153, 153))
+    green_block = Image.open("./usagiBot/files/photo/wordle/green_block.png").resize(
+        (153, 153)
+    )
+    yellow_block = Image.open("./usagiBot/files/photo/wordle/yellow_block.png").resize(
+        (153, 153)
+    )
+    black_block = Image.open("./usagiBot/files/photo/wordle/black_block.png").resize(
+        (153, 153)
+    )
     color_blocks = {
         "green_block": green_block,
         "yellow_block": yellow_block,
@@ -314,10 +348,10 @@ def create_pic_for_answer(word: str, blocks: list[str]) -> Editor:
 
 
 def create_pic_for_keyboard(
-        green_letters: list[str],
-        yellow_letters: list[str],
-        black_letters: list[str],
-        lang: str,
+    green_letters: list[str],
+    yellow_letters: list[str],
+    black_letters: list[str],
+    lang: str,
 ) -> Editor:
     """
     Generate colored keyboard for input letters
@@ -363,7 +397,11 @@ def create_pic_for_keyboard(
             if block:
                 blank.paste(
                     image=block,
-                    position=(113 * place_counter + shift * layer_counter_place[layer_counter], 118 * layer_counter)
+                    position=(
+                        113 * place_counter
+                        + shift * layer_counter_place[layer_counter],
+                        118 * layer_counter,
+                    ),
                 )
             up = 30
             left = 25
@@ -373,11 +411,14 @@ def create_pic_for_keyboard(
                 left = 20
             blank.text(
                 position=(
-                    113 * place_counter + left + shift * layer_counter_place[layer_counter], 118 * layer_counter + up
+                    113 * place_counter
+                    + left
+                    + shift * layer_counter_place[layer_counter],
+                    118 * layer_counter + up,
                 ),
                 text=letter,
                 font=font,
-                color=color
+                color=color,
             )
             place_counter += 1
         layer_counter += 1
@@ -391,8 +432,12 @@ def create_blank_words(length: int) -> Editor:
     :param length:
     :return:
     """
-    blank_block = Image.open("./usagiBot/files/photo/wordle/blank_block.png").resize((153, 153))
-    background = Editor(Image.new("RGBA", (173 * length + 1600, 173 * (length + 1)), (0, 0, 0, 0)))
+    blank_block = Image.open("./usagiBot/files/photo/wordle/blank_block.png").resize(
+        (153, 153)
+    )
+    background = Editor(
+        Image.new("RGBA", (173 * length + 1600, 173 * (length + 1)), (0, 0, 0, 0))
+    )
     for i in range(length + 1):
         for j in range(length):
             background.paste(blank_block, (173 * j, 173 * i))
@@ -400,15 +445,15 @@ def create_blank_words(length: int) -> Editor:
 
 
 def create_full_wordle_pic(
-        word: str,
-        lang: str,
-        lives_count: int,
-        game_id: int,
-        blocks: list[str] = [],
-        green_letters: list[str] = [],
-        yellow_letters: list[str] = [],
-        black_letters: list[str] = [],
-        prev_pic: File = None,
+    word: str,
+    lang: str,
+    lives_count: int,
+    game_id: int,
+    blocks: list[str] = [],
+    green_letters: list[str] = [],
+    yellow_letters: list[str] = [],
+    black_letters: list[str] = [],
+    prev_pic: File = None,
 ) -> File:
     """
     Generate full image with guessed words and kyeboard
@@ -418,7 +463,9 @@ def create_full_wordle_pic(
     length = len(word)
     word_x_pos = length - lives_count
     word_pic = create_pic_for_answer(word, blocks)
-    keyboard_pic = create_pic_for_keyboard(green_letters, yellow_letters, black_letters, lang)
+    keyboard_pic = create_pic_for_keyboard(
+        green_letters, yellow_letters, black_letters, lang
+    )
     if prev_pic is None:
         background = create_blank_words(length)
     else:
@@ -428,20 +475,23 @@ def create_full_wordle_pic(
     background.paste(word_pic, (0, 173 * word_x_pos))
     background.paste(keyboard_pic, (173 * length + 50, 86 * length))
 
-    file = File(fp=background.image_bytes, filename=f"Usagi_wordle_game_{game_id}_{lives_count}.png")
+    file = File(
+        fp=background.image_bytes,
+        filename=f"Usagi_wordle_game_{game_id}_{lives_count}.png",
+    )
     return file
 
 
 async def create_finish_game_embed(
-        interaction: discord.Interaction,
-        result: str,
-        word: str,
-        game_author_id: int,
-        game_id: int,
+    interaction: discord.Interaction,
+    result: str,
+    word: str,
+    game_author_id: int,
+    game,
 ) -> discord.Embed:
     """
     Generate embed with finish info for wordle game
-    :param game_id:
+    :param game:
     :param interaction: Interaction
     :param result: result of game
     :param word: Guessed word
@@ -453,30 +503,40 @@ async def create_finish_game_embed(
         winner = interaction.user.name
         discriminator = interaction.user.discriminator
     else:
-        winner = "No one"
+        winner = game.bot.i18n.get_text("No one", game.user_lang)
         discriminator = ""
-    embed = get_embed(
-        title=f"Wordle Game #{game_id} finished.",
-        description=f'''```ansi
+
+    title = game.bot.i18n.get_text("Wordle Game finished.", game.user_lang).format(game=game.game_id)
+    description_en = f"""```ansi
 [0;2m[0m[0;2mWinner — {winner}#{discriminator}[0m[2;32m[0m
 [0;2mWord — [0;32m[0;34m[0;36m[0;34m[0;32m[0;35m{word.upper()}[0m[0;32m[0m[0;34m[0m[0;36m[0m[0;34m[0m[0;32m[0m
 Created by {game_author.name}#{game_author.discriminator}[0m[2;32m[4;32m[4;32m[0;32m[0m[4;32m[0m[4;32m[0m[2;32m[0m
-```''',
+```"""
+    description_ru = f"""```ansi
+[0;2m[0m[0;2mПобедитель — {winner}#{discriminator}[0m[2;32m[0m
+[0;2mСлово — [0;32m[0;34m[0;36m[0;34m[0;32m[0;35m{word.upper()}[0m[0;32m[0m[0;34m[0m[0;36m[0m[0;34m[0m[0;32m[0m
+Создана {game_author.name}#{game_author.discriminator}[0m[2;32m[4;32m[4;32m[0;32m[0m[4;32m[0m[4;32m[0m[2;32m[0m
+```"""
+    description = description_en if game.user_lang == "en" else description_ru
+
+    embed = get_embed(
+        title=title,
+        description=description,
     )
     return embed
 
 
 async def end_game(
-        interaction: discord.Interaction,
-        result: str,
-        word: str,
-        game_author_id: int,
-        game_id: int,
-        lives_count: int = 0,
+    interaction: discord.Interaction,
+    result: str,
+    word: str,
+    game_author_id: int,
+    game,
+    lives_count: int = 0,
 ) -> None:
     """
-    Last step when game finished, update data and notify winner.
-    :param game_id:
+    Last step when the game finished, update data and notify the winner.
+    :param game:
     :param interaction: Interaction
     :param result: result of game
     :param word: Guessed word
@@ -485,9 +545,13 @@ async def end_game(
     :return:
     """
     wordle_channel = interaction.channel.parent
-    finish_game_embed = await create_finish_game_embed(interaction, result, word, game_author_id, game_id)
+    finish_game_embed = await create_finish_game_embed(
+        interaction, result, word, game_author_id, game
+    )
 
-    wordle_gamer = await UsagiWordleResults.get(guild_id=interaction.guild.id, user_id=interaction.user.id)
+    wordle_gamer = await UsagiWordleResults.get(
+        guild_id=interaction.guild.id, user_id=interaction.user.id
+    )
     if wordle_gamer:
         await UsagiWordleResults.update(
             id=wordle_gamer.id,
@@ -499,7 +563,7 @@ async def end_game(
             guild_id=interaction.guild.id,
             user_id=interaction.user.id,
             points=lives_count,
-            count_of_games=1
+            count_of_games=1,
         )
 
     await wordle_channel.send(embed=finish_game_embed)

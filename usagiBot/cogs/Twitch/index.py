@@ -8,6 +8,8 @@ from usagiBot.db.models import UsagiTwitchNotify, UsagiConfig
 from usagiBot.src.UsagiChecks import check_cog_whitelist
 from usagiBot.src.UsagiErrors import UsagiModuleDisabledError
 
+from pycord18n.extension import _
+
 
 class Twitch(commands.Cog):
     def __init__(self, bot):
@@ -54,7 +56,7 @@ class Twitch(commands.Cog):
         update_streamer = {}
         # {"streamer": {"start_at": "stream_start_at", "icon_url": "url"}}
         for guild_notify, data in twitch_notify.items():
-            # go through every streamer on this guild and send message
+            # go through every streamer on this guild and send a message
             channel = data["channel_to_notify"]
             for streamer, info in data["streamers"].items():
                 stream = await first(self.twitch.get_streams(user_login=[streamer]))
@@ -98,16 +100,23 @@ class Twitch(commands.Cog):
 
     twitch_notify = SlashCommandGroup(
         name="twitch_notify",
-        description="Add your favorite streamer and get notified when it goes live!",
-        # checks=[сheck_correct_channel_command().predicate],
+        name_localizations={"ru": "твич_уведы"},
+        description="Follow your favorite streamer and get notified when it goes live!",
+        description_localizations={"ru": "Отслеживайте своих любимых стримеров прямо на сервере!."},
         command_tag="twitch_notify",
     )
 
-    @twitch_notify.command(name="follow", description="Follow streamer to notify.")
+    @twitch_notify.command(
+        name="follow",
+        name_localizations={"ru": "подписаться"},
+        description="Follow streamer to notify.",
+        description_localizations={"ru": "Подпишись чтобы получить уведомление о начале стрима."},
+    )
     @discord.commands.option(
         name="streamer_name",
+        name_localizations={"ru": "ник_стримера"},
         description="Streamer to follow.",
-        required=True,
+        description_localizations={"ru": "Ник стримера для подписки."},
     )
     async def follow_streamer(
         self,
@@ -118,7 +127,7 @@ class Twitch(commands.Cog):
         user = await first(self.twitch.get_users(logins=[streamer_name]))
         if user is None:
             await ctx.respond(
-                "There isn't streamer with that nickname!", ephemeral=True
+                _("There isn't streamer with that nickname"), ephemeral=True
             )
             return
         streamer = await UsagiTwitchNotify.get(
@@ -128,7 +137,7 @@ class Twitch(commands.Cog):
         )
         if streamer is not None:
             await ctx.respond(
-                "You are already followed to this streamer!", ephemeral=True
+                _("You are already followed to this streamer"), ephemeral=True
             )
             return
 
@@ -138,13 +147,19 @@ class Twitch(commands.Cog):
             twitch_username=streamer_name,
             started_at=datetime(year=2001, day=21, month=3).replace(tzinfo=None),
         )
-        await ctx.respond(f"Followed you to **{streamer_name}**", ephemeral=True)
+        await ctx.respond(_("Followed you to streamer_name").format(streamer_name=streamer_name), ephemeral=True)
 
-    @twitch_notify.command(name="unfollow", description="Unfollow from streamer.")
+    @twitch_notify.command(
+        name="unfollow",
+        name_localizations={"ru": "отписаться"},
+        description="Unfollow from streamer.",
+        description_localizations={"ru": "Отписаться от стримера."},
+    )
     @discord.commands.option(
         name="streamer_name",
+        name_localizations={"ru": "ник_стримера"},
         description="Streamer to unfollow.",
-        required=True,
+        description_localizations={"ru": "Ник стримера для отписки."},
     )
     async def unfollow_streamer(
         self,
@@ -158,16 +173,21 @@ class Twitch(commands.Cog):
             twitch_username=streamer_name,
         )
         if streamer is None:
-            await ctx.respond("You are not followed to this streamer", ephemeral=True)
+            await ctx.respond(_("You are not followed to this streamer"), ephemeral=True)
             return
         await UsagiTwitchNotify.delete(
             guild_id=ctx.guild.id,
             user_id=ctx.author.id,
             twitch_username=streamer_name,
         )
-        await ctx.respond(f"Unfollowed you from **{streamer_name}**", ephemeral=True)
+        await ctx.respond(_("Unfollowed you from streamer_name").format(streamer_name=streamer_name), ephemeral=True)
 
-    @twitch_notify.command(name="show", description="Show your follows.")
+    @twitch_notify.command(
+        name="show",
+        name_localizations={"ru": "показать"},
+        description="Show your follows.",
+        description_localizations={"ru": "Показать все ваши подписки."},
+    )
     async def show_user_follows(
         self,
         ctx,
@@ -177,15 +197,18 @@ class Twitch(commands.Cog):
             user_id=ctx.author.id,
         )
         if streamers is None:
-            await ctx.respond("You are not followed to any streamer", ephemeral=True)
+            await ctx.respond(_("You are not followed to any streamer"), ephemeral=True)
             return
         streamers = list(map(lambda x: f" - {x.twitch_username}\n", streamers))
-        streamers_list = "Your followed streamers:\n" + "".join(streamers)
+        streamers_list = _("Your followed streamers") + "".join(streamers)
 
         await ctx.respond(streamers_list, ephemeral=True)
 
     @twitch_notify.command(
-        name="show_all", description="Show all streamers from guild."
+        name="show_all",
+        name_localizations={"ru": "показать_всех"},
+        description="Show all streamers from guild.",
+        description_localizations={"ru": "Показать все подписки на сервере."},
     )
     async def show_all_follows(
         self,
@@ -195,10 +218,10 @@ class Twitch(commands.Cog):
             guild_id=ctx.guild.id,
         )
         if streamers is None:
-            await ctx.respond("Your guild not followed to any streamer", ephemeral=True)
+            await ctx.respond(_("Your guild not followed to any streamer"), ephemeral=True)
             return
         streamers = list(set(map(lambda x: f" - {x.twitch_username}\n", streamers)))
-        streamers_list = "All streamers:\n" + "\n".join(streamers)
+        streamers_list = _("All streamers:\n") + "\n".join(streamers)
         await ctx.respond(streamers_list, ephemeral=True)
 
 

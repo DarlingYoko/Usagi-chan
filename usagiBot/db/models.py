@@ -248,6 +248,13 @@ class UsagiBackup(Base, ModelAdmin):
     stickers = Column(BigInteger)
 
 
+class UsagiLanguage(Base, ModelAdmin):
+    __tablename__ = "usagi_language"
+    id = Column(Integer, primary_key=True)
+    user_id = Column(BigInteger)
+    lang = Column(Text)
+
+
 async def create_tables():
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)

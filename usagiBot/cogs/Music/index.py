@@ -1548,7 +1548,6 @@ class Music(commands.Cog):
     @discord.commands.option(
         name="channel",
         description="Choose channel to summon Usagi",
-        required=True,
     )
     async def summon(self, ctx, channel: discord.VoiceChannel):
         # Only allow members with "Move member" permission to use this command
@@ -1815,7 +1814,6 @@ class Music(commands.Cog):
     @discord.commands.option(
         name="page",
         description="Choose page of queue.",
-        required=True,
     )
     async def queue(self, ctx, page: int):
         # Shows the queue, add page number to view different pages
@@ -1859,7 +1857,6 @@ class Music(commands.Cog):
     @discord.commands.option(
         name="index",
         description="Choose track to remove.",
-        required=True,
     )
     async def remove(self, ctx, index: int):
         if index < 1:
@@ -1924,7 +1921,6 @@ class Music(commands.Cog):
     @discord.commands.option(
         name="link",
         description="Enter music link!",
-        required=True,
     )
     async def play(self, ctx, link: str):
         # Plays a song, mostly from YouTube
@@ -2119,7 +2115,6 @@ class Music(commands.Cog):
     @discord.commands.option(
         name="keyword",
         description="Search any music/video in YouTube.",
-        required=True,
     )
     async def search(self, ctx, keyword: str):
         # Search from YouTube and returns 10 songs
@@ -2229,7 +2224,6 @@ class Music(commands.Cog):
     @discord.commands.option(
         name="seconds",
         description="Seek to any place in song. '+' For seek forward, '-' For seek back",
-        required=True,
     )
     async def seek(self, ctx, seconds: str):
         user_in_voice = await check_user_in_voice(ctx)

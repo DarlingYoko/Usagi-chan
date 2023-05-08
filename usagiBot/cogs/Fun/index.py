@@ -7,6 +7,9 @@ from usagiBot.db.models import UsagiConfig
 from usagiBot.src.UsagiChecks import check_is_already_set_up, check_cog_whitelist
 from usagiBot.src.UsagiErrors import UsagiModuleDisabledError
 
+from pycord18n.extension import _
+from usagiBot.src.UsagiUtils import get_embed
+
 
 class Fun(commands.Cog):
     def __init__(self, bot):
@@ -19,22 +22,23 @@ class Fun(commands.Cog):
 
     # Default commands
     @commands.command(
-        description="Check Usagi Ping",
+        description="Check Usagi ping",
         aliases=["пинг"],
         name="ping",
     )
     async def ping_to_usagi(self, ctx) -> None:
-        await ctx.reply(f"Pong! {round(ctx.bot.latency * 1000)} ms")
+        ping = round(ctx.bot.latency * 1000)
+        await ctx.reply(_("ping pong").format(ping=ping))
 
-    @commands.command(aliases=["понг"], name="pong")
+    @commands.command(aliases=["понг"], name="pong", description="Check Usagi ping",)
     async def pong_to_usagi(self, ctx) -> None:
-        await ctx.reply(f"Are u sure? Ok, ping. <a:peepoWew:858320256745078834>")
+        await ctx.reply(_("pong ping"))
 
-    @commands.command(name="link")
+    @commands.command(name="link", description="Link to my web.",)
     async def get_stats_link(self, ctx) -> None:
-        await ctx.reply("Here will be a link to my website, but now it's empty.")
+        await ctx.reply(_("link on my web"))
 
-    @commands.command(name="яишенка", aliases=["глазунья"])
+    @commands.command(name="яишенка", aliases=["глазунья"], description="Как приготовить яишенку")
     async def how_to_make_fried_eggs(self, ctx) -> None:
         answer = (
             "<a:read:859186021488525323> Ставишь сковороду на небольшую температуру, наливаешь немного масла, "
@@ -54,15 +58,13 @@ class Fun(commands.Cog):
         arolf_file = discord.File("./usagiBot/files/photo/aRolf.png")
         return await ctx.send(file=arolf_file)
 
-    @commands.command(name="токсины", aliases=["toxic"])
+    @commands.command(name="toxic", aliases=["токсины"], description="Check toxic lvl")
     async def check_toxic_percent(self, ctx) -> None:
-        return await ctx.send(
-            f"Уровень токсинов в чате {random.randint(1, 100)}% <:peepoSitStarege:933802101824430201>"
-        )
+        return await ctx.send(_("toxic lvl").format(toxic=random.randint(1, 100)))
 
-    @commands.command(name="курс")
+    @commands.command(name="currency", aliases=["курс"], description="Check current exchange rate")
     async def get_exchange_rate(self, ctx) -> None:
-        return_message = "```autohotkey\n" "Сводка курса на данный момент:\n"
+        return_message = "```autohotkey\n"
 
         rates = get_exchange_rate_data()
         required_rates = ["USDRUB", "USDUAH", "USDBYN", "USDKZT"]
@@ -75,9 +77,14 @@ class Fun(commands.Cog):
                 counter += 1
 
         return_message += "```"
-        await ctx.reply(return_message)
+        await ctx.reply(
+            embed=get_embed(
+                title=_("currency"),
+                description=return_message
+            )
+        )
 
-    @commands.command(name="iq")
+    @commands.command(name="iq", description="See your IQ")
     @commands.cooldown(per=60 * 1, rate=1, type=commands.BucketType.user)
     async def get_user_iq(self, ctx) -> None:
         user_iq = random.randint(1, 200)
@@ -98,18 +105,32 @@ class Fun(commands.Cog):
         await ctx.reply(f"Твой iq = {user_iq}\n{key}")
 
     # Slash commands
-    @commands.slash_command(name="roll", description="Generate random number from to")
+    @commands.slash_command(
+        name="roll",
+        description="Generate random number from _ to _",
+        name_localizations={"ru": "рандом"},
+        description_localizations={"ru": "Рандом число от _ до _"},
+    )
+    @discord.commands.option(
+        name="from_",
+        name_localizations={"ru": "от"},
+    )
+    @discord.commands.option(
+        name="to_",
+        name_localizations={"ru": "до"},
+    )
     async def roll_random_number(self, ctx, from_: int, to_: int) -> None:
         if to_ < from_:
             from_, to_ = to_, from_
+        number = random.randint(from_, to_)
         await ctx.respond(
-            content=f"Your random number is **{random.randint(from_, to_)}**",
+            content=_("random number").format(number=number),
         )
 
     # Message commands
     @commands.message_command(name="Get Message ID")
     async def get_message_id(self, ctx, message: discord.Message) -> None:
-        await ctx.respond(f"Message ID: `{message.id}`")
+        await ctx.respond(_("message").format(message_id=message.id))
 
     @commands.message_command(
         name="Add Based Message", command_tag="based_message_channel"
@@ -129,13 +150,13 @@ class Fun(commands.Cog):
                 files.append(file)
 
         await channel.send(
-            content=f"База от {message.author.mention}\n{message.content}",
+            content=_("base from").format(mention=message.author.mention, message=message.content),
             files=files,
             embeds=message.embeds,
         )
-        await ctx.respond("Добавила базу <:BASEDHM:897821614312394793>")
+        await ctx.respond(_("base added"))
 
-    # User commandsпочему
+    # User commands
     @commands.user_command(name="Get User Info")
     async def get_user_info(self, ctx, user: discord.User) -> None:
         await ctx.respond(f"{user}\n{user.avatar}")

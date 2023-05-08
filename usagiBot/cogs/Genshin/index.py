@@ -8,21 +8,16 @@ from usagiBot.cogs.Genshin.genshin_utils import *
 
 from discord.ext import commands, tasks
 from discord import SlashCommandGroup
-
-instruction = """
-1. Go to <https://hoyolab.com>.
-2. Login to your account.
-3. Press F12 to open Inspect Mode (ie. Developer Tools) or Ctrl+Shift+I.
-4. Go to Console.
-5. Run command `document.cookie`.
-6. Copy output.
-"""
+from pycord18n.extension import _
 
 
 class GenshinModal(discord.ui.Modal):
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, bot, lang, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
-        self.add_item(discord.ui.InputText(label="Cookie"))
+        self.bot = bot
+        self.lang = lang
+        label = self.bot.i18n.get_text("Cookie", lang)
+        self.add_item(discord.ui.InputText(label=label))
 
     async def callback(self, interaction: discord.Interaction):
         genshin_api = GenshinAPI()
@@ -31,22 +26,25 @@ class GenshinModal(discord.ui.Modal):
             user_id=interaction.user.id,
             cookies=self.children[0].value,
         )
-        text = "Unsuccessfully auth! Wrong cookies"
+        text = self.bot.i18n.get_text("Wrong cookies", self.lang)
         if auth_result:
-            text = "Successfully auth"
+            text = self.bot.i18n.get_text("Successfully auth", self.lang)
         await interaction.response.send_message(content=text, ephemeral=True)
 
 
 class GenshinAuth(discord.ui.View):
-    def __init__(self):
+    def __init__(self, bot):
         super().__init__()
+        self.bot = bot
 
     @discord.ui.button(
-        label="Enter",
+        label="Enter cookie",
         style=discord.ButtonStyle.primary,
     )
     async def guess_button(self, button, interaction):
-        await interaction.response.send_modal(GenshinModal(title="Genshin auth"))
+        lang = self.bot.language.get(interaction.user.id, "en")
+        title = self.bot.i18n.get_text("Genshin auth", lang)
+        await interaction.response.send_modal(GenshinModal(title=title, bot=self.bot, lang=lang))
 
 
 class Genshin(commands.Cog):
@@ -79,7 +77,8 @@ class Genshin(commands.Cog):
             if user.resin_sub_notified:
                 continue
 
-            notify_text = f"<@{user.user_id}>, you have already {data.current_resin} resin! <a:dinkDonk:865127621112102953>"
+            lang = self.bot.language.get(user.user_id, "en")
+            notify_text = self.bot.i18n.get_text("resin cap", lang)
             await channel.send(content=notify_text)
             await UsagiGenshin.update(id=user.id, resin_sub_notified=True)
 
@@ -128,97 +127,131 @@ class Genshin(commands.Cog):
 
     genshin = SlashCommandGroup(
         name="genshin",
+        name_localizations={"ru": "геншин"},
         description="Follow your resin in Genshin Impact!",
+        description_localizations={"ru": "Отслеживайте свою смолу и получайте дейли отметки в Гешине!"},
         command_tag="genshin",
     )
 
     genshin_subscriptions = genshin.create_subgroup(
         name="sub",
+        name_localizations={"ru": "подписаться"},
         description="Manage your subscriptions to genshin commands",
+        description_localizations={"ru": "Настройка ваших подписок на геншин команды"},
     )
 
     genshin_unsubscriptions = genshin.create_subgroup(
         name="unsub",
+        name_localizations={"ru": "отписаться"},
         description="Manage your subscriptions to genshin commands",
+        description_localizations={"ru": "Настройка ваших подписок на геншин команды"},
     )
 
-    @genshin.command(name="auth", description="Necessary auth for using commands.")
+    @genshin.command(
+        name="auth",
+        name_localizations={"ru": "авторизоваться"},
+        description="Necessary auth for using commands.",
+        description_localizations={"ru": "Обязательная авторизация для использования геншин команд."},
+    )
     async def follow_streamer(
         self,
         ctx,
     ) -> None:
-        await ctx.respond(instruction, view=GenshinAuth(), ephemeral=True)
+        await ctx.respond(_("instruction"), view=GenshinAuth(self.bot), ephemeral=True)
 
-    @genshin.command(name="resin", description="Resin brief.")
+    @genshin.command(
+        name="resin",
+        name_localizations={"ru": "смола"},
+        description="Resin brief.",
+        description_localizations={"ru": "Краткая сводка по смоле"},
+    )
     @discord.commands.option(
         name="user_id",
+        name_localizations={"ru": "айди"},
         description="Check someone else.",
+        description_localizations={"ru": "Проверерить кого-то другого."},
         required=False,
     )
     async def check_resin_count(self, ctx, user_id: int = None) -> None:
         await ctx.defer(ephemeral=True)
         if user_id is None:
             user_id = ctx.user.id
+
         genshin_api = GenshinAPI()
         data = await genshin_api.get_user_data(guild_id=ctx.guild.id, user_id=user_id)
         if not data:
             await ctx.respond(
-                content="You are not logged in. Pls go `/genshin auth`", ephemeral=True
+                content=_("You are not logged in"), ephemeral=True
             )
             return
 
         fields = generate_resin_fields(data)
 
         embed = get_embed(
-            title=f"Resin",
+            title=_("Resin"),
             author_name=ctx.user.display_name,
             author_icon_URL=ctx.user.avatar,
             fields=fields,
         )
         await ctx.send_followup(content="", embed=embed)
 
-    @genshin.command(name="notes", description="Shows all info.")
+    @genshin.command(
+        name="notes",
+        name_localizations={"ru": "заметки"},
+        description="Shows all info.",
+        description_localizations={"ru": "Вся информация о вашем аккаунте."},
+    )
     async def check_notes(self, ctx) -> None:
         await ctx.defer(ephemeral=True)
         user = await UsagiGenshin.get(guild_id=ctx.guild.id, user_id=ctx.user.id)
         if user is None:
             await ctx.respond(
-                content="You are not logged in. Pls go `/genshin auth`", ephemeral=True
+                content=_("You are not logged in"), ephemeral=True
             )
             return
 
         fields = generate_notes_fields(user)
 
         embed = get_embed(
-            title=f"Notes",
+            title=_("Notes"),
             author_name=ctx.user.display_name,
             author_icon_URL=ctx.user.avatar,
             fields=fields,
         )
         await ctx.send_followup(content="", embed=embed)
 
-    @genshin.command(name="code", description="Activate genshin promo code.")
+    @genshin.command(
+        name="code",
+        name_localizations={"ru": "код"},
+        description="Activate genshin promo code.",
+        description_localizations={"ru":"Активировать код."},
+    )
     @discord.commands.option(
         name="code",
+        name_localizations={"ru": "код"},
         description="Code to activate",
-        required=True,
+        description_localizations={"ru": "Код для активации."},
     )
     async def redeem_code(self, ctx, code: str) -> None:
         await ctx.defer(ephemeral=True)
+
         genshin_api = GenshinAPI()
         cookies_response = await genshin_api.set_cookies(
             guild_id=ctx.guild.id, user_id=ctx.user.id
         )
         if cookies_response is False:
             await ctx.respond(
-                content="You are not logged in. Pls go `/genshin auth`", ephemeral=True
+                content=_("You are not logged in"), ephemeral=True
             )
             return
         redeem_response = await genshin_api.redeem_code(code)
         await ctx.send_followup(content=redeem_response)
 
     @genshin_subscriptions.command(
-        name="reward_claim", description="Subscription to claim daily rewards."
+        name="reward_claim",
+        name_localizations={"ru": "сбор_дейли"},
+        description="Subscription to claim daily rewards.",
+        description_localizations={"ru": "Подписка на сбор дейли отметок на Хоёлабе."},
     )
     async def reward_claim_sub(
         self,
@@ -230,11 +263,14 @@ class Genshin(commands.Cog):
 
         await UsagiGenshin.update(id=user.id, daily_sub=True)
         await ctx.send_followup(
-            content="Successfully subscribed you to auto claiming daily rewards."
+            content=_("Successfully subscribed you to auto claiming daily rewards")
         )
 
     @genshin_unsubscriptions.command(
-        name="reward_claim", description="Unsubscription from claim daily rewards."
+        name="reward_claim",
+        name_localizations={"ru": "сбор_дейли"},
+        description="Unsubscription from claim daily rewards.",
+        description_localizations={"ru": "Отписка от сбора дейли отметок на Хоёлабе."},
     )
     async def reward_claim_unsub(
         self,
@@ -246,12 +282,14 @@ class Genshin(commands.Cog):
 
         await UsagiGenshin.update(id=user.id, daily_sub=False)
         await ctx.send_followup(
-            content="Successfully unsubscribed you from auto claiming daily rewards."
+            content=_("Successfully unsubscribed you from auto claiming daily rewards")
         )
 
     @genshin_subscriptions.command(
         name="resin_overflow",
+        name_localizations={"ru": "кап_смолы"},
         description="Subscription to notification of resin overflow.",
+        description_localizations={"ru": "Подписка на уведомление капа смолы."},
     )
     async def resin_overflow_sub(
         self,
@@ -263,12 +301,14 @@ class Genshin(commands.Cog):
 
         await UsagiGenshin.update(id=user.id, resin_sub=True)
         await ctx.send_followup(
-            content="Successfully subscribed you to notification of resin overflow."
+            content=_("Successfully subscribed you to notification of resin overflow")
         )
 
     @genshin_unsubscriptions.command(
         name="resin_overflow",
+        name_localizations={"ru": "кап_смолы"},
         description="Unsubscription from notification of resin overflow.",
+        description_localizations={"ru": "Отписка от уведомлений капа смолы."},
     )
     async def resin_overflow_unsub(
         self,
@@ -280,12 +320,14 @@ class Genshin(commands.Cog):
 
         await UsagiGenshin.update(id=user.id, resin_sub=False)
         await ctx.send_followup(
-            content="Successfully unsubscribed you from notification of resin overflow."
+            content=_("Successfully unsubscribed you from notification of resin overflow")
         )
 
     @genshin_subscriptions.command(
-        name="auto_code_sub",
+        name="auto_code",
+        name_localizations={"ru": "авто_коды"},
         description="Subscription to auto redeem codes.",
+        description_localizations={"ru": "Подписка на авто ввод кодов."},
     )
     async def auto_code_sub(
         self,
@@ -297,12 +339,14 @@ class Genshin(commands.Cog):
 
         await UsagiGenshin.update(id=user.id, code_sub=True)
         await ctx.send_followup(
-            content="Successfully subscribed you to auto redeeming codes."
+            content=_("Successfully subscribed you to auto redeeming codes")
         )
 
     @genshin_unsubscriptions.command(
-        name="auto_code_sub",
+        name="auto_code",
+        name_localizations={"ru": "авто_коды"},
         description="Unsubscription from auto redeem codes.",
+        description_localizations={"ru": "Отписка от авто ввода кодов."},
     )
     async def auto_code_unsub(
         self,
@@ -314,7 +358,7 @@ class Genshin(commands.Cog):
 
         await UsagiGenshin.update(id=user.id, code_sub=False)
         await ctx.send_followup(
-            content="Successfully unsubscribed you from auto redeeming codes."
+            content=_("Successfully unsubscribed you from auto redeeming codes.")
         )
 
     @commands.command()

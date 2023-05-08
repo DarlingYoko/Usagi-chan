@@ -8,6 +8,8 @@ from usagiBot.src.UsagiChecks import check_cog_whitelist, check_correct_channel_
 from usagiBot.src.UsagiErrors import UsagiModuleDisabledError
 from usagiBot.cogs.Tech.tech_utils import *
 
+from pycord18n.extension import _
+
 
 class Tech(commands.Cog):
     def __init__(self, bot):
@@ -18,33 +20,38 @@ class Tech(commands.Cog):
             return True
         raise UsagiModuleDisabledError()
 
-    @commands.message_command(name="Pin message")
+    @commands.message_command(name="Pin message", name_localizations={"ru": "Закрепить сообщение"},)
     async def pin_message(self, ctx, message: discord.Message) -> None:
         await message.pin(reason=f"Pinned by {ctx.author.name}")
-        await ctx.respond(f"Message was pinned", ephemeral=True)
+        await ctx.respond(_("Message was pinned"), ephemeral=True)
 
-    @commands.slash_command(name="sleep", description="Go to sleep for N hours")
+    @commands.slash_command(
+        name="sleep",
+        name_localizations={"ru": "спать"},
+        description="Go to sleep for N hours",
+        description_localizations={"ru": "Заснуть на время."},
+    )
     @discord.commands.option(
         name="hours",
+        name_localizations={"ru": "часы"},
         description="Insert sleep hours!",
-        autocomplete=lambda x: range(2, 25, 2),
-        required=True,
+        description_localizations={"ru": "На сколько заснуть."},
+        choices=map(lambda x: str(x), range(2, 25, 2)),
     )
     async def go_sleep(
             self,
             ctx,
             hours: int,
     ) -> None:
-        if not (2 <= hours <= 24):
-            await ctx.respond("You entered the wrong amount of time.", ephemeral=True)
-            return
         duration = timedelta(hours=hours)
         await ctx.author.timeout_for(duration=duration, reason="Timeout for sleep")
-        await ctx.respond(f"Good night, see you in {hours} hours.", ephemeral=True)
+        await ctx.respond(_("Good night, see you in").format(hours=hours), ephemeral=True)
 
     unic_role = SlashCommandGroup(
         name="unic_role",
+        name_localizations={"ru": "уникальная_роль"},
         description="Customize your own role on the server!",
+        description_localizations={"ru": "Создай свою собственную роль на сервере!"},
         checks=[
             check_correct_channel_command().predicate
         ],
@@ -53,19 +60,28 @@ class Tech(commands.Cog):
 
     customize_role_modify = unic_role.create_subgroup(
         name="modify",
+        name_localizations={"ru": "изменить"},
         description="Modify an already created role!",
+        description_localizations={"ru": "Измени свою роль если захочется!"},
     )
 
-    @unic_role.command(name="create", description="Create your own role for yourself.")
+    @unic_role.command(
+        name="create",
+        name_localizations={"ru": "создать"},
+        description="Create your own role for yourself.",
+        description_localizations={"ru": "Создать себе роль."},
+    )
     @discord.commands.option(
         name="name",
+        name_localizations={"ru": "имя"},
         description="Name for the new role",
-        required=True,
+        description_localizations={"ru": "Название роли."},
     )
     @discord.commands.option(
         name="color",
+        name_localizations={"ru": "цвет"},
         description="Color for the new role in hexadecimal",
-        required=True,
+        description_localizations={"ru": "Цвет твоей роли в шестнадцатеричной системе."},
     )
     async def create_new_unic_role(
             self,
@@ -86,13 +102,19 @@ class Tech(commands.Cog):
             user_id=ctx.author.id,
             role_id=role.id,
         )
-        await ctx.respond(f"Created a new role for you. :point_right::skin-tone-1: {role.mention}", ephemeral=True)
+        await ctx.respond(_("Created a new role for you").format(mention=role.mention), ephemeral=True)
 
-    @unic_role.command(name="delete", description="Delete your role.")
+    @unic_role.command(
+        name="delete",
+        name_localizations={"ru": "удалить"},
+        description="Delete your role.",
+        description_localizations={"ru": "Удалить свою роль."},
+    )
     @discord.commands.option(
         name="role",
+        name_localizations={"ru": "роль"},
         description="Pick a role to delete.",
-        required=True,
+        description_localizations={"ru": "Выбери роль, которую надо удалить."},
         autocomplete=get_user_roles,
     )
     async def delete_unic_role(
@@ -108,13 +130,19 @@ class Tech(commands.Cog):
                 role_id=role.id,
             )
             await ctx.author.remove_roles(role)
-            await ctx.respond("Successfully removed your role", ephemeral=True)
+            await ctx.respond(_("Successfully removed your role"), ephemeral=True)
 
-    @customize_role_modify.command(name="name", description="Change name of your role.")
+    @customize_role_modify.command(
+        name="name",
+        name_localizations={"ru": "имя"},
+        description="Change name of your role.",
+        description_localizations={"ru": "Измени имя своей роли."},
+    )
     @discord.commands.option(
         name="role",
+        name_localizations={"ru": "роль"},
         description="Pick a role to rename.",
-        required=True,
+        description_localizations={"ru": "Выбери роль для изменения."},
         autocomplete=get_user_roles,
     )
     async def rename_unic_role(
@@ -127,15 +155,21 @@ class Tech(commands.Cog):
         if role:
             await role.edit(name=new_name)
             await ctx.respond(
-                f"Successfully renamed your role :point_right::skin-tone-1: {role.mention}",
+                _("Successfully renamed your role").format(mention=role.mention),
                 ephemeral=True
             )
 
-    @customize_role_modify.command(name="color", description="Change color of your role.")
+    @customize_role_modify.command(
+        name="color",
+        name_localizations={"ru": "цвет"},
+        description="Change color of your role.",
+        description_localizations={"ru": "Измени цвет своей роли."},
+    )
     @discord.commands.option(
         name="role",
+        name_localizations={"ru": "роль"},
         description="Pick a role to recolor.",
-        required=True,
+        description_localizations={"ru": "Выбери роль для изменения."},
         autocomplete=get_user_roles,
     )
     async def recolor_unic_role(
@@ -148,7 +182,7 @@ class Tech(commands.Cog):
         if role:
             await role.edit(color=new_color)
             await ctx.respond(
-                f"Successfully recolored your role :point_right::skin-tone-1: {role.mention}",
+                _("Successfully recolored your role").format(mention=role.mention),
                 ephemeral=True
             )
 

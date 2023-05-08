@@ -6,10 +6,12 @@ from usagiBot.src.UsagiErrors import UsagiModuleDisabledError
 
 from usagiBot.cogs.Wordle.wordle_utils import *
 
+from pycord18n.extension import _
+
 
 class Wordle(commands.Cog):
     def __init__(self, bot):
-        pass
+        self.bot = bot
 
     def cog_check(self, ctx):
         if check_cog_whitelist(self, ctx):
@@ -18,24 +20,30 @@ class Wordle(commands.Cog):
 
     wordle_game = SlashCommandGroup(
         name="wordle_game",
+        name_localizations={"ru": "вордли_игра"},
         description="Create new Wordle game!",
-        checks=[
-            check_correct_channel_command().predicate
-        ],
+        description_localizations={"ru": "Создать новую Вордли игру."},
+        checks=[check_correct_channel_command().predicate],
         command_tag="create_wordle_game",
     )
 
-    @wordle_game.command(name="manual", description="Create your own Wordle game!")
+    @wordle_game.command(
+        name="manual",
+        name_localizations={"ru": "личная"},
+        description="Create your own Wordle game!",
+        description_localizations={"ru": "Создать свою собственную Вордли игру."},
+    )
     @commands.cooldown(per=60, rate=1, type=commands.BucketType.user)
     @discord.commands.option(
         name="word",
+        name_localizations={"ru": "слово"},
         description="Enter your word!",
-        required=True,
+        description_localizations={"ru": "Введите своё слово."},
     )
     async def wordle_manual_game(
-            self,
-            ctx,
-            word: str,
+        self,
+        ctx,
+        word: str,
     ) -> None:
         """
         Create manual Wordle game
@@ -47,26 +55,38 @@ class Wordle(commands.Cog):
         for i in word:
             letter_ascii = ord(i)
             if not (65 <= letter_ascii <= 90) and not (1040 <= letter_ascii <= 1071):
-                await ctx.respond("Your word contains symbols, pls guess real word.", ephemeral=True)
+                await ctx.respond(
+                    _("Your word contains symbols, pls guess real word."),
+                    ephemeral=True,
+                )
                 return
 
         if not (4 < len(word) < 11):
-            await ctx.respond("Word length is not correct. Use 5 - 10 length.", ephemeral=True)
+            await ctx.respond(_("Word length is not correct"), ephemeral=True)
             return
-        await generate_new_wordle_game(ctx, word, "manual")
+        lang = self.bot.language.get(ctx.user.id, "en")
+        await generate_new_wordle_game(ctx, word, "manual", self.bot, lang)
 
-    @wordle_game.command(name="auto", description="Create auto Wordle game for you!")
+    @wordle_game.command(
+        name="auto",
+        name_localizations={"ru": "авто"},
+        description="Create auto Wordle game for you!",
+        description_localizations={"ru": "Создать авто Вордли игру для себя и друзей."},
+    )
     @commands.cooldown(per=60, rate=1, type=commands.BucketType.channel)
     @discord.commands.option(
         name="word_lenght",
+        name_localizations={"ru": "длина_слова"},
         description="Insert how long will be word!",
-        autocomplete=lambda x: range(5, 10),
-        required=True,
+        description_localizations={
+            "ru": "Выберите насколько длинное слово загадает вам Усаги."
+        },
+        choices=map(lambda x: str(x), range(5, 9)),
     )
     async def wordle_auto_game(
-            self,
-            ctx,
-            word_lenght: int,
+        self,
+        ctx,
+        word_lenght: int,
     ) -> None:
         """
         Create auto Wordle game
@@ -74,29 +94,32 @@ class Wordle(commands.Cog):
         :param word_lenght:
         :return:
         """
-        if not (4 < word_lenght < 10):
-            await ctx.respond("Word length is not correct. Use 5 - 9 length.", ephemeral=True)
-            return
         word = get_word(word_lenght)
-        await generate_new_wordle_game(ctx, word, "auto")
+        lang = self.bot.language.get(ctx.user.id, "en")
+        await generate_new_wordle_game(ctx, word, "auto", self.bot, lang)
 
-    @commands.slash_command(name="rules_wordle", description="How to play Wordle")
+    @commands.slash_command(
+        name="rules_wordle",
+        name_localizations={"ru": "вордли_правила"},
+        description="How to play Wordle",
+        description_localizations={"ru": "Как играть в Вордли."},
+    )
     async def wordle_rules(
-            self,
-            ctx,
+        self,
+        ctx,
     ) -> None:
         """
         Get full rules for Wordle
         :param ctx:
         :return:
         """
-        description = (
-            f'''```ansi
+        description_en = (
+            f"""```ansi
 This is a simple [2;32m[2;33m[2;37m[1;37m[1;37mWordle game[0m[1;37m[0m[2;37m[0m[2;33m[0m[2;32m[0m where you have to guess the hidden word.
 You only have the number of letters in a word. 
 You can make your guesses and Usagi-chan will give you clues if you guessed the correct letters.
 
-[0;2m[0m[0;2mHint Options
+[0;2m[0m[0;2mHint Options:
 [0;32mGreen [0m— the correct letter in its place
 [0;33mYellow [0m— the correct letter is in the wrong place
 [0;30mBlack [0m— wrong letter[0m[2;30m[0m
@@ -106,13 +129,38 @@ You can do[0m[0;2m this by entering your word through the manual creation of t
 ask to generate a random word for yourself by the number of letters in it.[0m
 
 [2;31mAll users have a total number of guesses, so, choose your answers thoroughly.[0m
-```'''
+```"""
         )
+
+        description_ru = (
+            f"""```ansi
+Это проста [2;32m[2;33m[2;37m[1;37m[1;37mВордли игра[0m[1;37m[0m[2;37m[0m[2;33m[0m[2;32m[0m где вам нужно отгадать загаданное слово.
+У вас есть только количество букв в слове. 
+Вы можете делать свои предоложения и Усаги-чан даст вам ответ сколько букв вы угадали.
+
+[0;2m[0m[0;2mВарианты подсказок:
+[0;32mЗелёный [0m— Правильная буква на своём месте
+[0;33mЖёлтый [0m— Правильная буква НЕ на своём месте
+[0;30mЧёрный [0m— такой буквы нет[0m[2;30m[0m
+
+Существует два варианта загадать слово.[0;2m
+Вы можете [0m[0;2m сами создать игру введя своё слово в личную игру или 
+попросить сгенерировать вам рандомное слово от Усаги выбрав только количество букв.[0m
+
+[2;31mВсе пользователи имеют общее число попыток, так что выбирайте ваши ответы с УМОМ.[0m
+```"""
+        )
+
+        lang = self.bot.language.get(ctx.user.id, "en")
+        description = description_en if lang == "en" else description_ru
 
         embed = get_embed(
             title="Wordle rules",
             description=description,
-            footer=["Увы", "https://cdn.discordapp.com/attachments/881532399467528222/1067059467260280934/1063188001263464499.png"],
+            footer=[
+                "Увы",
+                "https://cdn.discordapp.com/attachments/881532399467528222/1067059467260280934/1063188001263464499.png",
+            ],
         )
 
         await ctx.respond(embed=embed)

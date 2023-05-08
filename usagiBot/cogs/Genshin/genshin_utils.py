@@ -6,6 +6,7 @@ import discord
 import genshin
 
 from usagiBot.db.models import UsagiGenshin
+from pycord18n.extension import _
 
 blue_text = Template("""```ansi\n[2;31m[2;34m$count[0m[2;31m[0m```""")
 red_text = Template("""```ansi\n[2;31m$count[0m```""")
@@ -62,7 +63,7 @@ class GenshinAPI:
         except genshin.RedemptionException as e:
             return e.msg
 
-        return "Successfully redeemed."
+        return _("Successfully redeemed")
 
     async def claim_daily_reward(self, guild_id, user_id):
         cookies_result = await self.set_cookies(guild_id=guild_id, user_id=user_id)
@@ -76,7 +77,9 @@ class GenshinAPI:
 
 
 def generate_resin_fields(data) -> list[discord.EmbedField]:
-    resin_timer = int((datetime.now() + data.remaining_resin_recovery_time).timestamp())
+    resin_timer = int(
+        (datetime.now() + data.remaining_resin_recovery_time).timestamp()
+    )
     realm_timer = int(
         (datetime.now() + data.remaining_realm_currency_recovery_time).timestamp()
     )
@@ -91,23 +94,35 @@ def generate_resin_fields(data) -> list[discord.EmbedField]:
     resin_count = resin_text.substitute({"count": data.current_resin})
     realm_count = realm_text.substitute({"count": data.current_realm_currency})
 
-    daily_withdrawn = "<:greenTick:874767321007276143>" if data.claimed_commission_reward \
+    daily_withdrawn = (
+        "<:greenTick:874767321007276143>"
+        if data.claimed_commission_reward
         else "<:redThick:874767320915005471>"
+    )
 
     fields = [
         discord.EmbedField(
-            name="Resin count:",
-            value=f"{resin_count}160 resin\n<t:{resin_timer}:R>",
+            name=_("Resin count"),
+            value=_("resin_cap").format(
+                resin_count=resin_count, resin_timer=resin_timer
+            ),
             inline=True,
         ),
         discord.EmbedField(
-            name="Realm currency:",
-            value=f"{realm_count}{data.max_realm_currency} realm\n<t:{realm_timer}:R>",
+            name=_("Realm currency"),
+            value=_("realm_cap").format(
+                realm_count=realm_count,
+                max_realm_currency=data.max_realm_currency,
+                realm_timer=realm_timer,
+            ),
             inline=True,
         ),
         discord.EmbedField(
-            name="Dailies:",
-            value=f"""_ _\nCompleted: {data.completed_commissions}\nWithdrawn: {daily_withdrawn}""",
+            name=_("Dailies"),
+            value=_("Completed").format(
+                completed_commissions=data.completed_commissions,
+                daily_withdrawn=daily_withdrawn,
+            ),
             inline=True,
         ),
     ]
@@ -121,7 +136,9 @@ def generate_notes_fields(user) -> list[discord.EmbedField]:
     if today.day < 16:
         abyss_reset_date = datetime(year=today.year, month=today.month, day=16)
     else:
-        abyss_reset_date = (today.replace(day=1) + timedelta(days=32)).replace(day=1)
+        abyss_reset_date = (today.replace(day=1) + timedelta(days=32)).replace(
+            day=1
+        )
     abyss_reset_date = int(abyss_reset_date.timestamp())
 
     # Calculate the New patch date
@@ -136,34 +153,58 @@ def generate_notes_fields(user) -> list[discord.EmbedField]:
         presentation_date += timedelta(weeks=6)
     presentation_date = int(presentation_date.timestamp())
 
-    resin_notify = "<:greenTick:874767321007276143>" if user.resin_sub else "<:redThick:874767320915005471>"
-    daily_reward = "<:greenTick:874767321007276143>" if user.daily_sub else "<:redThick:874767320915005471>"
-    auto_redeem_code = "<:greenTick:874767321007276143>" if user.code_sub else "<:redThick:874767320915005471>"
+    resin_notify = (
+        "<:greenTick:874767321007276143>"
+        if user.resin_sub
+        else "<:redThick:874767320915005471>"
+    )
+    daily_reward = (
+        "<:greenTick:874767321007276143>"
+        if user.daily_sub
+        else "<:redThick:874767320915005471>"
+    )
+    auto_redeem_code = (
+        "<:greenTick:874767321007276143>"
+        if user.code_sub
+        else "<:redThick:874767320915005471>"
+    )
 
     fields = [
         discord.EmbedField(
             name="_ _",
-            value=f"**Notification\n of resin: **{resin_notify}",
+            value=_("resin_notify").format(
+                resin_notify=resin_notify
+            ),
             inline=True,
         ),
         discord.EmbedField(
             name="_ _",
-            value=f"**Claiming\n daily rewards: **{daily_reward}",
+            value=_("daily_reward").format(
+                daily_reward=daily_reward
+            ),
             inline=True,
         ),
         discord.EmbedField(
             name="_ _",
-            value=f"**Auto redeeming\n codes: **{auto_redeem_code}",
+            value=_("Auto redeeming").format(
+                auto_redeem_code=auto_redeem_code
+            ),
             inline=True,
         ),
         discord.EmbedField(
-            name="_ _\nAbyss reset:", value=f"<t:{abyss_reset_date}:R>", inline=True
+            name=_("Abyss reset"),
+            value=f"<t:{abyss_reset_date}:R>",
+            inline=True,
         ),
         discord.EmbedField(
-            name="_ _\nPresentation:", value=f"<t:{presentation_date}:R>", inline=True
+            name=_("Presentation"),
+            value=f"<t:{presentation_date}:R>",
+            inline=True,
         ),
         discord.EmbedField(
-            name="_ _\nNew patch:", value=f"<t:{patch_date}:R>", inline=True
+            name=_("New patch"),
+            value=f"<t:{patch_date}:R>",
+            inline=True,
         ),
     ]
     return fields
@@ -173,8 +214,6 @@ async def check_genshin_login(ctx):
     await ctx.defer(ephemeral=True)
     user = await UsagiGenshin.get(guild_id=ctx.guild.id, user_id=ctx.user.id)
     if user is None:
-        await ctx.send_followup(
-            content="You are not logged in. Pls go `/geshin auth`", ephemeral=True
-        )
+        await ctx.send_followup(content=_("You are not logged in"), ephemeral=True)
         return None
     return user

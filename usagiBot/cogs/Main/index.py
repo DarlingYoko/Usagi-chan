@@ -7,8 +7,16 @@ from discord.commands import SlashCommandGroup
 
 from usagiBot.src.UsagiChecks import check_correct_channel_command, check_member_is_moder
 from usagiBot.src.UsagiErrors import *
-from usagiBot.db.models import UsagiConfig, UsagiSaveRoles, UsagiAutoRoles, UsagiAutoRolesData, UsagiTimer
+from usagiBot.db.models import (
+    UsagiConfig,
+    UsagiSaveRoles,
+    UsagiAutoRoles,
+    UsagiAutoRolesData,
+    UsagiTimer,
+    UsagiLanguage
+)
 from usagiBot.src.UsagiUtils import get_embed
+from pycord18n.extension import _
 
 
 def get_all_bot_cogs(ctx: discord.AutocompleteContext):
@@ -79,12 +87,17 @@ class Main(commands.Cog):
             time += f" {hours} h. {minutes} m."
             await channel.edit(name=time, reason="Update timer.")
 
-    @commands.slash_command(name="help", description="Show help for commands")
+    @commands.slash_command(
+        name="help",
+        name_localizations={"ru": "помощь"},
+        description="Show help for commands",
+        description_localizations={"ru": "Показать помощь по командам"},
+    )
     @discord.commands.option(
         name="module",
+        name_localizations={"ru": "модуль"},
         description="",
         autocomplete=get_all_bot_cogs,
-        required=True,
     )
     async def help_command(
             self,
@@ -95,7 +108,7 @@ class Main(commands.Cog):
         if module is None:
             return await ctx.respond(
                 embed=get_embed(
-                    title="There is no module with that name.",
+                    title=_("There is no module with that name"),
                     color=discord.Color.red(),
                 ),
                 ephemeral=True
@@ -106,17 +119,17 @@ class Main(commands.Cog):
         except UsagiModuleDisabledError:
             return await ctx.respond(
                 embed=get_embed(
-                    title="This module is disabled", color=discord.Color.red()
+                    title=_("This module is disabled"), color=discord.Color.red()
                 ),
                 ephemeral=True
             )
 
         types = {
-            discord.ext.commands.core.Command: "Default commands",
-            discord.commands.core.SlashCommand: "Slash commands",
-            discord.commands.core.MessageCommand: "Message commands",
-            discord.commands.core.UserCommand: "User commands",
-            discord.commands.SlashCommandGroup: "Slash command group",
+            discord.ext.commands.core.Command: _("Default commands"),
+            discord.commands.core.SlashCommand: _("Slash commands"),
+            discord.commands.core.MessageCommand: _("Message commands"),
+            discord.commands.core.UserCommand: _("User commands"),
+            discord.commands.SlashCommandGroup: _("Slash command group"),
         }
 
         title = f"**{module.qualified_name}**"
@@ -158,16 +171,18 @@ class Main(commands.Cog):
                 value = ""
                 if command["set_up"]:
                     if command["channel_id"]:
-                        value += f"Configured - <#{command['channel_id']}>\n"
+                        value += _("Configured").format(command["channel_id"])
                 else:
-                    value += "Configured - <:redThick:874767320915005471>\n"
+                    value += _("Configured - Nope")
                 value += command["description"]
                 embed.add_field(name=command["name"], value=value, inline=True)
         await ctx.respond(embed=embed, ephemeral=True)
 
     timer_group = SlashCommandGroup(
         name="timer",
+        name_localizations={"ru": "таймер"},
         description="Set countdown timer for any event!",
+        description_localizations={"ru": "Поставить таймер отсчёта"},
         checks=[
             check_member_is_moder
         ],
@@ -176,8 +191,9 @@ class Main(commands.Cog):
     @timer_group.command(name="add", description="Add timer to date")
     @discord.commands.option(
         name="date",
+        name_localizations={"ru": "дата"},
         description="Enter date in `%m.%d.%Y %H:%M:%S` format.",
-        required=True,
+        description_localizations={"ru": "Введите дату в формате `%м.%д.%Г %Ч:%М:%С`"},
     )
     async def add_timer(
             self,
@@ -190,17 +206,17 @@ class Main(commands.Cog):
         except ValueError:
             return await ctx.respond(
                 embed=get_embed(
-                    title=f"Time data `{date}` does not match format `%m.%d.%Y %H:%M:%S`",
+                    title=_("Time data does not match format").format(date),
                     color=discord.Color.red()
                 ),
                 ephemeral=True
             )
 
         timer = await UsagiTimer.get(guild_id=ctx.guild.id, channel_id=channel.id)
-        response = "Added new timer"
+        response = _("Added new timer")
         if timer:
             await UsagiTimer.update(id=timer.id, date=datetime_obj)
-            response = "Changed timer"
+            response = _("Changed timer")
         else:
             await UsagiTimer.create(guild_id=ctx.guild.id, channel_id=channel.id, date=datetime_obj)
         await ctx.respond(
@@ -211,12 +227,18 @@ class Main(commands.Cog):
             ephemeral=True
         )
 
-    @timer_group.command(name="remove", description="Add timer to date")
+    @timer_group.command(
+        name="remove",
+        name_localizations={"ru": "удалить"},
+        description="Remove timer.",
+        description_localizations={"ru": "Удалить таймер."},
+    )
     @discord.commands.option(
         name="timer",
+        name_localizations={"ru": "таймер"},
         description="Select timer to remove",
+        description_localizations={"ru": "Выберите таймер, который надо удалить."},
         autocomplete=get_timers,
-        required=True,
     )
     async def remove_timer(
             self,
@@ -227,7 +249,7 @@ class Main(commands.Cog):
         if old_timer is None:
             return await ctx.respond(
                 embed=get_embed(
-                    title=f"There is no timer in that channel",
+                    title=_("There is no timer in that channel"),
                     color=discord.Color.red()
                 ),
                 ephemeral=True
@@ -236,7 +258,7 @@ class Main(commands.Cog):
         await UsagiTimer.delete(id=old_timer.id)
         await ctx.respond(
             embed=get_embed(
-                title="Successfully removed",
+                title=_("Successfully removed"),
                 color=discord.Color.green()
             ),
             ephemeral=True
@@ -244,7 +266,9 @@ class Main(commands.Cog):
 
     @commands.slash_command(
         name="save_roles",
+        name_localizations={"ru": "сохранить_роли"},
         description="Toggle saving roles on user leave guild",
+        description_localizations={"ru": "Авто сохранение ролей пользователя при выходе с сервера."},
         command_tag="save_roles_on_leave",
     )
     @check_correct_channel_command()
@@ -254,7 +278,7 @@ class Main(commands.Cog):
             await UsagiSaveRoles.create(guild_id=ctx.guild.id, saving_roles=True)
             return await ctx.respond(
                 embed=get_embed(
-                    title="Enabled saving roles on member leave.",
+                    title=_("Enabled saving roles on member leave"),
                     color=discord.Color.green(),
                 )
             )
@@ -263,7 +287,7 @@ class Main(commands.Cog):
                 await UsagiSaveRoles.update(id=saving.id, saving_roles=False)
                 return await ctx.respond(
                     embed=get_embed(
-                        title="Disabled saving roles on member leave.",
+                        title=_("Disabled saving roles on member leave"),
                         color=discord.Color.green(),
                     )
                 )
@@ -271,33 +295,44 @@ class Main(commands.Cog):
                 await UsagiSaveRoles.update(id=saving.id, saving_roles=True)
                 return await ctx.respond(
                     embed=get_embed(
-                        title="Enabled saving roles on member leave.",
+                        title=_("Enabled saving roles on member leave"),
                         color=discord.Color.green(),
                     )
                 )
 
     auto_roles = SlashCommandGroup(
         name="auto_role",
+        name_localizations={"ru": "авто_роли"},
         description="Give your members roles by reacting on message!",
+        description_localizations={"ru": "Раздавайте пользователям роли, за их реакции под сообщениями!"},
         checks=[
             check_member_is_moder
         ],
     )
     edit_roles = auto_roles.create_subgroup(
         name="edit",
-        description="Give your members roles by reacting on message!",
+        name_localizations={"ru": "изменить"},
+        description="Change your auto roles!",
+        description_localizations={"ru": "Изменяйте ваши авто роли!"},
     )
 
-    @auto_roles.command(name="create", description="Create a message with auto roles")
+    @auto_roles.command(
+        name="create",
+        name_localizations={"ru": "создать"},
+        description="Create a message with auto roles",
+        description_localizations={"ru": "Создать сообщение для авто ролей."},
+    )
     @discord.commands.option(
         name="channel",
+        name_localizations={"ru": "канал"},
         description="Channel to spawn message with roles",
-        required=True,
+        description_localizations={"ru": "Канал где создать сообщение для авто ролей."},
     )
     @discord.commands.option(
         name="name",
+        name_localizations={"ru": "имя"},
         description="Choose a name for message",
-        required=True,
+        description_localizations={"ru": "Имя сообщения."},
     )
     async def create_auto_role_message(
             self,
@@ -319,15 +354,21 @@ class Main(commands.Cog):
             "channel_id": channel.id
         }
         await ctx.respond(
-            embed=get_embed(title="Done", color=discord.Color.green()), ephemeral=True
+            embed=get_embed(title=_("Done"), color=discord.Color.green()), ephemeral=True
         )
 
-    @auto_roles.command(name="remove", description="Remove a message with auto roles")
+    @auto_roles.command(
+        name="remove",
+        name_localizations={"ru": "удалить"},
+        description="Remove a message with auto roles",
+        description_localizations={"ru": "Удалить сообщение с авто ролями."},
+    )
     @discord.commands.option(
         name="message",
-        description="Pick for which message add role",
+        name_localizations={"ru": "сообщение"},
+        description="Pick which message remove",
+        description_localizations={"ru": "Выбрать какое сообщение удалить."},
         autocomplete=get_auto_role_messages,
-        required=True,
     )
     async def remove_auto_role_message(
             self,
@@ -340,7 +381,7 @@ class Main(commands.Cog):
         if role_data is None:
             return await ctx.respond(
                 embed=get_embed(
-                    title="This is not a message with auto role",
+                    title=_("This is not a message with auto role"),
                     color=discord.Color.red()
                 ),
                 ephemeral=True
@@ -355,36 +396,45 @@ class Main(commands.Cog):
         except discord.errors.Forbidden or discord.errors.NotFound:
             return await ctx.send_followup(
                 embed=get_embed(
-                    title="Cannot remove original message",
+                    title=_("Cannot remove original message"),
                     color=discord.Color.red()
                 ),
                 ephemeral=True
             )
         await ctx.respond(
-            embed=get_embed(title="Removed", color=discord.Color.green()), ephemeral=True
+            embed=get_embed(title=_("Removed"), color=discord.Color.green()), ephemeral=True
         )
 
-    @auto_roles.command(name="add", description="Add reaction role to your message")
+    @auto_roles.command(
+        name="add",
+        name_localizations={"ru": "добавить"},
+        description="Add reaction role to your message",
+        description_localizations={"ru": "Добавить реакцию на сообщение"},
+    )
     @discord.commands.option(
         name="message",
+        name_localizations={"ru": "сообщение"},
         description="Pick for which message add role",
+        description_localizations={"ru": "Выберите для какого сообщения добавить роль."},
         autocomplete=get_auto_role_messages,
-        required=True,
     )
     @discord.commands.option(
         name="role",
+        name_localizations={"ru": "роль"},
         description="Pick a role to add",
-        required=True,
+        description_localizations={"ru": "Выберите роль"},
     )
     @discord.commands.option(
         name="emoji",
+        name_localizations={"ru": "емоджи"},
         description="Pick a emoji for role",
-        required=True,
+        description_localizations={"ru": "Выберите эмоджи для роли"},
     )
     @discord.commands.option(
         name="description",
-        description="Add description (optional)",
-        required=True,
+        name_localizations={"ru": "описание"},
+        description="Add description",
+        description_localizations={"ru": "Добавьте описание"},
     )
     async def add_reaction_role(
             self,
@@ -400,7 +450,7 @@ class Main(commands.Cog):
         if role_data is None:
             return await ctx.respond(
                 embed=get_embed(
-                    title="This is not a message with auto role",
+                    title=_("This is not a message with auto role"),
                     color=discord.Color.red()
                 ),
                 ephemeral=True
@@ -411,7 +461,7 @@ class Main(commands.Cog):
         if len(msg.embeds) == 0:
             return await ctx.respond(
                 embed=get_embed(
-                    title="From message was removed all ebmeds. Pls recreate it.",
+                    title=_("From message was removed all ebmeds"),
                     color=discord.Color.red()
                 ),
                 ephemeral=True
@@ -419,7 +469,7 @@ class Main(commands.Cog):
         if len(msg.reactions) == 0:
             return await ctx.respond(
                 embed=get_embed(
-                    title="This message already had 20 reactions.",
+                    title=_("This message already had 20 reactions"),
                     color=discord.Color.red()
                 ),
                 ephemeral=True
@@ -433,7 +483,7 @@ class Main(commands.Cog):
                 if entity.role_id == role.id or entity.emoji_id == emoji.id:
                     return await ctx.respond(
                         embed=get_embed(
-                            title="This role or emoji already used.",
+                            title=_("This role or emoji already used"),
                             color=discord.Color.red()
                         ),
                         ephemeral=True
@@ -459,21 +509,28 @@ class Main(commands.Cog):
         )
 
         await ctx.respond(
-            embed=get_embed(title="Added", color=discord.Color.green()), ephemeral=True
+            embed=get_embed(title=_("Added"), color=discord.Color.green()), ephemeral=True
         )
 
-    @edit_roles.command(name="remove", description="Remove reaction role from your message")
+    @edit_roles.command(
+        name="remove",
+        name_localizations={"ru": "удалить"},
+        description="Remove reaction role from your message",
+        description_localizations={"ru": "Удалить роль из сообщение."},
+    )
     @discord.commands.option(
         name="message",
+        name_localizations={"ru": "сообщение"},
         description="Pick from which message remove role",
+        description_localizations={"ru": "Выберите из какого сообщения удалить роль."},
         autocomplete=get_auto_role_messages,
-        required=True,
     )
     @discord.commands.option(
         name="role",
+        name_localizations={"ru": "роль"},
         description="Pick a role to remove",
+        description_localizations={"ru": "Выберите роль, которую надо удалить."},
         autocomplete=get_roles_from_message,
-        required=True,
     )
     async def remove_reaction_role(
             self,
@@ -487,7 +544,7 @@ class Main(commands.Cog):
         if role_data is None:
             return await ctx.respond(
                 embed=get_embed(
-                    title="This is not a message with auto role",
+                    title=_("This is not a message with auto role"),
                     color=discord.Color.red()
                 ),
                 ephemeral=True
@@ -498,7 +555,7 @@ class Main(commands.Cog):
         if len(msg.embeds) == 0:
             return await ctx.respond(
                 embed=get_embed(
-                    title="From message was removed all ebmeds. Pls recreate it.",
+                    title=_("From message was removed all ebmeds"),
                     color=discord.Color.red()
                 ),
                 ephemeral=True
@@ -526,26 +583,34 @@ class Main(commands.Cog):
         )
 
         await ctx.respond(
-            embed=get_embed(title="Removed", color=discord.Color.green()), ephemeral=True
+            embed=get_embed(title=_("Removed"), color=discord.Color.green()), ephemeral=True
         )
 
-    @edit_roles.command(name="role", description="Edit reaction role.")
+    @edit_roles.command(
+        name="role",
+        name_localizations={"ru": "роль"},
+        description="Edit reaction role.",
+        description_localizations={"ru": "Изменить роль в авто сообщении."},
+    )
     @discord.commands.option(
         name="message",
+        name_localizations={"ru": "сообщение"},
         description="Pick for which message edit role.",
+        description_localizations={"ru": "Выберите сообщение"},
         autocomplete=get_auto_role_messages,
-        required=True,
     )
     @discord.commands.option(
         name="role",
+        name_localizations={"ru": "роль"},
         description="Select a role to change.",
+        description_localizations={"ru": "Выберите роль, которую надо изменить."},
         autocomplete=get_roles_from_message,
-        required=True,
     )
     @discord.commands.option(
         name="new_role",
+        name_localizations={"ru": "новая_роль"},
         description="Enter new role.",
-        required=True,
+        description_localizations={"ru": "Выберите новую роль."},
     )
     async def edit_role_reaction_role(
             self,
@@ -561,7 +626,7 @@ class Main(commands.Cog):
         if role_data is None:
             return await ctx.send_followup(
                 embed=get_embed(
-                    title="This is not a message with auto role",
+                    title=_("This is not a message with auto role"),
                     color=discord.Color.red()
                 ),
                 ephemeral=True
@@ -572,7 +637,7 @@ class Main(commands.Cog):
         if len(msg.embeds) == 0:
             return await ctx.send_followup(
                 embed=get_embed(
-                    title="From message was removed all ebmeds. Pls recreate it.",
+                    title=_("From message was removed all ebmeds"),
                     color=discord.Color.red()
                 ),
                 ephemeral=True
@@ -584,7 +649,7 @@ class Main(commands.Cog):
         if new_entity is not None:
             return await ctx.send_followup(
                 embed=get_embed(
-                    title="This role already used.",
+                    title=_("This role already used"),
                     color=discord.Color.red()
                 ),
                 ephemeral=True
@@ -604,7 +669,7 @@ class Main(commands.Cog):
         except discord.errors.Forbidden:
             return await ctx.send_followup(
                 embed=get_embed(
-                    title="Cannot edit original message",
+                    title=_("Cannot edit original message"),
                     color=discord.Color.red()
                 ),
                 ephemeral=True
@@ -615,26 +680,34 @@ class Main(commands.Cog):
             role_id=new_role.id,
         )
         await ctx.send_followup(
-            embed=get_embed(title="Role edited", color=discord.Color.green()), ephemeral=True
+            embed=get_embed(title=_("Role edited"), color=discord.Color.green()), ephemeral=True
         )
 
-    @edit_roles.command(name="emoji", description="Edit reaction emoji.")
+    @edit_roles.command(
+        name="emoji",
+        name_localizations={"ru": "емоджи"},
+        description="Edit reaction emoji.",
+        description_localizations={"ru": "Изменить емоджи, в авто сообщении."},
+    )
     @discord.commands.option(
         name="message",
+        name_localizations={"ru": "сообщение"},
         description="Pick for which message edit emoji",
+        description_localizations={"ru": "Выберите сообщение, в котором надо изменить."},
         autocomplete=get_auto_role_messages,
-        required=True,
     )
     @discord.commands.option(
         name="role",
+        name_localizations={"ru": "роль"},
         description="Select a role to change.",
+        description_localizations={"ru": "Выберите роль, для которой надо изменить."},
         autocomplete=get_roles_from_message,
-        required=True,
     )
     @discord.commands.option(
         name="new_emoji",
+        name_localizations={"ru": "новый_емоджи"},
+        description_localizations={"ru": "Выберите новую эмоджи."},
         description="Enter new emoji",
-        required=True,
     )
     async def edit_emoji_reaction_role(
             self,
@@ -650,7 +723,7 @@ class Main(commands.Cog):
         if role_data is None:
             return await ctx.send_followup(
                 embed=get_embed(
-                    title="This is not a message with auto role",
+                    title=_("This is not a message with auto role"),
                     color=discord.Color.red()
                 ),
                 ephemeral=True
@@ -661,7 +734,7 @@ class Main(commands.Cog):
         if len(msg.embeds) == 0:
             return await ctx.send_followup(
                 embed=get_embed(
-                    title="From message was removed all ebmeds. Pls recreate it.",
+                    title=_("From message was removed all ebmeds"),
                     color=discord.Color.red()
                 ),
                 ephemeral=True
@@ -674,7 +747,7 @@ class Main(commands.Cog):
         if new_entity is not None:
             return await ctx.send_followup(
                 embed=get_embed(
-                    title="This emoji already used.",
+                    title=_("This emoji already used"),
                     color=discord.Color.red()
                 ),
                 ephemeral=True
@@ -698,7 +771,7 @@ class Main(commands.Cog):
         except discord.errors.Forbidden:
             return await ctx.send_followup(
                 embed=get_embed(
-                    title="Cannot edit original message",
+                    title=_("Cannot edit original message"),
                     color=discord.Color.red()
                 ),
                 ephemeral=True
@@ -711,26 +784,34 @@ class Main(commands.Cog):
             emoji_id=new_emoji.id,
         )
         await ctx.send_followup(
-            embed=get_embed(title="Emoji edited", color=discord.Color.green()), ephemeral=True
+            embed=get_embed(title=_("Emoji edited"), color=discord.Color.green()), ephemeral=True
         )
 
-    @edit_roles.command(name="description", description="Edit reaction description.")
+    @edit_roles.command(
+        name="description",
+        name_localizations={"ru": "описание"},
+        description="Edit reaction description.",
+        description_localizations={"ru": "Изменить описание."},
+    )
     @discord.commands.option(
         name="message",
+        name_localizations={"ru": "сообщение"},
         description="Pick for which message edit description.",
+        description_localizations={"ru": "Выберите сообщение, в котором надо изменить."},
         autocomplete=get_auto_role_messages,
-        required=True,
     )
     @discord.commands.option(
         name="role",
+        name_localizations={"ru": "роль"},
         description="Select a role to change.",
+        description_localizations={"ru": "Выберите роль, для которой надо изменить."},
         autocomplete=get_roles_from_message,
-        required=True,
     )
     @discord.commands.option(
         name="new_description",
+        name_localizations={"ru": "новое_описание"},
         description="Enter new description.",
-        required=True,
+        description_localizations={"ru": "Новое описание."},
     )
     async def edit_description_reaction_role(
             self,
@@ -746,7 +827,7 @@ class Main(commands.Cog):
         if role_data is None:
             return await ctx.send_followup(
                 embed=get_embed(
-                    title="This is not a message with auto role",
+                    title=_("This is not a message with auto role"),
                     color=discord.Color.red()
                 ),
                 ephemeral=True
@@ -757,7 +838,7 @@ class Main(commands.Cog):
         if len(msg.embeds) == 0:
             return await ctx.send_followup(
                 embed=get_embed(
-                    title="From message was removed all ebmeds. Pls recreate it.",
+                    title=_("From message was removed all ebmeds"),
                     color=discord.Color.red()
                 ),
                 ephemeral=True
@@ -781,7 +862,7 @@ class Main(commands.Cog):
         except discord.errors.Forbidden:
             return await ctx.send_followup(
                 embed=get_embed(
-                    title="Cannot edit original message",
+                    title=_("Cannot edit original message"),
                     color=discord.Color.red()
                 ),
                 ephemeral=True
@@ -792,7 +873,42 @@ class Main(commands.Cog):
             description=new_description,
         )
         await ctx.send_followup(
-            embed=get_embed(title="Description edited", color=discord.Color.green()), ephemeral=True
+            embed=get_embed(title=_("Description edited"), color=discord.Color.green()), ephemeral=True
+        )
+
+    @commands.slash_command(
+        name="lang",
+        name_localizations={"ru": "язык"},
+        description="Set language for bot",
+        description_localizations={"ru": "Выбрать язык для бота."},
+    )
+    @discord.commands.option(
+        name="lang",
+        name_localizations={"ru": "язык"},
+        description="",
+        choices=["ru", "en"],
+    )
+    async def change_lang(
+            self,
+            ctx,
+            lang: str,
+    ) -> None:
+        user = await UsagiLanguage.get(user_id=ctx.author.id)
+
+        if user is None:
+            await UsagiLanguage.create(user_id=ctx.author.id, lang=lang)
+        else:
+            await UsagiLanguage.update(id=user.id, lang=lang)
+
+        self.bot.language.setdefault(ctx.author.id, "")
+        self.bot.language[ctx.author.id] = lang
+
+        await ctx.respond(
+            embed=get_embed(
+                title=_("Changed your language").format(lang=lang),
+                color=discord.Color.green(),
+            ),
+            ephemeral=True
         )
 
 
