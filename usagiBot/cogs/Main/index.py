@@ -5,7 +5,7 @@ import discord
 from discord.ext import commands, tasks
 from discord.commands import SlashCommandGroup
 
-from usagiBot.src.UsagiChecks import check_correct_channel_command, check_member_is_moder
+from usagiBot.src.UsagiChecks import check_correct_channel_command, check_member_is_moder, is_owner
 from usagiBot.src.UsagiErrors import *
 from usagiBot.db.models import (
     UsagiConfig,
@@ -169,9 +169,9 @@ class Main(commands.Cog):
             embed.add_field(name=f"_ _\n**{item}**", value="_ _", inline=False)
             for command in value:
                 value = ""
-                if command["set_up"]:
-                    if command["channel_id"]:
-                        value += _("Configured").format(command["channel_id"])
+                if command.get("set_up", None):
+                    if command.get("channel_id", None):
+                        value += _("Configured").format(channel_id=command["channel_id"])
                 else:
                     value += _("Configured - Nope")
                 value += command["description"]
@@ -272,6 +272,7 @@ class Main(commands.Cog):
         command_tag="save_roles_on_leave",
     )
     @check_correct_channel_command()
+    @commands.check(check_member_is_moder)
     async def save_roles_on_leave(self, ctx) -> None:
         saving = await UsagiSaveRoles.get(guild_id=ctx.guild.id)
         if saving is None:

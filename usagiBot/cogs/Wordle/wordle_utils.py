@@ -238,7 +238,7 @@ You have only [0;36m{lives_count}[0m tries and it's time to spend it![0m
         game_id=last_id,
     )
     embed = get_embed(
-        title=_("New Wordle game!"),
+        title=_("New Wordle game"),
         description=description,
         url_image=f"attachment://Usagi_wordle_game_{last_id}_{lives_count}.png",
     )
@@ -506,7 +506,7 @@ async def create_finish_game_embed(
         winner = game.bot.i18n.get_text("No one", game.user_lang)
         discriminator = ""
 
-    title = game.bot.i18n.get_text("Wordle Game finished.", game.user_lang).format(game=game.game_id)
+    title = game.bot.i18n.get_text("Wordle Game finished", game.user_lang).format(game=game.game_id)
     description_en = f"""```ansi
 [0;2m[0m[0;2mWinner — {winner}#{discriminator}[0m[2;32m[0m
 [0;2mWord — [0;32m[0;34m[0;36m[0;34m[0;32m[0;35m{word.upper()}[0m[0;32m[0m[0;34m[0m[0;36m[0m[0;34m[0m[0;32m[0m

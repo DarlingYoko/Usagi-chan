@@ -221,7 +221,7 @@ class Twitch(commands.Cog):
             await ctx.respond(_("Your guild not followed to any streamer"), ephemeral=True)
             return
         streamers = list(set(map(lambda x: f" - {x.twitch_username}\n", streamers)))
-        streamers_list = _("All streamers:\n") + "\n".join(streamers)
+        streamers_list = _("All streamers") + "\n".join(streamers)
         await ctx.respond(streamers_list, ephemeral=True)
 
 
