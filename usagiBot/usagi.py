@@ -11,10 +11,9 @@ from usagiBot.src.CustomHelpCommand import CustomHelpCommand
 # Define bot
 intents = discord.Intents.all()
 bot = commands.Bot(
-    command_prefix="?",
+    command_prefix="!",
     intents=intents,
     help_command=CustomHelpCommand(),
-    debug_guilds=[733631069542416384],
 )
 
 # Define logger
@@ -40,7 +39,6 @@ i18n = I18nExtension([
 
 
 def get_locale(ctx):
-    print(2131231)
     return ctx.bot.language.get(ctx.author.id, "en")
 
 
