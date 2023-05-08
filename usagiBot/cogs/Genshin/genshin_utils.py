@@ -65,12 +65,12 @@ class GenshinAPI:
 
         return _("Successfully redeemed")
 
-    async def claim_daily_reward(self, guild_id, user_id):
+    async def claim_daily_reward(self, guild_id, user_id, game):
         cookies_result = await self.set_cookies(guild_id=guild_id, user_id=user_id)
         if not cookies_result:
             return False
         try:
-            await self.client.claim_daily_reward(reward=False)
+            await self.client.claim_daily_reward(reward=False, game=game)
             return True
         except genshin.AlreadyClaimed:
             return False

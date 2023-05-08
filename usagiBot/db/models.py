@@ -1,5 +1,5 @@
 from usagiBot.db.base import Base, async_session, engine
-from sqlalchemy import Text, BigInteger, Boolean, Column, Integer, DateTime, ForeignKey, and_
+from sqlalchemy import Text, BigInteger, Boolean, Column, Integer, DateTime, ForeignKey, and_, or_
 from sqlalchemy import update as sqlalchemy_update
 from sqlalchemy import delete as sqlalchemy_delete
 from sqlalchemy.future import select
@@ -102,6 +102,16 @@ class ModelAdmin:
                 return config
 
     @classmethod
+    async def get_all_by_or(cls, **kwargs):
+        conditions = cls.generate_conditions(kwargs)
+        query = select(cls).where(or_(*conditions))
+        async with async_session() as session:
+            async with session.begin():
+                results = await session.execute(query)
+                config = results.scalars().all()
+                return config
+
+    @classmethod
     async def get_all(cls):
         query = select(cls)
         async with async_session() as session:
@@ -192,6 +202,7 @@ class UsagiGenshin(Base, ModelAdmin):
     resin_sub_notified = Column(Boolean)
     daily_sub = Column(Boolean)
     code_sub = Column(Boolean)
+    honkai_daily_sub = Column(Boolean)
 
 
 class UsagiSaveRoles(Base, ModelAdmin):
@@ -246,6 +257,7 @@ class UsagiBackup(Base, ModelAdmin):
     gifs = Column(BigInteger)
     emojis = Column(BigInteger)
     stickers = Column(BigInteger)
+    voice_min = Column(BigInteger)
 
 
 class UsagiLanguage(Base, ModelAdmin):

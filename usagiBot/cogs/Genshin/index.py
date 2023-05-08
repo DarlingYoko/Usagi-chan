@@ -93,7 +93,7 @@ class Genshin(commands.Cog):
         time_in_moscow = datetime.now(moscow_tz)
         if time_in_moscow.hour != 18:
             return
-        users = await UsagiGenshin.get_all_by(daily_sub=True)
+        users = await UsagiGenshin.get_all_by_or(daily_sub=True, honkai_daily_sub=True)
         channels = []
 
         for user in users:
@@ -105,9 +105,19 @@ class Genshin(commands.Cog):
             channel = await self.bot.fetch_channel(config.generic_id)
 
             genshin_api = GenshinAPI()
-            respone = await genshin_api.claim_daily_reward(
-                guild_id=user.guild_id, user_id=user.user_id
-            )
+            respone = None
+            if user.daily_sub:
+                respone = await genshin_api.claim_daily_reward(
+                    guild_id=user.guild_id,
+                    user_id=user.user_id,
+                    game=genshin.Game.GENSHIN
+                )
+            if user.honkai_daily_sub:
+                respone = await genshin_api.claim_daily_reward(
+                    guild_id=user.guild_id,
+                    user_id=user.user_id,
+                    game=genshin.Game.STARRAIL
+                )
             if respone:
                 channels.append(channel)
         for channel in channels:
@@ -375,6 +385,44 @@ class Genshin(commands.Cog):
                 user_codes.setdefault(code, response)
 
         await ctx.reply(response_codes)
+
+    @genshin_subscriptions.command(
+        name="honkai_daily_sub",
+        name_localizations={"ru": "хонкай_дейли_отметки"},
+        description="Subscription to auto redeem daily rewards on Honkai Star Rail.",
+        description_localizations={"ru": "Подписка на авто отметки для Хонкай Стар рейл."},
+    )
+    async def auto_honkai_daily_sub(
+            self,
+            ctx,
+    ) -> None:
+        user = await check_genshin_login(ctx)
+        if user is None:
+            return
+
+        await UsagiGenshin.update(id=user.id, honkai_daily_sub=True)
+        await ctx.send_followup(
+            content=_("Successfully subscribed you to auto claiming daily rewards")
+        )
+
+    @genshin_unsubscriptions.command(
+        name="honkai_daily_sub",
+        name_localizations={"ru": "хонкай_дейли_отметки"},
+        description="Unsubscription from claim daily rewards on Honkai Star Rail.",
+        description_localizations={"ru": "Отписка от сбора дейли отметок на Хонкай Стар рейл."},
+    )
+    async def reward_claim_unsub(
+            self,
+            ctx,
+    ) -> None:
+        user = await check_genshin_login(ctx)
+        if user is None:
+            return
+
+        await UsagiGenshin.update(id=user.id, honkai_daily_sub=False)
+        await ctx.send_followup(
+            content=_("Successfully unsubscribed you from auto claiming daily rewards")
+        )
 
 
 def setup(bot):
