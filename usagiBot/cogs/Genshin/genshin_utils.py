@@ -39,6 +39,7 @@ class GenshinAPI:
                 resin_sub_notified=False,
                 daily_sub=False,
                 code_sub=False,
+                honkai_daily_sub=False,
             )
         else:
             await UsagiGenshin.update(
@@ -172,14 +173,14 @@ def generate_notes_fields(user) -> list[discord.EmbedField]:
     fields = [
         discord.EmbedField(
             name="_ _",
-            value=_("resin_notify").format(
+            value=_("resin_notify_text").format(
                 resin_notify=resin_notify
             ),
             inline=True,
         ),
         discord.EmbedField(
             name="_ _",
-            value=_("daily_reward").format(
+            value=_("daily_reward_text").format(
                 daily_reward=daily_reward
             ),
             inline=True,

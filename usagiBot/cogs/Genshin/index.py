@@ -21,10 +21,11 @@ class GenshinModal(discord.ui.Modal):
 
     async def callback(self, interaction: discord.Interaction):
         genshin_api = GenshinAPI()
+        cookies = self.children[0].value.replace("'", "")
         auth_result = await genshin_api.new_user_auth(
             guild_id=interaction.guild_id,
             user_id=interaction.user.id,
-            cookies=self.children[0].value,
+            cookies=cookies,
         )
         text = self.bot.i18n.get_text("Wrong cookies", self.lang)
         if auth_result:
@@ -78,7 +79,10 @@ class Genshin(commands.Cog):
                 continue
 
             lang = self.bot.language.get(user.user_id, "en")
-            notify_text = self.bot.i18n.get_text("resin cap", lang)
+            notify_text = self.bot.i18n.get_text("resin cap", lang).format(
+                user_id=user.user_id,
+                current_resin=data.current_resin
+            )
             await channel.send(content=notify_text)
             await UsagiGenshin.update(id=user.id, resin_sub_notified=True)
 
@@ -118,11 +122,15 @@ class Genshin(commands.Cog):
                     user_id=user.user_id,
                     game=genshin.Game.STARRAIL
                 )
-            if respone:
+            if respone and channel not in channels:
                 channels.append(channel)
         for channel in channels:
             await channel.send(
-                content="Claimed daily rewards. To follow use `/genshin sub reward_claim `"
+                content=("Claimed daily rewards. "
+                         "To follow use `/genshin sub reward_claim `"
+                         "Or you can do it by yourself"
+                         "Genshin - https://bit.ly/genshin_daily"
+                         "Honkai - https://bit.ly/honkai_daily")
             )
 
     @claim_daily_reward.before_loop
@@ -136,10 +144,10 @@ class Genshin(commands.Cog):
         raise UsagiModuleDisabledError()
 
     genshin = SlashCommandGroup(
-        name="genshin",
-        name_localizations={"ru": "геншин"},
-        description="Follow your resin in Genshin Impact!",
-        description_localizations={"ru": "Отслеживайте свою смолу и получайте дейли отметки в Гешине!"},
+        name="hoyolab",
+        name_localizations={"ru": "хоелаб"},
+        description="Follow your resin in Hoyolab!",
+        description_localizations={"ru": "Отслеживайте свою смолу и получайте дейли отметки в Хоёлабе!"},
         command_tag="genshin",
     )
 
@@ -258,10 +266,10 @@ class Genshin(commands.Cog):
         await ctx.send_followup(content=redeem_response)
 
     @genshin_subscriptions.command(
-        name="reward_claim",
-        name_localizations={"ru": "сбор_дейли"},
-        description="Subscription to claim daily rewards.",
-        description_localizations={"ru": "Подписка на сбор дейли отметок на Хоёлабе."},
+        name="genshin_reward_claim",
+        name_localizations={"ru": "геншин_сбор_дейли"},
+        description="Subscription to claim daily rewards for Genshin Impact.",
+        description_localizations={"ru": "Подписка на сбор дейли отметок для Геншин Импакта."},
     )
     async def reward_claim_sub(
         self,
@@ -277,10 +285,10 @@ class Genshin(commands.Cog):
         )
 
     @genshin_unsubscriptions.command(
-        name="reward_claim",
-        name_localizations={"ru": "сбор_дейли"},
-        description="Unsubscription from claim daily rewards.",
-        description_localizations={"ru": "Отписка от сбора дейли отметок на Хоёлабе."},
+        name="genshin_reward_claim",
+        name_localizations={"ru": "геншин_сбор_дейли"},
+        description="Unsubscription from claim daily rewards from Genshin Impact.",
+        description_localizations={"ru": "Отписка от сбора дейли отметок для Геншин Импакта."},
     )
     async def reward_claim_unsub(
         self,
@@ -387,8 +395,8 @@ class Genshin(commands.Cog):
         await ctx.reply(response_codes)
 
     @genshin_subscriptions.command(
-        name="honkai_daily_sub",
-        name_localizations={"ru": "хонкай_дейли_отметки"},
+        name="honkai_reward_claim",
+        name_localizations={"ru": "хонкай_сбор_дейли"},
         description="Subscription to auto redeem daily rewards on Honkai Star Rail.",
         description_localizations={"ru": "Подписка на авто отметки для Хонкай Стар рейл."},
     )
@@ -406,8 +414,8 @@ class Genshin(commands.Cog):
         )
 
     @genshin_unsubscriptions.command(
-        name="honkai_daily_sub",
-        name_localizations={"ru": "хонкай_дейли_отметки"},
+        name="honkai_reward_claim",
+        name_localizations={"ru": "хонкай_сбор_дейли"},
         description="Unsubscription from claim daily rewards on Honkai Star Rail.",
         description_localizations={"ru": "Отписка от сбора дейли отметок на Хонкай Стар рейл."},
     )
