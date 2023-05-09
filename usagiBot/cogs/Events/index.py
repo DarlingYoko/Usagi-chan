@@ -38,7 +38,8 @@ class Events(commands.Cog):
 
         delete_ids = []
         insert_mappings = []
-
+        last_user = await UsagiBackup.get_last_obj()
+        last_id = last_user.id + 1
         for user in backup:
             exist_user = (
                 self.bot.messages_dump.get(user.guild_id, {})
@@ -49,6 +50,7 @@ class Events(commands.Cog):
             if exist_user is not None:
                 insert_mappings.append(
                     UsagiBackup(
+                        id=last_id,
                         guild_id=user.guild_id,
                         channel_id=user.channel_id,
                         user_id=user.user_id,
@@ -62,12 +64,15 @@ class Events(commands.Cog):
                 delete_ids.append(user.id)
 
                 del self.bot.messages_dump[user.guild_id][user.channel_id][user.user_id]
+                last_id += 1
+
         for guild in self.bot.messages_dump.keys():
             for channel in self.bot.messages_dump[guild].keys():
                 for user in self.bot.messages_dump[guild][channel].keys():
                     user_data = self.bot.messages_dump[guild][channel][user]
                     insert_mappings.append(
                         UsagiBackup(
+                            id=last_id,
                             guild_id=guild,
                             channel_id=channel,
                             user_id=user,
@@ -78,6 +83,7 @@ class Events(commands.Cog):
                             stickers=user_data["stickers"],
                         )
                     )
+                    last_id += 1
 
         await UsagiBackup.delete_all(delete_ids)
         await UsagiBackup.insert_mappings(insert_mappings)
