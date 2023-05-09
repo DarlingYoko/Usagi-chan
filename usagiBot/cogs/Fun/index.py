@@ -130,7 +130,7 @@ class Fun(commands.Cog):
     # Message commands
     @commands.message_command(name="Get Message ID")
     async def get_message_id(self, ctx, message: discord.Message) -> None:
-        await ctx.respond(_("message").format(message_id=message.id))
+        await ctx.respond(_("message id").format(message_id=message.id))
 
     @commands.message_command(
         name="Add Based Message", command_tag="based_message_channel"
