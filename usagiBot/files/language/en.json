@@ -6,6 +6,7 @@
     "This is the wrong channel": "This is the wrong channel to send this command\nTry this one: <#{channel_id}>",
     "Your color is in wrong format": "Your color is in wrong format!",
     "Some requirements were not met": "Some requirements were not met.",
+    "I don't have permissions to do that": "I don't have permissions to do that.",
 
     "This command is disabled": "This command is disabled. Contact the server administration.",
     "ping pong": "Pong! {ping} ms",

@@ -159,6 +159,11 @@ class Events(commands.Cog):
                 self.bot.i18n.get_text("Some requirements were not met", user_lang),
                 delete_after=2 * 60,
             )
+        elif isinstance(error, discord.errors.Forbidden):
+            await ctx.reply(
+                self.bot.i18n.get_text("Don't have permissions to do that", user_lang),
+                delete_after=2 * 60,
+            )
         else:
             await error_notification_to_owner(ctx, error, self.bot)
         if not isinstance(ctx.message.channel, discord.DMChannel):

@@ -6,6 +6,7 @@
     "This is the wrong channel": "Это неправильный канал для команды.\nПопробуй вот этот: <#{channel_id}>",
     "Your color is in wrong format": "Твой цвет в неправильном формате!",
     "Some requirements were not met": "Некоторые обязанности не были выполнены для команды.",
+    "I don't have permissions to do that": "У меня нет прав чтобы это сделать.",
 
     "This command is disabled": "Эта команда выключена. Свяжитесь с администрацией сервера.",
     "ping pong": "Понг! {ping} мс",
