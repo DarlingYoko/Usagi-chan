@@ -559,7 +559,9 @@ async def end_game(
             count_of_games=wordle_gamer.count_of_games + 1,
         )
     else:
+        last_game = await UsagiWordleResults.get_last_obj()
         await UsagiWordleResults.create(
+            id=last_game.id + 1,
             guild_id=interaction.guild.id,
             user_id=interaction.user.id,
             points=lives_count,
