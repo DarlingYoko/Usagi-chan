@@ -467,7 +467,7 @@ class Main(commands.Cog):
                 ),
                 ephemeral=True
             )
-        if len(msg.reactions) == 0:
+        if len(msg.reactions) == 20:
             return await ctx.respond(
                 embed=get_embed(
                     title=_("This message already had 20 reactions"),
