@@ -169,7 +169,7 @@ class Genshin(commands.Cog):
     async def hh_link(self, ctx):
         return await ctx.reply(_("hh links"))
 
-    @commands.command(name="paimon", aliases=["паймон"])
+    @commands.command(name="paimon", aliases=["паймон", "pompom", "понпон", "помпом"])
     async def paimon_link(self, ctx):
         return await ctx.reply(_("paimon links"))
 
