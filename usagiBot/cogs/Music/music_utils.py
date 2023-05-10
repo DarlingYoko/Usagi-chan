@@ -156,29 +156,25 @@ async def parse_songs(ctx, data):
         # YouTube only, guess no one would play other than YouTube
         url = "https://youtu.be/" + song["id"]
         title = song["title"]
+        duration = 0 if song["duration"] is None else int(song["duration"])
         playlist.append(
             {
                 "pos": pos,
                 "url": url,
                 "title": title,
-                "duration": int(song["duration"]),
+                "duration": duration,
             }
         )
     # Sort the playlist variable to match with the order in YouTube
     playlist.sort(key=lambda x: x["pos"])
     # Add all songs to the pending list
     for entry in playlist:
-        try:
-            duration = int(entry["duration"])
-        except Exception as e:
-            print("ERROR parse_songs - ", e)
-            duration = 0
         await ctx.voice_state.songs.put(
             {
                 "url": entry["url"],
                 "title": entry["title"],
                 "user": ctx.author,
-                "duration": duration,
+                "duration": entry["duration"],
             }
         )
     return playlist
