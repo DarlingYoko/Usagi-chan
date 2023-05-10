@@ -143,6 +143,36 @@ class Genshin(commands.Cog):
             return True
         raise UsagiModuleDisabledError()
 
+    @commands.command(name="primogems", aliases=["примогемы"])
+    async def primogems_link(self, ctx):
+        link_1 = ("<https://docs.google.com/spreadsheets/d/1DPJOtHTLB_y-"
+                  "MTcUheSBrMPFvV_EtBlcYA6Xy1F0R_c/edit?pli=1#gid=284498967>")
+        link_2 = ("https://docs.google.com/spreadsheets/d/e/2PACX-1vToBPh4yTn4VioU"
+                  "uqSvnPiwLoG0rJodFe9_gz6qOKUy3z8dCWtXel5Aqa07qSTZG8qhu7Fwgx7AfxzU/pubhtml#>")
+        answer = _("links to primogems")
+        text = "\n".join([answer, link_1, link_2])
+        return await ctx.reply(text)
+
+    @commands.command(name="forum", aliases=["форум"])
+    async def forum_link(self, ctx):
+        return await ctx.reply(_("forum link"))
+
+    @commands.command(name="map", aliases=["карта"])
+    async def map_link(self, ctx):
+        return await ctx.reply(_("links to maps"))
+
+    @commands.command(name="ambr", aliases=["эмбер"])
+    async def ambr_link(self, ctx):
+        return await ctx.reply("<https://ambr.top/ru/archive/avatar>")
+
+    @commands.command(name="hh", aliases=["хх"])
+    async def hh_link(self, ctx):
+        return await ctx.reply(_("hh links"))
+
+    @commands.command(name="paimon", aliases=["паймон"])
+    async def paimon_link(self, ctx):
+        return await ctx.reply(_("paimon links"))
+
     genshin = SlashCommandGroup(
         name="hoyolab",
         name_localizations={"ru": "хоелаб"},
