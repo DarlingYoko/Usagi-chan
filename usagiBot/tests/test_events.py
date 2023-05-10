@@ -2,11 +2,13 @@ from sqlalchemy.ext import asyncio
 from unittest import mock
 from unittest import IsolatedAsyncioTestCase
 from discord.ext import commands
+from usagiBot.tests.utils import *
 
 
 class TestEventsMethods(IsolatedAsyncioTestCase):
+    @mock.patch("usagiBot.db.models.UsagiBackup", new_callable=mock.AsyncMock)
     @mock.patch.object(asyncio, "create_async_engine")
-    def setUp(self, mock_engine) -> None:
+    def setUp(self, mock_engine, mock_UsagiBackup) -> None:
         self.ctx = mock.AsyncMock()
         self.bot = mock.MagicMock()
 
@@ -14,6 +16,9 @@ class TestEventsMethods(IsolatedAsyncioTestCase):
 
         self.ctx.author.name = "Yoko"
         self.Events = Events(self.bot)
+
+        self.bot.i18n = init_i18n()
+        self.bot.language = {}
 
     async def test_command_not_found(self) -> None:
         await self.Events.on_command_error(self.ctx, commands.CommandNotFound())

@@ -2,6 +2,8 @@ from sqlalchemy.ext import asyncio
 from unittest import mock
 from unittest import IsolatedAsyncioTestCase
 
+from usagiBot.tests.utils import *
+
 
 class TestMainMethods(IsolatedAsyncioTestCase):
 
@@ -11,6 +13,8 @@ class TestMainMethods(IsolatedAsyncioTestCase):
         self.Main = Main
 
         self.bot = mock.AsyncMock()
+        self.bot.i18n = init_i18n()
+        self.bot.language = {}
         self.ctx = mock.AsyncMock()
         self.ctx.author.name = "test_author"
 

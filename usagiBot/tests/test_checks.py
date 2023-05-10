@@ -4,12 +4,26 @@ from unittest import IsolatedAsyncioTestCase
 from unittest import mock
 
 import discord
+import sys
+import pytest
 from sqlalchemy.ext import asyncio
 
 from usagiBot.src.UsagiErrors import *
+from usagiBot.tests.utils import *
 
-os.environ["BOT_OWNER"] = "11111"
-os.environ["BOT_ID"] = "1234567890"
+
+@pytest.fixture(autouse=True)
+def clear_imports():
+    # Store the initial state of sys.modules
+    initial_modules = dict(sys.modules)
+
+    # Yield control to the test
+    yield
+
+    # Clear any new modules imported during the test
+    for module in list(sys.modules.keys()):
+        if module not in initial_modules:
+            del sys.modules[module]
 
 
 class TestCheckMethods(IsolatedAsyncioTestCase):
@@ -20,7 +34,6 @@ class TestCheckMethods(IsolatedAsyncioTestCase):
         self.mock_UsagiConfig = mock_UsagiConfig
 
         import usagiBot.src.UsagiChecks as UsagiChecks
-        importlib.reload(UsagiChecks)
         self.UsagiChecks = UsagiChecks
 
         self.bot = mock.MagicMock()

@@ -1,42 +1,61 @@
+import sys
+import pytest
+
 from sqlalchemy.ext import asyncio
 from unittest import mock
 from unittest import IsolatedAsyncioTestCase
 
+from usagiBot.tests.utils import *
+
+
+@pytest.fixture(autouse=True)
+def clear_imports():
+    # Store the initial state of sys.modules
+    initial_modules = dict(sys.modules)
+
+    # Yield control to the test
+    yield
+
+    # Clear any new modules imported during the test
+    for module in list(sys.modules.keys()):
+        if module not in initial_modules:
+            del sys.modules[module]
+
 
 class TestModerationMethods(IsolatedAsyncioTestCase):
 
-    @classmethod
     @mock.patch("usagiBot.db.models.UsagiConfig", new_callable=mock.AsyncMock)
     @mock.patch("usagiBot.db.models.UsagiCogs", new_callable=mock.AsyncMock)
     @mock.patch("usagiBot.db.models.UsagiModerRoles", new_callable=mock.AsyncMock)
     @mock.patch.object(asyncio, "create_async_engine")
-    def setUpClass(cls, mock_engine, mock_UsagiModerRoles, mock_UsagiCogs, mock_UsagiConfig) -> None:
-        cls.ctx = mock.AsyncMock()
-        cls.ctx.guild.id = "test_guild_id"
-        cls.ctx.bot.cogs = ["Fun", "Tech", "Wordle"]
-        cls.bot = mock.AsyncMock()
+    def setUp(self, mock_engine, mock_UsagiModerRoles, mock_UsagiCogs, mock_UsagiConfig) -> None:
+        self.ctx = mock.AsyncMock()
+        self.ctx.guild.id = "test_guild_id"
+        self.ctx.bot.cogs = ["Fun", "Tech", "Wordle"]
+        self.bot = mock.AsyncMock()
+        self.bot.i18n = init_i18n()
+        self.bot.language = {}
 
-        cls.mock_UsagiConfig = mock_UsagiConfig
-        cls.mock_UsagiCogs = mock_UsagiCogs
-        cls.mock_UsagiModerRoles = mock_UsagiModerRoles
+        self.mock_UsagiConfig = mock_UsagiConfig
+        self.mock_UsagiCogs = mock_UsagiCogs
+        self.mock_UsagiModerRoles = mock_UsagiModerRoles
 
-        cls.patcher = mock.patch("usagiBot.src.UsagiUtils.check_arg_in_command_tags", new=mock.MagicMock())
-        cls.check_arg_in_command_tags = cls.patcher.start()
+        self.patcher = mock.patch("usagiBot.src.UsagiUtils.check_arg_in_command_tags", new=mock.MagicMock())
+        self.check_arg_in_command_tags = self.patcher.start()
 
         from usagiBot.cogs.Moderation.index import Moderation
-        cls.Moderation = Moderation(cls.bot)
+        self.Moderation = Moderation(self.bot)
 
-        cls.test_command = "test_command"
-        cls.channel = mock.MagicMock()
-        cls.channel.id = "test_channel_id"
+        self.test_command = "test_command"
+        self.channel = mock.MagicMock()
+        self.channel.id = "test_channel_id"
 
-        cls.moder_role = mock.MagicMock()
-        cls.moder_role.id = "test_moder_role_id"
-        cls.moder_role.mention = "test_moder_role_mention"
+        self.moder_role = mock.MagicMock()
+        self.moder_role.id = "test_moder_role_id"
+        self.moder_role.mention = "test_moder_role_mention"
 
-    @classmethod
-    def tearDownClass(cls):
-        cls.patcher.stop()
+    def tearDown(self):
+        self.patcher.stop()
 
     async def test_set_up_command_create(self) -> None:
         self.check_arg_in_command_tags.return_value = True

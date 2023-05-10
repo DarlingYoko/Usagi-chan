@@ -1,36 +1,56 @@
+import sys
+import pytest
+
 from sqlalchemy.ext import asyncio
 from unittest import mock
 from unittest import IsolatedAsyncioTestCase
 from twitchAPI import helper
 from datetime import datetime
 from freezegun import freeze_time
+from usagiBot.tests.utils import *
+
+
+@pytest.fixture(autouse=True)
+def clear_imports():
+    # Store the initial state of sys.modules
+    initial_modules = dict(sys.modules)
+
+    # Yield control to the test
+    yield
+
+    # Clear any new modules imported during the test
+    for module in list(sys.modules.keys()):
+        if module not in initial_modules:
+            del sys.modules[module]
 
 
 class TestTwitch(IsolatedAsyncioTestCase):
-    @classmethod
     @mock.patch("usagiBot.db.models.UsagiTwitchNotify", new_callable=mock.AsyncMock)
     @mock.patch("usagiBot.db.models.UsagiConfig", new_callable=mock.AsyncMock)
     @mock.patch.object(asyncio, "create_async_engine")
     @mock.patch.object(helper, "first", new_callable=mock.AsyncMock)
-    def setUpClass(
-        cls, mock_first, mock_engine, mock_UsagiConfig, mock_UsagiTwitchNotify
+    def setUp(
+        self, mock_first, mock_engine, mock_UsagiConfig, mock_UsagiTwitchNotify
     ) -> None:
         from usagiBot.cogs.Twitch.index import Twitch
 
-        cls.Twitch = Twitch
+        self.Twitch = Twitch
 
-        cls.mock_UsagiTwitchNotify = mock_UsagiTwitchNotify
-        cls.mock_UsagiConfig = mock_UsagiConfig
-        cls.mock_first = mock_first
+        self.mock_UsagiTwitchNotify = mock_UsagiTwitchNotify
+        self.mock_UsagiConfig = mock_UsagiConfig
+        self.mock_first = mock_first
 
-        cls.ctx = mock.AsyncMock()
-        cls.ctx.interaction.guild.id = "test_guild_id"
-        cls.ctx.interaction.user.id = "test_user_id"
-        cls.ctx.author.id = "test_user_id"
-        cls.ctx.guild.id = "test_guild_id"
+        self.ctx = mock.AsyncMock()
+        self.ctx.interaction.guild.id = "test_guild_id"
+        self.ctx.interaction.user.id = "test_user_id"
+        self.ctx.author.id = "test_user_id"
+        self.ctx.guild.id = "test_guild_id"
 
-        cls.Twitch.twitch = mock.AsyncMock()
-        cls.Twitch.bot = mock.AsyncMock()
+        self.Twitch.twitch = mock.AsyncMock()
+        self.Twitch.twitch.get_users = mock.MagicMock()
+        self.Twitch.bot = mock.AsyncMock()
+        self.Twitch.bot.i18n = init_i18n()
+        self.Twitch.bot.language = {}
 
     async def test_twitch_notify_loop(self) -> None:
         self.mock_UsagiTwitchNotify.get_all.return_value = [
@@ -164,7 +184,7 @@ class TestTwitch(IsolatedAsyncioTestCase):
             twitch_username="streamer_2",
         )
         self.ctx.respond.assert_called_with(
-            f"You are not followed to this streamer", ephemeral=True
+            f"You are not followed to this streamer.", ephemeral=True
         )
 
     async def test_show_user_follows(self) -> None:
@@ -191,7 +211,7 @@ class TestTwitch(IsolatedAsyncioTestCase):
             user_id="test_user_id",
         )
         self.ctx.respond.assert_called_with(
-            "You are not followed to any streamer", ephemeral=True
+            "You are not followed to any streamer.", ephemeral=True
         )
 
     async def test_show_all_follows(self) -> None:
@@ -213,5 +233,5 @@ class TestTwitch(IsolatedAsyncioTestCase):
             guild_id="test_guild_id",
         )
         self.ctx.respond.assert_called_with(
-            "Your guild not followed to any streamer", ephemeral=True
+            "Your guild not followed to any streamer.", ephemeral=True
         )

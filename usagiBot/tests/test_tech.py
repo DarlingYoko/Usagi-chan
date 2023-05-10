@@ -1,38 +1,57 @@
 import datetime
+import sys
+import pytest
 
 from sqlalchemy.ext import asyncio
 from unittest import mock
 from unittest import IsolatedAsyncioTestCase
+from usagiBot.tests.utils import *
+
+
+@pytest.fixture(autouse=True)
+def clear_imports():
+    # Store the initial state of sys.modules
+    initial_modules = dict(sys.modules)
+
+    # Yield control to the test
+    yield
+
+    # Clear any new modules imported during the test
+    for module in list(sys.modules.keys()):
+        if module not in initial_modules:
+            del sys.modules[module]
 
 
 class TestTechMethods(IsolatedAsyncioTestCase):
 
-    @classmethod
     @mock.patch("usagiBot.cogs.Tech.tech_utils.get_user_role", new_callable=mock.AsyncMock)
     @mock.patch("usagiBot.db.models.UsagiUnicRoles", new_callable=mock.AsyncMock)
     @mock.patch.object(asyncio, "create_async_engine")
-    def setUpClass(cls, mock_engine, mock_UsagiUnicRoles, mock_get_user_role) -> None:
-        cls.mock_UsagiUnicRoles = mock_UsagiUnicRoles
+    def setUp(self, mock_engine, mock_UsagiUnicRoles, mock_get_user_role) -> None:
+        self.mock_UsagiUnicRoles = mock_UsagiUnicRoles
         from usagiBot.cogs.Tech.index import Tech
-        cls.Tech = Tech
-        cls.role = mock.AsyncMock(id="test_role_id", mention="test_role_mention")
-        mock_get_user_role.return_value = cls.role
+        self.Tech = Tech
+        self.role = mock.AsyncMock(id="test_role_id", mention="test_role_mention")
+        mock_get_user_role.return_value = self.role
 
-        cls.bot = mock.AsyncMock()
-        cls.ctx = mock.AsyncMock()
-        cls.ctx.author.name = "test_author"
-        cls.ctx.author.id = "test_author_id"
-        cls.ctx.guild.id = "test_guild_id"
-        cls.ctx.guild.create_role.return_value = cls.role
+        self.bot = mock.AsyncMock()
+        self.bot.i18n = init_i18n()
+        self.bot.language = {}
 
-        cls.message = mock.AsyncMock()
+        self.ctx = mock.AsyncMock()
+        self.ctx.author.name = "test_author"
+        self.ctx.author.id = "test_author_id"
+        self.ctx.guild.id = "test_guild_id"
+        self.ctx.guild.create_role.return_value = self.role
+
+        self.message = mock.AsyncMock()
 
     async def test_pin_message(self) -> None:
 
         await self.Tech.pin_message(self.Tech, self.ctx, self.message)
 
         self.message.pin.assert_called_with(reason=f"Pinned by test_author")
-        self.ctx.respond.assert_called_with(f"Message was pinned", ephemeral=True)
+        self.ctx.respond.assert_called_with(f"Message was pinned.", ephemeral=True)
 
     async def test_go_sleep(self) -> None:
         await self.Tech.go_sleep(self.ctx, 20)
@@ -70,7 +89,7 @@ class TestTechMethods(IsolatedAsyncioTestCase):
             role_id="test_role_id",
         )
         self.ctx.author.remove_roles.assert_called_with(self.role)
-        self.ctx.respond.assert_called_with("Successfully removed your role", ephemeral=True)
+        self.ctx.respond.assert_called_with("Successfully removed your role.", ephemeral=True)
 
     async def test_rename_unic_role(self) -> None:
         await self.Tech.rename_unic_role(self.ctx, "test_role_name", "new_name_role")

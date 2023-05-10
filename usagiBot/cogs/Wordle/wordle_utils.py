@@ -111,7 +111,6 @@ class WordleAnswer(discord.ui.Modal):
                 interaction=interaction,
                 result="win",
                 word=self.game.word,
-                game_author_id=self.game.owner_id,
                 lives_count=self.game.lives_count,
                 game=self.game,
             )
@@ -121,7 +120,6 @@ class WordleAnswer(discord.ui.Modal):
                 interaction=interaction,
                 result="lose",
                 word=self.game.word,
-                game_author_id=self.game.owner_id,
                 game=self.game,
             )
 
@@ -486,7 +484,6 @@ async def create_finish_game_embed(
     interaction: discord.Interaction,
     result: str,
     word: str,
-    game_author_id: int,
     game,
 ) -> discord.Embed:
     """
@@ -495,10 +492,9 @@ async def create_finish_game_embed(
     :param interaction: Interaction
     :param result: result of game
     :param word: Guessed word
-    :param game_author_id: Game creator id
     :return: Embed with finished game
     """
-    game_author = await interaction.guild.fetch_member(game_author_id)
+    game_author = await interaction.guild.fetch_member(game.owner_id)
     if result == "win":
         winner = interaction.user.name
         discriminator = interaction.user.discriminator
@@ -530,7 +526,6 @@ async def end_game(
     interaction: discord.Interaction,
     result: str,
     word: str,
-    game_author_id: int,
     game,
     lives_count: int = 0,
 ) -> None:
@@ -540,13 +535,12 @@ async def end_game(
     :param interaction: Interaction
     :param result: result of game
     :param word: Guessed word
-    :param game_author_id: Game creator id
     :param lives_count: How many lives left
     :return:
     """
     wordle_channel = interaction.channel.parent
     finish_game_embed = await create_finish_game_embed(
-        interaction, result, word, game_author_id, game
+        interaction, result, word, game
     )
 
     wordle_gamer = await UsagiWordleResults.get(

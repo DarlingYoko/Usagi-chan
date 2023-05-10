@@ -1,37 +1,59 @@
 import datetime
-import importlib
+import sys
+import pytest
 
+import genshin
 from sqlalchemy.ext import asyncio
 from unittest import IsolatedAsyncioTestCase, mock
 from freezegun import freeze_time
 
+from usagiBot.tests.utils import *
 
-class TestFunMethods(IsolatedAsyncioTestCase):
-    @classmethod
+
+@pytest.fixture(autouse=True)
+def clear_imports():
+    # Store the initial state of sys.modules
+    initial_modules = dict(sys.modules)
+
+    # Yield control to the test
+    yield
+
+    # Clear any new modules imported during the test
+    for module in list(sys.modules.keys()):
+        if module not in initial_modules:
+            del sys.modules[module]
+
+
+class TestHoyolabMethods(IsolatedAsyncioTestCase):
+
     @mock.patch("usagiBot.cogs.Genshin.genshin_utils.GenshinAPI")
     @mock.patch("usagiBot.db.models.UsagiGenshin", new_callable=mock.AsyncMock)
     @mock.patch("usagiBot.db.models.UsagiConfig", new_callable=mock.AsyncMock)
     @mock.patch.object(asyncio, "create_async_engine")
-    def setUpClass(
-        cls, mock_engine, mock_UsagiConfig, mock_UsagiGenshin, mock_GenshinAPI
+    def setUp(
+            self, mock_engine, mock_UsagiConfig, mock_UsagiGenshin, mock_GenshinAPI
     ) -> None:
+        self.bot = mock.AsyncMock()
+        self.bot.logger = mock.MagicMock()
+        self.bot.i18n = init_i18n()
+        self.bot.language = {}
+
         from usagiBot.cogs.Genshin.index import Genshin
 
-        cls.Genshin = Genshin
+        self.Genshin = Genshin(self.bot)
 
         import usagiBot.cogs.Genshin.genshin_utils as genshin_utils
 
-        cls.genshin_utils = genshin_utils
+        self.genshin_utils = genshin_utils
 
-        cls.mock_UsagiGenshin = mock_UsagiGenshin
-        cls.mock_UsagiConfig = mock_UsagiConfig
-        cls.mock_GenshinAPI = mock_GenshinAPI
+        self.mock_UsagiGenshin = mock_UsagiGenshin
+        self.mock_UsagiConfig = mock_UsagiConfig
+        self.mock_GenshinAPI = mock_GenshinAPI
 
-        cls.ctx = mock.AsyncMock()
-        cls.Genshin.bot = mock.MagicMock()
-        cls.Genshin.bot.fetch_channel = mock.AsyncMock()
-        cls.mock_GenshinAPI().get_user_data = mock.AsyncMock()
-        cls.mock_GenshinAPI().claim_daily_reward = mock.AsyncMock()
+        self.ctx = mock.AsyncMock()
+        self.Genshin.bot.fetch_channel = mock.AsyncMock()
+        self.mock_GenshinAPI().get_user_data = mock.AsyncMock()
+        self.mock_GenshinAPI().claim_daily_reward = mock.AsyncMock()
 
     async def test_check_resin_overflow_loop(self) -> None:
         self.mock_UsagiGenshin.get_all_by.return_value = [
@@ -82,7 +104,7 @@ class TestFunMethods(IsolatedAsyncioTestCase):
             mock.MagicMock(current_resin=160),
         ]
 
-        await self.Genshin.check_resin_overflow(self.Genshin)
+        await self.Genshin.check_resin_overflow()
         self.mock_UsagiGenshin.get_all_by.assert_called_with(resin_sub=True)
         self.mock_UsagiConfig.get.assert_has_calls(
             [
@@ -129,23 +151,26 @@ class TestFunMethods(IsolatedAsyncioTestCase):
 
     @freeze_time("2001-03-21 15:00:00")
     async def test_claim_daily_reward_loop(self) -> None:
-        self.mock_UsagiGenshin.get_all_by.return_value = [
+        self.mock_UsagiGenshin.get_all_by_or.return_value = [
             mock.MagicMock(
                 guild_id="test_guild_id_12",
                 user_id="test_user_id_1",
                 daily_sub=True,
+                honkai_daily_sub=False,
                 id="test_user_id_1",
             ),
             mock.MagicMock(
                 guild_id="test_guild_id_12",
                 user_id="test_user_id_2",
                 daily_sub=False,
+                honkai_daily_sub=True,
                 id="test_user_id_2",
             ),
             mock.MagicMock(
                 guild_id="test_guild_id_22",
                 user_id="test_user_id_3",
                 daily_sub=True,
+                honkai_daily_sub=False,
                 id="test_user_id_3",
             ),
         ]
@@ -168,8 +193,8 @@ class TestFunMethods(IsolatedAsyncioTestCase):
             True,
         ]
 
-        await self.Genshin.claim_daily_reward(self.Genshin)
-        self.mock_UsagiGenshin.get_all_by.assert_called_with(daily_sub=True)
+        await self.Genshin.claim_daily_reward()
+        self.mock_UsagiGenshin.get_all_by_or.assert_called_with(daily_sub=True, honkai_daily_sub=True)
 
         self.mock_UsagiConfig.get.assert_has_calls(
             [
@@ -190,17 +215,24 @@ class TestFunMethods(IsolatedAsyncioTestCase):
         )
         self.mock_GenshinAPI().claim_daily_reward.assert_has_calls(
             [
-                mock.call(guild_id="test_guild_id_12", user_id="test_user_id_1"),
-                mock.call(guild_id="test_guild_id_12", user_id="test_user_id_2"),
-                mock.call(guild_id="test_guild_id_22", user_id="test_user_id_3"),
+                mock.call(guild_id="test_guild_id_12", user_id="test_user_id_1", game=genshin.Game.GENSHIN),
+                mock.call(guild_id="test_guild_id_12", user_id="test_user_id_2", game=genshin.Game.STARRAIL),
+                mock.call(guild_id="test_guild_id_22", user_id="test_user_id_3", game=genshin.Game.GENSHIN),
             ],
             any_order=False,
         )
+        text = (
+            "Claimed daily rewards.\n"
+            "To follow use `/hoyolab sub genshin_reward_claim/honkai_reward_claim `"
+            "Or you can do it by yourself"
+            "Genshin - https://bit.ly/genshin_daily\n"
+            "Honkai - https://bit.ly/honkai_daily"
+        )
         channel_1.send.assert_called_with(
-            content="Claimed daily rewards. To follow use `/genshin sub reward_claim `"
+            content=text
         )
         channel_2.send.assert_called_with(
-            content="Claimed daily rewards. To follow use `/genshin sub reward_claim `"
+            content=text
         )
 
     @freeze_time("2001-03-21 15:00:00")
@@ -287,6 +319,6 @@ class TestFunMethods(IsolatedAsyncioTestCase):
             guild_id="test_guild_id_2", user_id="test_user_id_22"
         )
         ctx.send_followup.assert_called_with(
-            content="You are not logged in. Pls go `/geshin auth`", ephemeral=True
+            content="You are not logged in. Pls go `/hoylab auth`", ephemeral=True
         )
         self.assertEqual(test_user, None)

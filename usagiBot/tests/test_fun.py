@@ -3,6 +3,8 @@ from sqlalchemy.ext import asyncio
 from unittest import mock
 from unittest import IsolatedAsyncioTestCase
 
+from usagiBot.tests.utils import *
+
 
 class TestFunMethods(IsolatedAsyncioTestCase):
 
@@ -38,6 +40,9 @@ class TestFunMethods(IsolatedAsyncioTestCase):
         config.generic_id = 54321
         mock_UsagiConfig.get.return_value = config
 
+        self.bot.i18n = init_i18n()
+        self.bot.language = {}
+
     async def test_ping(self) -> None:
         self.ctx.bot.latency = 1
         await self.Fun.ping_to_usagi(self.Fun, self.ctx)
@@ -55,9 +60,9 @@ class TestFunMethods(IsolatedAsyncioTestCase):
         await self.Fun.add_based_message(self.Fun, self.ctx, self.message)
 
         self.ctx.bot.fetch_channel.assert_called_with(54321)
-        self.ctx.respond.assert_called_with("Добавила базу <:BASEDHM:897821614312394793>")
+        self.ctx.respond.assert_called_with("Added based message <:pidoras:1084205028090318928>")
         self.channel.send.assert_called_with(
-            content="База от test_author_mention\ntest_content",
+            content="Based from test_author_mention\\ntest_content",
             files=[],
             embeds=[],
         )
@@ -68,13 +73,17 @@ class TestFunMethods(IsolatedAsyncioTestCase):
 
         return_message = (
             "```autohotkey\n"
-            "Сводка курса на данный момент:\n"
             "1. USDRUB 60 (-0.1)\n"
             "2. USDUAH 30 (-1)\n"
             "3. USDBYN 2 (2)\n"
             "```"
         )
-        self.ctx.reply.assert_called_with(return_message)
+        from usagiBot.src.UsagiUtils import get_embed
+        embed = get_embed(
+            title="Current exchange rate:",
+            description=return_message
+        )
+        self.ctx.reply.assert_called_with(embed=embed)
 
     @mock.patch("random.randint")
     async def test_get_user_iq(self, mock_randint) -> None:

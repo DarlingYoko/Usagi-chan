@@ -2,17 +2,32 @@ from unittest import IsolatedAsyncioTestCase
 from unittest import mock
 
 import discord
-import os
+import sys
+import pytest
 from sqlalchemy.ext import asyncio
+from usagiBot.tests.utils import *
 
-os.environ["BOT_OWNER"] = "11111"
-os.environ["BOT_ID"] = "1234567890"
+
+@pytest.fixture(autouse=True)
+def clear_imports():
+    # Store the initial state of sys.modules
+    initial_modules = dict(sys.modules)
+
+    # Yield control to the test
+    yield
+
+    # Clear any new modules imported during the test
+    for module in list(sys.modules.keys()):
+        if module not in initial_modules:
+            del sys.modules[module]
 
 
 class TestWordleMethods(IsolatedAsyncioTestCase):
     @mock.patch.object(asyncio, "create_async_engine")
     def setUp(self, mock_engine) -> None:
         self.bot = mock.AsyncMock()
+        self.bot.i18n = init_i18n()
+        self.bot.language = {}
 
         import usagiBot.cogs.Wordle.wordle_utils as wordle_utils
 
@@ -48,12 +63,12 @@ class TestWordleMethods(IsolatedAsyncioTestCase):
 [0;2mWord — [0;32m[0;34m[0;36m[0;34m[0;32m[0;35mЖОПАС[0m[0;32m[0m[0;34m[0m[0;36m[0m[0;34m[0m[0;32m[0m
 Created by test_game_author#test_game_author_discriminator[0m[2;32m[4;32m[4;32m[0;32m[0m[4;32m[0m[4;32m[0m[2;32m[0m
 ```"""
+        game = mock.MagicMock(user_lang="en", bot=self.bot, game_id=123, owner_id=12345)
         response_embed = await self.wordle_utils.create_finish_game_embed(
             interaction=interaction,
             result="win",
             word="жопас",
-            game_author_id=12345,
-            game_id=123,
+            game=game
         )
 
         interaction.guild.fetch_member.assert_called_with(12345)
@@ -69,6 +84,8 @@ Created by test_game_author#test_game_author_discriminator[0m[2;32m[4;32m[4;
             lives_count=10,
             game_id=123,
             timeout=180,
+            bot=self.bot,
+            user_lang="en"
         )
 
         interaction = mock.AsyncMock()
@@ -92,6 +109,8 @@ Created by test_game_author#test_game_author_discriminator[0m[2;32m[4;32m[4;
             lives_count=10,
             game_id=123,
             timeout=180,
+            bot=self.bot,
+            user_lang="en"
         )
         wordle_answer = self.wordle_utils.WordleAnswer(
             game=wordle_game, title="Your answer!"
@@ -132,6 +151,8 @@ Created by test_game_author#test_game_author_discriminator[0m[2;32m[4;32m[4;
             lives_count=10,
             game_id=123,
             timeout=180,
+            bot=self.bot,
+            user_lang="en"
         )
         wordle_answer = self.wordle_utils.WordleAnswer(
             game=wordle_game, title="Your answer!"
@@ -161,6 +182,8 @@ Created by test_game_author#test_game_author_discriminator[0m[2;32m[4;32m[4;
             lives_count=10,
             game_id=123,
             timeout=180,
+            bot=self.bot,
+            user_lang="en"
         )
         wordle_answer = self.wordle_utils.WordleAnswer(
             game=wordle_game, title="Your answer!"
@@ -190,6 +213,8 @@ Created by test_game_author#test_game_author_discriminator[0m[2;32m[4;32m[4;
             lives_count=10,
             game_id=213123,
             timeout=180,
+            bot=self.bot,
+            user_lang="en"
         )
         wordle_answer = self.wordle_utils.WordleAnswer(
             game=wordle_game, title="Your answer!"
@@ -209,9 +234,8 @@ Created by test_game_author#test_game_author_discriminator[0m[2;32m[4;32m[4;
             interaction=interaction,
             result="win",
             word="РУЧКА",
-            game_author_id=3333,
             lives_count=9,
-            game_id=213123,
+            game=wordle_game,
         )
 
     @mock.patch("usagiBot.cogs.Wordle.wordle_utils.end_game")
@@ -224,6 +248,8 @@ Created by test_game_author#test_game_author_discriminator[0m[2;32m[4;32m[4;
             lives_count=1,
             game_id=321,
             timeout=180,
+            bot=self.bot,
+            user_lang="en"
         )
         wordle_answer = self.wordle_utils.WordleAnswer(
             game=wordle_game, title="Your answer!"
@@ -243,6 +269,5 @@ Created by test_game_author#test_game_author_discriminator[0m[2;32m[4;32m[4;
             interaction=interaction,
             result="lose",
             word="ЗАЙЧИК",
-            game_author_id=2222,
-            game_id=321,
+            game=wordle_game,
         )
