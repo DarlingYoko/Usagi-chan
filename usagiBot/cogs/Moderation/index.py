@@ -224,7 +224,7 @@ class Moderation(commands.Cog):
             (guild_id in guild_cogs_settings and module not in guild_cogs_settings[guild_id])
         ):
             await ctx.respond(
-                content=_("This module isn't enabled."),
+                content=_("This module isn't enabled"),
                 ephemeral=True
             )
             return
@@ -343,7 +343,7 @@ class Moderation(commands.Cog):
             await ctx.respond(content=_("This guild doesn't have any Moderation roles"), ephemeral=True)
             return
 
-        result_text = _("All moderation roles:\n")
+        result_text = _("All moderation roles")
         counter = 1
         for role_id in moder_roles[guild_id]:
             result_text += f"{counter}. <@&{role_id}>\n"

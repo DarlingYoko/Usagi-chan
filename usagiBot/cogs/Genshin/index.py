@@ -87,7 +87,7 @@ class Genshin(commands.Cog):
             await UsagiGenshin.update(id=user.id, resin_sub_notified=True)
 
     @check_resin_overflow.before_loop
-    async def before_twitch_auth_loop(self):
+    async def before_check_resin_overflow(self):
         await self.bot.wait_until_ready()
         self.bot.logger.info("Checking resin.")
 
@@ -126,15 +126,15 @@ class Genshin(commands.Cog):
                 channels.append(channel)
         for channel in channels:
             await channel.send(
-                content=("Claimed daily rewards. "
-                         "To follow use `/genshin sub reward_claim `"
+                content=("Claimed daily rewards.\n"
+                         "To follow use `/hoyolab sub genshin_reward_claim/honkai_reward_claim `"
                          "Or you can do it by yourself"
-                         "Genshin - https://bit.ly/genshin_daily"
+                         "Genshin - https://bit.ly/genshin_daily\n"
                          "Honkai - https://bit.ly/honkai_daily")
             )
 
     @claim_daily_reward.before_loop
-    async def before_twitch_auth_loop(self):
+    async def before_claim_daily_reward(self):
         await self.bot.wait_until_ready()
         self.bot.logger.info(f"Checking daily reward.")
 

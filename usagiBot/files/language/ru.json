@@ -25,7 +25,7 @@
     "Successfully auth": "Успешная авторизация.",
     "Genshin auth": "Авторизация Геншин",
     "resin cap": "<@{user_id}>, у тебя уже {current_resin} смолы! <a:dinkDonk:865127621112102953>",
-    "You are not logged in": "Ты не залогинен. Пожалуйста выполни `/genshin auth`",
+    "You are not logged in": "Ты не залогинен. Пожалуйста выполни `/хоелаб авторизация`",
     "Resin": "Смола",
     "Notes": "Заметки",
     "Successfully subscribed you to auto claiming daily rewards": "Успешно подписала тебя на авто сбор дейли отметок.",

@@ -150,7 +150,7 @@ class Fun(commands.Cog):
                 files.append(file)
 
         await channel.send(
-            content=_("base from").format(mention=message.author.mention, message=message.content),
+            content=_("based from").format(mention=message.author.mention, message=message.content),
             files=files,
             embeds=message.embeds,
         )

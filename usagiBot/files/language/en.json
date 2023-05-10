@@ -25,7 +25,7 @@
     "Successfully auth": "Successfully auth.",
     "Genshin auth": "Genshin auth",
     "resin cap": "<@{user_id}>, you have already {current_resin} resin! <a:dinkDonk:865127621112102953>",
-    "You are not logged in": "You are not logged in. Pls go `/genshin auth`",
+    "You are not logged in": "You are not logged in. Pls go `/hoylab auth`",
     "Resin": "Resin",
     "Notes": "Notes",
     "Successfully subscribed you to auto claiming daily rewards": "Successfully subscribed you to auto claiming daily rewards.",
