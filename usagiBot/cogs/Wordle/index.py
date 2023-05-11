@@ -51,18 +51,19 @@ class Wordle(commands.Cog):
         :param word:
         :return:
         """
+        await ctx.defer(ephemeral=True)
         word = word.upper()
         for i in word:
             letter_ascii = ord(i)
             if not (65 <= letter_ascii <= 90) and not (1040 <= letter_ascii <= 1071):
-                await ctx.respond(
+                await ctx.send_followup(
                     _("Your word contains symbols, pls guess real word."),
                     ephemeral=True,
                 )
                 return
 
         if not (4 < len(word) < 11):
-            await ctx.respond(_("Word length is not correct"), ephemeral=True)
+            await ctx.send_followup(_("Word length is not correct"), ephemeral=True)
             return
         lang = self.bot.language.get(ctx.user.id, "en")
         await generate_new_wordle_game(ctx, word, "manual", self.bot, lang)
@@ -94,6 +95,7 @@ class Wordle(commands.Cog):
         :param word_lenght:
         :return:
         """
+        await ctx.defer(ephemeral=True)
         word = get_word(word_lenght)
         lang = self.bot.language.get(ctx.user.id, "en")
         await generate_new_wordle_game(ctx, word, "auto", self.bot, lang)

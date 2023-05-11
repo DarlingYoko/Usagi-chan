@@ -265,17 +265,16 @@ You have only [0;36m{lives_count}[0m tries and it's time to spend it![0m
             ),
         )
         await message.pin(reason="Pin new game")
+        await UsagiWordleGames.create(
+            guild_id=ctx.guild.id,
+            word=word,
+            owner_id=owner_id,
+            thread_id=thread.id,
+        )
     except discord.ApplicationCommandInvokeError as e:
-        ctx.bot.logger.INFO(e)
+        ctx.bot.logger.error(e)
 
-    await ctx.respond(_("Your game was created thread").format(thread=thread.mention), ephemeral=True)
-
-    await UsagiWordleGames.create(
-        guild_id=ctx.guild.id,
-        word=word,
-        owner_id=owner_id,
-        thread_id=thread.id,
-    )
+    await ctx.send_followup(_("Your game was created thread").format(thread=thread.mention), ephemeral=True)
 
 
 def get_word(length: int) -> str | None:
