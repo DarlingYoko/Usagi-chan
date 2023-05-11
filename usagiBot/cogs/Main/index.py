@@ -129,7 +129,6 @@ class Main(commands.Cog):
             discord.commands.core.SlashCommand: _("Slash commands"),
             discord.commands.core.MessageCommand: _("Message commands"),
             discord.commands.core.UserCommand: _("User commands"),
-            discord.commands.SlashCommandGroup: _("Slash command group"),
         }
 
         title = f"**{module.qualified_name}**"
@@ -138,7 +137,7 @@ class Main(commands.Cog):
         )
 
         commands_dict = {}
-        for command in module.get_commands():
+        for command in module.walk_commands():
             command_dict = {
                 "name": command.name,
                 "description": command.description,
@@ -158,8 +157,8 @@ class Main(commands.Cog):
                 else:
                     command_dict["channel_id"] = config.generic_id
 
-            # for check in command.checks:
-            #     await check(ctx)
+            if isinstance(command, discord.commands.SlashCommandGroup):
+                continue
 
             command_type = types.get(type(command))
             command_list = commands_dict.setdefault(command_type, [])
