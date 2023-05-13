@@ -52,7 +52,11 @@ class GenshinAPI:
         cookies_result = await self.set_cookies(guild_id=guild_id, user_id=user_id)
         if not cookies_result:
             return False
-        data = await self.client.get_genshin_notes()
+        try:
+            data = await self.client.get_genshin_notes()
+        except genshin.errors.InvalidCookies:
+            print("Skipped user in get user data-", user_id)
+            return False
         return data
 
     async def redeem_code(self, code):
@@ -63,6 +67,9 @@ class GenshinAPI:
             await self.redeem_code(code)
         except genshin.RedemptionException as e:
             return e.msg
+        except genshin.errors.InvalidCookies:
+            print("Skipped user, invalid cookies")
+            return False
 
         return _("Successfully redeemed")
 
@@ -74,6 +81,9 @@ class GenshinAPI:
             await self.client.claim_daily_reward(reward=False, game=game)
             return True
         except genshin.AlreadyClaimed:
+            return False
+        except genshin.errors.InvalidCookies:
+            print("Skipped user in claiming reward-", user_id)
             return False
 
 

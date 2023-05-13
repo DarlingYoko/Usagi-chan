@@ -70,6 +70,8 @@ class Genshin(commands.Cog):
             data = await genshin_api.get_user_data(
                 guild_id=user.guild_id, user_id=user.user_id
             )
+            if data is False:
+                continue
             if data.current_resin < 150:
                 if user.resin_sub_notified:
                     await UsagiGenshin.update(id=user.id, resin_sub_notified=False)
@@ -91,7 +93,7 @@ class Genshin(commands.Cog):
         await self.bot.wait_until_ready()
         self.bot.logger.info("Checking resin.")
 
-    @tasks.loop(hours=1)
+    @tasks.loop(minutes=30)
     async def claim_daily_reward(self):
         moscow_tz = pytz.timezone("Europe/Moscow")
         time_in_moscow = datetime.now(moscow_tz)
