@@ -52,7 +52,11 @@ class GenshinAPI:
         cookies_result = await self.set_cookies(guild_id=guild_id, user_id=user_id)
         if not cookies_result:
             return False
-        data = await self.client.get_genshin_notes()
+        try:
+            data = await self.client.get_genshin_notes()
+        except genshin.errors.InvalidCookies:
+            print("Skipped user -", user_id)
+            return False
         return data
 
     async def redeem_code(self, code):
