@@ -70,6 +70,8 @@ class Genshin(commands.Cog):
             data = await genshin_api.get_user_data(
                 guild_id=user.guild_id, user_id=user.user_id
             )
+            if data is False:
+                continue
             if data.current_resin < 150:
                 if user.resin_sub_notified:
                     await UsagiGenshin.update(id=user.id, resin_sub_notified=False)

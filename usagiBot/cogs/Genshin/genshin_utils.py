@@ -55,7 +55,7 @@ class GenshinAPI:
         try:
             data = await self.client.get_genshin_notes()
         except genshin.errors.InvalidCookies:
-            print("Skipped user -", user_id)
+            print("Skipped user in get user data-", user_id)
             return False
         return data
 
@@ -83,7 +83,7 @@ class GenshinAPI:
         except genshin.AlreadyClaimed:
             return False
         except genshin.errors.InvalidCookies:
-            print("Skipped user -", user_id)
+            print("Skipped user in claiming reward-", user_id)
             return False
 
 
