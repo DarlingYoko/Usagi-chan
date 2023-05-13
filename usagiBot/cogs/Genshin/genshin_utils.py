@@ -63,6 +63,9 @@ class GenshinAPI:
             await self.redeem_code(code)
         except genshin.RedemptionException as e:
             return e.msg
+        except genshin.errors.InvalidCookies:
+            print("Skipped user, invalid cookies")
+            return False
 
         return _("Successfully redeemed")
 
@@ -74,6 +77,9 @@ class GenshinAPI:
             await self.client.claim_daily_reward(reward=False, game=game)
             return True
         except genshin.AlreadyClaimed:
+            return False
+        except genshin.errors.InvalidCookies:
+            print("Skipped user -", user_id)
             return False
 
 
