@@ -19,7 +19,7 @@
     "based from": "Based from {mention}\\n{message}",
     "base added": "Added based message <:pidoras:1084205028090318928>",
 
-    "instruction": "1. Go to <https://hoyolab.com>.\n2. Login to your account.\n3. Press F12 to open Inspect Mode (ie. Developer Tools) or Ctrl+Shift+I.\n4. Go to Console.\n5. Run command `document.cookie`.\n6. Copy output.",
+    "instruction": "1. Go to <https://hoyolab.com>.\n2. Login to your account.\n3. Press F12 to open Inspect Mode (ie. Developer Tools) or Ctrl+Shift+I.\n4. Go to Console.\n5. Run command `script:d=document.cookie; c=d.includes('account_id') || alert('Cookie is invalid or expired, please logout and log back in before trying again!'); c && document.write(d)`\n6. Copy.",
     "Cookie": "Cookie",
     "Wrong cookies": "Unsuccessfully auth! Wrong cookies.",
     "Successfully auth": "Successfully auth.",

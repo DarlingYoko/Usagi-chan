@@ -130,7 +130,7 @@ class Genshin(commands.Cog):
             await channel.send(
                 content=("Claimed daily rewards.\n"
                          "To follow use `/hoyolab sub genshin_reward_claim/honkai_reward_claim `"
-                         "Or you can do it by yourself"
+                         "Or you can do it by yourself\n"
                          "Genshin - https://bit.ly/genshin_daily\n"
                          "Honkai - https://bit.ly/honkai_daily")
             )

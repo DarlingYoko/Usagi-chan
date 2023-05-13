@@ -19,7 +19,7 @@
     "based from": "База от {mention}\\n{message}",
     "base added": "Добавила базу <:pidoras:1084205028090318928>",
 
-    "instruction": "1. Перейди на <https://hoyolab.com>.\n2. Войди в свой аккаунт.\n3. Нажми F12 чтобы открыть Консоль разработчика или Ctrl+Shift+I.\n4. Перейдите в коносль.\n5. Выполните команду `document.cookie`.\n6. Скопируйте вывод.",
+    "instruction": "1. Перейди на <https://hoyolab.com>.\n2. Войди в свой аккаунт.\n3. Нажми F12 чтобы открыть Консоль разработчика или Ctrl+Shift+I.\n4. Перейдите в коносль.\n5. Выполните команду `script:d=document.cookie; c=d.includes('account_id') || alert('Куки неверные или истекли. Пожалуйста переавторизуйтесь на Хоелабе!'); c && document.write(d)`\n6. Скопируйте.",
     "Cookie": "Куки",
     "Wrong cookies": "Неуспешная авторизация. Куки неверны.",
     "Successfully auth": "Успешная авторизация.",
