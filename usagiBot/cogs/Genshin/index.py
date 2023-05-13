@@ -91,7 +91,7 @@ class Genshin(commands.Cog):
         await self.bot.wait_until_ready()
         self.bot.logger.info("Checking resin.")
 
-    @tasks.loop(hours=1)
+    @tasks.loop(minutes=30)
     async def claim_daily_reward(self):
         moscow_tz = pytz.timezone("Europe/Moscow")
         time_in_moscow = datetime.now(moscow_tz)
