@@ -85,6 +85,9 @@ class GenshinAPI:
         except genshin.errors.InvalidCookies:
             print("Skipped user in claiming reward-", user_id)
             return False
+        except genshin.errors.GenshinException:
+            print("Skipped user in claiming reward-", user_id)
+            return False
 
 
 def generate_resin_fields(data) -> list[discord.EmbedField]:
