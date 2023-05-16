@@ -97,12 +97,9 @@ class Fun(commands.Cog):
             "Мдааааа, какой же ты тупой": 50 > user_iq > 1,
         }
 
-        key = ""
-        for key, value in answers.items():
-            if value:
-                break
+        answer = next((key for key, value in answers.items() if value), "")
 
-        await ctx.reply(f"Твой iq = {user_iq}\n{key}")
+        await ctx.reply(f"Твой iq = {user_iq}\n{answer}")
 
     # Slash commands
     @commands.slash_command(
