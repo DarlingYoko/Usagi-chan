@@ -101,6 +101,7 @@ class Genshin(commands.Cog):
             return
         users = await UsagiGenshin.get_all_by_or(daily_sub=True, honkai_daily_sub=True)
         channels = []
+        out_date_cookies = []
 
         for user in users:
             config = await UsagiConfig.get(
@@ -124,6 +125,8 @@ class Genshin(commands.Cog):
                     user_id=user.user_id,
                     game=genshin.Game.STARRAIL
                 )
+            if respone is None:
+                out_date_cookies.append((user.user_id, channel))
             if respone and channel not in channels:
                 channels.append(channel)
         for channel in channels:
@@ -133,6 +136,11 @@ class Genshin(commands.Cog):
                          "Or you can do it by yourself\n"
                          "Genshin - https://bit.ly/genshin_daily\n"
                          "Honkai - https://bit.ly/honkai_daily")
+            )
+
+        for out_cookie in out_date_cookies:
+            await out_cookie[1].send(
+                content=f"<@{out_cookie[0]}>, " + _("Your cookie out of date")
             )
 
     @claim_daily_reward.before_loop
@@ -229,9 +237,15 @@ class Genshin(commands.Cog):
 
         genshin_api = GenshinAPI()
         data = await genshin_api.get_user_data(guild_id=ctx.guild.id, user_id=user_id)
-        if not data:
+        if data is False:
             await ctx.respond(
                 content=_("You are not logged in"), ephemeral=True
+            )
+            return
+
+        if data is None:
+            await ctx.respond(
+                content=_("Your cookie out of date"), ephemeral=True
             )
             return
 
@@ -292,6 +306,11 @@ class Genshin(commands.Cog):
         if cookies_response is False:
             await ctx.respond(
                 content=_("You are not logged in"), ephemeral=True
+            )
+            return
+        if cookies_response is None:
+            await ctx.respond(
+                content=_("Your cookie out of date"), ephemeral=True
             )
             return
         redeem_response = await genshin_api.redeem_code(code)

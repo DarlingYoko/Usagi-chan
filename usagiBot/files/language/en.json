@@ -35,6 +35,7 @@
     "Successfully subscribed you to auto redeeming codes": "Successfully subscribed you to auto redeeming codes.",
     "Successfully unsubscribed you from auto redeeming codes": "Successfully unsubscribed you from auto redeeming codes.",
     "Successfully redeemed": "Successfully redeemed.",
+    "Your cookie out of date": "Your cookie is out of date, pls reauth `/hoylab auth`",
     "Resin count": "Resin count:",
     "Realm currency": "Realm currency:",
     "Dailies": "Dailies:",

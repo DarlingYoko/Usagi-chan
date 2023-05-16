@@ -56,7 +56,7 @@ class GenshinAPI:
             data = await self.client.get_genshin_notes()
         except genshin.errors.InvalidCookies:
             print("Skipped user in get user data-", user_id)
-            return False
+            return None
         return data
 
     async def redeem_code(self, code):
@@ -69,7 +69,7 @@ class GenshinAPI:
             return e.msg
         except genshin.errors.InvalidCookies:
             print("Skipped user, invalid cookies")
-            return False
+            return None
 
         return _("Successfully redeemed")
 
@@ -84,7 +84,7 @@ class GenshinAPI:
             return False
         except genshin.errors.InvalidCookies:
             print("Skipped user in claiming reward-", user_id)
-            return False
+            return None
         except genshin.errors.GenshinException:
             print("Skipped user in claiming reward-", user_id)
             return False
