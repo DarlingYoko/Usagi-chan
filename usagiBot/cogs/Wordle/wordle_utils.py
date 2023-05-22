@@ -46,7 +46,7 @@ class WordleAnswer(discord.ui.Modal):
 
         for i in answer:
             letter_ascii = ord(i)
-            if not (65 <= letter_ascii <= 90) and not (1040 <= letter_ascii <= 1071):
+            if not (65 <= letter_ascii <= 90) and not (1040 <= letter_ascii <= 1071) and i != "Ё":
                 await interaction.response.send_message(
                     self.game.bot.i18n.get_text("Your word contains symbols", self.game.user_lang),
                     ephemeral=True
