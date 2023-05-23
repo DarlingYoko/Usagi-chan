@@ -69,3 +69,5 @@ websockets==11.0.1
 wrapt==1.15.0
 yarl==1.8.2
 yt-dlp==2023.3.4
+
+openai-async
