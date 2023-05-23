@@ -7,5 +7,3 @@ __pycache__
 /.coverage
 ./usagi-variables.env
 /usagi-variables.env
-usagiBot/cogs/AI/forbidden_sadge.py
-.env
