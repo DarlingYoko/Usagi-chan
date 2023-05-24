@@ -32,7 +32,9 @@ class OpenAICog(commands.Cog):
         response = str(response)[:4000]
         embed = get_embed(description=response)
 
-        await ctx.followup.send(embed=embed)
+        message = await ctx.followup.send(embed=embed)
+        await message.add_reaction("❌")
+        self.bot.ai_questions[message.id] = ctx.author.id
 
     @commands.slash_command(
         name="current_model",
