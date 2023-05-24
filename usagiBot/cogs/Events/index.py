@@ -286,7 +286,7 @@ class Events(commands.Cog):
         guild_id = payload.guild_id
         channel_id = payload.channel_id
 
-        ai_quesion = self.bot.ai_question.get(message_id, None)
+        ai_quesion = self.bot.ai_questions.get(message_id, None)
 
         if user_id == self.bot.user.id:
             return
