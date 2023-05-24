@@ -284,9 +284,20 @@ class Events(commands.Cog):
         user_id = payload.user_id
         emoji = payload.emoji
         guild_id = payload.guild_id
+        channel_id = payload.channel_id
+
+        ai_quesion = self.bot.ai_questions.get(message_id, None)
 
         if user_id == self.bot.user.id:
             return
+
+        if ai_quesion is not None:
+            if user_id == ai_quesion and emoji == "❌":
+                guild = await self.bot.fetch_guild(guild_id)
+                channel = await guild.fetch_channel(channel_id)
+                message = await channel.fetch_message(message_id)
+                await message.delete(reason="Delete by Emoji")
+
         auto_roles = self.bot.auto_roles.get(guild_id, {})
         role_data = auto_roles.get(message_id, None)
 
