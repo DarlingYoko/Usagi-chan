@@ -1,6 +1,7 @@
-import time
-
+import asyncio
 import openai_async
+
+from usagiBot.src.UsagiErrors import OpenAIError
 
 
 class BaseAI:
@@ -19,7 +20,7 @@ class OpenAIHandler(BaseAI):
     async def get_ai_model(self):
         return self._ai_model
 
-    async def generate_answer(self, question):
+    async def generate_answer(self, question: str, counter: int = 0):
         try:
             response = await openai_async.chat_complete(
                 self._api_key,
@@ -31,28 +32,20 @@ class OpenAIHandler(BaseAI):
             )
 
             if response.status_code == 200:
-                answer = response.json()["choices"][0]["message"]["content"]
-                return answer
+                json = response.json()
+                choices = json.get("choices", None)
+                if choices is None:
+                    return "Something went wrong, try again."
+                return choices[0]["message"]["content"]
 
             if response.status_code == 500:
-                time.sleep(2)
-                return await self.generate_answer(question)
+                if counter != 10:
+                    await asyncio.sleep(2)
+                    return await self.generate_answer(question, counter + 1)
+                else:
+                    return "Something went wrong, try again."
             else:
                 raise OpenAIError(response.json().get('error'), response.status_code)
 
         except OpenAIError as error_answer:
             return error_answer
-
-
-class OpenAIError(Exception):
-    def __init__(self, error, status_code):
-        self.status_code = status_code
-        self.message = error.get("message")
-        self.type = error.get("type")
-
-    def __str__(self):
-        return f"""
-                Status Code: {self.status_code}
-                Error message: {self.message}.
-                Error type: {self.type}.
-                """
