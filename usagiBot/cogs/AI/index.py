@@ -35,7 +35,6 @@ class OpenAICog(commands.Cog):
         message = await ctx.followup.send(embed=embed)
         await message.add_reaction("❌")
         self.bot.ai_questions[message.id] = ctx.author.id
-        print(self.bot.ai_questions)
 
     @commands.slash_command(
         name="current_model",

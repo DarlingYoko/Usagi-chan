@@ -297,6 +297,7 @@ class Events(commands.Cog):
                 channel = await guild.fetch_channel(channel_id)
                 message = await channel.fetch_message(message_id)
                 await message.delete(reason="Delete by Emoji")
+                del self.bot.ai_questions[int(message_id)]
 
         auto_roles = self.bot.auto_roles.get(guild_id, {})
         role_data = auto_roles.get(message_id, None)
