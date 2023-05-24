@@ -286,13 +286,13 @@ class Events(commands.Cog):
         guild_id = payload.guild_id
         channel_id = payload.channel_id
 
-        ai_quesion = self.bot.ai_questions.get(message_id, None)
+        ai_quesion = self.bot.ai_questions.get(int(message_id), None)
 
         if user_id == self.bot.user.id:
             return
 
-        if ai_quesion is not None:
-            if user_id == ai_quesion and emoji == "❌":
+        if ai_quesion is not None and isinstance(emoji, discord.partial_emoji.PartialEmoji):
+            if user_id == ai_quesion and emoji.name == "❌":
                 guild = await self.bot.fetch_guild(guild_id)
                 channel = await guild.fetch_channel(channel_id)
                 message = await channel.fetch_message(message_id)
