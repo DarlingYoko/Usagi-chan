@@ -6,6 +6,8 @@ from usagiBot.src.UsagiErrors import UsagiModuleDisabledError
 from usagiBot.src.UsagiUtils import get_embed
 from usagiBot.env import OPENAI_API_KEY
 
+from pycord18n.extension import _
+
 
 class OpenAICog(commands.Cog):
     def __init__(self, bot):
@@ -17,7 +19,12 @@ class OpenAICog(commands.Cog):
             return True
         raise UsagiModuleDisabledError()
 
-    @commands.slash_command()
+    @commands.slash_command(
+        name="ask",
+        name_localizations={"ru": "спросить"},
+        description="Ask any question to AI!",
+        description_localizations={"ru": "Задай любой вопрос AI."},
+    )
     async def ask_gpt(self, ctx, *, question: str):
         await ctx.defer()
 
@@ -26,12 +33,17 @@ class OpenAICog(commands.Cog):
 
         await ctx.followup.send(embed=embed)
 
-    @commands.slash_command()
+    @commands.slash_command(
+        name="current_model",
+        name_localizations={"ru": "текущая_модель"},
+        description="Show the current ChatGPT model.",
+        description_localizations={"ru": "Узнать текущую модель ЧатГПТ"},
+    )
     async def current_gpt_stats(self, ctx):
         cur_model = await self.chat_gpt.get_ai_model()
 
-        embed = get_embed(title="GPT info")
-        embed.add_field(name=f"Model - {cur_model}", value='', inline=False)
+        embed = get_embed(title=_("GPT info"))
+        embed.add_field(name=_("Model").format(cur_model), value='', inline=False)
 
         await ctx.respond(embed=embed)
 

@@ -2,6 +2,7 @@ import asyncio
 import openai_async
 
 from usagiBot.src.UsagiErrors import OpenAIError
+from pycord18n.extension import _
 
 
 class BaseAI:
@@ -35,7 +36,7 @@ class OpenAIHandler(BaseAI):
                 json = response.json()
                 choices = json.get("choices", None)
                 if choices is None:
-                    return "Something went wrong, try again."
+                    return _("Something went wrong")
                 return choices[0]["message"]["content"]
 
             if response.status_code == 500:
@@ -43,7 +44,7 @@ class OpenAIHandler(BaseAI):
                     await asyncio.sleep(2)
                     return await self.generate_answer(question, counter + 1)
                 else:
-                    return "Something went wrong, try again."
+                    return _("Something went wrong")
             else:
                 raise OpenAIError(response.json().get('error'), response.status_code)
 

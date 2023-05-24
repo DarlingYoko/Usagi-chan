@@ -1,4 +1,8 @@
 {
+    "GPT info": "GPT info",
+    "Model": "Model - {cur_model}",
+    "Something went wrong": "Something went wrong, try again.",
+
     "This command doesn't exist": "This command doesn't exist.",
     "You can use this command in": "You can use this command in {retry_after}s",
     "This command was not configured": "This command was not configured. Contact the server administration.",

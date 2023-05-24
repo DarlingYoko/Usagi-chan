@@ -18,3 +18,5 @@ TWITCH_TOKEN = os.environ.get("TWITCH_TOKEN")
 REFRESH_TOKEN = os.environ.get("REFRESH_TOKEN")
 CLIENT_ID = os.environ.get("CLIENT_ID")
 CLIENT_SECRET = os.environ.get("CLIENT_SECRET")
+
+OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
