@@ -29,7 +29,7 @@ class OpenAICog(commands.Cog):
         await ctx.defer()
 
         response = await self.chat_gpt.generate_answer(question)
-        embed = get_embed(description=response)
+        embed = get_embed(description=response[:4000])
 
         await ctx.followup.send(embed=embed)
 
@@ -43,7 +43,7 @@ class OpenAICog(commands.Cog):
         cur_model = await self.chat_gpt.get_ai_model()
 
         embed = get_embed(title=_("GPT info"))
-        embed.add_field(name=_("Model").format(cur_model), value='', inline=False)
+        embed.add_field(name=_("Model").format(cur_model=cur_model), value='', inline=False)
 
         await ctx.respond(embed=embed)
 

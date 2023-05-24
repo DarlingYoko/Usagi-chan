@@ -32,7 +32,7 @@ class UsagiCallFromWrongChannelError(CommandError):
         self.channel_id = channel_id
 
 
-class OpenAIError(CommandError):
+class OpenAIError(Exception):
     """Exception raised for OpenAI module
 
     This inherits from :exc:`CommandError`
