@@ -70,6 +70,9 @@ class GenshinAPI:
         except genshin.errors.InvalidCookies:
             print("Skipped user, invalid cookies")
             return None
+        except genshin.errors.AccountNotFound:
+            print("Skipped user, no account")
+            return None
 
         return _("Successfully redeemed")
 
