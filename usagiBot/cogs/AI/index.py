@@ -29,7 +29,8 @@ class OpenAICog(commands.Cog):
         await ctx.defer()
 
         response = await self.chat_gpt.generate_answer(question)
-        embed = get_embed(description=response[:4000])
+        response = str(response)[:4000]
+        embed = get_embed(description=response)
 
         await ctx.followup.send(embed=embed)
 
