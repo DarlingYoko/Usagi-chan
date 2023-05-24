@@ -156,7 +156,9 @@ async def parse_songs(ctx, data):
         # YouTube only, guess no one would play other than YouTube
         url = "https://youtu.be/" + song["id"]
         title = song["title"]
-        duration = 0 if song["duration"] is None else int(song["duration"])
+        duration = None if song["duration"] is None else int(song["duration"])
+        if duration is None:
+            continue
         playlist.append(
             {
                 "pos": pos,
