@@ -25,7 +25,7 @@ class OpenAIHandler(BaseAI):
         try:
             response = await openai_async.chat_complete(
                 self._api_key,
-                timeout=100,
+                timeout=200,
                 payload={
                     "model": await self.get_ai_model(),
                     "messages": [{"role": "user", "content": question}],
@@ -33,14 +33,11 @@ class OpenAIHandler(BaseAI):
             )
 
             if response.status_code == 200:
-                json = response.json()
-                choices = json.get("choices", None)
-                if choices is None:
-                    return _("Something went wrong")
-                return choices[0]["message"]["content"]
+                return response.json()["choices"][0]["message"]["content"]
 
-            if response.status_code == 500:
-                if counter != 10:
+            retry_codes = [500, 429, 502]
+            if response.status_code in retry_codes:
+                if counter != 20:
                     await asyncio.sleep(2)
                     return await self.generate_answer(question, counter + 1)
                 else:
@@ -50,3 +47,6 @@ class OpenAIHandler(BaseAI):
 
         except OpenAIError as error_answer:
             return error_answer
+
+        except Exception as e:
+            return str(e)
