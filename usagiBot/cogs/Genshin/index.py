@@ -304,16 +304,18 @@ class Genshin(commands.Cog):
             guild_id=ctx.guild.id, user_id=ctx.user.id
         )
         if cookies_response is False:
-            await ctx.respond(
+            await ctx.send_followup(
                 content=_("You are not logged in"), ephemeral=True
             )
             return
         if cookies_response is None:
-            await ctx.respond(
+            await ctx.send_followup(
                 content=_("Your cookie out of date"), ephemeral=True
             )
             return
         redeem_response = await genshin_api.redeem_code(code)
+        if redeem_response is None:
+            redeem_response = _("Your cookie out of date")
         await ctx.send_followup(content=redeem_response)
 
     @genshin_subscriptions.command(
