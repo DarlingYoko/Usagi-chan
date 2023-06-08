@@ -132,7 +132,11 @@ class Genshin(commands.Cog):
             )
             if not config:
                 continue
-            channel = await self.bot.fetch_channel(config.generic_id)
+            try:
+                channel = await self.bot.fetch_channel(config.generic_id)
+            except discord.errors.Forbidden:
+                print(f"Cant get access to {config.generic_id}")
+                continue
 
             genshin_api = GenshinAPI()
             genshin_data = await genshin_api.get_user_data(
@@ -155,7 +159,7 @@ class Genshin(commands.Cog):
 
             lang = self.bot.language.get(user.user_id, "en")
 
-            if not user.genshin_resin_sub_notified and genshin_data.current_resin >= 150:
+            if user.genshin_resin_sub and not user.genshin_resin_sub_notified and genshin_data.current_resin >= 150:
                 notify_text = self.bot.i18n.get_text("resin cap", lang).format(
                     user_id=user.user_id,
                     current_resin=genshin_data.current_resin
@@ -163,7 +167,7 @@ class Genshin(commands.Cog):
                 await channel.send(content=notify_text)
                 await UsagiGenshin.update(id=user.id, genshin_resin_sub_notified=True)
 
-            if not user.starrail_resin_sub_notified and starrail_data.current_stamina >= 170:
+            if user.starrail_resin_sub and not user.starrail_resin_sub_notified and starrail_data.current_stamina >= 170:
                 notify_text = self.bot.i18n.get_text("stamina cap", lang).format(
                     user_id=user.user_id,
                     current_stamina=starrail_data.current_stamina
