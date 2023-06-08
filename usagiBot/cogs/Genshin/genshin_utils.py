@@ -10,6 +10,8 @@ from pycord18n.extension import _
 
 blue_text = Template("""```ansi\n[2;31m[2;34m$count[0m[2;31m[0m```""")
 red_text = Template("""```ansi\n[2;31m$count[0m```""")
+green_tick = "<:greenTick:874767321007276143>"
+red_thick = "<:redThick:874767320915005471>"
 
 
 class GenshinAPI:
@@ -35,11 +37,6 @@ class GenshinAPI:
                 guild_id=guild_id,
                 user_id=user_id,
                 cookies=cookies,
-                resin_sub=False,
-                resin_sub_notified=False,
-                daily_sub=False,
-                code_sub=False,
-                honkai_daily_sub=False,
             )
         else:
             await UsagiGenshin.update(
@@ -48,14 +45,21 @@ class GenshinAPI:
             )
         return True
 
-    async def get_user_data(self, guild_id, user_id):
+    async def get_user_data(self, guild_id, user_id, game=genshin.Game.GENSHIN):
         cookies_result = await self.set_cookies(guild_id=guild_id, user_id=user_id)
         if not cookies_result:
             return False
         try:
-            data = await self.client.get_genshin_notes()
+            match game:
+                case genshin.Game.STARRAIL:
+                    data = await self.client.get_starrail_notes()
+                case _:
+                    data = await self.client.get_genshin_notes()
         except genshin.errors.InvalidCookies:
             print("Skipped user in get user data-", user_id)
+            return None
+        except genshin.errors.AccountNotFound:
+            print("Skipped user, no account")
             return None
         return data
 
@@ -111,11 +115,7 @@ def generate_resin_fields(data) -> list[discord.EmbedField]:
     resin_count = resin_text.substitute({"count": data.current_resin})
     realm_count = realm_text.substitute({"count": data.current_realm_currency})
 
-    daily_withdrawn = (
-        "<:greenTick:874767321007276143>"
-        if data.claimed_commission_reward
-        else "<:redThick:874767320915005471>"
-    )
+    daily_withdrawn = green_tick if data.claimed_commission_reward else red_thick
 
     fields = [
         discord.EmbedField(
@@ -139,6 +139,38 @@ def generate_resin_fields(data) -> list[discord.EmbedField]:
             value=_("Completed").format(
                 completed_commissions=data.completed_commissions,
                 daily_withdrawn=daily_withdrawn,
+            ),
+            inline=True,
+        ),
+    ]
+    return fields
+
+
+def generate_stamina_fields(data) -> list[discord.EmbedField]:
+    stamina_timer = int(
+        (datetime.now() + data.stamina_recover_time).timestamp()
+    )
+
+    stamina_text = red_text if data.current_stamina >= 170 else blue_text
+
+    stamina_count = stamina_text.substitute({"count": data.current_stamina})
+
+    expeditions = data.accepted_epedition_num
+    total_expeditions = data.total_expedition_num
+
+    fields = [
+        discord.EmbedField(
+            name=_("Stamina count"),
+            value=_("stamina_cap").format(
+                resin_count=stamina_count, resin_timer=stamina_timer
+            ),
+            inline=True,
+        ),
+        discord.EmbedField(
+            name=_("Expeditions"),
+            value=_("expeditions count").format(
+                expeditions_count=expeditions,
+                max_expeditions=total_expeditions
             ),
             inline=True,
         ),
@@ -170,44 +202,7 @@ def generate_notes_fields(user) -> list[discord.EmbedField]:
         presentation_date += timedelta(weeks=6)
     presentation_date = int(presentation_date.timestamp())
 
-    resin_notify = (
-        "<:greenTick:874767321007276143>"
-        if user.resin_sub
-        else "<:redThick:874767320915005471>"
-    )
-    daily_reward = (
-        "<:greenTick:874767321007276143>"
-        if user.daily_sub
-        else "<:redThick:874767320915005471>"
-    )
-    auto_redeem_code = (
-        "<:greenTick:874767321007276143>"
-        if user.code_sub
-        else "<:redThick:874767320915005471>"
-    )
-
     fields = [
-        discord.EmbedField(
-            name="_ _",
-            value=_("resin_notify_text").format(
-                resin_notify=resin_notify
-            ),
-            inline=True,
-        ),
-        discord.EmbedField(
-            name="_ _",
-            value=_("daily_reward_text").format(
-                daily_reward=daily_reward
-            ),
-            inline=True,
-        ),
-        discord.EmbedField(
-            name="_ _",
-            value=_("Auto redeeming").format(
-                auto_redeem_code=auto_redeem_code
-            ),
-            inline=True,
-        ),
         discord.EmbedField(
             name=_("Abyss reset"),
             value=f"<t:{abyss_reset_date}:R>",
@@ -221,6 +216,66 @@ def generate_notes_fields(user) -> list[discord.EmbedField]:
         discord.EmbedField(
             name=_("New patch"),
             value=f"<t:{patch_date}:R>",
+            inline=True,
+        ),
+    ]
+    return fields
+
+
+def generate_all_subs_fields(user):
+
+    genshin_resin_notify = green_tick if user.genshin_resin_sub else red_thick
+    genshin_daily_reward = green_tick if user.genshin_daily_sub else red_thick
+
+    starrail_resin_notify = green_tick if user.starrail_resin_sub else red_thick
+    starrail_daily_reward = green_tick if user.starrail_daily_sub else red_thick
+
+    auto_redeem_code = green_tick if user.code_sub else red_thick
+
+    fields = [
+        discord.EmbedField(
+            name="_ _",
+            value=_("resin_notify_text").format(
+                resin_notify=genshin_resin_notify
+            ),
+            inline=True,
+        ),
+        discord.EmbedField(
+            name="_ _",
+            value=_("daily_reward_text").format(
+                daily_reward=genshin_daily_reward
+            ),
+            inline=True,
+        ),
+        discord.EmbedField(
+            name="_ _",
+            value="_ _",
+            inline=True,
+        ),
+        discord.EmbedField(
+            name="_ _",
+            value=_("resin_notify_text").format(
+                resin_notify=starrail_resin_notify
+            ),
+            inline=True,
+        ),
+        discord.EmbedField(
+            name="_ _",
+            value=_("daily_reward_text").format(
+                daily_reward=starrail_daily_reward
+            ),
+            inline=True,
+        ),
+        discord.EmbedField(
+            name="_ _",
+            value="_ _",
+            inline=True,
+        ),
+        discord.EmbedField(
+            name="_ _",
+            value=_("Auto redeeming").format(
+                auto_redeem_code=auto_redeem_code
+            ),
             inline=True,
         ),
     ]
