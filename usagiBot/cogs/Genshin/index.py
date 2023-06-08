@@ -33,6 +33,74 @@ class GenshinModal(discord.ui.Modal):
         await interaction.response.send_message(content=text, ephemeral=True)
 
 
+class SelectSubsView(discord.ui.View):
+    def __init__(self, bot, user, *items):
+        super().__init__(*items)
+        self.bot = bot
+        self.user = user
+
+    @discord.ui.select(
+        placeholder="Select subscription",
+        max_values=5,
+        options=[
+            discord.SelectOption(
+                label="Genshin resin notify",
+                value="genshin_resin",
+            ),
+            discord.SelectOption(
+                label="Genshin daily claim",
+                value="genshin_daily",
+            ),
+            discord.SelectOption(
+                label="StarRail resin notify",
+                value="starrail_resin",
+            ),
+            discord.SelectOption(
+                label="StarRail daily claim",
+                value="starrail_daily",
+            ),
+            discord.SelectOption(
+                label="Auto codes",
+                description="Auto redeem codes when they come.",
+                value="codes",
+            ),
+        ]
+    )
+    async def select_callback(self, select, interaction):
+        for sub in select.values:
+            match sub:
+                case "genshin_resin":
+                    self.user.genshin_resin_sub = not self.user.genshin_resin_sub
+                case "genshin_daily":
+                    self.user.genshin_daily_sub = not self.user.genshin_daily_sub
+                case "starrail_resin":
+                    self.user.starrail_resin_sub = not self.user.starrail_resin_sub
+                case "starrail_daily":
+                    self.user.starrail_daily_sub = not self.user.starrail_daily_sub
+                case "codes":
+                    self.user.code_sub = not self.user.code_sub
+                case _:
+                    pass
+
+        fields = generate_all_subs_fields(self.user)
+
+        embed = get_embed(
+            title=_("Subscriptions"),
+            author_name=interaction.user.display_name,
+            author_icon_URL=interaction.user.avatar,
+            fields=fields,
+        )
+        await UsagiGenshin.update(
+            id=self.user.id,
+            genshin_resin_sub=self.user.genshin_resin_sub,
+            genshin_daily_sub=self.user.genshin_daily_sub,
+            code_sub=self.user.code_sub,
+            starrail_daily_sub=self.user.starrail_daily_sub,
+            starrail_resin_sub=self.user.starrail_resin_sub,
+        )
+        await interaction.response.edit_message(embed=embed)
+
+
 class GenshinAuth(discord.ui.View):
     def __init__(self, bot):
         super().__init__()
@@ -56,7 +124,7 @@ class Genshin(commands.Cog):
 
     @tasks.loop(minutes=30)
     async def check_resin_overflow(self):
-        users = await UsagiGenshin.get_all_by(resin_sub=True)
+        users = await UsagiGenshin.get_all_by_or(genshin_resin_sub=True, starrail_resin_sub=True)
 
         for user in users:
             config = await UsagiConfig.get(
@@ -67,26 +135,41 @@ class Genshin(commands.Cog):
             channel = await self.bot.fetch_channel(config.generic_id)
 
             genshin_api = GenshinAPI()
-            data = await genshin_api.get_user_data(
+            genshin_data = await genshin_api.get_user_data(
                 guild_id=user.guild_id, user_id=user.user_id
             )
-            if data is False:
+            starrail_data = await genshin_api.get_user_data(
+                guild_id=user.guild_id,
+                user_id=user.user_id,
+                game=genshin.Game.STARRAIL
+            )
+            if genshin_data is False and starrail_data is False:
                 continue
-            if data.current_resin < 150:
-                if user.resin_sub_notified:
-                    await UsagiGenshin.update(id=user.id, resin_sub_notified=False)
-                continue
+            if genshin_data and genshin_data.current_resin < 150:
+                if user.genshin_resin_sub_notified:
+                    await UsagiGenshin.update(id=user.id, genshin_resin_sub_notified=False)
 
-            if user.resin_sub_notified:
-                continue
+            if starrail_data and starrail_data.current_stamina < 170:
+                if user.starrail_resin_sub_notified:
+                    await UsagiGenshin.update(id=user.id, starrail_resin_sub_notified=False)
 
             lang = self.bot.language.get(user.user_id, "en")
-            notify_text = self.bot.i18n.get_text("resin cap", lang).format(
-                user_id=user.user_id,
-                current_resin=data.current_resin
-            )
-            await channel.send(content=notify_text)
-            await UsagiGenshin.update(id=user.id, resin_sub_notified=True)
+
+            if not user.genshin_resin_sub_notified and genshin_data.current_resin >= 150:
+                notify_text = self.bot.i18n.get_text("resin cap", lang).format(
+                    user_id=user.user_id,
+                    current_resin=genshin_data.current_resin
+                )
+                await channel.send(content=notify_text)
+                await UsagiGenshin.update(id=user.id, genshin_resin_sub_notified=True)
+
+            if not user.starrail_resin_sub_notified and starrail_data.current_stamina >= 170:
+                notify_text = self.bot.i18n.get_text("stamina cap", lang).format(
+                    user_id=user.user_id,
+                    current_stamina=genshin_data.current_stamina
+                )
+                await channel.send(content=notify_text)
+                await UsagiGenshin.update(id=user.id, starrail_resin_sub_notified=True)
 
     @check_resin_overflow.before_loop
     async def before_check_resin_overflow(self):
@@ -97,9 +180,9 @@ class Genshin(commands.Cog):
     async def claim_daily_reward(self):
         moscow_tz = pytz.timezone("Europe/Moscow")
         time_in_moscow = datetime.now(moscow_tz)
-        if time_in_moscow.hour != 18:
+        if time_in_moscow.hour != 19:
             return
-        users = await UsagiGenshin.get_all_by_or(daily_sub=True, honkai_daily_sub=True)
+        users = await UsagiGenshin.get_all_by_or(genshin_daily_sub=True, starrail_daily_sub=True)
         channels = []
         out_date_cookies = []
 
@@ -113,13 +196,13 @@ class Genshin(commands.Cog):
 
             genshin_api = GenshinAPI()
             respone = None
-            if user.daily_sub:
+            if user.genshin_daily_sub:
                 respone = await genshin_api.claim_daily_reward(
                     guild_id=user.guild_id,
                     user_id=user.user_id,
                     game=genshin.Game.GENSHIN
                 )
-            if user.honkai_daily_sub:
+            if user.starrail_daily_sub:
                 respone = await genshin_api.claim_daily_reward(
                     guild_id=user.guild_id,
                     user_id=user.user_id,
@@ -183,7 +266,7 @@ class Genshin(commands.Cog):
     async def paimon_link(self, ctx):
         return await ctx.reply(_("paimon links"))
 
-    genshin = SlashCommandGroup(
+    hoyolab = SlashCommandGroup(
         name="hoyolab",
         name_localizations={"ru": "хоелаб"},
         description="Follow your resin in Hoyolab!",
@@ -191,21 +274,7 @@ class Genshin(commands.Cog):
         command_tag="genshin",
     )
 
-    genshin_subscriptions = genshin.create_subgroup(
-        name="sub",
-        name_localizations={"ru": "подписаться"},
-        description="Manage your subscriptions to genshin commands",
-        description_localizations={"ru": "Настройка ваших подписок на геншин команды"},
-    )
-
-    genshin_unsubscriptions = genshin.create_subgroup(
-        name="unsub",
-        name_localizations={"ru": "отписаться"},
-        description="Manage your subscriptions to genshin commands",
-        description_localizations={"ru": "Настройка ваших подписок на геншин команды"},
-    )
-
-    @genshin.command(
+    @hoyolab.command(
         name="auth",
         name_localizations={"ru": "авторизоваться"},
         description="Necessary auth for using commands.",
@@ -217,7 +286,7 @@ class Genshin(commands.Cog):
     ) -> None:
         await ctx.respond(_("instruction"), view=GenshinAuth(self.bot), ephemeral=True)
 
-    @genshin.command(
+    @hoyolab.command(
         name="resin",
         name_localizations={"ru": "смола"},
         description="Resin brief.",
@@ -230,10 +299,18 @@ class Genshin(commands.Cog):
         description_localizations={"ru": "Проверерить кого-то другого."},
         required=False,
     )
-    async def check_resin_count(self, ctx, user_id: int = None) -> None:
+    async def check_resin_count(self, ctx, user_id=None) -> None:
         await ctx.defer(ephemeral=True)
         if user_id is None:
             user_id = ctx.user.id
+        else:
+            try:
+                user_id = int(user_id)
+            except ValueError:
+                await ctx.respond(
+                    content=_("Wrong discord ID"), ephemeral=True
+                )
+                return
 
         genshin_api = GenshinAPI()
         data = await genshin_api.get_user_data(guild_id=ctx.guild.id, user_id=user_id)
@@ -259,7 +336,57 @@ class Genshin(commands.Cog):
         )
         await ctx.send_followup(content="", embed=embed)
 
-    @genshin.command(
+    @hoyolab.command(
+        name="stamina",
+        name_localizations={"ru": "топливо"},
+        description="Trailblaze Power brief.",
+        description_localizations={"ru": "Краткая сводка по топливу"},
+    )
+    @discord.commands.option(
+        name="user_id",
+        name_localizations={"ru": "айди"},
+        description="Check someone else.",
+        description_localizations={"ru": "Проверерить кого-то другого."},
+        required=False,
+    )
+    async def check_stamina__count(self, ctx, user_id=None) -> None:
+        await ctx.defer(ephemeral=True)
+        if user_id is None:
+            user_id = ctx.user.id
+        else:
+            try:
+                user_id = int(user_id)
+            except ValueError:
+                await ctx.respond(
+                    content=_("Wrong discord ID"), ephemeral=True
+                )
+                return
+
+        genshin_api = GenshinAPI()
+        data = await genshin_api.get_user_data(guild_id=ctx.guild.id, user_id=user_id, game=genshin.Game.STARRAIL)
+        if data is False:
+            await ctx.respond(
+                content=_("You are not logged in"), ephemeral=True
+            )
+            return
+
+        if data is None:
+            await ctx.respond(
+                content=_("Your cookie out of date"), ephemeral=True
+            )
+            return
+
+        fields = generate_stamina_fields(data)
+
+        embed = get_embed(
+            title=_("Stamina"),
+            author_name=ctx.user.display_name,
+            author_icon_URL=ctx.user.avatar,
+            fields=fields,
+        )
+        await ctx.send_followup(content="", embed=embed)
+
+    @hoyolab.command(
         name="notes",
         name_localizations={"ru": "заметки"},
         description="Shows all info.",
@@ -284,11 +411,11 @@ class Genshin(commands.Cog):
         )
         await ctx.send_followup(content="", embed=embed)
 
-    @genshin.command(
+    @hoyolab.command(
         name="code",
         name_localizations={"ru": "код"},
         description="Activate genshin promo code.",
-        description_localizations={"ru":"Активировать код."},
+        description_localizations={"ru": "Активировать код."},
     )
     @discord.commands.option(
         name="code",
@@ -318,119 +445,30 @@ class Genshin(commands.Cog):
             redeem_response = _("Your cookie out of date")
         await ctx.send_followup(content=redeem_response)
 
-    @genshin_subscriptions.command(
-        name="genshin_reward_claim",
-        name_localizations={"ru": "геншин_сбор_дейли"},
-        description="Subscription to claim daily rewards for Genshin Impact.",
-        description_localizations={"ru": "Подписка на сбор дейли отметок для Геншин Импакта."},
+    @hoyolab.command(
+        name="subscription",
+        name_localizations={"ru": "подписки"},
+        description="Activate genshin promo code.",
+        description_localizations={"ru": "Активировать код."},
     )
-    async def reward_claim_sub(
-        self,
-        ctx,
-    ) -> None:
-        user = await check_genshin_login(ctx)
+    async def redeem_code(self, ctx) -> None:
+        await ctx.defer(ephemeral=True)
+        user = await UsagiGenshin.get(guild_id=ctx.guild.id, user_id=ctx.user.id)
         if user is None:
+            await ctx.respond(
+                content=_("You are not logged in"), ephemeral=True
+            )
             return
 
-        await UsagiGenshin.update(id=user.id, daily_sub=True)
-        await ctx.send_followup(
-            content=_("Successfully subscribed you to auto claiming daily rewards")
+        fields = generate_all_subs_fields(user)
+
+        embed = get_embed(
+            title=_("Subscriptions"),
+            author_name=ctx.user.display_name,
+            author_icon_URL=ctx.user.avatar,
+            fields=fields,
         )
-
-    @genshin_unsubscriptions.command(
-        name="genshin_reward_claim",
-        name_localizations={"ru": "геншин_сбор_дейли"},
-        description="Unsubscription from claim daily rewards from Genshin Impact.",
-        description_localizations={"ru": "Отписка от сбора дейли отметок для Геншин Импакта."},
-    )
-    async def reward_claim_unsub(
-        self,
-        ctx,
-    ) -> None:
-        user = await check_genshin_login(ctx)
-        if user is None:
-            return
-
-        await UsagiGenshin.update(id=user.id, daily_sub=False)
-        await ctx.send_followup(
-            content=_("Successfully unsubscribed you from auto claiming daily rewards")
-        )
-
-    @genshin_subscriptions.command(
-        name="resin_overflow",
-        name_localizations={"ru": "кап_смолы"},
-        description="Subscription to notification of resin overflow.",
-        description_localizations={"ru": "Подписка на уведомление капа смолы."},
-    )
-    async def resin_overflow_sub(
-        self,
-        ctx,
-    ) -> None:
-        user = await check_genshin_login(ctx)
-        if user is None:
-            return
-
-        await UsagiGenshin.update(id=user.id, resin_sub=True)
-        await ctx.send_followup(
-            content=_("Successfully subscribed you to notification of resin overflow")
-        )
-
-    @genshin_unsubscriptions.command(
-        name="resin_overflow",
-        name_localizations={"ru": "кап_смолы"},
-        description="Unsubscription from notification of resin overflow.",
-        description_localizations={"ru": "Отписка от уведомлений капа смолы."},
-    )
-    async def resin_overflow_unsub(
-        self,
-        ctx,
-    ) -> None:
-        user = await check_genshin_login(ctx)
-        if user is None:
-            return
-
-        await UsagiGenshin.update(id=user.id, resin_sub=False)
-        await ctx.send_followup(
-            content=_("Successfully unsubscribed you from notification of resin overflow")
-        )
-
-    @genshin_subscriptions.command(
-        name="auto_code",
-        name_localizations={"ru": "авто_коды"},
-        description="Subscription to auto redeem codes.",
-        description_localizations={"ru": "Подписка на авто ввод кодов."},
-    )
-    async def auto_code_sub(
-        self,
-        ctx,
-    ) -> None:
-        user = await check_genshin_login(ctx)
-        if user is None:
-            return
-
-        await UsagiGenshin.update(id=user.id, code_sub=True)
-        await ctx.send_followup(
-            content=_("Successfully subscribed you to auto redeeming codes")
-        )
-
-    @genshin_unsubscriptions.command(
-        name="auto_code",
-        name_localizations={"ru": "авто_коды"},
-        description="Unsubscription from auto redeem codes.",
-        description_localizations={"ru": "Отписка от авто ввода кодов."},
-    )
-    async def auto_code_unsub(
-        self,
-        ctx,
-    ) -> None:
-        user = await check_genshin_login(ctx)
-        if user is None:
-            return
-
-        await UsagiGenshin.update(id=user.id, code_sub=False)
-        await ctx.send_followup(
-            content=_("Successfully unsubscribed you from auto redeeming codes.")
-        )
+        await ctx.respond(view=SelectSubsView(self.bot, user), embed=embed)
 
     @commands.command()
     @is_owner()
@@ -446,44 +484,6 @@ class Genshin(commands.Cog):
                 user_codes.setdefault(code, response)
 
         await ctx.reply(response_codes)
-
-    @genshin_subscriptions.command(
-        name="honkai_reward_claim",
-        name_localizations={"ru": "хонкай_сбор_дейли"},
-        description="Subscription to auto redeem daily rewards on Honkai Star Rail.",
-        description_localizations={"ru": "Подписка на авто отметки для Хонкай Стар рейл."},
-    )
-    async def auto_honkai_daily_sub(
-            self,
-            ctx,
-    ) -> None:
-        user = await check_genshin_login(ctx)
-        if user is None:
-            return
-
-        await UsagiGenshin.update(id=user.id, honkai_daily_sub=True)
-        await ctx.send_followup(
-            content=_("Successfully subscribed you to auto claiming daily rewards")
-        )
-
-    @genshin_unsubscriptions.command(
-        name="honkai_reward_claim",
-        name_localizations={"ru": "хонкай_сбор_дейли"},
-        description="Unsubscription from claim daily rewards on Honkai Star Rail.",
-        description_localizations={"ru": "Отписка от сбора дейли отметок на Хонкай Стар рейл."},
-    )
-    async def reward_claim_unsub(
-            self,
-            ctx,
-    ) -> None:
-        user = await check_genshin_login(ctx)
-        if user is None:
-            return
-
-        await UsagiGenshin.update(id=user.id, honkai_daily_sub=False)
-        await ctx.send_followup(
-            content=_("Successfully unsubscribed you from auto claiming daily rewards")
-        )
 
 
 def setup(bot):

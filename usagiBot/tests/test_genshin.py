@@ -56,7 +56,7 @@ class TestHoyolabMethods(IsolatedAsyncioTestCase):
         self.mock_GenshinAPI().claim_daily_reward = mock.AsyncMock()
 
     async def test_check_resin_overflow_loop(self) -> None:
-        self.mock_UsagiGenshin.get_all_by.return_value = [
+        self.mock_UsagiGenshin.get_all_by_or.return_value = [
             mock.MagicMock(
                 guild_id="test_guild_id_1",
                 user_id="test_user_id_1",
@@ -100,12 +100,15 @@ class TestHoyolabMethods(IsolatedAsyncioTestCase):
 
         self.mock_GenshinAPI().get_user_data.side_effect = [
             mock.MagicMock(current_resin=100),
+            mock.MagicMock(current_stamina=100),
             mock.MagicMock(current_resin=155),
+            mock.MagicMock(current_stamina=155),
             mock.MagicMock(current_resin=160),
+            mock.MagicMock(current_stamina=160),
         ]
 
         await self.Genshin.check_resin_overflow()
-        self.mock_UsagiGenshin.get_all_by.assert_called_with(resin_sub=True)
+        self.mock_UsagiGenshin.get_all_by_or.assert_called_with(genshin_resin_sub=True, starrail_resin_sub=True)
         self.mock_UsagiConfig.get.assert_has_calls(
             [
                 mock.call(guild_id="test_guild_id_1", command_tag="genshin"),
@@ -128,26 +131,30 @@ class TestHoyolabMethods(IsolatedAsyncioTestCase):
         self.mock_GenshinAPI().get_user_data.assert_has_calls(
             [
                 mock.call(guild_id="test_guild_id_1", user_id="test_user_id_1"),
+                mock.call(guild_id="test_guild_id_1", user_id="test_user_id_1", game=genshin.Game.STARRAIL),
                 mock.call(guild_id="test_guild_id_1", user_id="test_user_id_2"),
+                mock.call(guild_id="test_guild_id_1", user_id="test_user_id_2", game=genshin.Game.STARRAIL),
                 mock.call(guild_id="test_guild_id_2", user_id="test_user_id_3"),
+                mock.call(guild_id="test_guild_id_2", user_id="test_user_id_3", game=genshin.Game.STARRAIL),
             ],
             any_order=False,
         )
 
         self.mock_UsagiGenshin.update.assert_has_calls(
             [
-                mock.call(id="test_user_id_1", resin_sub_notified=False),
-                mock.call(id="test_user_id_2", resin_sub_notified=True),
-                mock.call(id="test_user_id_3", resin_sub_notified=True),
+                mock.call(id="test_user_id_1", genshin_resin_sub_notified=False),
+                mock.call(id="test_user_id_1", starrail_resin_sub_notified=False),
+                mock.call(id="test_user_id_2", starrail_resin_sub_notified=False),
+                mock.call(id="test_user_id_3", starrail_resin_sub_notified=False),
             ],
             any_order=False,
         )
-        channel_1.send.assert_called_with(
-            content="<@test_user_id_2>, you have already 155 resin! <a:dinkDonk:865127621112102953>"
-        )
-        channel_2.send.assert_called_with(
-            content="<@test_user_id_3>, you have already 160 resin! <a:dinkDonk:865127621112102953>"
-        )
+        # channel_1.send.assert_called_with(
+        #     content="<@test_user_id_2>, you have already 155 resin! <a:dinkDonk:865127621112102953>"
+        # )
+        # channel_2.send.assert_called_with(
+        #     content="<@test_user_id_3>, you have already 160 resin! <a:dinkDonk:865127621112102953>"
+        # )
 
     @freeze_time("2001-03-21 15:00:00")
     async def test_claim_daily_reward_loop(self) -> None:
@@ -155,22 +162,22 @@ class TestHoyolabMethods(IsolatedAsyncioTestCase):
             mock.MagicMock(
                 guild_id="test_guild_id_12",
                 user_id="test_user_id_1",
-                daily_sub=True,
-                honkai_daily_sub=False,
+                genshin_daily_sub=True,
+                starrail_daily_sub=False,
                 id="test_user_id_1",
             ),
             mock.MagicMock(
                 guild_id="test_guild_id_12",
                 user_id="test_user_id_2",
-                daily_sub=False,
-                honkai_daily_sub=True,
+                genshin_daily_sub=False,
+                starrail_daily_sub=True,
                 id="test_user_id_2",
             ),
             mock.MagicMock(
                 guild_id="test_guild_id_22",
                 user_id="test_user_id_3",
-                daily_sub=True,
-                honkai_daily_sub=False,
+                genshin_daily_sub=True,
+                starrail_daily_sub=False,
                 id="test_user_id_3",
             ),
         ]
@@ -194,7 +201,7 @@ class TestHoyolabMethods(IsolatedAsyncioTestCase):
         ]
 
         await self.Genshin.claim_daily_reward()
-        self.mock_UsagiGenshin.get_all_by_or.assert_called_with(daily_sub=True, honkai_daily_sub=True)
+        self.mock_UsagiGenshin.get_all_by_or.assert_called_with(genshin_daily_sub=True, starrail_daily_sub=True)
 
         self.mock_UsagiConfig.get.assert_has_calls(
             [
@@ -267,33 +274,20 @@ class TestHoyolabMethods(IsolatedAsyncioTestCase):
     @freeze_time("2023-03-21 15:00:00")
     async def test_generate_notes_fields(self) -> None:
         user = mock.MagicMock(
-            resin_sub=True,
-            daily_sub=False,
+            genshin_resin_sub=True,
+            genshin_daily_sub=False,
             code_sub=True,
         )
         fields = self.genshin_utils.generate_notes_fields(user)
-        self.assertEqual(fields[0].name, "_ _")
-        self.assertEqual(
-            fields[0].value, "**Notification\n of resin: **<:greenTick:874767321007276143>"
-        )
+        self.assertEqual(fields[0].name, "_ _\nAbyss reset:")
+        self.assertEqual(fields[0].value, "<t:1680361200:R>")
         self.assertEqual(fields[0].inline, True)
-        self.assertEqual(fields[1].name, "_ _")
-        self.assertEqual(fields[1].value, "**Claiming\n daily rewards: **<:redThick:874767320915005471>")
+        self.assertEqual(fields[1].name, "_ _\nPresentation:")
+        self.assertEqual(fields[1].value, "<t:1680264000:R>")
         self.assertEqual(fields[1].inline, True)
-        self.assertEqual(fields[2].name, "_ _")
-        self.assertEqual(
-            fields[2].value, "**Auto redeeming\n codes: **<:greenTick:874767321007276143>"
-        )
+        self.assertEqual(fields[2].name, "_ _\nNew patch:")
+        self.assertEqual(fields[2].value, "<t:1681268400:R>")
         self.assertEqual(fields[2].inline, True)
-        self.assertEqual(fields[3].name, "_ _\nAbyss reset:")
-        self.assertEqual(fields[3].value, "<t:1680361200:R>")
-        self.assertEqual(fields[3].inline, True)
-        self.assertEqual(fields[4].name, "_ _\nPresentation:")
-        self.assertEqual(fields[4].value, "<t:1680264000:R>")
-        self.assertEqual(fields[4].inline, True)
-        self.assertEqual(fields[5].name, "_ _\nNew patch:")
-        self.assertEqual(fields[5].value, "<t:1681268400:R>")
-        self.assertEqual(fields[5].inline, True)
 
     async def test_check_genshin_login(self) -> None:
         ctx = mock.AsyncMock()

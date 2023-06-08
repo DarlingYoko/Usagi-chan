@@ -198,11 +198,13 @@ class UsagiGenshin(Base, ModelAdmin):
     guild_id = Column(BigInteger)
     user_id = Column(BigInteger)
     cookies = Column(Text)
-    resin_sub = Column(Boolean)
-    resin_sub_notified = Column(Boolean)
-    daily_sub = Column(Boolean)
+    genshin_resin_sub = Column(Boolean)
+    genshin_resin_sub_notified = Column(Boolean)
+    genshin_daily_sub = Column(Boolean)
     code_sub = Column(Boolean)
-    honkai_daily_sub = Column(Boolean)
+    starrail_daily_sub = Column(Boolean)
+    starrail_resin_sub = Column(Boolean)
+    starrail_resin_sub_notified = Column(Boolean)
 
 
 class UsagiSaveRoles(Base, ModelAdmin):
