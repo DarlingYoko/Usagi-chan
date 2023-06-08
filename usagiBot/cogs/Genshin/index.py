@@ -166,7 +166,7 @@ class Genshin(commands.Cog):
             if not user.starrail_resin_sub_notified and starrail_data.current_stamina >= 170:
                 notify_text = self.bot.i18n.get_text("stamina cap", lang).format(
                     user_id=user.user_id,
-                    current_stamina=genshin_data.current_stamina
+                    current_stamina=starrail_data.current_stamina
                 )
                 await channel.send(content=notify_text)
                 await UsagiGenshin.update(id=user.id, starrail_resin_sub_notified=True)
