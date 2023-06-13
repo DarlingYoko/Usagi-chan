@@ -57,7 +57,7 @@ class Wordle(commands.Cog):
             letter_ascii = ord(i)
             if not (65 <= letter_ascii <= 90) and not (1040 <= letter_ascii <= 1071):
                 await ctx.send_followup(
-                    _("Your word contains symbols, pls guess real word."),
+                    _("Your word contains symbols"),
                     ephemeral=True,
                 )
                 return
