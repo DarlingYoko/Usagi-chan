@@ -156,7 +156,11 @@ class Fun(commands.Cog):
     # User commands
     @commands.user_command(name="Get User Info")
     async def get_user_info(self, ctx, user: discord.User) -> None:
-        await ctx.respond(f"{user}\n{user.avatar}")
+        embed = get_embed(
+            title=user.name,
+            url_image=user.avatar
+        )
+        await ctx.respond(embed=embed)
 
 
 def setup(bot):
