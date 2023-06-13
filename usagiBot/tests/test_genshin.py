@@ -40,7 +40,7 @@ class TestHoyolabMethods(IsolatedAsyncioTestCase):
 
         from usagiBot.cogs.Genshin.index import Genshin
 
-        self.Genshin = Genshin(self.bot)
+        self.Genshin = Genshin
 
         import usagiBot.cogs.Genshin.genshin_utils as genshin_utils
 
@@ -51,7 +51,9 @@ class TestHoyolabMethods(IsolatedAsyncioTestCase):
         self.mock_GenshinAPI = mock_GenshinAPI
 
         self.ctx = mock.AsyncMock()
+        self.Genshin.bot = mock.AsyncMock()
         self.Genshin.bot.fetch_channel = mock.AsyncMock()
+        self.Genshin.bot.language = mock.MagicMock()
         self.mock_GenshinAPI().get_user_data = mock.AsyncMock()
         self.mock_GenshinAPI().claim_daily_reward = mock.AsyncMock()
 
@@ -107,7 +109,7 @@ class TestHoyolabMethods(IsolatedAsyncioTestCase):
             mock.MagicMock(current_stamina=160),
         ]
 
-        await self.Genshin.check_resin_overflow()
+        await self.Genshin.check_resin_overflow(self.Genshin)
         self.mock_UsagiGenshin.get_all_by_or.assert_called_with(genshin_resin_sub=True, starrail_resin_sub=True)
         self.mock_UsagiConfig.get.assert_has_calls(
             [
@@ -156,7 +158,7 @@ class TestHoyolabMethods(IsolatedAsyncioTestCase):
         #     content="<@test_user_id_3>, you have already 160 resin! <a:dinkDonk:865127621112102953>"
         # )
 
-    @freeze_time("2001-03-21 15:00:00")
+    @freeze_time("2001-03-21 16:00:00")
     async def test_claim_daily_reward_loop(self) -> None:
         self.mock_UsagiGenshin.get_all_by_or.return_value = [
             mock.MagicMock(
@@ -200,7 +202,7 @@ class TestHoyolabMethods(IsolatedAsyncioTestCase):
             True,
         ]
 
-        await self.Genshin.claim_daily_reward()
+        await self.Genshin.claim_daily_reward(self.Genshin)
         self.mock_UsagiGenshin.get_all_by_or.assert_called_with(genshin_daily_sub=True, starrail_daily_sub=True)
 
         self.mock_UsagiConfig.get.assert_has_calls(
