@@ -33,11 +33,6 @@ class TestHoyolabMethods(IsolatedAsyncioTestCase):
     def setUp(
             self, mock_engine, mock_UsagiConfig, mock_UsagiGenshin, mock_GenshinAPI
     ) -> None:
-        self.bot = mock.AsyncMock()
-        self.bot.logger = mock.MagicMock()
-        self.bot.i18n = init_i18n()
-        self.bot.language = {}
-
         from usagiBot.cogs.Genshin.index import Genshin
 
         self.Genshin = Genshin
@@ -52,8 +47,10 @@ class TestHoyolabMethods(IsolatedAsyncioTestCase):
 
         self.ctx = mock.AsyncMock()
         self.Genshin.bot = mock.AsyncMock()
-        self.Genshin.bot.fetch_channel = mock.AsyncMock()
-        self.Genshin.bot.language = mock.MagicMock()
+        # self.Genshin.bot.fetch_channel = mock.AsyncMock()
+        self.Genshin.bot.logger = mock.MagicMock()
+        self.Genshin.bot.i18n = init_i18n()
+        self.Genshin.bot.language = {}
         self.mock_GenshinAPI().get_user_data = mock.AsyncMock()
         self.mock_GenshinAPI().claim_daily_reward = mock.AsyncMock()
 
@@ -62,25 +59,37 @@ class TestHoyolabMethods(IsolatedAsyncioTestCase):
             mock.MagicMock(
                 guild_id="test_guild_id_1",
                 user_id="test_user_id_1",
-                resin_sub_notified=True,
+                genshin_resin_sub_notified=True,
+                starrail_resin_sub_notified=False,
+                starrail_resin_sub=True,
+                genshin_resin_sub=True,
                 id="test_user_id_1",
             ),
             mock.MagicMock(
                 guild_id="test_guild_id_1",
                 user_id="test_user_id_2",
-                resin_sub_notified=False,
+                genshin_resin_sub_notified=True,
+                starrail_resin_sub=True,
+                starrail_resin_sub_notified=False,
+                genshin_resin_sub=True,
                 id="test_user_id_2",
             ),
             mock.MagicMock(
                 guild_id="test_guild_id_2",
                 user_id="test_user_id_3",
-                resin_sub_notified=False,
+                genshin_resin_sub_notified=False,
+                starrail_resin_sub=True,
+                starrail_resin_sub_notified=False,
+                genshin_resin_sub=True,
                 id="test_user_id_3",
             ),
             mock.MagicMock(
                 guild_id="test_guild_id_3",
                 user_id="test_user_id_4",
-                resin_sub_notified=False,
+                genshin_resin_sub_notified=False,
+                starrail_resin_sub=True,
+                starrail_resin_sub_notified=False,
+                genshin_resin_sub=True,
                 id="test_user_id_4",
             ),
         ]
@@ -92,8 +101,8 @@ class TestHoyolabMethods(IsolatedAsyncioTestCase):
             None,
         ]
 
-        channel_1 = mock.AsyncMock()
-        channel_2 = mock.AsyncMock()
+        channel_1 = mock.AsyncMock(channel_id="channel_1")
+        channel_2 = mock.AsyncMock(channel_id="channel_2")
         self.Genshin.bot.fetch_channel.side_effect = [
             channel_1,
             channel_1,
@@ -101,12 +110,18 @@ class TestHoyolabMethods(IsolatedAsyncioTestCase):
         ]
 
         self.mock_GenshinAPI().get_user_data.side_effect = [
-            mock.MagicMock(current_resin=100),
-            mock.MagicMock(current_stamina=100),
-            mock.MagicMock(current_resin=155),
-            mock.MagicMock(current_stamina=155),
-            mock.MagicMock(current_resin=160),
-            mock.MagicMock(current_stamina=160),
+            {
+                "genshin": mock.MagicMock(current_resin=100),
+                "starrail": mock.MagicMock(current_stamina=100)
+            },
+            {
+                "genshin": mock.MagicMock(current_resin=155),
+                "starrail": mock.MagicMock(current_stamina=155)
+            },
+            {
+                "genshin": mock.MagicMock(current_resin=160),
+                "starrail": mock.MagicMock(current_stamina=175)
+            },
         ]
 
         await self.Genshin.check_resin_overflow(self.Genshin)
@@ -133,11 +148,8 @@ class TestHoyolabMethods(IsolatedAsyncioTestCase):
         self.mock_GenshinAPI().get_user_data.assert_has_calls(
             [
                 mock.call(guild_id="test_guild_id_1", user_id="test_user_id_1"),
-                mock.call(guild_id="test_guild_id_1", user_id="test_user_id_1", game=genshin.Game.STARRAIL),
                 mock.call(guild_id="test_guild_id_1", user_id="test_user_id_2"),
-                mock.call(guild_id="test_guild_id_1", user_id="test_user_id_2", game=genshin.Game.STARRAIL),
                 mock.call(guild_id="test_guild_id_2", user_id="test_user_id_3"),
-                mock.call(guild_id="test_guild_id_2", user_id="test_user_id_3", game=genshin.Game.STARRAIL),
             ],
             any_order=False,
         )
@@ -145,18 +157,18 @@ class TestHoyolabMethods(IsolatedAsyncioTestCase):
         self.mock_UsagiGenshin.update.assert_has_calls(
             [
                 mock.call(id="test_user_id_1", genshin_resin_sub_notified=False),
-                mock.call(id="test_user_id_1", starrail_resin_sub_notified=False),
-                mock.call(id="test_user_id_2", starrail_resin_sub_notified=False),
-                mock.call(id="test_user_id_3", starrail_resin_sub_notified=False),
+                mock.call(id="test_user_id_3", genshin_resin_sub_notified=True),
+                mock.call(id="test_user_id_3", starrail_resin_sub_notified=True),
             ],
             any_order=False,
         )
-        # channel_1.send.assert_called_with(
-        #     content="<@test_user_id_2>, you have already 155 resin! <a:dinkDonk:865127621112102953>"
-        # )
-        # channel_2.send.assert_called_with(
-        #     content="<@test_user_id_3>, you have already 160 resin! <a:dinkDonk:865127621112102953>"
-        # )
+        channel_2.send.assert_has_calls(
+            [
+                mock.call(content="<@test_user_id_3>, you have already 160 resin! <a:dinkDonk:865127621112102953>"),
+                mock.call(content="<@test_user_id_3>, you have already 175 stamina! <a:dinkDonk:865127621112102953>"),
+            ],
+            any_order=False,
+        )
 
     @freeze_time("2001-03-21 16:00:00")
     async def test_claim_daily_reward_loop(self) -> None:
@@ -246,16 +258,18 @@ class TestHoyolabMethods(IsolatedAsyncioTestCase):
 
     @freeze_time("2001-03-21 15:00:00")
     async def test_generate_resin_fields(self) -> None:
-        data = mock.MagicMock(
-            remaining_resin_recovery_time=datetime.timedelta(hours=2),
-            remaining_realm_currency_recovery_time=datetime.timedelta(hours=10),
-            current_resin=100,
-            current_realm_currency=1400,
-            max_realm_currency=1600,
-            claimed_commission_reward=True,
-            completed_commissions=4,
-        )
-        fields = self.genshin_utils.generate_resin_fields(data)
+        data = {"genshin":
+                mock.MagicMock(
+                    remaining_resin_recovery_time=datetime.timedelta(hours=2),
+                    remaining_realm_currency_recovery_time=datetime.timedelta(hours=10),
+                    current_resin=100,
+                    current_realm_currency=1400,
+                    max_realm_currency=1600,
+                    claimed_commission_reward=True,
+                    completed_commissions=4,
+                )
+        }
+        fields = self.genshin_utils.generate_fields(data)
         self.assertEqual(fields[0].name, "Resin count:")
         self.assertEqual(
             fields[0].value,

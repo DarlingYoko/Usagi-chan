@@ -45,22 +45,19 @@ class GenshinAPI:
             )
         return True
 
-    async def get_user_data(self, guild_id, user_id, game=genshin.Game.GENSHIN):
+    async def get_user_data(self, guild_id, user_id):
         cookies_result = await self.set_cookies(guild_id=guild_id, user_id=user_id)
         if not cookies_result:
             return False
-        try:
-            match game:
-                case genshin.Game.STARRAIL:
-                    data = await self.client.get_starrail_notes()
-                case _:
-                    data = await self.client.get_genshin_notes()
-        except genshin.errors.InvalidCookies:
-            print("Skipped user in get user data-", user_id)
-            return None
-        except genshin.errors.AccountNotFound:
-            print("Skipped user, no account")
-            return None
+
+        data = {}
+        for source in ["starrail", "genshin"]:
+            try:
+                res = await getattr(self.client, f"get_{source}_notes")()
+                data[source] = res
+            except (genshin.errors.InvalidCookies, genshin.errors.AccountNotFound):
+                print(f"Skipped user in get user data - {user_id}")
+
         return data
 
     async def redeem_code(self, code):
@@ -90,91 +87,98 @@ class GenshinAPI:
         except genshin.AlreadyClaimed:
             return False
         except genshin.errors.InvalidCookies:
-            print("Skipped user in claiming reward-", user_id)
-            return None
-        except genshin.errors.GenshinException:
-            print("Skipped user in claiming reward-", user_id)
+            print("Skipped user in claiming reward InvalidCookies -", user_id)
+            return "InvalidCookies"
+        except genshin.errors.GeetestTriggered:
+            print("Skipped user in claiming reward GeetestTriggered -", user_id)
+            return "GeetestTriggered"
+        except genshin.errors.GenshinException as e:
+            print(f"Skipped user in claiming reward {e} -", user_id)
             return False
 
 
-def generate_resin_fields(data) -> list[discord.EmbedField]:
-    resin_timer = int(
-        (datetime.now() + data.remaining_resin_recovery_time).timestamp()
-    )
-    realm_timer = int(
-        (datetime.now() + data.remaining_realm_currency_recovery_time).timestamp()
-    )
+def generate_fields(data) -> list[discord.EmbedField]:
+    genshin_data = data.get("genshin", None)
+    starrail_data = data.get("starrail", None)
+    fields = []
 
-    resin_text = red_text if data.current_resin >= 150 else blue_text
-    realm_text = (
-        red_text
-        if data.current_realm_currency / data.max_realm_currency >= 0.8
-        else blue_text
-    )
+    if genshin_data:
+        resin_timer = int(
+            (datetime.now() + genshin_data.remaining_resin_recovery_time).timestamp()
+        )
+        realm_timer = int(
+            (datetime.now() + genshin_data.remaining_realm_currency_recovery_time).timestamp()
+        )
 
-    resin_count = resin_text.substitute({"count": data.current_resin})
-    realm_count = realm_text.substitute({"count": data.current_realm_currency})
+        resin_text = red_text if genshin_data.current_resin >= 150 else blue_text
+        realm_text = (
+            red_text
+            if genshin_data.current_realm_currency / genshin_data.max_realm_currency >= 0.8
+            else blue_text
+        )
 
-    daily_withdrawn = green_tick if data.claimed_commission_reward else red_thick
+        resin_count = resin_text.substitute({"count": genshin_data.current_resin})
+        realm_count = realm_text.substitute({"count": genshin_data.current_realm_currency})
 
-    fields = [
-        discord.EmbedField(
-            name=_("Resin count"),
-            value=_("resin_cap").format(
-                resin_count=resin_count, resin_timer=resin_timer
+        daily_withdrawn = green_tick if genshin_data.claimed_commission_reward else red_thick
+
+        fields += [
+            discord.EmbedField(
+                name=_("Resin count"),
+                value=_("resin_cap").format(
+                    resin_count=resin_count, resin_timer=resin_timer
+                ),
+                inline=True,
             ),
-            inline=True,
-        ),
-        discord.EmbedField(
-            name=_("Realm currency"),
-            value=_("realm_cap").format(
-                realm_count=realm_count,
-                max_realm_currency=data.max_realm_currency,
-                realm_timer=realm_timer,
+            discord.EmbedField(
+                name=_("Realm currency"),
+                value=_("realm_cap").format(
+                    realm_count=realm_count,
+                    max_realm_currency=genshin_data.max_realm_currency,
+                    realm_timer=realm_timer,
+                ),
+                inline=True,
             ),
-            inline=True,
-        ),
-        discord.EmbedField(
-            name=_("Dailies"),
-            value=_("Completed").format(
-                completed_commissions=data.completed_commissions,
-                daily_withdrawn=daily_withdrawn,
+            discord.EmbedField(
+                name=_("Dailies"),
+                value=_("Completed").format(
+                    completed_commissions=genshin_data.completed_commissions,
+                    daily_withdrawn=daily_withdrawn,
+                ),
+                inline=True,
             ),
-            inline=True,
-        ),
-    ]
-    return fields
+        ]
 
+    if starrail_data:
+        stamina_timer = int(
+            (datetime.now() + starrail_data.stamina_recover_time).timestamp()
+        )
 
-def generate_stamina_fields(data) -> list[discord.EmbedField]:
-    stamina_timer = int(
-        (datetime.now() + data.stamina_recover_time).timestamp()
-    )
+        stamina_text = red_text if starrail_data.current_stamina >= 170 else blue_text
 
-    stamina_text = red_text if data.current_stamina >= 170 else blue_text
+        stamina_count = stamina_text.substitute({"count": starrail_data.current_stamina})
 
-    stamina_count = stamina_text.substitute({"count": data.current_stamina})
+        expeditions = starrail_data.accepted_epedition_num
+        total_expeditions = starrail_data.total_expedition_num
 
-    expeditions = data.accepted_epedition_num
-    total_expeditions = data.total_expedition_num
-
-    fields = [
-        discord.EmbedField(
-            name=_("Stamina count"),
-            value=_("stamina_cap").format(
-                resin_count=stamina_count, resin_timer=stamina_timer
+        fields += [
+            discord.EmbedField(
+                name=_("Stamina count"),
+                value=_("stamina_cap").format(
+                    resin_count=stamina_count, resin_timer=stamina_timer
+                ),
+                inline=True,
             ),
-            inline=True,
-        ),
-        discord.EmbedField(
-            name=_("Expeditions"),
-            value=_("expeditions count").format(
-                expeditions_count=expeditions,
-                max_expeditions=total_expeditions
+            discord.EmbedField(
+                name=_("Expeditions"),
+                value=_("expeditions count").format(
+                    expeditions_count=expeditions,
+                    max_expeditions=total_expeditions
+                ),
+                inline=True,
             ),
-            inline=True,
-        ),
-    ]
+        ]
+
     return fields
 
 
@@ -235,14 +239,14 @@ def generate_all_subs_fields(user):
     fields = [
         discord.EmbedField(
             name="_ _",
-            value=_("resin_notify_text").format(
+            value=_("genshin_resin_notify_text").format(
                 resin_notify=genshin_resin_notify
             ),
             inline=True,
         ),
         discord.EmbedField(
             name="_ _",
-            value=_("daily_reward_text").format(
+            value=_("genshin_daily_reward_text").format(
                 daily_reward=genshin_daily_reward
             ),
             inline=True,
@@ -254,14 +258,14 @@ def generate_all_subs_fields(user):
         ),
         discord.EmbedField(
             name="_ _",
-            value=_("resin_notify_text").format(
+            value=_("starrail_resin_notify_text").format(
                 resin_notify=starrail_resin_notify
             ),
             inline=True,
         ),
         discord.EmbedField(
             name="_ _",
-            value=_("daily_reward_text").format(
+            value=_("starrail_daily_reward_text").format(
                 daily_reward=starrail_daily_reward
             ),
             inline=True,

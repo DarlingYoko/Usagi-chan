@@ -139,15 +139,13 @@ class Genshin(commands.Cog):
                 continue
 
             genshin_api = GenshinAPI()
-            genshin_data = await genshin_api.get_user_data(
+            data = await genshin_api.get_user_data(
                 guild_id=user.guild_id, user_id=user.user_id
             )
-            starrail_data = await genshin_api.get_user_data(
-                guild_id=user.guild_id,
-                user_id=user.user_id,
-                game=genshin.Game.STARRAIL
-            )
-            if genshin_data is False and starrail_data is False:
+            genshin_data = data.get("genshin", None)
+            starrail_data = data.get("starrail", None)
+
+            if genshin_data is None and starrail_data is None:
                 continue
             if genshin_data and genshin_data.current_resin < 150:
                 if user.genshin_resin_sub_notified:
@@ -158,7 +156,6 @@ class Genshin(commands.Cog):
                     await UsagiGenshin.update(id=user.id, starrail_resin_sub_notified=False)
 
             lang = self.bot.language.get(user.user_id, "en")
-
             if user.genshin_resin_sub and not user.genshin_resin_sub_notified and genshin_data.current_resin >= 150:
                 notify_text = self.bot.i18n.get_text("resin cap", lang).format(
                     user_id=user.user_id,
@@ -166,7 +163,6 @@ class Genshin(commands.Cog):
                 )
                 await channel.send(content=notify_text)
                 await UsagiGenshin.update(id=user.id, genshin_resin_sub_notified=True)
-
             if user.starrail_resin_sub and not user.starrail_resin_sub_notified and starrail_data.current_stamina >= 170:
                 notify_text = self.bot.i18n.get_text("stamina cap", lang).format(
                     user_id=user.user_id,
@@ -206,13 +202,17 @@ class Genshin(commands.Cog):
                     user_id=user.user_id,
                     game=genshin.Game.GENSHIN
                 )
+            if respone == "GeetestTriggered":
+                await channel.send(content=f"<@{user.user_id}>, " + _("Geetest error"))
             if user.starrail_daily_sub:
                 respone = await genshin_api.claim_daily_reward(
                     guild_id=user.guild_id,
                     user_id=user.user_id,
                     game=genshin.Game.STARRAIL
                 )
-            if respone is None:
+            if respone == "GeetestTriggered":
+                await channel.send(content=f"<@{user.user_id}>, " + _("Geetest error"))
+            if respone == "InvalidCookies":
                 out_date_cookies.append((user.user_id, channel))
             if respone and channel not in channels:
                 channels.append(channel)
@@ -293,8 +293,8 @@ class Genshin(commands.Cog):
     @hoyolab.command(
         name="resin",
         name_localizations={"ru": "смола"},
-        description="Resin brief.",
-        description_localizations={"ru": "Краткая сводка по смоле"},
+        description="Resin and stamina brief.",
+        description_localizations={"ru": "Краткая сводка по смоле и топливе"},
     )
     @discord.commands.option(
         name="user_id",
@@ -324,66 +324,16 @@ class Genshin(commands.Cog):
             )
             return
 
-        if data is None:
+        if data is {}:
             await ctx.respond(
                 content=_("Your cookie out of date"), ephemeral=True
             )
             return
 
-        fields = generate_resin_fields(data)
+        fields = generate_fields(data)
 
         embed = get_embed(
             title=_("Resin"),
-            author_name=ctx.user.display_name,
-            author_icon_URL=ctx.user.avatar,
-            fields=fields,
-        )
-        await ctx.send_followup(content="", embed=embed)
-
-    @hoyolab.command(
-        name="stamina",
-        name_localizations={"ru": "топливо"},
-        description="Trailblaze Power brief.",
-        description_localizations={"ru": "Краткая сводка по топливу"},
-    )
-    @discord.commands.option(
-        name="user_id",
-        name_localizations={"ru": "айди"},
-        description="Check someone else.",
-        description_localizations={"ru": "Проверерить кого-то другого."},
-        required=False,
-    )
-    async def check_stamina__count(self, ctx, user_id=None) -> None:
-        await ctx.defer(ephemeral=True)
-        if user_id is None:
-            user_id = ctx.user.id
-        else:
-            try:
-                user_id = int(user_id)
-            except ValueError:
-                await ctx.respond(
-                    content=_("Wrong discord ID"), ephemeral=True
-                )
-                return
-
-        genshin_api = GenshinAPI()
-        data = await genshin_api.get_user_data(guild_id=ctx.guild.id, user_id=user_id, game=genshin.Game.STARRAIL)
-        if data is False:
-            await ctx.respond(
-                content=_("You are not logged in"), ephemeral=True
-            )
-            return
-
-        if data is None:
-            await ctx.respond(
-                content=_("Your cookie out of date"), ephemeral=True
-            )
-            return
-
-        fields = generate_stamina_fields(data)
-
-        embed = get_embed(
-            title=_("Stamina"),
             author_name=ctx.user.display_name,
             author_icon_URL=ctx.user.avatar,
             fields=fields,
