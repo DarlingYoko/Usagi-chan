@@ -211,7 +211,12 @@ class Events(commands.Cog):
             )
         elif isinstance(error, BadColourArgument):
             await ctx.respond(
-                self.bot.i18n.get_text("Your color is in wrong format.", user_lang),
+                self.bot.i18n.get_text("Your color is in wrong format", user_lang),
+                ephemeral=True,
+            )
+        elif isinstance(error, discord.ApplicationCommandInvokeError):
+            await ctx.respond(
+                self.bot.i18n.get_text("Smt went wrong try again later", user_lang),
                 ephemeral=True,
             )
         else:
