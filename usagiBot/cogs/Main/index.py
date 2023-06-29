@@ -191,8 +191,8 @@ class Main(commands.Cog):
     @discord.commands.option(
         name="date",
         name_localizations={"ru": "дата"},
-        description="Enter date in `%m.%d.%Y %H:%M:%S` format.",
-        description_localizations={"ru": "Введите дату в формате `%м.%д.%Г %Ч:%М:%С`"},
+        description="Enter date in `d.m.Y H:M:S` format.",
+        description_localizations={"ru": "Введите дату в формате `д.м.Г Ч:М:С`"},
     )
     async def add_timer(
             self,
@@ -202,7 +202,7 @@ class Main(commands.Cog):
     ) -> None:
         try:
             datetime_obj = datetime.strptime(date, "%m.%d.%Y %H:%M:%S")
-        except ValueError:
+        except ValueError or KeyError:
             return await ctx.respond(
                 embed=get_embed(
                     title=_("Time data does not match format").format(date),
