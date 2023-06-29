@@ -202,18 +202,12 @@ class Genshin(commands.Cog):
                     user_id=user.user_id,
                     game=genshin.Game.GENSHIN
                 )
-            if respone == "GeetestTriggered":
-                await channel.send(content=f"<@{user.user_id}>, " + _("Geetest error"))
-                respone = None
             if user.starrail_daily_sub:
                 respone = await genshin_api.claim_daily_reward(
                     guild_id=user.guild_id,
                     user_id=user.user_id,
                     game=genshin.Game.STARRAIL
                 )
-            if respone == "GeetestTriggered":
-                await channel.send(content=f"<@{user.user_id}>, " + _("Geetest error"))
-                respone = None
             if respone == "InvalidCookies":
                 out_date_cookies.append((user.user_id, channel))
                 respone = None
