@@ -29,7 +29,8 @@ class GenshinAPI:
         self.client.set_cookies(cookies)
         try:
             await self.client.get_genshin_user(701700971)
-        except genshin.InvalidCookies:
+        except genshin.InvalidCookies as e:
+            print("Error in new_user_auth -", e)
             return False
         user = await UsagiGenshin.get(guild_id=guild_id, user_id=user_id)
         if user is None:
@@ -234,7 +235,7 @@ def generate_all_subs_fields(user):
     starrail_resin_notify = green_tick if user.starrail_resin_sub else red_thick
     starrail_daily_reward = green_tick if user.starrail_daily_sub else red_thick
 
-    auto_redeem_code = green_tick if user.code_sub else red_thick
+    daily_notify_sub = green_tick if user.daily_notify_sub else red_thick
 
     fields = [
         discord.EmbedField(
@@ -277,8 +278,8 @@ def generate_all_subs_fields(user):
         ),
         discord.EmbedField(
             name="_ _",
-            value=_("Auto redeeming").format(
-                auto_redeem_code=auto_redeem_code
+            value=_("daily_claim_notify").format(
+                daily_notify_sub=daily_notify_sub
             ),
             inline=True,
         ),

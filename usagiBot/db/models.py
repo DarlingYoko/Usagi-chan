@@ -201,7 +201,7 @@ class UsagiGenshin(Base, ModelAdmin):
     genshin_resin_sub = Column(Boolean)
     genshin_resin_sub_notified = Column(Boolean)
     genshin_daily_sub = Column(Boolean)
-    code_sub = Column(Boolean)
+    daily_notify_sub = Column(Boolean)
     starrail_daily_sub = Column(Boolean)
     starrail_resin_sub = Column(Boolean)
     starrail_resin_sub_notified = Column(Boolean)

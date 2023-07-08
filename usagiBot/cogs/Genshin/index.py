@@ -60,9 +60,9 @@ class SelectSubsView(discord.ui.View):
                 value="starrail_daily",
             ),
             discord.SelectOption(
-                label="Auto codes",
-                description="Auto redeem codes when they come.",
-                value="codes",
+                label="Daily reward notify",
+                description="Notify you about to claim daily reward.",
+                value="daily_notify",
             ),
         ]
     )
@@ -77,8 +77,8 @@ class SelectSubsView(discord.ui.View):
                     self.user.starrail_resin_sub = not self.user.starrail_resin_sub
                 case "starrail_daily":
                     self.user.starrail_daily_sub = not self.user.starrail_daily_sub
-                case "codes":
-                    self.user.code_sub = not self.user.code_sub
+                case "daily_notify":
+                    self.user.daily_notify_sub = not self.user.daily_notify_sub
                 case _:
                     pass
 
@@ -94,7 +94,7 @@ class SelectSubsView(discord.ui.View):
             id=self.user.id,
             genshin_resin_sub=self.user.genshin_resin_sub,
             genshin_daily_sub=self.user.genshin_daily_sub,
-            code_sub=self.user.code_sub,
+            daily_notify_sub=self.user.daily_notify_sub,
             starrail_daily_sub=self.user.starrail_daily_sub,
             starrail_resin_sub=self.user.starrail_resin_sub,
         )
@@ -121,6 +121,7 @@ class Genshin(commands.Cog):
         self.bot = bot
         self.check_resin_overflow.start()
         self.claim_daily_reward.start()
+        self.daily_reward_claim_notify.start()
 
     @tasks.loop(minutes=30)
     async def check_resin_overflow(self):
@@ -175,6 +176,42 @@ class Genshin(commands.Cog):
     async def before_check_resin_overflow(self):
         await self.bot.wait_until_ready()
         self.bot.logger.info("Checking resin.")
+
+    @tasks.loop(hours=1)
+    async def daily_reward_claim_notify(self):
+        moscow_tz = pytz.timezone("Europe/Moscow")
+        time_in_moscow = datetime.now(moscow_tz)
+        if time_in_moscow.hour != 19:
+            return
+
+        users = await UsagiGenshin.get_all_by(daily_notify_sub=True)
+        notify_channels = {}
+
+        for user in users:
+            config = await UsagiConfig.get(
+                guild_id=user.guild_id, command_tag="genshin"
+            )
+            if not config:
+                continue
+            channel = await self.bot.fetch_channel(config.generic_id)
+            notify_channel = notify_channels.setdefault(channel.id, {"channel": channel, "users": []})
+            notify_channel["users"].append(user.user_id)
+
+        for data in notify_channels.values():
+            users = data["users"]
+            channel = data["channel"]
+
+            users_text = ", ".join(map(lambda user_id: f"<@{user_id}>", users))
+            links = "\nGenshin - https://bit.ly/genshin_daily\nHonkai - https://bit.ly/honkai_daily"
+            text = "Don't forget to claim your daily reward! <:UsagiLove:1084226975113158666> \n" \
+                   + users_text \
+                   + links
+            await channel.send(text)
+
+    @daily_reward_claim_notify.before_loop
+    async def before_daily_reward_claim_notify(self):
+        await self.bot.wait_until_ready()
+        self.bot.logger.info("daily_reward_claim_notify")
 
     @tasks.loop(minutes=30)
     async def claim_daily_reward(self):
