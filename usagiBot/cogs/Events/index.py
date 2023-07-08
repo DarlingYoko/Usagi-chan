@@ -215,6 +215,7 @@ class Events(commands.Cog):
                 ephemeral=True,
             )
         elif isinstance(error, discord.ApplicationCommandInvokeError):
+            print(error)
             await ctx.respond(
                 self.bot.i18n.get_text("Smt went wrong try again later", user_lang),
                 ephemeral=True,
