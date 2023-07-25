@@ -9,3 +9,16 @@ services:
             - "8080:8080"
         env_file:
             - usagi-variables.env
+
+    postgres:
+        image: postgres:latest
+        restart: always
+        env_file:
+            - usagi-variables.env
+        volumes:
+            - pg_data:/var/lib/postgresql/data
+        ports:
+            - "5432:5432"
+
+volumes:
+  pg_data:

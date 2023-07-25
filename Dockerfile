@@ -1,11 +1,13 @@
+# install python
 FROM python:3.11
 
+# set-up folder
 RUN mkdir /Usagi
 WORKDIR /Usagi
 ADD . /Usagi/
 
-#RUN pip install -r requirements.txt
-
+# install bot requirements
+RUN pip install -r requirements.txt
 RUN apt-get update && apt-get install ffmpeg -y
 
-CMD ["./venvpi/bin/python", "-u", "main.py"]
+CMD ["python", "-u", "main.py"]

@@ -8,11 +8,11 @@ BOT_ID = int(os.environ.get("BOT_ID"))
 
 COGS_DIR = os.environ.get("COGS_DIR")
 
-DATABASE_NAME = os.environ.get("DATABASE_NAME")
-DATABASE_USER = os.environ.get("DATABASE_USER")
-DATABASE_PASS = os.environ.get("DATABASE_PASS")
-DATABASE_HOST = os.environ.get("DATABASE_HOST")
-DATABASE_PORT = os.environ.get("DATABASE_PORT")
+POSTGRES_DB = os.environ.get("POSTGRES_DB")
+POSTGRES_USER = os.environ.get("POSTGRES_USER")
+POSTGRES_PASSWORD = os.environ.get("POSTGRES_PASSWORD")
+POSTGRES_HOST = os.environ.get("POSTGRES_HOST")
+POSTGRES_PORT = os.environ.get("POSTGRES_PORT")
 
 TWITCH_TOKEN = os.environ.get("TWITCH_TOKEN")
 REFRESH_TOKEN = os.environ.get("REFRESH_TOKEN")
