@@ -1,14 +1,15 @@
 import random
 import discord
 
-from usagiBot.cogs.Fun.fun_utils import get_exchange_rate_data
 from discord.ext import commands
+from usagiBot.cogs.Fun.fun_utils import get_exchange_rate_data
 from usagiBot.db.models import UsagiConfig
 from usagiBot.src.UsagiChecks import check_is_already_set_up, check_cog_whitelist
 from usagiBot.src.UsagiErrors import UsagiModuleDisabledError
+from usagiBot.src.UsagiUtils import get_embed
 
 from pycord18n.extension import _
-from usagiBot.src.UsagiUtils import get_embed
+from requests import get
 
 
 class Fun(commands.Cog):
@@ -100,6 +101,11 @@ class Fun(commands.Cog):
         answer = next((key for key, value in answers.items() if value), "")
 
         await ctx.reply(f"Твой iq = {user_iq}\n{answer}")
+
+    @commands.command(aliases=["айпи"], name="ip", description="Check Usagi ip", )
+    async def get_ip(self, ctx) -> None:
+        cur_ip = get('https://api.ipify.org').content.decode('utf8')
+        await ctx.reply(cur_ip)
 
     # Slash commands
     @commands.slash_command(
