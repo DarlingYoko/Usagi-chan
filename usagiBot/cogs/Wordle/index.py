@@ -82,7 +82,7 @@ class Wordle(commands.Cog):
         description_localizations={
             "ru": "Выберите насколько длинное слово загадает вам Усаги."
         },
-        choices=map(lambda x: str(x), range(5, 9)),
+        choices=map(lambda x: str(x), range(5, 14)),
     )
     async def wordle_auto_game(
         self,

@@ -42,7 +42,7 @@ class TestWordleMethods(IsolatedAsyncioTestCase):
     @mock.patch("random.randint")
     def test_get_word(self, mock_randint):
         mock_randint.return_value = 0
-        self.assertEqual(self.wordle_utils.get_word(length=5), "АБЗАЦ")
+        self.assertEqual(self.wordle_utils.get_word(length=5), "АВТОР")
 
     async def test_create_finish_game_embed(self) -> None:
         game_author = mock.MagicMock()

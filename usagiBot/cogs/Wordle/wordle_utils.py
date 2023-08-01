@@ -301,11 +301,9 @@ def check_word_for_reality(word: str) -> bool:
     :return: Boolean
     """
     word_upper = word.upper()
-    with open("./usagiBot/files/dicts/check_dict.txt", "r", encoding="utf8") as f:
+    with open("./usagiBot/files/dicts/check_ru_dict.txt", "r", encoding="utf8") as f:
         words = f.readline().split(",")
-    with open("./usagiBot/files/dicts/russian.txt", "r", encoding="utf8") as f:
-        words2 = f.readline().split(",")
-    return word_upper in words or word_upper in words2
+    return word_upper in words
 
 
 def create_pic_for_answer(word: str, blocks: list[str]) -> Editor:
