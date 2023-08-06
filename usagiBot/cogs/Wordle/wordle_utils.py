@@ -198,9 +198,9 @@ async def generate_new_wordle_game(
     owner_id = ctx.author.id if game_type == "manual" else int(BOT_ID)
 
     first_letter = ord(word[0].upper())
-    word_language = "russian"
+    word_language = "russian" if user_lang == "en" else "русском"
     if 65 <= first_letter <= 90:
-        word_language = "english"
+        word_language = "english" if user_lang == "en" else "английском"
 
     lives_count = len(word) + 1
     last_obj = await UsagiWordleGames.get_last_obj()
@@ -222,8 +222,8 @@ You have only [0;36m{lives_count}[0m tries and it's time to spend it![0m
 **Игра #{last_id}** создана {game_by} <@{ctx.author.id}>.
 ```ansi
 [2;30m[0m[0;2mСлово содержит — [0;36m{len(word)}[0m букв.
-В {word_language} языке.
-У вас есть только [0;36m{lives_count}[0m попытко и сейчас самое время их тратить![0m
+На {word_language} языке.
+У вас есть только [0;36m{lives_count}[0m попыток и сейчас самое время их тратить![0m
 ```
 <a:sparkles:934435764564013076><a:sparkles:934435764564013076>"""
 
@@ -494,19 +494,17 @@ async def create_finish_game_embed(
     game_author = await interaction.guild.fetch_member(game.owner_id)
     if result == "win":
         winner = interaction.user.name
-        discriminator = interaction.user.discriminator
     else:
         winner = game.bot.i18n.get_text("No one", game.user_lang)
-        discriminator = ""
 
     title = game.bot.i18n.get_text("Wordle Game finished", game.user_lang).format(game=game.game_id)
     description_en = f"""```ansi
-[0;2m[0m[0;2mWinner — {winner}#{discriminator}[0m[2;32m[0m
+[0;2m[0m[0;2mWinner — {winner}[0m[2;32m[0m
 [0;2mWord — [0;32m[0;34m[0;36m[0;34m[0;32m[0;35m{word.upper()}[0m[0;32m[0m[0;34m[0m[0;36m[0m[0;34m[0m[0;32m[0m
 Created by {game_author.name}#{game_author.discriminator}[0m[2;32m[4;32m[4;32m[0;32m[0m[4;32m[0m[4;32m[0m[2;32m[0m
 ```"""
     description_ru = f"""```ansi
-[0;2m[0m[0;2mПобедитель — {winner}#{discriminator}[0m[2;32m[0m
+[0;2m[0m[0;2mПобедитель — {winner}[0m[2;32m[0m
 [0;2mСлово — [0;32m[0;34m[0;36m[0;34m[0;32m[0;35m{word.upper()}[0m[0;32m[0m[0;34m[0m[0;36m[0m[0;34m[0m[0;32m[0m
 Создана {game_author.name}#{game_author.discriminator}[0m[2;32m[4;32m[4;32m[0;32m[0m[4;32m[0m[4;32m[0m[2;32m[0m
 ```"""
