@@ -51,19 +51,21 @@ class TestWordleMethods(IsolatedAsyncioTestCase):
 
         winner = mock.MagicMock()
         winner.name = "test_winner"
-        winner.discriminator = "test_winner_discriminator"
 
         interaction = mock.AsyncMock()
         interaction.guild.fetch_member.return_value = game_author
         interaction.user = winner
 
-        title = "Wordle Game #123 finished."
-        description = f"""```ansi
-[0;2m[0m[0;2mWinner — test_winner#test_winner_discriminator[0m[2;32m[0m
+        description = f"""
+### Wordle game #1 is finished finished.
+```ansi
+[0;2m[0m[0;2mWinner — test_winner[0m[2;32m[0m
 [0;2mWord — [0;32m[0;34m[0;36m[0;34m[0;32m[0;35mЖОПАС[0m[0;32m[0m[0;34m[0m[0;36m[0m[0;34m[0m[0;32m[0m
-Created by test_game_author#test_game_author_discriminator[0m[2;32m[4;32m[4;32m[0;32m[0m[4;32m[0m[4;32m[0m[2;32m[0m
+Created by test_game_author[0m[2;32m[4;32m[4;32m[0;32m[0m[4;32m[0m[4;32m[0m[2;32m[0m
 ```"""
-        game = mock.MagicMock(user_lang="en", bot=self.bot, game_id=123, owner_id=12345)
+        thread = mock.MagicMock()
+        thread.mention = "Wordle game #1 is finished"
+        game = mock.MagicMock(user_lang="en", bot=self.bot, game_id=123, owner_id=12345, thread=thread)
         response_embed = await self.wordle_utils.create_finish_game_embed(
             interaction=interaction,
             result="win",
@@ -72,10 +74,11 @@ Created by test_game_author#test_game_author_discriminator[0m[2;32m[4;32m[4;
         )
 
         interaction.guild.fetch_member.assert_called_with(12345)
-        self.assertEqual(response_embed.title, title)
         self.assertEqual(response_embed.description, description)
 
     async def test_WordleGame(self) -> None:
+        thread = mock.MagicMock()
+        thread.mention.return_value = "Wordle game #1 is finished"
         wordle_game = self.wordle_utils.WordleGame(
             embed=mock.MagicMock(),
             word="test_word",
@@ -85,7 +88,8 @@ Created by test_game_author#test_game_author_discriminator[0m[2;32m[4;32m[4;
             game_id=123,
             timeout=180,
             bot=self.bot,
-            user_lang="en"
+            user_lang="en",
+            thread=thread
         )
 
         interaction = mock.AsyncMock()
@@ -101,6 +105,8 @@ Created by test_game_author#test_game_author_discriminator[0m[2;32m[4;32m[4;
     async def test_WordleAnswer_continue_play(
         self, mock_create_full_wordle_pic, mock_end_game
     ) -> None:
+        thread = mock.MagicMock()
+        thread.mention.return_value = "Wordle game #1 is finished"
         wordle_game = self.wordle_utils.WordleGame(
             embed=mock.MagicMock(),
             word="ВЬЮГА",
@@ -110,7 +116,8 @@ Created by test_game_author#test_game_author_discriminator[0m[2;32m[4;32m[4;
             game_id=123,
             timeout=180,
             bot=self.bot,
-            user_lang="en"
+            user_lang="en",
+            thread=thread
         )
         wordle_answer = self.wordle_utils.WordleAnswer(
             game=wordle_game, title="Your answer!"
@@ -143,6 +150,8 @@ Created by test_game_author#test_game_author_discriminator[0m[2;32m[4;32m[4;
         mock_end_game.assert_not_called()
 
     async def test_WordleAnswer_fake_word(self) -> None:
+        thread = mock.MagicMock()
+        thread.mention.return_value = "Wordle game #1 is finished"
         wordle_game = self.wordle_utils.WordleGame(
             embed=mock.MagicMock(),
             word="test_word",
@@ -152,7 +161,8 @@ Created by test_game_author#test_game_author_discriminator[0m[2;32m[4;32m[4;
             game_id=123,
             timeout=180,
             bot=self.bot,
-            user_lang="en"
+            user_lang="en",
+            thread=thread
         )
         wordle_answer = self.wordle_utils.WordleAnswer(
             game=wordle_game, title="Your answer!"
@@ -174,6 +184,8 @@ Created by test_game_author#test_game_author_discriminator[0m[2;32m[4;32m[4;
         )
 
     async def test_WordleAnswer_symbols_in_word(self) -> None:
+        thread = mock.MagicMock()
+        thread.mention.return_value = "Wordle game #1 is finished"
         wordle_game = self.wordle_utils.WordleGame(
             embed=mock.MagicMock(),
             word="test_word",
@@ -183,7 +195,8 @@ Created by test_game_author#test_game_author_discriminator[0m[2;32m[4;32m[4;
             game_id=123,
             timeout=180,
             bot=self.bot,
-            user_lang="en"
+            user_lang="en",
+            thread=thread
         )
         wordle_answer = self.wordle_utils.WordleAnswer(
             game=wordle_game, title="Your answer!"
@@ -205,6 +218,8 @@ Created by test_game_author#test_game_author_discriminator[0m[2;32m[4;32m[4;
 
     @mock.patch("usagiBot.cogs.Wordle.wordle_utils.end_game")
     async def test_WordleAnswer_win_game(self, mock_end_game) -> None:
+        thread = mock.MagicMock()
+        thread.mention.return_value = "Wordle game #1 is finished"
         wordle_game = self.wordle_utils.WordleGame(
             embed=mock.MagicMock(),
             word="РУЧКА",
@@ -214,7 +229,8 @@ Created by test_game_author#test_game_author_discriminator[0m[2;32m[4;32m[4;
             game_id=213123,
             timeout=180,
             bot=self.bot,
-            user_lang="en"
+            user_lang="en",
+            thread=thread
         )
         wordle_answer = self.wordle_utils.WordleAnswer(
             game=wordle_game, title="Your answer!"
@@ -240,6 +256,8 @@ Created by test_game_author#test_game_author_discriminator[0m[2;32m[4;32m[4;
 
     @mock.patch("usagiBot.cogs.Wordle.wordle_utils.end_game")
     async def test_WordleAnswer_lose_game(self, mock_end_game) -> None:
+        thread = mock.MagicMock()
+        thread.mention.return_value = "Wordle game #1 is finished"
         wordle_game = self.wordle_utils.WordleGame(
             embed=mock.MagicMock(),
             word="ЗАЙЧИК",
@@ -249,7 +267,8 @@ Created by test_game_author#test_game_author_discriminator[0m[2;32m[4;32m[4;
             game_id=321,
             timeout=180,
             bot=self.bot,
-            user_lang="en"
+            user_lang="en",
+            thread=thread
         )
         wordle_answer = self.wordle_utils.WordleAnswer(
             game=wordle_game, title="Your answer!"

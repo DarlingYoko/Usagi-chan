@@ -136,6 +136,7 @@ class WordleGame(discord.ui.View):
         timeout: int,
         bot,
         user_lang: str,
+        thread: discord.Thread,
     ):
         super().__init__(timeout=timeout)
         self.embed = embed
@@ -152,6 +153,7 @@ class WordleGame(discord.ui.View):
         self.prev_pic_url = None
         self.bot = bot
         self.user_lang = user_lang
+        self.thread = thread
 
     @discord.ui.button(
         label="Guess",
@@ -262,6 +264,7 @@ You have only [0;36m{lives_count}[0m tries and it's time to spend it![0m
                 timeout=60 * 60,
                 bot=bot,
                 user_lang=user_lang,
+                thread=thread,
             ),
         )
         await message.pin(reason="Pin new game")
@@ -364,7 +367,7 @@ def create_pic_for_keyboard(
     ru_keyboard = "ё й ц у к е н г ш щ з х ъ,ф ы в а п р о л д ж э,я ч с м и т ь б ю"
     en_keyboard = "q w e r t y u i o p,a s d f g h j k l,z x c v b n m"
 
-    if lang == "russian":
+    if lang in ["russian", "русском"]:
         keyboard = ru_keyboard.upper()
         blank = Editor("./usagiBot/files/photo/wordle/clear_keyboard.png")
         shift = 113
@@ -497,21 +500,23 @@ async def create_finish_game_embed(
     else:
         winner = game.bot.i18n.get_text("No one", game.user_lang)
 
-    title = game.bot.i18n.get_text("Wordle Game finished", game.user_lang).format(game=game.game_id)
-    description_en = f"""```ansi
+    description_en = f"""
+### {game.thread.mention} finished.
+```ansi
 [0;2m[0m[0;2mWinner — {winner}[0m[2;32m[0m
 [0;2mWord — [0;32m[0;34m[0;36m[0;34m[0;32m[0;35m{word.upper()}[0m[0;32m[0m[0;34m[0m[0;36m[0m[0;34m[0m[0;32m[0m
-Created by {game_author.name}#{game_author.discriminator}[0m[2;32m[4;32m[4;32m[0;32m[0m[4;32m[0m[4;32m[0m[2;32m[0m
+Created by {game_author.name}[0m[2;32m[4;32m[4;32m[0;32m[0m[4;32m[0m[4;32m[0m[2;32m[0m
 ```"""
-    description_ru = f"""```ansi
+    description_ru = f"""
+### {game.thread.mention} закончена.
+```ansi
 [0;2m[0m[0;2mПобедитель — {winner}[0m[2;32m[0m
 [0;2mСлово — [0;32m[0;34m[0;36m[0;34m[0;32m[0;35m{word.upper()}[0m[0;32m[0m[0;34m[0m[0;36m[0m[0;34m[0m[0;32m[0m
-Создана {game_author.name}#{game_author.discriminator}[0m[2;32m[4;32m[4;32m[0;32m[0m[4;32m[0m[4;32m[0m[2;32m[0m
+Создана {game_author.name}[0m[2;32m[4;32m[4;32m[0;32m[0m[4;32m[0m[4;32m[0m[2;32m[0m
 ```"""
     description = description_en if game.user_lang == "en" else description_ru
 
     embed = get_embed(
-        title=title,
         description=description,
     )
     return embed
@@ -549,8 +554,9 @@ async def end_game(
         )
     else:
         last_game = await UsagiWordleResults.get_last_obj()
+        last_game_id = last_game.id + 1 if last_game is not None else 1
         await UsagiWordleResults.create(
-            id=last_game.id + 1,
+            id=last_game_id,
             guild_id=interaction.guild.id,
             user_id=interaction.user.id,
             points=lives_count,
