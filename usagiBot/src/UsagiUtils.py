@@ -134,11 +134,11 @@ def get_embed(
     color: discord.Colour = 0xF08080,
     url_image: str = None,
     thumbnail: str = None,
-    footer: str = None,
+    footer: List[str] = None,
     author_name: str = None,
     author_icon_URL: str = None,
     fields: List[discord.EmbedField] = None,
-    timestamp=datetime.utcnow(),
+    timestamp: datetime.timestamp = None,
 ):
     if not embed:
         embed = UsagiEmbed()
@@ -169,8 +169,7 @@ def get_embed(
     if title:
         embed.title = title
 
-    if timestamp:
-        embed.timestamp = timestamp
+    embed.timestamp = timestamp if timestamp is not None else datetime.utcnow()
 
     if fields:
         embed.clear_fields()

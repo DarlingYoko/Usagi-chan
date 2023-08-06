@@ -115,8 +115,7 @@ class Wordle(commands.Cog):
         :param ctx:
         :return:
         """
-        description_en = (
-            f"""```ansi
+        description_en = f"""```ansi
 This is a simple [2;32m[2;33m[2;37m[1;37m[1;37mWordle game[0m[1;37m[0m[2;37m[0m[2;33m[0m[2;32m[0m where you have to guess the hidden word.
 You only have the number of letters in a word. 
 You can make your guesses and Usagi-chan will give you clues if you guessed the correct letters.
@@ -132,10 +131,8 @@ ask to generate a random word for yourself by the number of letters in it.[0m
 
 [2;31mAll users have a total number of guesses, so, choose your answers thoroughly.[0m
 ```"""
-        )
 
-        description_ru = (
-            f"""```ansi
+        description_ru = f"""```ansi
 Это проста [2;32m[2;33m[2;37m[1;37m[1;37mВордли игра[0m[1;37m[0m[2;37m[0m[2;33m[0m[2;32m[0m где вам нужно отгадать загаданное слово.
 У вас есть только количество букв в слове. 
 Вы можете делать свои предоложения и Усаги-чан даст вам ответ сколько букв вы угадали.
@@ -151,7 +148,6 @@ ask to generate a random word for yourself by the number of letters in it.[0m
 
 [2;31mВсе пользователи имеют общее число попыток, так что выбирайте ваши ответы с УМОМ.[0m
 ```"""
-        )
 
         lang = self.bot.language.get(ctx.user.id, "en")
         description = description_en if lang == "en" else description_ru
@@ -165,6 +161,32 @@ ask to generate a random word for yourself by the number of letters in it.[0m
             ],
         )
 
+        await ctx.respond(embed=embed)
+
+    @wordle_game.command(
+        name="top",
+        name_localizations={"ru": "топ"},
+        description="View top players in Wordle game.",
+        description_localizations={"ru": "Посмотреть список лучших игроков Вордли."},
+    )
+    @commands.cooldown(per=60, rate=1, type=commands.BucketType.channel)
+    async def wordle_top(self, ctx):
+        all_results = await UsagiWordleResults.get_all_by(guild_id=ctx.guild.id)
+        top_players = sorted(all_results, key=lambda x: x.points, reverse=True)[:10]
+        title = _("Top players")
+        result = list(
+            map(
+                lambda x: _("Counter players").format(
+                    count=x[0],
+                    user_id=x[1].user_id,
+                    points=x[1].points,
+                    count_of_games=x[1].count_of_games,
+                ),
+                enumerate(top_players),
+            )
+        )
+        result_text = "\n".join(result)
+        embed = get_embed(title=title, description=result_text)
         await ctx.respond(embed=embed)
 
 

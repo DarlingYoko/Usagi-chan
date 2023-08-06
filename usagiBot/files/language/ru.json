@@ -147,5 +147,7 @@
     "Your answer": "Твой ответ!",
     "Answer": "Ответ",
     "This word is not in the dictionary": "Этого слова нет в словаре <a:Tssk:883736146578915338>",
-    "No one": "Никто"
+    "No one": "Никто",
+    "Top players": "Топ игроков в Wordle Usagi-chan edition.",
+    "Counter players": "{count}. <@{user_id}>: поинты - `{points}`; кол-во игр - `{count_of_games}`"
 }

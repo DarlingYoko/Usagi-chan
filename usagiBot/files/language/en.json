@@ -147,5 +147,7 @@
     "Your answer": "Your answer!",
     "Answer": "Answer",
     "This word is not in the dictionary": "This word is not in the dictionary <a:Tssk:883736146578915338>",
-    "No one": "No one"
+    "No one": "No one",
+    "Top players": "Top players in Wordle Usagi-chan edition.",
+    "Counter players": "{count}. <@{user_id}>: points - `{points}`; count of games - `{count_of_games}`"
 }
