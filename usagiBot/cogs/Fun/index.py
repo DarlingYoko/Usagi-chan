@@ -103,6 +103,7 @@ class Fun(commands.Cog):
         await ctx.reply(f"Твой iq = {user_iq}\n{answer}")
 
     @commands.command(aliases=["айпи"], name="ip", description="Check Usagi ip", )
+    @commands.cooldown(per=60 * 1, rate=1, type=commands.BucketType.user)
     async def get_ip(self, ctx) -> None:
         cur_ip = get('https://api.ipify.org').content.decode('utf8')
         await ctx.reply(cur_ip)

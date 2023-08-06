@@ -39,7 +39,7 @@ class Events(commands.Cog):
         delete_ids = []
         insert_mappings = []
         last_user = await UsagiBackup.get_last_obj()
-        last_id = last_user.id + 1
+        last_id = last_user.id + 1 if last_user is not None else 1
         for user in backup:
             exist_user = (
                 self.bot.messages_dump.get(user.guild_id, {})
