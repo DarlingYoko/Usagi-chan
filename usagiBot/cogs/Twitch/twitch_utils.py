@@ -51,11 +51,9 @@ def get_notify_src(stream, icon_url) -> tuple[discord.Embed, File]:
     :return: embed
     """
     link = f"<https://www.twitch.tv/{stream.user_login}>"
-    text = f"**{stream.user_name}** start stream!"
     image = gen_pic(stream, icon_url)
     embed = get_embed(
-        title=text,
-        description=f"[twitch.tv/{stream.user_login}]({link})",
+        description=f"### [{stream.user_name}]({link}) start stream!",
         url_image=f"attachment://{stream.user_login}_image.png",
     )
     return embed, image
