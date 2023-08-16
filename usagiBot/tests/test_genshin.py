@@ -245,9 +245,6 @@ class TestHoyolabMethods(IsolatedAsyncioTestCase):
         text = (
             "Claimed daily rewards.\n"
             "To follow use `/hoyolab sub genshin_reward_claim/honkai_reward_claim `"
-            "Or you can do it by yourself\n"
-            "Genshin - https://bit.ly/genshin_daily\n"
-            "Honkai - https://bit.ly/honkai_daily"
         )
         channel_1.send.assert_called_with(
             content=text

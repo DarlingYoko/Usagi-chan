@@ -69,7 +69,7 @@ class Main(commands.Cog):
         self.bot = bot
         self.update_timer.start()
 
-    @tasks.loop(minutes=30)
+    @tasks.loop(minutes=10)
     async def update_timer(self):
         timers = await UsagiTimer.get_all()
         time_now = datetime.now()

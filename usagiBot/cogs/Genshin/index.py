@@ -213,7 +213,7 @@ class Genshin(commands.Cog):
         await self.bot.wait_until_ready()
         self.bot.logger.info("daily_reward_claim_notify")
 
-    @tasks.loop(minutes=30)
+    @tasks.loop(hours=1)
     async def claim_daily_reward(self):
         moscow_tz = pytz.timezone("Europe/Moscow")
         time_in_moscow = datetime.now(moscow_tz)
@@ -253,10 +253,7 @@ class Genshin(commands.Cog):
         for channel in channels:
             await channel.send(
                 content=("Claimed daily rewards.\n"
-                         "To follow use `/hoyolab sub genshin_reward_claim/honkai_reward_claim `"
-                         "Or you can do it by yourself\n"
-                         "Genshin - https://bit.ly/genshin_daily\n"
-                         "Honkai - https://bit.ly/honkai_daily")
+                         "To follow use `/hoyolab sub genshin_reward_claim/honkai_reward_claim `")
             )
 
         for out_cookie in out_date_cookies:
