@@ -5,5 +5,4 @@
 /venv/
 __pycache__
 /.coverage
-./usagi-variables.env
 /usagi-variables.env
