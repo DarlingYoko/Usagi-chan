@@ -61,20 +61,25 @@ class GenshinAPI:
 
         return data
 
-    async def redeem_code(self, code):
+    async def redeem_code(self, code, game):
+        match game:
+            case "Genshin":
+                game = genshin.Game.GENSHIN
+            case "Star Rail":
+                game = genshin.Game.STARRAIL
         try:
-            await self.client.redeem_code(code)
+            await self.client.redeem_code(code, game=game)
         except genshin.RedemptionCooldown:
             await asyncio.sleep(5)
-            await self.redeem_code(code)
+            await self.redeem_code(code, game=game)
         except genshin.RedemptionException as e:
             return e.msg
         except genshin.errors.InvalidCookies:
             print("Skipped user, invalid cookies")
-            return None
+            return _("Your cookie out of date")
         except genshin.errors.AccountNotFound:
             print("Skipped user, no account")
-            return None
+            return _("Your cookie out of date")
 
         return _("Successfully redeemed")
 

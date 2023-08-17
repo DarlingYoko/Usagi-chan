@@ -397,8 +397,8 @@ class Genshin(commands.Cog):
         await ctx.send_followup(content="", embed=embed)
 
     @hoyolab.command(
-        name="code",
-        name_localizations={"ru": "код"},
+        name="redeem_code",
+        name_localizations={"ru": "активировать_код"},
         description="Activate genshin promo code.",
         description_localizations={"ru": "Активировать код."},
     )
@@ -408,7 +408,14 @@ class Genshin(commands.Cog):
         description="Code to activate",
         description_localizations={"ru": "Код для активации."},
     )
-    async def redeem_code(self, ctx, code: str) -> None:
+    @discord.commands.option(
+        name="game",
+        name_localizations={"ru": "игра"},
+        description="For which game code",
+        description_localizations={"ru": "Для какой игры этот код."},
+        choices=["Genshin", "Star Rail"],
+    )
+    async def redeem_code(self, ctx, code: str, game: str) -> None:
         await ctx.defer(ephemeral=True)
 
         genshin_api = GenshinAPI()
@@ -420,14 +427,7 @@ class Genshin(commands.Cog):
                 content=_("You are not logged in"), ephemeral=True
             )
             return
-        if cookies_response is None:
-            await ctx.send_followup(
-                content=_("Your cookie out of date"), ephemeral=True
-            )
-            return
-        redeem_response = await genshin_api.redeem_code(code)
-        if redeem_response is None:
-            redeem_response = _("Your cookie out of date")
+        redeem_response = await genshin_api.redeem_code(code, game)
         await ctx.send_followup(content=redeem_response)
 
     @hoyolab.command(
