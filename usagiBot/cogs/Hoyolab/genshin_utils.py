@@ -5,7 +5,7 @@ from string import Template
 import discord
 import genshin
 
-from usagiBot.db.models import UsagiGenshin
+from usagiBot.db.models import UsagiHoyolab
 from pycord18n.extension import _
 
 blue_text = Template("""```ansi\n[2;31m[2;34m$count[0m[2;31m[0m```""")
@@ -14,15 +14,20 @@ green_tick = "<:greenTick:874767321007276143>"
 red_thick = "<:redThick:874767320915005471>"
 
 
-class GenshinAPI:
+class HoyolabAPI:
     def __init__(self):
         self.client = genshin.Client(game=genshin.Game.GENSHIN)
 
     async def set_cookies(self, guild_id, user_id) -> bool:
-        user = await UsagiGenshin.get(guild_id=guild_id, user_id=user_id)
+        user = await UsagiHoyolab.get(guild_id=guild_id, user_id=user_id)
         if user is None:
             return False
-        self.client.set_cookies(user.cookies)
+        self.client.set_cookies(
+            ltuid=user.ltuid,
+            ltoken=user.ltoken,
+            cookie_token=user.cookie_token,
+            account_id_v2=user.ltuid,
+        )
         return True
 
     async def new_user_auth(self, guild_id, user_id, cookies):
@@ -32,15 +37,15 @@ class GenshinAPI:
         except genshin.InvalidCookies as e:
             print("Error in new_user_auth -", e)
             return False
-        user = await UsagiGenshin.get(guild_id=guild_id, user_id=user_id)
+        user = await UsagiHoyolab.get(guild_id=guild_id, user_id=user_id)
         if user is None:
-            await UsagiGenshin.create(
+            await UsagiHoyolab.create(
                 guild_id=guild_id,
                 user_id=user_id,
                 cookies=cookies,
             )
         else:
-            await UsagiGenshin.update(
+            await UsagiHoyolab.update(
                 id=user.id,
                 cookies=cookies,
             )
@@ -294,7 +299,7 @@ def generate_all_subs_fields(user):
 
 async def check_genshin_login(ctx):
     await ctx.defer(ephemeral=True)
-    user = await UsagiGenshin.get(guild_id=ctx.guild.id, user_id=ctx.user.id)
+    user = await UsagiHoyolab.get(guild_id=ctx.guild.id, user_id=ctx.user.id)
     if user is None:
         await ctx.send_followup(content=_("You are not logged in"), ephemeral=True)
         return None

@@ -6,6 +6,9 @@ DISCORD_TEST2_TOKEN = os.environ.get("DISCORD_TEST2_TOKEN")
 BOT_OWNER = int(os.environ.get("BOT_OWNER"))
 BOT_ID = int(os.environ.get("BOT_ID"))
 
+HOYOLAB_CLIENT_ID = os.environ.get("HOYOLAB_CLIENT_ID")
+HOYOLAB_CLIENT_SECRET = os.environ.get("HOYOLAB_CLIENT_SECRET")
+
 COGS_DIR = os.environ.get("COGS_DIR")
 
 POSTGRES_DB = os.environ.get("POSTGRES_DB")

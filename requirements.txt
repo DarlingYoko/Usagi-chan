@@ -30,7 +30,7 @@ greenlet==2.0.2
 h11==0.14.0
 httpcore==0.17.2
 httpx==0.24.1
-idna==3.4
+hutao-login-gateway @ git+https://github.com/Hu-tao-bot/login-service-library
 imageio-ffmpeg==0.4.8
 iniconfig==2.0.0
 isort==5.12.0

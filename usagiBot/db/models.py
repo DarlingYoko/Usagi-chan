@@ -192,12 +192,14 @@ class UsagiTwitchNotify(Base, ModelAdmin):
     started_at = Column(DateTime)
 
 
-class UsagiGenshin(Base, ModelAdmin):
-    __tablename__ = "usagi_genshin"
+class UsagiHoyolab(Base, ModelAdmin):
+    __tablename__ = "usagi_hoyolab"
     id = Column(Integer, primary_key=True)
     guild_id = Column(BigInteger)
     user_id = Column(BigInteger)
-    cookies = Column(Text)
+    ltuid = Column(Text)
+    ltoken = Column(Text)
+    cookie_token = Column(Text)
     genshin_resin_sub = Column(Boolean)
     genshin_resin_sub_notified = Column(Boolean)
     genshin_daily_sub = Column(Boolean)

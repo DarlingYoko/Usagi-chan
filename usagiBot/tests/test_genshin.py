@@ -26,22 +26,22 @@ def clear_imports():
 
 class TestHoyolabMethods(IsolatedAsyncioTestCase):
 
-    @mock.patch("usagiBot.cogs.Genshin.genshin_utils.GenshinAPI")
-    @mock.patch("usagiBot.db.models.UsagiGenshin", new_callable=mock.AsyncMock)
+    @mock.patch("usagiBot.cogs.Hoyolab.genshin_utils.HoyolabAPI")
+    @mock.patch("usagiBot.db.models.UsagiHoyolab", new_callable=mock.AsyncMock)
     @mock.patch("usagiBot.db.models.UsagiConfig", new_callable=mock.AsyncMock)
     @mock.patch.object(asyncio, "create_async_engine")
     def setUp(
-            self, mock_engine, mock_UsagiConfig, mock_UsagiGenshin, mock_GenshinAPI
+            self, mock_engine, mock_UsagiConfig, mock_UsagiHoyolab, mock_GenshinAPI
     ) -> None:
-        from usagiBot.cogs.Genshin.index import Genshin
+        from usagiBot.cogs.Hoyolab.index import Hoyolab
 
-        self.Genshin = Genshin
+        self.Genshin = Hoyolab
 
-        import usagiBot.cogs.Genshin.genshin_utils as genshin_utils
+        import usagiBot.cogs.Hoyolab.genshin_utils as genshin_utils
 
         self.genshin_utils = genshin_utils
 
-        self.mock_UsagiGenshin = mock_UsagiGenshin
+        self.mock_UsagiHoyolab = mock_UsagiHoyolab
         self.mock_UsagiConfig = mock_UsagiConfig
         self.mock_GenshinAPI = mock_GenshinAPI
 
@@ -55,7 +55,7 @@ class TestHoyolabMethods(IsolatedAsyncioTestCase):
         self.mock_GenshinAPI().claim_daily_reward = mock.AsyncMock()
 
     async def test_check_resin_overflow_loop(self) -> None:
-        self.mock_UsagiGenshin.get_all_by_or.return_value = [
+        self.mock_UsagiHoyolab.get_all_by_or.return_value = [
             mock.MagicMock(
                 guild_id="test_guild_id_1",
                 user_id="test_user_id_1",
@@ -125,7 +125,7 @@ class TestHoyolabMethods(IsolatedAsyncioTestCase):
         ]
 
         await self.Genshin.check_resin_overflow(self.Genshin)
-        self.mock_UsagiGenshin.get_all_by_or.assert_called_with(genshin_resin_sub=True, starrail_resin_sub=True)
+        self.mock_UsagiHoyolab.get_all_by_or.assert_called_with(genshin_resin_sub=True, starrail_resin_sub=True)
         self.mock_UsagiConfig.get.assert_has_calls(
             [
                 mock.call(guild_id="test_guild_id_1", command_tag="genshin"),
@@ -154,7 +154,7 @@ class TestHoyolabMethods(IsolatedAsyncioTestCase):
             any_order=False,
         )
 
-        self.mock_UsagiGenshin.update.assert_has_calls(
+        self.mock_UsagiHoyolab.update.assert_has_calls(
             [
                 mock.call(id="test_user_id_1", genshin_resin_sub_notified=False),
                 mock.call(id="test_user_id_3", genshin_resin_sub_notified=True),
@@ -172,7 +172,7 @@ class TestHoyolabMethods(IsolatedAsyncioTestCase):
 
     @freeze_time("2001-03-21 16:00:00")
     async def test_claim_daily_reward_loop(self) -> None:
-        self.mock_UsagiGenshin.get_all_by_or.return_value = [
+        self.mock_UsagiHoyolab.get_all_by_or.return_value = [
             mock.MagicMock(
                 guild_id="test_guild_id_12",
                 user_id="test_user_id_1",
@@ -215,7 +215,7 @@ class TestHoyolabMethods(IsolatedAsyncioTestCase):
         ]
 
         await self.Genshin.claim_daily_reward(self.Genshin)
-        self.mock_UsagiGenshin.get_all_by_or.assert_called_with(genshin_daily_sub=True, starrail_daily_sub=True)
+        self.mock_UsagiHoyolab.get_all_by_or.assert_called_with(genshin_daily_sub=True, starrail_daily_sub=True)
 
         self.mock_UsagiConfig.get.assert_has_calls(
             [
@@ -307,10 +307,10 @@ class TestHoyolabMethods(IsolatedAsyncioTestCase):
         ctx.guild.id = "test_guild_id_1"
         ctx.user.id = "test_user_id_1"
         user = mock.MagicMock()
-        self.mock_UsagiGenshin.get.return_value = user
+        self.mock_UsagiHoyolab.get.return_value = user
 
         test_user = await self.genshin_utils.check_genshin_login(ctx)
-        self.mock_UsagiGenshin.get.assert_called_with(
+        self.mock_UsagiHoyolab.get.assert_called_with(
             guild_id="test_guild_id_1", user_id="test_user_id_1"
         )
         self.assertEqual(test_user, user)
@@ -319,13 +319,13 @@ class TestHoyolabMethods(IsolatedAsyncioTestCase):
         ctx = mock.AsyncMock()
         ctx.guild.id = "test_guild_id_2"
         ctx.user.id = "test_user_id_22"
-        self.mock_UsagiGenshin.get.return_value = None
+        self.mock_UsagiHoyolab.get.return_value = None
 
         test_user = await self.genshin_utils.check_genshin_login(ctx)
-        self.mock_UsagiGenshin.get.assert_called_with(
+        self.mock_UsagiHoyolab.get.assert_called_with(
             guild_id="test_guild_id_2", user_id="test_user_id_22"
         )
         ctx.send_followup.assert_called_with(
-            content="You are not logged in. Pls go `/hoylab auth`", ephemeral=True
+            content="You are not logged in. Pls go `/hoylab login`", ephemeral=True
         )
         self.assertEqual(test_user, None)

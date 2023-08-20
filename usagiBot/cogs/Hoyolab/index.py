@@ -1,36 +1,19 @@
 import pytz
+from typing import Dict
 
 from usagiBot.db.models import UsagiConfig
+from usagiBot.env import HOYOLAB_CLIENT_ID, HOYOLAB_CLIENT_SECRET
 from usagiBot.src.UsagiChecks import check_cog_whitelist, is_owner
 from usagiBot.src.UsagiErrors import UsagiModuleDisabledError
 from usagiBot.src.UsagiUtils import get_embed
-from usagiBot.cogs.Genshin.genshin_utils import *
+from usagiBot.cogs.Hoyolab.genshin_utils import *
 
 from discord.ext import commands, tasks
-from discord import SlashCommandGroup
+from discord import SlashCommandGroup, WebhookMessage
 from pycord18n.extension import _
-
-
-class GenshinModal(discord.ui.Modal):
-    def __init__(self, bot, lang, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
-        self.bot = bot
-        self.lang = lang
-        label = self.bot.i18n.get_text("Cookie", lang)
-        self.add_item(discord.ui.InputText(label=label))
-
-    async def callback(self, interaction: discord.Interaction):
-        genshin_api = GenshinAPI()
-        cookies = self.children[0].value.replace("'", "")
-        auth_result = await genshin_api.new_user_auth(
-            guild_id=interaction.guild_id,
-            user_id=interaction.user.id,
-            cookies=cookies,
-        )
-        text = self.bot.i18n.get_text("Wrong cookies", self.lang)
-        if auth_result:
-            text = self.bot.i18n.get_text("Successfully auth", self.lang)
-        await interaction.response.send_message(content=text, ephemeral=True)
+from logingateway import HuTaoLoginAPI
+from logingateway.api import HuTaoLoginRESTAPI
+from logingateway.model import Player, Ready
 
 
 class SelectSubsView(discord.ui.View):
@@ -90,7 +73,7 @@ class SelectSubsView(discord.ui.View):
             author_icon_URL=interaction.user.avatar,
             fields=fields,
         )
-        await UsagiGenshin.update(
+        await UsagiHoyolab.update(
             id=self.user.id,
             genshin_resin_sub=self.user.genshin_resin_sub,
             genshin_daily_sub=self.user.genshin_daily_sub,
@@ -101,31 +84,81 @@ class SelectSubsView(discord.ui.View):
         await interaction.response.edit_message(embed=embed)
 
 
-class GenshinAuth(discord.ui.View):
-    def __init__(self, bot):
-        super().__init__()
-        self.bot = bot
-
-    @discord.ui.button(
-        label="Enter cookie",
-        style=discord.ButtonStyle.primary,
-    )
-    async def guess_button(self, button, interaction):
-        lang = self.bot.language.get(interaction.user.id, "en")
-        title = self.bot.i18n.get_text("Genshin auth", lang)
-        await interaction.response.send_modal(GenshinModal(title=title, bot=self.bot, lang=lang))
-
-
-class Genshin(commands.Cog):
+class Hoyolab(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+
+        # Hoyolab auth set up
+        self.gateway = HuTaoLoginAPI(
+            client_id=HOYOLAB_CLIENT_ID,
+            client_secret=HOYOLAB_CLIENT_SECRET
+        )
+        self.rest = HuTaoLoginRESTAPI(
+            client_id=HOYOLAB_CLIENT_ID,
+            client_secret=HOYOLAB_CLIENT_SECRET
+        )
+
+        self.tokenStore: Dict[str, WebhookMessage] = {}
+
+        # Event
+        self.gateway.ready(self.gateway_connect)
+        self.gateway.player(self.gateway_player)
+        self.gateway.player_update(self.gateway_player_update)
+
+        # Start gateway
+        self.bot.logger.info("Connecting to Hu Tao Gateway")
+        self.gateway.start()
+
         self.check_resin_overflow.start()
         self.claim_daily_reward.start()
         self.daily_reward_claim_notify.start()
 
+    async def gateway_connect(self, data: Ready):
+        self.bot.logger.info("Connected to Hu Tao Gateway")
+
+    async def gateway_player_update(self, data: Player):
+        # Recieved data
+        print("Successfully reload user cookie")
+
+    async def gateway_player(self, data: Player):
+        if data.token not in self.tokenStore:
+            return
+
+        ctx = self.tokenStore[data.token]
+
+        # upload to db
+        guild_id = int(data.discord.guild_id)
+        user_id = int(data.genshin.userid)
+        user = await UsagiHoyolab.get(guild_id=guild_id, user_id=user_id)
+        if user is None:
+            # Create new Hoyolab user
+            await UsagiHoyolab.create(
+                guild_id=guild_id,
+                user_id=user_id,
+                ltuid=data.genshin.ltuid,
+                ltoken=data.genshin.ltoken,
+                cookie_token=data.genshin.cookie_token,
+            )
+        else:
+            # Update exists one
+            await UsagiHoyolab.update(
+                id=user.id,
+                ltuid=data.genshin.ltuid,
+                ltoken=data.genshin.ltoken,
+                cookie_token=data.genshin.cookie_token,
+            )
+
+        # Send if success
+        lang = self.bot.language.get(user_id, "en")
+        if lang == "ru":
+            response = "🎉 Успешная авторизация на Хоёлабе!"
+        else:
+            response = "🎉 Success login to Hoyolab!"
+        await ctx.edit(content=response, view=None)
+
     @tasks.loop(minutes=30)
     async def check_resin_overflow(self):
-        users = await UsagiGenshin.get_all_by_or(genshin_resin_sub=True, starrail_resin_sub=True)
+        users = await UsagiHoyolab.get_all_by_or(genshin_resin_sub=True, starrail_resin_sub=True)
 
         for user in users:
             config = await UsagiConfig.get(
@@ -139,7 +172,7 @@ class Genshin(commands.Cog):
                 print(f"Cant get access to {config.generic_id}")
                 continue
 
-            genshin_api = GenshinAPI()
+            genshin_api = HoyolabAPI()
             data = await genshin_api.get_user_data(
                 guild_id=user.guild_id, user_id=user.user_id
             )
@@ -150,11 +183,11 @@ class Genshin(commands.Cog):
                 continue
             if genshin_data and genshin_data.current_resin < 150:
                 if user.genshin_resin_sub_notified:
-                    await UsagiGenshin.update(id=user.id, genshin_resin_sub_notified=False)
+                    await UsagiHoyolab.update(id=user.id, genshin_resin_sub_notified=False)
 
             if starrail_data and starrail_data.current_stamina < 170:
                 if user.starrail_resin_sub_notified:
-                    await UsagiGenshin.update(id=user.id, starrail_resin_sub_notified=False)
+                    await UsagiHoyolab.update(id=user.id, starrail_resin_sub_notified=False)
 
             lang = self.bot.language.get(user.user_id, "en")
             if user.genshin_resin_sub and not user.genshin_resin_sub_notified and genshin_data.current_resin >= 150:
@@ -163,14 +196,14 @@ class Genshin(commands.Cog):
                     current_resin=genshin_data.current_resin
                 )
                 await channel.send(content=notify_text)
-                await UsagiGenshin.update(id=user.id, genshin_resin_sub_notified=True)
+                await UsagiHoyolab.update(id=user.id, genshin_resin_sub_notified=True)
             if user.starrail_resin_sub and not user.starrail_resin_sub_notified and starrail_data.current_stamina >= 170:
                 notify_text = self.bot.i18n.get_text("stamina cap", lang).format(
                     user_id=user.user_id,
                     current_stamina=starrail_data.current_stamina
                 )
                 await channel.send(content=notify_text)
-                await UsagiGenshin.update(id=user.id, starrail_resin_sub_notified=True)
+                await UsagiHoyolab.update(id=user.id, starrail_resin_sub_notified=True)
 
     @check_resin_overflow.before_loop
     async def before_check_resin_overflow(self):
@@ -184,7 +217,7 @@ class Genshin(commands.Cog):
         if time_in_moscow.hour != 19:
             return
 
-        users = await UsagiGenshin.get_all_by(daily_notify_sub=True)
+        users = await UsagiHoyolab.get_all_by(daily_notify_sub=True)
         notify_channels = {}
 
         for user in users:
@@ -219,7 +252,7 @@ class Genshin(commands.Cog):
         time_in_moscow = datetime.now(moscow_tz)
         if time_in_moscow.hour != 19:
             return
-        users = await UsagiGenshin.get_all_by_or(genshin_daily_sub=True, starrail_daily_sub=True)
+        users = await UsagiHoyolab.get_all_by_or(genshin_daily_sub=True, starrail_daily_sub=True)
         channels = []
         out_date_cookies = []
 
@@ -231,7 +264,7 @@ class Genshin(commands.Cog):
                 continue
             channel = await self.bot.fetch_channel(config.generic_id)
 
-            genshin_api = GenshinAPI()
+            genshin_api = HoyolabAPI()
             respone = None
             if user.genshin_daily_sub:
                 respone = await genshin_api.claim_daily_reward(
@@ -310,16 +343,53 @@ class Genshin(commands.Cog):
     )
 
     @hoyolab.command(
-        name="auth",
-        name_localizations={"ru": "авторизоваться"},
-        description="Necessary auth for using commands.",
-        description_localizations={"ru": "Обязательная авторизация для использования геншин команд."},
+        name="login",
+        name_localizations={"ru": "логин"},
+        description="Necessary login Hoyolab account for using commands.",
+        description_localizations={"ru": "Обязательная авторизация для использования хоёлаб команд."},
     )
-    async def follow_streamer(
-        self,
-        ctx,
-    ) -> None:
-        await ctx.respond(_("instruction"), view=GenshinAuth(self.bot), ephemeral=True)
+    async def login(self, interaction: discord.Interaction):
+        await interaction.response.defer(ephemeral=True)
+        url, token = self.gateway.generate_login_url(
+            user_id=str(interaction.user.id),
+            guild_id=str(interaction.guild_id),
+            channel_id=str(interaction.channel_id),
+            language="en"
+        )
+
+        view = discord.ui.View()
+        view.add_item(discord.ui.Button(
+            url=url,
+            label=_("Login Hoyolab account")
+        ))
+
+        message = await interaction.followup.send(_("Please login hoyolab"), view=view)
+        self.tokenStore[token] = message
+
+    async def reload_cookies(self, user_id: str):
+        async with self.rest as rest:
+            history = await rest.get_history_user(user_id, login_type='mail')
+            if history.data is not []:
+                token = history.data[0].token
+            else:
+                return None
+            new_cookie = await rest.reload_new_cookie(user_id, token)
+            return new_cookie
+
+    @commands.slash_command(name="reload", description="Reload redeem token")
+    @hoyolab.command(
+        name="reload",
+        name_localizations={"ru": "логрелогинин"},
+        description="Reload redeem token.",
+        description_localizations={"ru": "Обновить свой токен на Хоёлабе."},
+    )
+    async def reload(self, interaction: discord.Interaction):
+        await interaction.response.defer(ephemeral=True)
+        new_cookie = await self.reload_cookies(str(interaction.user.id))
+        if new_cookie is not None:
+            await interaction.followup.send(content=_("Success to reload redeem token"))
+        else:
+            await interaction.followup.send(content=_("Failed to reload redeem token"))
 
     @hoyolab.command(
         name="resin",
@@ -347,7 +417,7 @@ class Genshin(commands.Cog):
                 )
                 return
 
-        genshin_api = GenshinAPI()
+        genshin_api = HoyolabAPI()
         data = await genshin_api.get_user_data(guild_id=ctx.guild.id, user_id=user_id)
         if data is False:
             await ctx.respond(
@@ -379,7 +449,7 @@ class Genshin(commands.Cog):
     )
     async def check_notes(self, ctx) -> None:
         await ctx.defer(ephemeral=True)
-        user = await UsagiGenshin.get(guild_id=ctx.guild.id, user_id=ctx.user.id)
+        user = await UsagiHoyolab.get(guild_id=ctx.guild.id, user_id=ctx.user.id)
         if user is None:
             await ctx.respond(
                 content=_("You are not logged in"), ephemeral=True
@@ -396,39 +466,46 @@ class Genshin(commands.Cog):
         )
         await ctx.send_followup(content="", embed=embed)
 
-    @hoyolab.command(
-        name="redeem_code",
-        name_localizations={"ru": "активировать_код"},
-        description="Activate genshin promo code.",
-        description_localizations={"ru": "Активировать код."},
-    )
-    @discord.commands.option(
-        name="code",
-        name_localizations={"ru": "код"},
-        description="Code to activate",
-        description_localizations={"ru": "Код для активации."},
-    )
-    @discord.commands.option(
-        name="game",
-        name_localizations={"ru": "игра"},
-        description="For which game code",
-        description_localizations={"ru": "Для какой игры этот код."},
-        choices=["Genshin", "Star Rail"],
-    )
-    async def redeem_code(self, ctx, code: str, game: str) -> None:
-        await ctx.defer(ephemeral=True)
-
-        genshin_api = GenshinAPI()
-        cookies_response = await genshin_api.set_cookies(
-            guild_id=ctx.guild.id, user_id=ctx.user.id
-        )
-        if cookies_response is False:
-            await ctx.send_followup(
-                content=_("You are not logged in"), ephemeral=True
-            )
-            return
-        redeem_response = await genshin_api.redeem_code(code, game)
-        await ctx.send_followup(content=redeem_response)
+    # @hoyolab.command(
+    #     name="redeem_code",
+    #     name_localizations={"ru": "код"},
+    #     description="Activate genshin promo code.",
+    #     description_localizations={"ru": "Активировать код."},
+    # )
+    # @discord.commands.option(
+    #     name="code",
+    #     name_localizations={"ru": "код"},
+    #     description="Code to activate",
+    #     description_localizations={"ru": "Код для активации."},
+    # )
+    # @discord.commands.option(
+    #     name="game",
+    #     name_localizations={"ru": "игра"},
+    #     description="For which game code",
+    #     description_localizations={"ru": "Для какой игры этот код."},
+    #     choices=["Genshin", "Star Rail"],
+    # )
+    # async def redeem_code(self, ctx, code: str, game: str) -> None:
+    #     await ctx.defer(ephemeral=True)
+    #
+    #     genshin_api = GenshinAPI()
+    #     cookies_response = await genshin_api.set_cookies(
+    #         guild_id=ctx.guild.id,
+    #         user_id=ctx.user.id,
+    #         redemtion_check=True
+    #     )
+    #     if cookies_response is False:
+    #         await ctx.send_followup(
+    #             content=_("You are not logged in"), ephemeral=True
+    #         )
+    #         return
+    #     elif cookies_response == "Error cookie_token_v2":
+    #         await ctx.send_followup(
+    #             content=_("Need to provide cookie_token_v2"), ephemeral=True
+    #         )
+    #         return
+    #     redeem_response = await genshin_api.redeem_code(code, game)
+    #     await ctx.send_followup(content=redeem_response)
 
     @hoyolab.command(
         name="subscription",
@@ -438,7 +515,7 @@ class Genshin(commands.Cog):
     )
     async def redeem_code(self, ctx) -> None:
         await ctx.defer(ephemeral=True)
-        user = await UsagiGenshin.get(guild_id=ctx.guild.id, user_id=ctx.user.id)
+        user = await UsagiHoyolab.get(guild_id=ctx.guild.id, user_id=ctx.user.id)
         if user is None:
             await ctx.respond(
                 content=_("You are not logged in"), ephemeral=True
@@ -455,21 +532,21 @@ class Genshin(commands.Cog):
         )
         await ctx.respond(view=SelectSubsView(self.bot, user), embed=embed)
 
-    @commands.command()
-    @is_owner()
-    async def redeem_code_all(self, ctx, *, codes: str) -> None:
-        users = await UsagiGenshin.get_all_by(code_sub=True)
-        response_codes = {}
-        for user in users:
-            genshin_api = GenshinAPI()
-            await genshin_api.set_cookies(guild_id=user.guild_id, user_id=user.user_id)
-            for code in codes.split(","):
-                response = await genshin_api.redeem_code(code.strip())
-                user_codes = response_codes.setdefault(user.user_id, {})
-                user_codes.setdefault(code, response)
-
-        await ctx.reply(response_codes)
+    # @commands.command()
+    # @is_owner()
+    # async def redeem_code_all(self, ctx, *, codes: str) -> None:
+    #     users = await UsagiHoyolab.get_all_by(code_sub=True)
+    #     response_codes = {}
+    #     for user in users:
+    #         genshin_api = GenshinAPI()
+    #         await genshin_api.set_cookies(guild_id=user.guild_id, user_id=user.user_id)
+    #         for code in codes.split(","):
+    #             response = await genshin_api.redeem_code(code.strip())
+    #             user_codes = response_codes.setdefault(user.user_id, {})
+    #             user_codes.setdefault(code, response)
+    #
+    #     await ctx.reply(response_codes)
 
 
 def setup(bot):
-    bot.add_cog(Genshin(bot))
+    bot.add_cog(Hoyolab(bot))
