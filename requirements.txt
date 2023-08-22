@@ -78,4 +78,4 @@ urllib3==2.0.3
 websockets==11.0.3
 wrapt==1.15.0
 yarl==1.9.2
-yt-dlp==2023.3.4
+yt-dlp==2023.07.06
