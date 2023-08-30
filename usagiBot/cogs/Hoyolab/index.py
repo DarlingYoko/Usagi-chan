@@ -105,13 +105,10 @@ class Hoyolab(commands.Cog):
         self.gateway.player(self.gateway_player)
         self.gateway.player_update(self.gateway_player_update)
 
-        # Start gateway
-        self.bot.logger.info("Connecting to Hu Tao Gateway")
-        self.gateway.start()
-
         self.check_resin_overflow.start()
         self.claim_daily_reward.start()
         self.daily_reward_claim_notify.start()
+        self.restart_hutao_login_api.start()
 
     async def gateway_connect(self, data: Ready):
         self.bot.logger.info("Connected to Hu Tao Gateway")
@@ -155,6 +152,13 @@ class Hoyolab(commands.Cog):
         else:
             response = "🎉 Success login to Hoyolab!"
         await ctx.edit(content=response, view=None)
+
+    @tasks.loop(hours=24)
+    async def restart_hutao_login_api(self):
+        # Restart gateway
+        self.bot.logger.info("Connecting to Hu Tao Gateway")
+        await self.gateway.close()
+        self.gateway.start()
 
     @tasks.loop(minutes=30)
     async def check_resin_overflow(self):
