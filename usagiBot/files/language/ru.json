@@ -50,7 +50,7 @@
     "Realm currency": "Монеты в чайнике:",
     "Dailies": "Дейлик:",
     "resin_cap": "{resin_count}160 смолы\n<t:{resin_timer}:R>",
-    "stamina_cap": "{resin_count}180 топлива\n<t:{resin_timer}:R>",
+    "stamina_cap": "{resin_count}240 топлива\n<t:{resin_timer}:R>",
     "realm_cap": "{realm_count}{max_realm_currency} монет\n<t:{realm_timer}:R>",
     "Completed": "_ _\nВыполнено: {completed_commissions}\nПолучена награда: {daily_withdrawn}",
     "genshin_resin_notify_text": "**Уведомление\n о смоле: **{resin_notify}",

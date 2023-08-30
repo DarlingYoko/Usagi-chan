@@ -50,7 +50,7 @@
     "Realm currency": "Realm currency:",
     "Dailies": "Dailies:",
     "resin_cap": "{resin_count}160 resin\n<t:{resin_timer}:R>",
-    "stamina_cap": "{resin_count}180 trailblaze power\n<t:{resin_timer}:R>",
+    "stamina_cap": "{resin_count}240 trailblaze power\n<t:{resin_timer}:R>",
     "realm_cap": "{realm_count}{max_realm_currency} realm\n<t:{realm_timer}:R>",
     "Completed": "_ _\nCompleted: {completed_commissions}\nWithdrawn: {daily_withdrawn}",
     "genshin_resin_notify_text": "**Notification\n of resin: **{resin_notify}",

@@ -452,7 +452,7 @@ class Hoyolab(commands.Cog):
         description_localizations={"ru": "Вся информация о вашем аккаунте."},
     )
     async def check_notes(self, ctx) -> None:
-        await ctx.defer(ephemeral=True)
+        await ctx.defer()
         user = await UsagiHoyolab.get(guild_id=ctx.guild.id, user_id=ctx.user.id)
         if user is None:
             await ctx.respond(
