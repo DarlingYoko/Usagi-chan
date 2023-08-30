@@ -165,7 +165,7 @@ def generate_fields(data) -> list[discord.EmbedField]:
             (datetime.now() + starrail_data.stamina_recover_time).timestamp()
         )
 
-        stamina_text = red_text if starrail_data.current_stamina >= 170 else blue_text
+        stamina_text = red_text if starrail_data.current_stamina >= 220 else blue_text
 
         stamina_count = stamina_text.substitute({"count": starrail_data.current_stamina})
 

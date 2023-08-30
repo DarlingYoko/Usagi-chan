@@ -189,7 +189,7 @@ class Hoyolab(commands.Cog):
                 if user.genshin_resin_sub_notified:
                     await UsagiHoyolab.update(id=user.id, genshin_resin_sub_notified=False)
 
-            if starrail_data and starrail_data.current_stamina < 170:
+            if starrail_data and starrail_data.current_stamina < 220:
                 if user.starrail_resin_sub_notified:
                     await UsagiHoyolab.update(id=user.id, starrail_resin_sub_notified=False)
 
@@ -201,7 +201,7 @@ class Hoyolab(commands.Cog):
                 )
                 await channel.send(content=notify_text)
                 await UsagiHoyolab.update(id=user.id, genshin_resin_sub_notified=True)
-            if user.starrail_resin_sub and not user.starrail_resin_sub_notified and starrail_data.current_stamina >= 170:
+            if user.starrail_resin_sub and not user.starrail_resin_sub_notified and starrail_data.current_stamina >= 220:
                 notify_text = self.bot.i18n.get_text("stamina cap", lang).format(
                     user_id=user.user_id,
                     current_stamina=starrail_data.current_stamina
@@ -452,7 +452,7 @@ class Hoyolab(commands.Cog):
         description_localizations={"ru": "Вся информация о вашем аккаунте."},
     )
     async def check_notes(self, ctx) -> None:
-        await ctx.defer(ephemeral=True)
+        await ctx.defer()
         user = await UsagiHoyolab.get(guild_id=ctx.guild.id, user_id=ctx.user.id)
         if user is None:
             await ctx.respond(
