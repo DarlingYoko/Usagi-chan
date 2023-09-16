@@ -88,22 +88,7 @@ class Hoyolab(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-        # Hoyolab auth set up
-        self.gateway = HuTaoLoginAPI(
-            client_id=HOYOLAB_CLIENT_ID,
-            client_secret=HOYOLAB_CLIENT_SECRET
-        )
-        self.rest = HuTaoLoginRESTAPI(
-            client_id=HOYOLAB_CLIENT_ID,
-            client_secret=HOYOLAB_CLIENT_SECRET
-        )
-
         self.tokenStore: Dict[str, WebhookMessage] = {}
-
-        # Event
-        self.gateway.ready(self.gateway_connect)
-        self.gateway.player(self.gateway_player)
-        self.gateway.player_update(self.gateway_player_update)
 
         self.check_resin_overflow.start()
         self.claim_daily_reward.start()
@@ -155,8 +140,22 @@ class Hoyolab(commands.Cog):
 
     @tasks.loop(hours=24)
     async def restart_hutao_login_api(self):
-        # Restart gateway
         self.bot.logger.info("Connecting to Hu Tao Gateway")
+        # Hoyolab auth set up
+        self.gateway = HuTaoLoginAPI(
+            client_id=HOYOLAB_CLIENT_ID,
+            client_secret=HOYOLAB_CLIENT_SECRET
+        )
+        self.rest = HuTaoLoginRESTAPI(
+            client_id=HOYOLAB_CLIENT_ID,
+            client_secret=HOYOLAB_CLIENT_SECRET
+        )
+        # Event
+        self.gateway.ready(self.gateway_connect)
+        self.gateway.player(self.gateway_player)
+        self.gateway.player_update(self.gateway_player_update)
+
+        # Reload
         await self.gateway.close()
         self.gateway.start()
 

@@ -120,7 +120,7 @@ class TestHoyolabMethods(IsolatedAsyncioTestCase):
             },
             {
                 "genshin": mock.MagicMock(current_resin=160),
-                "starrail": mock.MagicMock(current_stamina=175)
+                "starrail": mock.MagicMock(current_stamina=225)
             },
         ]
 
@@ -165,7 +165,7 @@ class TestHoyolabMethods(IsolatedAsyncioTestCase):
         channel_2.send.assert_has_calls(
             [
                 mock.call(content="<@test_user_id_3>, you have already 160 resin! <a:dinkDonk:865127621112102953>"),
-                mock.call(content="<@test_user_id_3>, you have already 175 stamina! <a:dinkDonk:865127621112102953>"),
+                mock.call(content="<@test_user_id_3>, you have already 225 stamina! <a:dinkDonk:865127621112102953>"),
             ],
             any_order=False,
         )
