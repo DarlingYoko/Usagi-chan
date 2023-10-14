@@ -271,6 +271,14 @@ class UsagiLanguage(Base, ModelAdmin):
     lang = Column(Text)
 
 
+class UsagiBirthday(Base, ModelAdmin):
+    __tablename__ = "usagi_birthday"
+    id = Column(Integer, primary_key=True)
+    guild_id = Column(BigInteger)
+    user_id = Column(BigInteger)
+    date = Column(DateTime)
+
+
 async def create_tables():
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)

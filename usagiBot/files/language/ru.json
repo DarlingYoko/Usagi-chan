@@ -3,6 +3,9 @@
     "Model": "Модель - {cur_model}",
     "Something went wrong": "Что-то пошло не так, попробуй ещё раз позже.",
 
+    "This user already added in birthday list": "Пользователь уже есть списке, если ты хочешь изменить его, удали сначала.",
+    "This user isn't in birthday list": "Пользователя нет в списке, добавь его сначала.",
+
     "This command doesn't exist": "Этой команды не существует.",
     "You can use this command in": "Ты сможешь сможешь использовать команду через {retry_after}с",
     "This command was not configured": "Эта команда не настроена. Свяжитесь с администрацией сервера.",
