@@ -3,10 +3,10 @@ from typing import Dict
 
 from usagiBot.db.models import UsagiConfig
 from usagiBot.env import HOYOLAB_CLIENT_ID, HOYOLAB_CLIENT_SECRET
-from usagiBot.src.UsagiChecks import check_cog_whitelist, is_owner
-from usagiBot.src.UsagiErrors import UsagiModuleDisabledError
-from usagiBot.src.UsagiUtils import get_embed
 from usagiBot.cogs.Hoyolab.genshin_utils import *
+from usagiBot.src.UsagiUtils import get_embed
+from usagiBot.src.UsagiChecks import check_is_already_set_up, check_cog_whitelist
+from usagiBot.src.UsagiErrors import UsagiModuleDisabledError
 
 from discord.ext import commands, tasks
 from discord import SlashCommandGroup, WebhookMessage
@@ -343,6 +343,9 @@ class Hoyolab(commands.Cog):
         description="Follow your resin in Hoyolab!",
         description_localizations={"ru": "Отслеживайте свою смолу и получайте дейли отметки в Хоёлабе!"},
         command_tag="genshin",
+        checks=[
+            check_is_already_set_up().predicate
+        ],
     )
 
     @hoyolab.command(
