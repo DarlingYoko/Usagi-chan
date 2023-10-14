@@ -201,7 +201,7 @@ class Main(commands.Cog):
             date: str,
     ) -> None:
         try:
-            datetime_obj = datetime.strptime(date, "%m.%d.%Y %H:%M:%S")
+            datetime_obj = datetime.strptime(date, "%d.%m.%Y %H:%M:%S")
         except ValueError or KeyError:
             return await ctx.respond(
                 embed=get_embed(
