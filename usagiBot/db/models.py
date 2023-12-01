@@ -277,6 +277,15 @@ class UsagiBirthday(Base, ModelAdmin):
     guild_id = Column(BigInteger)
     user_id = Column(BigInteger)
     date = Column(DateTime)
+    name = Column(Text)
+
+
+class UsagiBirthdayTimer(Base, ModelAdmin):
+    __tablename__ = "usagi_birthday_timer"
+    id = Column(Integer, primary_key=True)
+    guild_id = Column(BigInteger)
+    channel_id = Column(BigInteger)
+    enable = Column(Boolean)
 
 
 async def create_tables():

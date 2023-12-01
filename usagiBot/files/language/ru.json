@@ -5,6 +5,11 @@
 
     "This user already added in birthday list": "Пользователь уже есть списке, если ты хочешь изменить его, удали сначала.",
     "This user isn't in birthday list": "Пользователя нет в списке, добавь его сначала.",
+    "There is no timer setted": "На этом сервере нет таймера",
+    "Disabled birthday timer": "Удалила таймер дня рождения",
+    "Enabled birthday timer": "Включила таймер дня рождения",
+    "Updated birthday timer": "Обновила таймер дня рождения",
+    "Added birthday timer": "Добавила таймер дня рождения",
 
     "This command doesn't exist": "Этой команды не существует.",
     "You can use this command in": "Ты сможешь сможешь использовать команду через {retry_after}с",
