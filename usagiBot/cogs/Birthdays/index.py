@@ -83,13 +83,19 @@ class Birthday(commands.Cog):
             guild = await self.bot.fetch_guild(timer.guild_id)
             channel = await guild.fetch_channel(timer.channel_id)
             users_data = await UsagiBirthday.get_all_by(guild_id=timer.guild_id)
-            user_birthday = sorted(users_data, key=lambda x: x.date)[0]
-            text = f"До др {user_birthday.name}"
+            user_birthdays = sorted(users_data, key=lambda x: x.date)
+            br_data = datetime.now()
+            for user_birthday in user_birthdays:
+                if br_data < user_birthday.date:
+                    br_data = user_birthday.date
+                    break
+
+            text = f"До др {br_data.name}"
             category_id = channel.category_id
             category = await guild.fetch_channel(category_id)
             if category.name != text:
                 await category.edit(name=text, reason="Update birthday timer.")
-            delta = user_birthday.date - time_now
+            delta = br_data.date - time_now
             s = delta.seconds
             hours, remainder = divmod(s, 3600)
             minutes, seconds = divmod(remainder, 60)
@@ -134,7 +140,7 @@ class Birthday(commands.Cog):
     )
     @discord.commands.option(
         name="name",
-        name_localizations={"ru": "месяц"},
+        name_localizations={"ru": "имя"},
         required=False
     )
     async def birthday_add(self, ctx, user: discord.User, day: int, month: int, name: str = ""):
@@ -203,7 +209,7 @@ class Birthday(commands.Cog):
         name="channel",
         name_localizations={"ru": "канал"},
     )
-    async def add_timer(self, ctx, channel: discord.VoiceChannel):
+    async def add_birthday_timer(self, ctx, channel: discord.VoiceChannel):
         guild = await UsagiBirthdayTimer.get(guild_id=ctx.guild.id)
         if guild:
             await UsagiBirthdayTimer.update(id=guild.id, channel=channel.id)
