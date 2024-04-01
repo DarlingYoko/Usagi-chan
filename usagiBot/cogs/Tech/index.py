@@ -4,7 +4,7 @@ from datetime import timedelta
 
 from discord.ext.commands import ColorConverter
 
-from usagiBot.src.UsagiChecks import check_cog_whitelist, check_correct_channel_command
+from usagiBot.src.UsagiChecks import check_cog_whitelist, check_correct_channel_command, check_member_is_moder
 from usagiBot.src.UsagiErrors import UsagiModuleDisabledError
 from usagiBot.cogs.Tech.tech_utils import *
 
@@ -24,6 +24,12 @@ class Tech(commands.Cog):
     async def pin_message(self, ctx, message: discord.Message) -> None:
         await message.pin(reason=f"Pinned by {ctx.author.name}")
         await ctx.respond(_("Message was pinned"), ephemeral=True)
+
+    @commands.slash_command()
+    @commands.check(check_member_is_moder)
+    async def purge(self, ctx, limit: int):
+        await ctx.channel.purge(limit = limit + 1)
+        await ctx.respond('Успешно удалила', delete_after = 10)
 
     @commands.slash_command(
         name="sleep",
