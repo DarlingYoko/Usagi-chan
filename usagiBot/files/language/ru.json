@@ -57,7 +57,7 @@
     "Stamina count": "Топливо:",
     "Realm currency": "Монеты в чайнике:",
     "Dailies": "Дейлик:",
-    "resin_cap": "{resin_count}160 смолы\n<t:{resin_timer}:R>",
+    "resin_cap": "{resin_count}200 смолы\n<t:{resin_timer}:R>",
     "stamina_cap": "{resin_count}240 топлива\n<t:{resin_timer}:R>",
     "realm_cap": "{realm_count}{max_realm_currency} монет\n<t:{realm_timer}:R>",
     "Completed": "_ _\nВыполнено: {completed_commissions}\nПолучена награда: {daily_withdrawn}",

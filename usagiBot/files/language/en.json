@@ -57,7 +57,7 @@
     "Stamina count": "Trailblaze power count:",
     "Realm currency": "Realm currency:",
     "Dailies": "Dailies:",
-    "resin_cap": "{resin_count}160 resin\n<t:{resin_timer}:R>",
+    "resin_cap": "{resin_count}200 resin\n<t:{resin_timer}:R>",
     "stamina_cap": "{resin_count}240 trailblaze power\n<t:{resin_timer}:R>",
     "realm_cap": "{realm_count}{max_realm_currency} realm\n<t:{realm_timer}:R>",
     "Completed": "_ _\nCompleted: {completed_commissions}\nWithdrawn: {daily_withdrawn}",
