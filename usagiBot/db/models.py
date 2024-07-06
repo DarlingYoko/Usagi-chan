@@ -207,6 +207,9 @@ class UsagiHoyolab(Base, ModelAdmin):
     starrail_daily_sub = Column(Boolean)
     starrail_resin_sub = Column(Boolean)
     starrail_resin_sub_notified = Column(Boolean)
+    zzz_daily_sub = Column(Boolean)
+    zzz_resin_sub = Column(Boolean)
+    zzz_resin_sub_notified = Column(Boolean)
 
 
 class UsagiSaveRoles(Base, ModelAdmin):

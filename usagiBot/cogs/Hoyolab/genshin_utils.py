@@ -57,7 +57,7 @@ class HoyolabAPI:
             return False
 
         data = {}
-        for source in ["starrail", "genshin"]:
+        for source in ["starrail", "genshin", "zzz"]:
             try:
                 res = await getattr(self.client, f"get_{source}_notes")()
                 data[source] = res
@@ -111,6 +111,7 @@ class HoyolabAPI:
 def generate_fields(data) -> list[discord.EmbedField]:
     genshin_data = data.get("genshin", None)
     starrail_data = data.get("starrail", None)
+    zzz_data = data.get("zzz", None)
     fields = []
 
     if genshin_data:
@@ -166,10 +167,9 @@ def generate_fields(data) -> list[discord.EmbedField]:
         )
 
         stamina_text = red_text if starrail_data.current_stamina >= 220 else blue_text
-
         stamina_count = stamina_text.substitute({"count": starrail_data.current_stamina})
 
-        expeditions = starrail_data.accepted_epedition_num
+        expeditions = starrail_data.accepted_expedition_num
         total_expeditions = starrail_data.total_expedition_num
 
         fields += [
@@ -186,6 +186,48 @@ def generate_fields(data) -> list[discord.EmbedField]:
                     expeditions_count=expeditions,
                     max_expeditions=total_expeditions
                 ),
+                inline=True,
+            ),
+            discord.EmbedField(
+                name="_ _",
+                value="_ _",
+                inline=True,
+            ),
+        ]
+
+    if zzz_data:
+        energy_timer = int(
+            datetime.now().timestamp() + zzz_data.battery_charge.seconds_till_full
+        )
+
+        energy_text = red_text if zzz_data.battery_charge.current >= zzz_data.battery_charge.max - 20 else blue_text
+        energy_count = energy_text.substitute({"count": zzz_data.battery_charge.current})
+
+        engagement = zzz_data.engagement.current
+        engagement_max = zzz_data.engagement.max
+
+        scratch_card_completed = green_tick if zzz_data.scratch_card_completed else red_thick
+
+        fields += [
+            discord.EmbedField(
+                name=_("Energy count"),
+                value=_("energy_cap").format(
+                    energy_count=energy_count, energy_timer=energy_timer
+                ),
+                inline=True,
+            ),
+            discord.EmbedField(
+                name=_("Engagement"),
+                value=_("engagement count").format(
+                    engagement_count=engagement,
+                    engagement_max=engagement_max,
+                    scratch_card_completed=scratch_card_completed
+                ),
+                inline=True,
+            ),
+            discord.EmbedField(
+                name="_ _",
+                value="_ _",
                 inline=True,
             ),
         ]
@@ -245,6 +287,9 @@ def generate_all_subs_fields(user):
     starrail_resin_notify = green_tick if user.starrail_resin_sub else red_thick
     starrail_daily_reward = green_tick if user.starrail_daily_sub else red_thick
 
+    zzz_resin_notify = green_tick if user.zzz_resin_sub else red_thick
+    zzz_daily_reward = green_tick if user.zzz_daily_sub else red_thick
+
     daily_notify_sub = green_tick if user.daily_notify_sub else red_thick
 
     fields = [
@@ -278,6 +323,25 @@ def generate_all_subs_fields(user):
             name="_ _",
             value=_("starrail_daily_reward_text").format(
                 daily_reward=starrail_daily_reward
+            ),
+            inline=True,
+        ),
+        discord.EmbedField(
+            name="_ _",
+            value="_ _",
+            inline=True,
+        ),
+        discord.EmbedField(
+            name="_ _",
+            value=_("zzz_resin_notify_text").format(
+                resin_notify=zzz_resin_notify
+            ),
+            inline=True,
+        ),
+        discord.EmbedField(
+            name="_ _",
+            value=_("zzz_daily_reward_text").format(
+                daily_reward=zzz_daily_reward
             ),
             inline=True,
         ),

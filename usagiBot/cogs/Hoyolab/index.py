@@ -43,6 +43,14 @@ class SelectSubsView(discord.ui.View):
                 value="starrail_daily",
             ),
             discord.SelectOption(
+                label="ZZZ resin notify",
+                value="zzz_resin",
+            ),
+            discord.SelectOption(
+                label="ZZZ daily claim",
+                value="zzz_daily",
+            ),
+            discord.SelectOption(
                 label="Daily reward notify",
                 description="Notify you about to claim daily reward.",
                 value="daily_notify",
@@ -60,6 +68,10 @@ class SelectSubsView(discord.ui.View):
                     self.user.starrail_resin_sub = not self.user.starrail_resin_sub
                 case "starrail_daily":
                     self.user.starrail_daily_sub = not self.user.starrail_daily_sub
+                case "zzz_resin":
+                    self.user.zzz_resin_sub = not self.user.zzz_resin_sub
+                case "zzz_daily":
+                    self.user.zzz_daily_sub = not self.user.zzz_daily_sub
                 case "daily_notify":
                     self.user.daily_notify_sub = not self.user.daily_notify_sub
                 case _:
@@ -80,6 +92,8 @@ class SelectSubsView(discord.ui.View):
             daily_notify_sub=self.user.daily_notify_sub,
             starrail_daily_sub=self.user.starrail_daily_sub,
             starrail_resin_sub=self.user.starrail_resin_sub,
+            zzz_daily_sub=self.user.zzz_daily_sub,
+            zzz_resin_sub=self.user.zzz_resin_sub,
         )
         await interaction.response.edit_message(embed=embed)
 
@@ -181,9 +195,11 @@ class Hoyolab(commands.Cog):
             )
             genshin_data = data.get("genshin", None)
             starrail_data = data.get("starrail", None)
+            zzz_data = data.get("zzz", None)
 
-            if genshin_data is None and starrail_data is None:
+            if genshin_data is None and starrail_data is None and zzz_data is None:
                 continue
+
             if genshin_data and genshin_data.current_resin < 190:
                 if user.genshin_resin_sub_notified:
                     await UsagiHoyolab.update(id=user.id, genshin_resin_sub_notified=False)
@@ -191,6 +207,10 @@ class Hoyolab(commands.Cog):
             if starrail_data and starrail_data.current_stamina < 220:
                 if user.starrail_resin_sub_notified:
                     await UsagiHoyolab.update(id=user.id, starrail_resin_sub_notified=False)
+
+            if zzz_data and zzz_data.battery_charge.current < 220:
+                if user.zzz_resin_sub_notified:
+                    await UsagiHoyolab.update(id=user.id, zzz_resin_sub_notified=False)
 
             lang = self.bot.language.get(user.user_id, "en")
             if user.genshin_resin_sub and not user.genshin_resin_sub_notified and genshin_data.current_resin >= 190:
@@ -207,6 +227,14 @@ class Hoyolab(commands.Cog):
                 )
                 await channel.send(content=notify_text)
                 await UsagiHoyolab.update(id=user.id, starrail_resin_sub_notified=True)
+
+            if user.zzz_resin_sub and not user.zzz_resin_sub_notified and zzz_data.battery_charge.current >= 220:
+                notify_text = self.bot.i18n.get_text("energy cap", lang).format(
+                    user_id=user.user_id,
+                    current_energy=zzz_data.battery_charge.current
+                )
+                await channel.send(content=notify_text)
+                await UsagiHoyolab.update(id=user.id, zzz_resin_sub_notified=True)
 
     @check_resin_overflow.before_loop
     async def before_check_resin_overflow(self):
@@ -255,7 +283,10 @@ class Hoyolab(commands.Cog):
         time_in_moscow = datetime.now(moscow_tz)
         if time_in_moscow.hour != 19:
             return
-        users = await UsagiHoyolab.get_all_by_or(genshin_daily_sub=True, starrail_daily_sub=True)
+        users = await UsagiHoyolab.get_all_by_or(
+            genshin_daily_sub=True,
+            starrail_daily_sub=True,
+            zzz_daily_sub=True)
         channels = []
         out_date_cookies = []
 
@@ -280,6 +311,12 @@ class Hoyolab(commands.Cog):
                     guild_id=user.guild_id,
                     user_id=user.user_id,
                     game=genshin.Game.STARRAIL
+                )
+            if user.zzz_daily_sub:
+                respone = await genshin_api.claim_daily_reward(
+                    guild_id=user.guild_id,
+                    user_id=user.user_id,
+                    game=genshin.Game.ZZZ
                 )
             if respone == "InvalidCookies":
                 out_date_cookies.append((user.user_id, channel))
@@ -311,8 +348,9 @@ class Hoyolab(commands.Cog):
     async def primogems_link(self, ctx):
         link_1 = ("<https://docs.google.com/spreadsheets/d/1l9HPu2cAzTckdXtr7u-7D8NSKzZNUqOuvbmxERFZ_6w/edit#gid=955728278>")
         link_2 = ("<https://docs.google.com/spreadsheets/d/e/2PACX-1vRIWjzFwAZZoBvKw2oiNaVpppI9atoV0wxuOjulKRJECrg_BN404d7LoKlHp8RMX8hegDr4b8jlHjYy/pubhtml>")
+        link_3 = ("<https://docs.google.com/spreadsheets/u/0/d/1nGCs3jx1nVysEdH-2CliKEMj7KIwhILUMXTkQKDQoJA/htmlview#gid=0>")
         answer = _("links to primogems")
-        text = "\n".join([answer, link_1, link_2])
+        text = "\n".join([answer, link_1, link_2, link_3])
         return await ctx.reply(text)
 
     @commands.command(name="forum", aliases=["форум"])
