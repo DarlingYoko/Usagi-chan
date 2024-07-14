@@ -16,7 +16,7 @@ from usagiBot.src.UsagiChecks import check_is_already_set_up, check_cog_whitelis
 from usagiBot.src.UsagiErrors import UsagiModuleDisabledError
 
 
-def get_days(ctx: discord.AutocompleteContext,):
+def get_days(ctx: discord.AutocompleteContext, ):
     return [str(x) for x in range(1, 32)]
 
 
@@ -84,11 +84,14 @@ class Birthday(commands.Cog):
             channel = await guild.fetch_channel(timer.channel_id)
             users_data = await UsagiBirthday.get_all_by(guild_id=timer.guild_id)
             user_birthdays = sorted(users_data, key=lambda x: x.date)
-            br_data = datetime.now()
+            br_data = None
             for user_birthday in user_birthdays:
-                if br_data < user_birthday.date:
+                if time_now < user_birthday.date:
                     br_data = user_birthday
                     break
+
+            if br_data is None:
+                return
 
             text = f"До др {br_data.name}"
             category_id = channel.category_id
@@ -103,7 +106,7 @@ class Birthday(commands.Cog):
             if delta.days:
                 time += f"{delta.days} d."
             time += f" {hours} h. {minutes} m."
-            await asyncio.sleep(10*60)
+            await asyncio.sleep(10 * 60)
             await channel.edit(name=time, reason="Update birthday timer.")
 
     @update_birthday_timer.before_loop
