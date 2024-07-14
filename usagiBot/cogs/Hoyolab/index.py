@@ -200,7 +200,7 @@ class Hoyolab(commands.Cog):
             if genshin_data is None and starrail_data is None and zzz_data is None:
                 continue
 
-            if genshin_data and genshin_data.current_resin < 190:
+            if genshin_data and genshin_data.current_resin < 180:
                 if user.genshin_resin_sub_notified:
                     await UsagiHoyolab.update(id=user.id, genshin_resin_sub_notified=False)
 
@@ -213,7 +213,7 @@ class Hoyolab(commands.Cog):
                     await UsagiHoyolab.update(id=user.id, zzz_resin_sub_notified=False)
 
             lang = self.bot.language.get(user.user_id, "en")
-            if user.genshin_resin_sub and not user.genshin_resin_sub_notified and genshin_data.current_resin >= 190:
+            if user.genshin_resin_sub and not user.genshin_resin_sub_notified and genshin_data.current_resin >= 180:
                 notify_text = self.bot.i18n.get_text("resin cap", lang).format(
                     user_id=user.user_id,
                     current_resin=genshin_data.current_resin

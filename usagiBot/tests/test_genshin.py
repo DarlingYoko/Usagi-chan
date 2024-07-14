@@ -115,11 +115,11 @@ class TestHoyolabMethods(IsolatedAsyncioTestCase):
                 "starrail": mock.MagicMock(current_stamina=100)
             },
             {
-                "genshin": mock.MagicMock(current_resin=155),
+                "genshin": mock.MagicMock(current_resin=195),
                 "starrail": mock.MagicMock(current_stamina=155)
             },
             {
-                "genshin": mock.MagicMock(current_resin=160),
+                "genshin": mock.MagicMock(current_resin=195),
                 "starrail": mock.MagicMock(current_stamina=225)
             },
         ]
@@ -164,7 +164,7 @@ class TestHoyolabMethods(IsolatedAsyncioTestCase):
         )
         channel_2.send.assert_has_calls(
             [
-                mock.call(content="<@test_user_id_3>, you have already 160 resin! <a:dinkDonk:865127621112102953>"),
+                mock.call(content="<@test_user_id_3>, you have already 195 resin! <a:dinkDonk:865127621112102953>"),
                 mock.call(content="<@test_user_id_3>, you have already 225 stamina! <a:dinkDonk:865127621112102953>"),
             ],
             any_order=False,
@@ -178,6 +178,7 @@ class TestHoyolabMethods(IsolatedAsyncioTestCase):
                 user_id="test_user_id_1",
                 genshin_daily_sub=True,
                 starrail_daily_sub=False,
+                zzz_daily_sub=False,
                 id="test_user_id_1",
             ),
             mock.MagicMock(
@@ -185,6 +186,7 @@ class TestHoyolabMethods(IsolatedAsyncioTestCase):
                 user_id="test_user_id_2",
                 genshin_daily_sub=False,
                 starrail_daily_sub=True,
+                zzz_daily_sub=False,
                 id="test_user_id_2",
             ),
             mock.MagicMock(
@@ -192,6 +194,7 @@ class TestHoyolabMethods(IsolatedAsyncioTestCase):
                 user_id="test_user_id_3",
                 genshin_daily_sub=True,
                 starrail_daily_sub=False,
+                zzz_daily_sub=False,
                 id="test_user_id_3",
             ),
         ]
@@ -215,7 +218,11 @@ class TestHoyolabMethods(IsolatedAsyncioTestCase):
         ]
 
         await self.Genshin.claim_daily_reward(self.Genshin)
-        self.mock_UsagiHoyolab.get_all_by_or.assert_called_with(genshin_daily_sub=True, starrail_daily_sub=True)
+        self.mock_UsagiHoyolab.get_all_by_or.assert_called_with(
+            genshin_daily_sub=True,
+            starrail_daily_sub=True,
+            zzz_daily_sub=True
+        )
 
         self.mock_UsagiConfig.get.assert_has_calls(
             [
@@ -270,7 +277,7 @@ class TestHoyolabMethods(IsolatedAsyncioTestCase):
         self.assertEqual(fields[0].name, "Resin count:")
         self.assertEqual(
             fields[0].value,
-            "```ansi\n[2;31m[2;34m100[0m[2;31m[0m```160 resin\n<t:985194000:R>",
+            "```ansi\n[2;31m[2;34m100[0m[2;31m[0m```200 resin\n<t:985194000:R>",
         )
         self.assertEqual(fields[0].inline, True)
         self.assertEqual(fields[1].name, "Realm currency:")
