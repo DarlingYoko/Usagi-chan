@@ -18,51 +18,51 @@ class HoyolabAPI:
     def __init__(self):
         self.client = genshin.Client(game=genshin.Game.GENSHIN)
 
-    async def set_cookies(self, guild_id, user_id) -> bool:
-        user = await UsagiHoyolab.get(guild_id=guild_id, user_id=user_id)
+    async def set_cookies(self, db_id) -> bool:
+        user = await UsagiHoyolab.get(id=db_id)
         if user is None:
             return False
         self.client.set_cookies(
-            ltuid=user.ltuid,
-            ltoken=user.ltoken,
-            cookie_token=user.cookie_token,
-            account_id_v2=user.ltuid,
+            ltuid_v2=user.ltuid_v2,
+            ltmid_v2=user.ltmid_v2,
+            account_id_v2=user.ltuid_v2,
+            ltoken_v2=user.ltoken_v2,
+            cookie_token_v2=user.cookie_token_v2,
         )
         return True
 
-    async def new_user_auth(self, guild_id, user_id, cookies):
+    async def check_cookies(self, cookies):
         self.client.set_cookies(cookies)
         try:
             await self.client.get_genshin_user(701700971)
         except genshin.InvalidCookies as e:
-            print("Error in new_user_auth -", e)
+            print("Error in check_cookies -", e)
             return False
-        user = await UsagiHoyolab.get(guild_id=guild_id, user_id=user_id)
-        if user is None:
-            await UsagiHoyolab.create(
-                guild_id=guild_id,
-                user_id=user_id,
-                cookies=cookies,
-            )
-        else:
-            await UsagiHoyolab.update(
-                id=user.id,
-                cookies=cookies,
-            )
         return True
 
-    async def get_user_data(self, guild_id, user_id):
-        cookies_result = await self.set_cookies(guild_id=guild_id, user_id=user_id)
+    async def get_user_data(self, db_id):
+        cookies_result = await self.set_cookies(db_id=db_id)
         if not cookies_result:
             return False
 
-        data = {}
+        user = await self.client.get_hoyolab_user()
+        data = {
+            "nickname": user.nickname,
+            "icon": user.icon,
+            "geetest_error": None,
+        }
         for source in ["starrail", "genshin", "zzz"]:
             try:
                 res = await getattr(self.client, f"get_{source}_notes")()
                 data[source] = res
-            except (genshin.errors.InvalidCookies, genshin.errors.AccountNotFound):
-                print(f"Skipped user in get user data - {user_id}")
+            except (
+                    genshin.errors.InvalidCookies,
+                    genshin.errors.AccountNotFound,
+                    genshin.errors.InternalDatabaseError
+            ):
+                pass
+            except genshin.errors.GeetestError:
+                data["geetest_error"] = source
 
         return data
 
@@ -88,8 +88,8 @@ class HoyolabAPI:
 
         return _("Successfully redeemed")
 
-    async def claim_daily_reward(self, guild_id, user_id, game):
-        cookies_result = await self.set_cookies(guild_id=guild_id, user_id=user_id)
+    async def claim_daily_reward(self, db_id, game):
+        cookies_result = await self.set_cookies(db_id=db_id)
         if not cookies_result:
             return False
         try:
@@ -98,13 +98,13 @@ class HoyolabAPI:
         except genshin.AlreadyClaimed:
             return False
         except genshin.errors.InvalidCookies:
-            print("Skipped user in claiming reward InvalidCookies -", user_id)
+            print("Skipped user in claiming reward InvalidCookies -", db_id)
             return "InvalidCookies"
-        except genshin.errors.GeetestTriggered:
-            print("Skipped user in claiming reward GeetestTriggered -", user_id)
+        except genshin.errors.GeetestError:
+            print("Skipped user in claiming reward GeetestError -", db_id)
             return "GeetestTriggered"
         except genshin.errors.GenshinException as e:
-            print(f"Skipped user in claiming reward {e} -", user_id)
+            print(f"Skipped user in claiming reward {e} -", db_id)
             return False
 
 
@@ -235,12 +235,12 @@ def generate_fields(data) -> list[discord.EmbedField]:
     return fields
 
 
-def generate_notes_fields(user) -> list[discord.EmbedField]:
+def generate_notes_fields() -> list[discord.EmbedField]:
     today = datetime.today()
 
     # Calculate the Abyss reset date
     if today.day < 16:
-        abyss_reset_date = datetime(year=today.year, month=today.month, day=16)
+        abyss_reset_date = datetime(year=today.year, month=today.month, day=16, hour=3)
     else:
         abyss_reset_date = (today.replace(day=1) + timedelta(days=32)).replace(
             day=1

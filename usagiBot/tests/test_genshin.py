@@ -298,7 +298,7 @@ class TestHoyolabMethods(IsolatedAsyncioTestCase):
             genshin_daily_sub=False,
             code_sub=True,
         )
-        fields = self.genshin_utils.generate_notes_fields(user)
+        fields = self.genshin_utils.generate_notes_fields()
         self.assertEqual(fields[0].name, "_ _\nAbyss reset:")
         self.assertEqual(fields[0].value, "<t:1680361200:R>")
         self.assertEqual(fields[0].inline, True)
@@ -333,6 +333,6 @@ class TestHoyolabMethods(IsolatedAsyncioTestCase):
             guild_id="test_guild_id_2", user_id="test_user_id_22"
         )
         ctx.send_followup.assert_called_with(
-            content="You are not logged in. Pls go `/hoylab login`", ephemeral=True
+            content="You are not logged in. Pls go `/hoyolab login`", ephemeral=True
         )
         self.assertEqual(test_user, None)
