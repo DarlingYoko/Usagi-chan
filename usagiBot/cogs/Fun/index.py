@@ -35,9 +35,9 @@ class Fun(commands.Cog):
     async def pong_to_usagi(self, ctx) -> None:
         await ctx.reply(_("pong ping"))
 
-    @commands.command(name="link", description="Link to my web.",)
+    @commands.command(name="link", description="Link to my webs.",)
     async def get_stats_link(self, ctx) -> None:
-        await ctx.reply(_("link on my web"))
+        await ctx.reply(_("link on my webs"))
 
     @commands.command(name="яишенка", aliases=["глазунья"], description="Как приготовить яишенку")
     async def how_to_make_fried_eggs(self, ctx) -> None:
