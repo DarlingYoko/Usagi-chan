@@ -83,4 +83,4 @@ websockets==11.0.3
 wrapt==1.15.0
 wsproto==1.2.0
 yarl==1.9.4
-yt-dlp==2023.7.6
+yt-dlp==2025.2.19
