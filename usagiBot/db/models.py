@@ -292,6 +292,14 @@ class UsagiBirthdayTimer(Base, ModelAdmin):
     channel_id = Column(BigInteger)
     enable = Column(Boolean)
 
+class UsagiTorrent(Base, ModelAdmin):
+    __tablename__ = "usagi_torrent"
+    id = Column(Integer, primary_key=True)
+    guild_id = Column(BigInteger)
+    channel_id = Column(BigInteger)
+    user_id = Column(BigInteger)
+    tag = Column(Text)
+
 
 async def create_tables():
     async with engine.begin() as conn:

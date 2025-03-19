@@ -14,6 +14,7 @@ from usagiBot.src.UsagiUtils import (
     get_embed,
     init_auto_roles,
     init_language,
+    init_qbt_client
 )
 from usagiBot.src.UsagiErrors import *
 from usagiBot.db.models import (
@@ -92,6 +93,7 @@ class Events(commands.Cog):
     @commands.Cog.listener()
     async def on_ready(self):
         await create_tables()
+        self.bot.qbt_client = await init_qbt_client(self.bot.logger)
         self.bot.command_tags = await load_all_command_tags(self.bot)
         self.bot.guild_cogs_settings = await init_cogs_settings()
         self.bot.moder_roles = await init_moder_roles()
@@ -111,7 +113,8 @@ class Events(commands.Cog):
         self.bot.logger.info("-------------------")
         await self.bot.change_presence(
             status=discord.Status.online,
-            activity=discord.Game("/help | ver 2.0 | NEW RELEASE!!"))
+            activity=discord.Game("/help | ver 2.0 | NEW RELEASE!!")
+        )
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):

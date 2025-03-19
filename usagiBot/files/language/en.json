@@ -31,6 +31,10 @@
     "message id": "Message ID: `{message_id}`",
     "based from": "Based from {mention}\\n{message}",
     "base added": "Added based message <:pidoras:1084205028090318928>",
+    "added torrent file": "Successfully added your torrent file - {filename}",
+    "added torrent url": "Successfully added your magnet link.",
+    "torrent error": "Cannot add torrent with error - {e}",
+    "torrent finished": "<@{user_id}>, Your torrent with name - `{torrent_name}` was finished.\nYou can check it in shared folder.",
 
     "Login Hoyolab account": "Login Hoyolab account",
     "Failed to auth": "Failed to auth with your data, clear cache on Hoyolab and relogin, than, try one more time.",

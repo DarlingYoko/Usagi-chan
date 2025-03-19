@@ -4,8 +4,10 @@ from typing import List, Dict
 import discord
 from discord.ext.commands._types import Error
 
-from usagiBot.env import BOT_OWNER
+from usagiBot.env import BOT_OWNER, QbittorrentHOST, QbittorrentUSERNAME, QbittorrentPASSWORD
 from usagiBot.db.models import UsagiCogs, UsagiModerRoles, UsagiAutoRoles, UsagiLanguage
+
+import qbittorrentapi
 
 
 class UsagiEmbed(discord.Embed):
@@ -125,6 +127,23 @@ async def init_auto_roles() -> Dict:
 async def init_language() -> Dict:
     langs = await UsagiLanguage.get_all()
     return {lang.user_id: lang.lang for lang in langs}
+
+async def init_qbt_client(logger) -> qbittorrentapi.Client:
+    conn_info = dict(
+        host=QbittorrentHOST,
+        username=QbittorrentUSERNAME,
+        password=QbittorrentPASSWORD,
+    )
+
+    qbt_client = qbittorrentapi.Client(**conn_info)
+
+    try:
+        qbt_client.auth_log_in()
+        logger.info("Logged in Qbittorrent")
+    except qbittorrentapi.LoginFailed as e:
+        logger.error(e)
+
+    return qbt_client
 
 
 def get_embed(

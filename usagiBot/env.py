@@ -23,3 +23,7 @@ CLIENT_ID = os.environ.get("CLIENT_ID")
 CLIENT_SECRET = os.environ.get("CLIENT_SECRET")
 
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
+
+QbittorrentHOST = os.environ.get("QbittorrentHOST")
+QbittorrentUSERNAME = os.environ.get("QbittorrentUSERNAME")
+QbittorrentPASSWORD = os.environ.get("QbittorrentPASSWORD")
