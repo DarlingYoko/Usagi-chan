@@ -1,5 +1,7 @@
 from typing import TYPE_CHECKING
 from bs4 import BeautifulSoup
+from usagiBot.env import VPN_USERNAME, VPN_PASSWORD
+
 import requests
 
 if TYPE_CHECKING:
@@ -45,3 +47,36 @@ def parse_exchange_rate(response: "Response") -> dict:
         rates[name] = {'value': value, 'change': change}
 
     return rates
+
+
+def vpn_login():
+    API_LOGIN = "https://vpn.kadroom.xyz:65531/vpn/login"
+    session = requests.Session()
+    login_data = {"username": VPN_USERNAME, "password": VPN_PASSWORD}
+    response = session.post(API_LOGIN, data=login_data)
+
+    if response.status_code != 200:
+        return None
+
+    return session
+
+def get_vpn_list():
+    API_DATA = "https://vpn.kadroom.xyz:65531/vpn/panel/api/inbounds/list"
+    session = vpn_login()
+    if session is None:
+        return None
+
+    response = session.get(API_DATA)
+    if response.status_code != 200:
+        return None
+
+    data = response.json()
+    users_stats = {}
+
+    if "obj" in data:
+        for inbound in data["obj"]:
+            for client in inbound["clientStats"]:
+                users_stats[client["email"]] = round((client["down"] + client["up"]) / (1024 ** 3), 2)
+
+    return dict(sorted(users_stats.items(), key=lambda x: x[1], reverse=True)[:10])
+

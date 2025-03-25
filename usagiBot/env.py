@@ -27,3 +27,6 @@ OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
 QbittorrentHOST = os.environ.get("QbittorrentHOST")
 QbittorrentUSERNAME = os.environ.get("QbittorrentUSERNAME")
 QbittorrentPASSWORD = os.environ.get("QbittorrentPASSWORD")
+
+VPN_USERNAME = os.environ.get("VPN_USERNAME")
+VPN_PASSWORD = os.environ.get("VPN_PASSWORD")
