@@ -2,7 +2,8 @@ import asyncio, random, qbittorrentapi
 import discord
 
 from discord.ext import commands, tasks
-from usagiBot.cogs.Fun.fun_utils import get_exchange_rate_data
+from discord import SlashCommandGroup
+from usagiBot.cogs.Fun.fun_utils import get_exchange_rate_data, get_vpn_list
 from usagiBot.db.models import UsagiConfig, UsagiTorrent
 from usagiBot.src.UsagiChecks import check_is_already_set_up, check_cog_whitelist
 from usagiBot.src.UsagiErrors import UsagiModuleDisabledError
@@ -206,7 +207,37 @@ class Fun(commands.Cog):
         await asyncio.sleep(5)
         self.bot.logger.info("Checking torrents.")
 
+    vpn = SlashCommandGroup(
+        name="vpn",
+        name_localizations={"ru": "впн"},
+        description="Check vpn info.",
+        description_localizations={"ru": "Получить информациб о впне."},
+    )
 
+    @vpn.command(
+        name="top",
+        name_localizations={"ru": "топ"},
+        description="Top of traffic used users.",
+        description_localizations={"ru": "Топ пользователей по потреблению траффика."},
+    )
+    @commands.cooldown(per=60, rate=1, type=commands.BucketType.channel)
+    async def vpn_top(self, ctx: discord.ApplicationContext):
+        top_users = get_vpn_list()
+
+        title = _("Top vpn")
+        result = list(
+            map(
+                lambda x: _("Counter vpn users").format(
+                    count=x[0],
+                    name=x[1],
+                    traffic=top_users[x[1]],
+                ),
+                enumerate(top_users),
+            )
+        )
+        result_text = "\n".join(result)
+        embed = get_embed(title=title, description=result_text)
+        await ctx.respond(embed=embed)
 
     # Message commands
     @commands.message_command(name="Get Message ID")
