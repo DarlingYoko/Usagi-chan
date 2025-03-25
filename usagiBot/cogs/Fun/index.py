@@ -228,14 +228,21 @@ class Fun(commands.Cog):
         result = list(
             map(
                 lambda x: _("Counter vpn users").format(
-                    count=x[0],
+                    count=x[0] + 1,
                     name=x[1],
                     traffic=top_users[x[1]],
                 ),
                 enumerate(top_users),
             )
         )
-        result_text = "\n".join(result)
+
+        max_len = max(len(line.split("-")[0]) for line in result)
+        formatted_result = []
+        for line in result:
+            name, traffic = line.split("- ")
+            formatted_result.append(f"{name.ljust(max_len)} - {traffic}")
+
+        result_text = "```\n" + "\n".join(formatted_result) + "\n```"
         embed = get_embed(title=title, description=result_text)
         await ctx.respond(embed=embed)
 

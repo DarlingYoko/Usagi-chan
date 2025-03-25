@@ -36,7 +36,7 @@
     "torrent error": "Cannot add torrent with error - {e}",
     "torrent finished": "<@{user_id}>, Your torrent with name - `{torrent_name}` was finished.\nYou can check it in shared folder.",
     "Top vpn": "Top vpn users by traffic.",
-    "Counter vpn users": "{count}. {name}: `{traffic}GB`",
+    "Counter vpn users": "{count}. {name} - {traffic}GB",
 
     "Login Hoyolab account": "Login Hoyolab account",
     "Failed to auth": "Failed to auth with your data, clear cache on Hoyolab and relogin, than, try one more time.",
