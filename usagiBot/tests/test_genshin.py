@@ -111,21 +111,30 @@ class TestHoyolabMethods(IsolatedAsyncioTestCase):
 
         self.mock_GenshinAPI().get_user_data.side_effect = [
             {
+                "nickname": 'aboba',
+                "icon": 'aboba_icon',
+                "geetest_error": None,
                 "genshin": mock.MagicMock(current_resin=100),
                 "starrail": mock.MagicMock(current_stamina=100)
             },
             {
+                "nickname": 'aboba',
+                "icon": 'aboba_icon',
+                "geetest_error": None,
                 "genshin": mock.MagicMock(current_resin=195),
                 "starrail": mock.MagicMock(current_stamina=155)
             },
             {
+                "nickname": 'aboba',
+                "icon": 'aboba_icon',
+                "geetest_error": None,
                 "genshin": mock.MagicMock(current_resin=195),
                 "starrail": mock.MagicMock(current_stamina=225)
             },
         ]
 
         await self.Genshin.check_resin_overflow(self.Genshin)
-        self.mock_UsagiHoyolab.get_all_by_or.assert_called_with(genshin_resin_sub=True, starrail_resin_sub=True)
+        self.mock_UsagiHoyolab.get_all_by_or.assert_called_with(genshin_resin_sub=True, starrail_resin_sub=True, zzz_resin_sub=True)
         self.mock_UsagiConfig.get.assert_has_calls(
             [
                 mock.call(guild_id="test_guild_id_1", command_tag="genshin"),
@@ -147,9 +156,9 @@ class TestHoyolabMethods(IsolatedAsyncioTestCase):
 
         self.mock_GenshinAPI().get_user_data.assert_has_calls(
             [
-                mock.call(guild_id="test_guild_id_1", user_id="test_user_id_1"),
-                mock.call(guild_id="test_guild_id_1", user_id="test_user_id_2"),
-                mock.call(guild_id="test_guild_id_2", user_id="test_user_id_3"),
+                mock.call(db_id='test_user_id_1'),
+                mock.call(db_id='test_user_id_2'),
+                mock.call(db_id='test_user_id_3'),
             ],
             any_order=False,
         )
@@ -164,8 +173,8 @@ class TestHoyolabMethods(IsolatedAsyncioTestCase):
         )
         channel_2.send.assert_has_calls(
             [
-                mock.call(content="<@test_user_id_3>, you have already 195 resin! <a:dinkDonk:865127621112102953>"),
-                mock.call(content="<@test_user_id_3>, you have already 225 stamina! <a:dinkDonk:865127621112102953>"),
+                mock.call(content='<@test_user_id_3>, you have already 195 resin on `aboba` account! <a:dinkDonk:865127621112102953>'),
+                mock.call(content='<@test_user_id_3>, you have already 225 stamina on `aboba` account! <a:dinkDonk:865127621112102953>'),
             ],
             any_order=False,
         )
@@ -243,9 +252,9 @@ class TestHoyolabMethods(IsolatedAsyncioTestCase):
         )
         self.mock_GenshinAPI().claim_daily_reward.assert_has_calls(
             [
-                mock.call(guild_id="test_guild_id_12", user_id="test_user_id_1", game=genshin.Game.GENSHIN),
-                mock.call(guild_id="test_guild_id_12", user_id="test_user_id_2", game=genshin.Game.STARRAIL),
-                mock.call(guild_id="test_guild_id_22", user_id="test_user_id_3", game=genshin.Game.GENSHIN),
+                mock.call(db_id='test_user_id_1', game=genshin.Game.GENSHIN),
+                mock.call(db_id='test_user_id_2',  game=genshin.Game.STARRAIL),
+                mock.call(db_id='test_user_id_3', game=genshin.Game.GENSHIN),
             ],
             any_order=False,
         )
