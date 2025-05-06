@@ -16,7 +16,7 @@ class OpenAIHandler(BaseAI):
         super().__init__(api_key)
 
         # Default values for gpt model
-        self._ai_model = "gpt-4o"
+        self._ai_model = "gpt-4.1"
 
     async def get_ai_model(self):
         return self._ai_model
