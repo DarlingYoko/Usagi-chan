@@ -2,17 +2,17 @@ version: '3'
 services:
     usagi-chan:
         build: .
-        volumes:
-            - .:/Usagi
+        # volumes:
+        #     - .:/Usagi
         ports:
             - "8080:8080"
         env_file:
-            - usagi-variables.env
+            - stack.env
 
     postgres:
-        image: postgres:latest
+        image: postgres:17
         env_file:
-            - usagi-variables.env
+            - stack.env
         volumes:
             - pg_data:/var/lib/postgresql/data
         ports:

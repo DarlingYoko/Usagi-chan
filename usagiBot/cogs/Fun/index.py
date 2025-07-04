@@ -17,7 +17,7 @@ from datetime import datetime
 class Fun(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.check_torrents.start()
+        # self.check_torrents.start()
 
     def cog_check(self, ctx):
         if check_cog_whitelist(self, ctx):
@@ -134,78 +134,78 @@ class Fun(commands.Cog):
             content=_("random number").format(number=number),
         )
 
-    @commands.slash_command(
-        name="torrent",
-        description="Download torrent by url or file to the shared folder.",
-        name_localizations={"ru": "торрент"},
-        description_localizations={"ru": "Скачать торрент с помощью ссылки или файла в общую папку."},
-    )
-    @discord.commands.option(
-        name="URL",
-        name_localizations={"ru": "Ссылка"},
-        required=False,
-    )
-    @discord.commands.option(
-        name="File",
-        name_localizations={"ru": "Файл"},
-        required=False,
-    )
-    async def download_torrent_file(self, ctx, url: str = None, file: discord.Attachment = None) -> None:
-        response = ''
-        added = False
-        time = datetime.now().timestamp().__floor__()
-        tag = f'{ctx.author.id}-{time}'
-        try:
-            if file:
-                bytes_file = await file.read()
-                self.bot.qbt_client.torrents_add(torrent_files=bytes_file, tags=tag)
-                response = _('added torrent file').format(filename=file.filename)
-                added = True
-            if url:
-                self.bot.qbt_client.torrents_add(urls=url, tags=tag)
-                response = _('added torrent url')
-                added = True
-        except Exception as e:
-                response=_('torrent error').format(e=e)
+    # @commands.slash_command(
+    #     name="torrent",
+    #     description="Download torrent by url or file to the shared folder.",
+    #     name_localizations={"ru": "торрент"},
+    #     description_localizations={"ru": "Скачать торрент с помощью ссылки или файла в общую папку."},
+    # )
+    # @discord.commands.option(
+    #     name="URL",
+    #     name_localizations={"ru": "Ссылка"},
+    #     required=False,
+    # )
+    # @discord.commands.option(
+    #     name="File",
+    #     name_localizations={"ru": "Файл"},
+    #     required=False,
+    # )
+    # async def download_torrent_file(self, ctx, url: str = None, file: discord.Attachment = None) -> None:
+    #     response = ''
+    #     added = False
+    #     time = datetime.now().timestamp().__floor__()
+    #     tag = f'{ctx.author.id}-{time}'
+    #     try:
+    #         if file:
+    #             bytes_file = await file.read()
+    #             self.bot.qbt_client.torrents_add(torrent_files=bytes_file, tags=tag)
+    #             response = _('added torrent file').format(filename=file.filename)
+    #             added = True
+    #         if url:
+    #             self.bot.qbt_client.torrents_add(urls=url, tags=tag)
+    #             response = _('added torrent url')
+    #             added = True
+    #     except Exception as e:
+    #             response=_('torrent error').format(e=e)
 
-        if added:
-            await UsagiTorrent.create(
-                guild_id=ctx.guild.id,
-                channel_id=ctx.channel.id,
-                user_id=ctx.author.id,
-                tag=tag
-            )
+    #     if added:
+    #         await UsagiTorrent.create(
+    #             guild_id=ctx.guild.id,
+    #             channel_id=ctx.channel.id,
+    #             user_id=ctx.author.id,
+    #             tag=tag
+    #         )
 
-        await ctx.respond(content=response)
+    #     await ctx.respond(content=response)
 
-    @tasks.loop(minutes=1)
-    async def check_torrents(self):
-        usagi_torrents = await UsagiTorrent.get_all()
-        usagi_tags = list(map(lambda x: x.tag, usagi_torrents))
-        finished_torrents = list(filter(
-            lambda x: x.state == qbittorrentapi.TorrentState.UPLOADING and x.tags in usagi_tags,
-            self.bot.qbt_client.torrents_info()
-        ))
+    # @tasks.loop(minutes=1)
+    # async def check_torrents(self):
+    #     usagi_torrents = await UsagiTorrent.get_all()
+    #     usagi_tags = list(map(lambda x: x.tag, usagi_torrents))
+    #     finished_torrents = list(filter(
+    #         lambda x: x.state == qbittorrentapi.TorrentState.UPLOADING and x.tags in usagi_tags,
+    #         self.bot.qbt_client.torrents_info()
+    #     ))
 
-        for torrent in finished_torrents:
-            db_record = list(filter(lambda x: x.tag == torrent.tags, usagi_torrents))[0]
-            guild = self.bot.get_guild(db_record.guild_id)
-            channel = await guild.fetch_channel(db_record.channel_id)
-            await channel.send(_('torrent finished').format(user_id=db_record.user_id, torrent_name=torrent.name))
+    #     for torrent in finished_torrents:
+    #         db_record = list(filter(lambda x: x.tag == torrent.tags, usagi_torrents))[0]
+    #         guild = self.bot.get_guild(db_record.guild_id)
+    #         channel = await guild.fetch_channel(db_record.channel_id)
+    #         await channel.send(_('torrent finished').format(user_id=db_record.user_id, torrent_name=torrent.name))
 
-            await UsagiTorrent.delete(
-                guild_id=guild.id,
-                channel_id=channel.id,
-                user_id=db_record.user_id,
-                tag=db_record.tag,
-            )
+    #         await UsagiTorrent.delete(
+    #             guild_id=guild.id,
+    #             channel_id=channel.id,
+    #             user_id=db_record.user_id,
+    #             tag=db_record.tag,
+    #         )
 
 
-    @check_torrents.before_loop
-    async def before_check_torrents(self):
-        await self.bot.wait_until_ready()
-        await asyncio.sleep(5)
-        self.bot.logger.info("Checking torrents.")
+    # @check_torrents.before_loop
+    # async def before_check_torrents(self):
+    #     await self.bot.wait_until_ready()
+    #     await asyncio.sleep(5)
+    #     self.bot.logger.info("Checking torrents.")
 
     vpn = SlashCommandGroup(
         name="vpn",
