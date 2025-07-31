@@ -5,6 +5,7 @@ from discord.ext import commands, tasks
 from discord import SlashCommandGroup
 from usagiBot.cogs.Fun.fun_utils import get_exchange_rate_data, get_vpn_list
 from usagiBot.db.models import UsagiConfig, UsagiTorrent
+from usagiBot.env import SHARED_FOLDER_URL
 from usagiBot.src.UsagiChecks import check_is_already_set_up, check_cog_whitelist
 from usagiBot.src.UsagiErrors import UsagiModuleDisabledError
 from usagiBot.src.UsagiUtils import get_embed
@@ -40,7 +41,7 @@ class Fun(commands.Cog):
 
     @commands.command(name="link", description="Link to my webs.",)
     async def get_stats_link(self, ctx) -> None:
-        await ctx.reply(_("link on my webs"))
+        await ctx.reply(_("link on my webs").format(shared_folder_url=SHARED_FOLDER_URL))
 
     @commands.command(name="яишенка", aliases=["глазунья"], description="Как приготовить яишенку")
     async def how_to_make_fried_eggs(self, ctx) -> None:
@@ -223,6 +224,8 @@ class Fun(commands.Cog):
     @commands.cooldown(per=60, rate=1, type=commands.BucketType.channel)
     async def vpn_top(self, ctx: discord.ApplicationContext):
         top_users = get_vpn_list()
+        if top_users is None:
+            await ctx.respond('No data', ephemeral=True)
 
         title = _("Top vpn")
         result = list(
