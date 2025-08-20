@@ -10,7 +10,7 @@ from usagiBot.env import (
     CLIENT_SECRET,
 )
 from twitchAPI.twitch import Twitch
-from twitchAPI.type import AuthScope
+from twitchAPI.types import AuthScope
 from easy_pil import Editor
 from PIL import Image, ImageFont, ImageOps
 from discord import File
