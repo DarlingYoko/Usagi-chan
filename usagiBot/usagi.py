@@ -25,6 +25,7 @@ bot.command_tags = []
 bot.wordle_games = {}
 bot.language = {}
 bot.ai_questions = {}
+bot.ai_messages = {}
 
 # Define cogs
 for cog_name in os.listdir(COGS_DIR):
