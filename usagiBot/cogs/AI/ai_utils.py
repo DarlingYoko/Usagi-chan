@@ -5,15 +5,10 @@ from usagiBot.src.UsagiErrors import OpenAIError
 from pycord18n.extension import _
 
 
-class BaseAI:
+class OpenAIHandler:
+
     def __init__(self, api_key):
         self._api_key = api_key
-
-
-class OpenAIHandler(BaseAI):
-
-    def __init__(self, api_key):
-        super().__init__(api_key)
 
         # Default values for gpt model
         self._ai_model = "gpt-4.1"
@@ -21,14 +16,16 @@ class OpenAIHandler(BaseAI):
     async def get_ai_model(self):
         return self._ai_model
 
-    async def generate_answer(self, question: str, counter: int = 0):
+    async def generate_answer(self, messages, model = None, counter: int = 0):
+        if model is None:
+            model = await self.get_ai_model()
         try:
             response = await openai_async.chat_complete(
                 self._api_key,
                 timeout=200,
                 payload={
-                    "model": await self.get_ai_model(),
-                    "messages": [{"role": "user", "content": question}],
+                    "model": model,
+                    "messages": messages,
                 },
             )
 
@@ -39,7 +36,7 @@ class OpenAIHandler(BaseAI):
             if response.status_code in retry_codes:
                 if counter != 20:
                     await asyncio.sleep(2)
-                    return await self.generate_answer(question, counter + 1)
+                    return await self.generate_answer(messages, counter + 1)
                 else:
                     return _("Something went wrong")
             else:

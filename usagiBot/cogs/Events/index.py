@@ -397,64 +397,6 @@ class Events(commands.Cog):
         if message.stickers:
             member["stickers"] += len(message.stickers)
 
-        if message.channel.id in [858093764408508436, 858053937008214018]:
-            if self.bot.ai_messages.get(message.channel.id, None) is None:
-                self.bot.ai_messages[message.channel.id] = []
-
-            self.bot.ai_messages[message.channel.id].append(
-                {
-                    "role": "user",
-                    "content": f"[{message.author.name}]: {message.content}"
-                }
-            )
-            self.bot.logger.info(self.bot.ai_messages)
-
-            if self.bot.user in message.mentions:
-                chat_history = self.bot.ai_messages.get(message.channel.id, [])
-
-                context = [{"role": "system", "content": "Ты — весёлая и немного саркастичная девочка-зайка-бот. Тебя зовут Usagi-chan и тебя написал Ёка(Yoko). "
-                                  "Используй сообщения ниже как историю сообщений чтобы подстроится под них и частично взять их стилистику"
-                                  "Ты иногда используешь эмодзи, но не очень часто, только там где это надо."
-                                  "Ты отвечаешь на сообщение где было твое упоминание <@801153197552304129>"
-                                  "В таком формате [Yoko]: указан никнейм отправителя сообщения."
-                                  "Отвечай довольно коротко, пары предложений достаточно."
-                                  # "Также вот пара слов нашего жаргона чтобы ты понимала нас"
-                                  # "Гашня - Геншин - игра Genshin Impact"
-                            }]
-                context.extend(chat_history[-20:])
-
-                self.bot.logger.info(context)
-
-                from usagiBot.env import OPENAI_API_KEY
-                import openai_async
-
-                reply = "Не удалось придумать ответ <:iconUSAGI_error:884137564724953138>"
-                try:
-                    response = await openai_async.chat_complete(
-                        OPENAI_API_KEY,
-                        timeout=200,
-                        payload={
-                            "model": "gpt-4.1",
-                            "messages": context,
-                            "temperature": 0.8,
-                        },
-                    )
-
-                    if response.status_code == 200:
-                        reply = response.json()["choices"][0]["message"]["content"]
-                        reply = reply.replace("[Usagi-chan]: ", "")
-
-                    self.bot.ai_messages[message.channel.id].append(
-                        {
-                            "role": "assistant",
-                            "content": reply
-                        }
-                    )
-                except Exception as e:
-                    self.bot.logger.error(e)
-
-                await message.reply(reply)
-
 
 def setup(bot):
     bot.add_cog(Events(bot))

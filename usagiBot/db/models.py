@@ -300,6 +300,13 @@ class UsagiTorrent(Base, ModelAdmin):
     user_id = Column(BigInteger)
     tag = Column(Text)
 
+class UsagiAIFacts(Base, ModelAdmin):
+    __tablename__ = "usagi_ai_facts"
+    id = Column(Integer, primary_key=True)
+    guild_id = Column(BigInteger)
+    user_id = Column(BigInteger)
+    facts = Column(Text)
+
 
 async def create_tables():
     async with engine.begin() as conn:
