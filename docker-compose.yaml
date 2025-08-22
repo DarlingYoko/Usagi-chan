@@ -10,7 +10,7 @@ services:
             - stack.env
 
     postgres:
-        image: postgres:17
+        image: pgvector/pgvector:pg17
         env_file:
             - stack.env
         volumes:

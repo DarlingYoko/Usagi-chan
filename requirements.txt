@@ -50,6 +50,7 @@ numpy==1.24.3
 openai-async==0.0.3
 packaging==23.1
 pathspec==0.11.1
+pgvector==0.4.1
 Pillow==9.5.0
 platformdirs==3.5.1
 pluggy==1.0.0

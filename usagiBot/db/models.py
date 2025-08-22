@@ -3,6 +3,7 @@ from sqlalchemy import Text, BigInteger, Boolean, Column, Integer, DateTime, For
 from sqlalchemy import update as sqlalchemy_update
 from sqlalchemy import delete as sqlalchemy_delete
 from sqlalchemy.future import select
+from pgvector.sqlalchemy import Vector
 
 
 class ModelAdmin:
@@ -128,6 +129,29 @@ class ModelAdmin:
                 results = await session.execute(query)
                 config = results.scalars().first()
                 return config
+
+    @classmethod
+    async def get_last_n(cls, channel_id, limit):
+        query = select(cls).where(cls.channel_id == channel_id).order_by(cls.id.desc()).limit(limit)
+        async with async_session() as session:
+            async with session.begin():
+                results = await session.execute(query)
+                objects = results.scalars().all()
+                return objects
+
+    @classmethod
+    async def get_memory(cls, user_id: int, query_vec, limit: int = 10):
+        query = (
+            select(cls)
+             .where(cls.user_id == user_id)
+             .order_by(cls.embedding.l2_distance(query_vec))
+             .limit(limit)
+        )
+        async with async_session() as session:
+            async with session.begin():
+                results = await session.execute(query)
+                messages = results.scalars().all()
+                return messages
 
 
 class UsagiConfig(Base, ModelAdmin):
@@ -306,6 +330,15 @@ class UsagiAIFacts(Base, ModelAdmin):
     guild_id = Column(BigInteger)
     user_id = Column(BigInteger)
     facts = Column(Text)
+
+class UsagiAIMemory(Base, ModelAdmin):
+    __tablename__ = "usagi_ai_memory"
+    id = Column(Integer, primary_key=True)
+    guild_id = Column(BigInteger)
+    channel_id = Column(BigInteger)
+    user_id = Column(BigInteger)
+    message = Column(Text)
+    embedding = Column(Vector(1536))
 
 
 async def create_tables():
