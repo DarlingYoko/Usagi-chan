@@ -57,10 +57,11 @@ class OpenAICog(commands.Cog):
         if message.author == self.bot.user or message.author.bot:
             return
 
-        if message.channel.id in [858093764408508436, 858053937008214018] and self.bot.user in message.mentions: #piltover + bar
-        # if message.channel.id in [807349536321175582]: # test
+        if message.channel.id in [858093764408508436, 858053937008214018] and self.bot.user in message.mentions:
             self.bot.logger.info('Got new message')
-            response_status, embed_text = await self.chat_gpt.generate_embedding(message.content)
+
+            content = message.content.replace('<@801153197552304129>', '')
+            response_status, embed_text = await self.chat_gpt.generate_embedding(content)
             self.bot.logger.info('Got embed for message')
 
             if response_status != 200:
@@ -70,7 +71,7 @@ class OpenAICog(commands.Cog):
             if self.bot.ai_facts_buffer.get(message.author.id, None) is None:
                 self.bot.ai_facts_buffer[message.author.id] = []
 
-            self.bot.ai_facts_buffer[message.author.id].append(message.content)
+            self.bot.ai_facts_buffer[message.author.id].append(content)
 
             if len(self.bot.ai_facts_buffer[message.author.id]) > 20:
                 self.bot.logger.info('Start uploading facts')
@@ -137,7 +138,7 @@ class OpenAICog(commands.Cog):
                     *chat_context,
                     {
                         "role": "user",
-                        "content": f"[User Question]\n{message.content}"
+                        "content": f"[User Question]\n{content}"
                     }
                 ]
                 self.bot.logger.info('Final context')
@@ -170,7 +171,7 @@ class OpenAICog(commands.Cog):
                 guild_id=message.guild.id,
                 channel_id=message.channel.id,
                 user_id=message.author.id,
-                message=message.content,
+                message=content,
                 embedding=embed_text
             )
             self.bot.logger.info('Embed added to vector table')
