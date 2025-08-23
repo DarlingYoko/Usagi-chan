@@ -131,8 +131,8 @@ class ModelAdmin:
                 return config
 
     @classmethod
-    async def get_last_n(cls, channel_id, limit):
-        query = select(cls).where(cls.channel_id == channel_id).order_by(cls.id.desc()).limit(limit)
+    async def get_last_n(cls, channel_id, user_id, limit):
+        query = select(cls).where(and_(cls.channel_id == channel_id, cls.user_id == user_id)).order_by(cls.id.desc()).limit(limit)
         async with async_session() as session:
             async with session.begin():
                 results = await session.execute(query)

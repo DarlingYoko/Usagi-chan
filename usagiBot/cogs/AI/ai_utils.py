@@ -37,7 +37,7 @@ class OpenAIHandler:
             if response.status_code in retry_codes:
                 if counter != 20:
                     await asyncio.sleep(2)
-                    return await self.generate_answer(messages, counter + 1)
+                    return await self.generate_answer(messages, model, counter + 1)
                 else:
                     return 400, _("Something went wrong")
             else:
@@ -77,14 +77,14 @@ class OpenAIHandler:
         context_facts = [
             {"role": "system",
              "content": "Извлеки важные факты о пользователе для будущего общения. Если фактов нет — верни пустую строку. "
-                        "Ответь коротко и просто перечисли факты через запятую"},
+                        "Выдели 3-4 главных факта и только"},
             {"role": "user", "content": facts},
             {"role": "system", "content": "Также вот эти факты ты уже знаешь об этом пользователе"},
             {"role": "user", "content": known_facts},
         ]
 
 
-        response_status, response = await self.generate_answer(context_facts)
+        response_status, response = await self.generate_answer(context_facts, 'gpt-5-mini')
         if response_status != 200:
             return
 
