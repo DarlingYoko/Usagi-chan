@@ -86,9 +86,10 @@ class OpenAIHandler:
 
         response_status, response = await self.generate_answer(context_facts, 'gpt-5-mini')
         if response_status != 200:
-            return
+            return None
 
         if ai_facts is None:
             await UsagiAIFacts.create(guild_id=message.guild.id, user_id=message.author.id, facts=response)
         else:
             await UsagiAIFacts.update(id=ai_facts.id, facts=response)
+        return True
