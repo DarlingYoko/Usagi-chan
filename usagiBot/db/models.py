@@ -131,8 +131,8 @@ class ModelAdmin:
                 return config
 
     @classmethod
-    async def get_last_n(cls, channel_id, user_id, limit):
-        query = select(cls).where(and_(cls.channel_id == channel_id, cls.user_id == user_id)).order_by(cls.id.desc()).limit(limit)
+    async def get_last_n(cls, user_id, limit = 10):
+        query = select(cls).where(and_(cls.user_id == user_id)).order_by(cls.id.desc()).limit(limit)
         async with async_session() as session:
             async with session.begin():
                 results = await session.execute(query)
@@ -334,8 +334,6 @@ class UsagiAIFacts(Base, ModelAdmin):
 class UsagiAIMemory(Base, ModelAdmin):
     __tablename__ = "usagi_ai_memory"
     id = Column(Integer, primary_key=True)
-    guild_id = Column(BigInteger)
-    channel_id = Column(BigInteger)
     user_id = Column(BigInteger)
     message = Column(Text)
     embedding = Column(Vector(1536))
