@@ -1,15 +1,16 @@
 import asyncio
 import openai_async
 
-from usagiBot.db.models import UsagiAIFacts
+from usagiBot.db.models import UsagiAIFacts, UsagiAIMemory
 from usagiBot.src.UsagiErrors import OpenAIError
 from pycord18n.extension import _
 
 
 class OpenAIHandler:
 
-    def __init__(self, api_key):
+    def __init__(self, api_key, bot):
         self._api_key = api_key
+        self.bot = bot
 
         # Default values for gpt model
         self._ai_model = "gpt-5"
@@ -78,9 +79,8 @@ class OpenAIHandler:
             {"role": "system",
              "content": "Извлеки важные факты о пользователе для будущего общения. Если фактов нет — верни пустую строку. "
                         "Выдели 3-4 главных факта и только"},
-            {"role": "user", "content": facts},
-            {"role": "system", "content": "Также вот эти факты ты уже знаешь об этом пользователе"},
-            {"role": "user", "content": known_facts},
+            {"role": "system", "content": f"[New messages]: {facts}"},
+            {"role": "system", "content": f"[Old facts]: {known_facts}"},
         ]
 
 
@@ -92,4 +92,33 @@ class OpenAIHandler:
             await UsagiAIFacts.create(guild_id=message.guild.id, user_id=message.author.id, facts=response)
         else:
             await UsagiAIFacts.update(id=ai_facts.id, facts=response)
+
+        self.bot.ai_facts_buffer[message.author.id] = []
         return True
+
+    async def search_memory(self, user_id, query):
+        response_status, embed_question = await self.generate_embedding(query)
+        self.bot.logger.info('Got embed for message')
+
+        if response_status != 200:
+            return None
+
+        chat_memory = await UsagiAIMemory.get_memory(user_id, embed_question, 5)
+        return '||'.join([
+            memory.message
+            for memory in chat_memory
+        ])
+
+    async def add_memory(self, user_id, question, answer):
+        query = f"Question: {question}\nAnswer: {answer}"
+        response_status, embed_qa = await self.generate_embedding(query)
+        self.bot.logger.info('Got embed for qa')
+
+        if response_status != 200:
+            return
+
+        await UsagiAIMemory.create(
+            user_id=user_id,
+            message=query,
+            embedding=embed_qa
+        )
