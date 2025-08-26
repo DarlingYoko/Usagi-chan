@@ -18,7 +18,9 @@ class OpenAIHandler:
     async def get_ai_model(self):
         return self._ai_model
 
-    async def generate_answer(self, messages, model = None, counter: int = 0):
+    async def generate_answer(self, messages, model = None, tools = None, counter: int = 0):
+        if tools is None:
+            tools = []
         if model is None:
             model = await self.get_ai_model()
         try:
@@ -28,17 +30,27 @@ class OpenAIHandler:
                 payload={
                     "model": model,
                     "messages": messages,
+                    "tools": tools,
                 },
             )
 
             if response.status_code == 200:
-                return 200, response.json()["choices"][0]["message"]["content"]
+                response = response.json()["choices"][0]
+                finish_reason = response["finish_reason"]
+                message = response["message"]
+                return 200, finish_reason, message
+
+                # if finish_reason == 'stop':
+                #     return 200, message["content"]
+                # elif finish_reason == 'tool_calls':
+                #     return 200, message
+
 
             retry_codes = [500, 429, 502]
             if response.status_code in retry_codes:
                 if counter != 20:
                     await asyncio.sleep(2)
-                    return await self.generate_answer(messages, model, counter + 1)
+                    return await self.generate_answer(messages, model, tools, counter + 1)
                 else:
                     return 400, _("Something went wrong")
             else:
@@ -50,7 +62,7 @@ class OpenAIHandler:
         except Exception as e:
             return 402, str(e)
 
-    async def generate_embedding(self, message_input, counter: int = 0):
+    async def generate_embedding(self, message_input):
         try:
             response = await openai_async.embeddings(
                 self._api_key,
@@ -84,14 +96,14 @@ class OpenAIHandler:
         ]
 
 
-        response_status, response = await self.generate_answer(context_facts, 'gpt-5-mini')
-        if response_status != 200:
+        response_status, finish_reason, response = await self.generate_answer(context_facts, 'gpt-5-mini')
+        if response_status != 200 and finish_reason != 'stop':
             return None
 
         if ai_facts is None:
-            await UsagiAIFacts.create(guild_id=message.guild.id, user_id=message.author.id, facts=response)
+            await UsagiAIFacts.create(guild_id=message.guild.id, user_id=message.author.id, facts=response["content"])
         else:
-            await UsagiAIFacts.update(id=ai_facts.id, facts=response)
+            await UsagiAIFacts.update(id=ai_facts.id, facts=response["content"])
 
         self.bot.ai_facts_buffer[message.author.id] = []
         return True

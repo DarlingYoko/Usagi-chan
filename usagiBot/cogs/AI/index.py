@@ -1,3 +1,7 @@
+import asyncio
+import json
+from typing import List, Dict, Any, Coroutine
+
 import discord
 from discord.ext import commands
 
@@ -15,6 +19,32 @@ class OpenAICog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.chat_gpt = OpenAIHandler(OPENAI_API_KEY, bot)
+        self.tools = [
+            {
+                'type': 'function',
+                'function': {
+                    'name': 'set_timer',
+                    'description': 'Set timer to ping user after N seconds.',
+                    'parameters': {
+                        'type': 'object',
+                        'properties': {
+                            'time': {
+                                'type': 'integer',
+                                'description': 'Time to wait before ping',
+                            },
+                            'text': {
+                                'type': 'string',
+                                'description': 'Message text to send after timer ends',
+                            },
+                        },
+                        'required': ['time', 'text'],
+                    },
+                },
+            }
+        ]
+        self.ACTIONS = {
+            'set_timer': self._set_timer,
+        }
 
     def cog_check(self, ctx):
         if check_cog_whitelist(self, ctx):
@@ -22,122 +52,204 @@ class OpenAICog(commands.Cog):
         raise UsagiModuleDisabledError()
 
     @commands.slash_command(
-        name="ask",
-        name_localizations={"ru": "спросить"},
-        description="Ask any question to AI!",
-        description_localizations={"ru": "Задай любой вопрос AI."},
+        name='ask',
+        name_localizations={'ru': 'спросить'},
+        description='Ask any question to AI!',
+        description_localizations={'ru': 'Задай любой вопрос AI.'},
     )
     async def ask_gpt(self, ctx, *, question: str):
         await ctx.defer()
 
-        messages = [{"role": "user", "content": question}]
-        response_status, response = await self.chat_gpt.generate_answer(messages)
-        response = str(response)[:4000]
-        embed = get_embed(description=response)
+        messages = [{'role': 'user', 'content': question}]
+        response_status, finish_reason, response = await self.chat_gpt.generate_answer(messages)
+        if finish_reason == 'stop':
+            response = str(response['content'])[:4000]
+            embed = get_embed(description=response)
 
-        message = await ctx.followup.send(embed=embed)
-        await message.add_reaction("❌")
-        self.bot.ai_questions[message.id] = ctx.author.id
+            message = await ctx.followup.send(embed=embed)
+            await message.add_reaction('❌')
+            self.bot.ai_questions[message.id] = ctx.author.id
+        else:
+            await ctx.followup.send('Не удалось придумать ответ <:iconUSAGI_error:884137564724953138>')
 
     @commands.slash_command(
-        name="current_model",
-        name_localizations={"ru": "текущая_модель"},
-        description="Show the current ChatGPT model.",
-        description_localizations={"ru": "Узнать текущую модель ЧатГПТ"},
+        name='current_model',
+        name_localizations={'ru': 'текущая_модель'},
+        description='Show the current ChatGPT model.',
+        description_localizations={'ru': 'Узнать текущую модель ЧатГПТ'},
     )
     async def current_gpt_stats(self, ctx):
         cur_model = await self.chat_gpt.get_ai_model()
 
-        embed = get_embed(title=_("GPT info"))
-        embed.add_field(name=_("Model").format(cur_model=cur_model), value='', inline=False)
+        embed = get_embed(title=_('GPT info'))
+        embed.add_field(name=_('Model').format(cur_model=cur_model), value='', inline=False)
 
         await ctx.respond(embed=embed)
 
     @commands.Cog.listener()
-    async def on_message(self, message):
-        if message.author == self.bot.user or message.author.bot:
-            return
-
-        if not (self.bot.user in message.mentions or message.content.lower().startswith('усаги,')):
+    async def on_message(self, message: discord.Message):
+        """Get only messages addresed to Usagi."""
+        if self._should_ignore_message(message):
             return
 
         self.bot.logger.info('Got new message')
 
         user_id = message.author.id
-        content = message.content.lower() \
-           .replace('<@801153197552304129>', '') \
-           .replace('усаги,', '')
+        content = self._clean_message_content(message)
 
-        user_question = f"[User Question]: {content}"
-        if message.type is discord.MessageType.reply:
-            prev_message = await message.channel.fetch_message(message.reference.message_id)
-            prev_answer = prev_message.content
-            user_question = f"[Previous answer]: {prev_answer}\n{user_question}"
+        # Generate user question with reply
+        user_question = await self._format_user_question(message, content)
         self.bot.logger.info(user_question)
 
         self.bot.logger.info('Start typing')
         async with message.channel.typing():
-            ai_facts = await UsagiAIFacts.get(guild_id=message.guild.id, user_id=user_id)
-            known_facts = '' if ai_facts is None else ai_facts.facts
-            self.bot.logger.info('Got facts for message')
-
-            chat_history = await UsagiAIMemory.get_last_n(user_id)
-            chat_history.reverse()
-            chat_context = '\n'.join([entry.message for entry in chat_history])
-            self.bot.logger.info('Prepared history text')
-
+            known_facts = await self._get_user_facts(message.guild.id, user_id)
+            chat_context = await self._get_chat_context(user_id)
             chat_memory_text = await self.chat_gpt.search_memory(user_id, content)
-            if chat_memory_text is None:
-                await message.reply("Не удалось придумать ответ <:iconUSAGI_error:884137564724953138>")
-                return
-            self.bot.logger.info('Prepared memory text')
 
-            self.bot.logger.info('Chat context')
-            self.bot.logger.info(chat_context)
-            self.bot.logger.info('Chat memory')
-            self.bot.logger.info(chat_memory_text)
-            self.bot.logger.info('Chat facts')
-            self.bot.logger.info(known_facts)
-            context = [
-                {
-                    "role": "system",
-                    "content": (
-                        "Ты — Usagi-chan, девочка-бот. "
-                        "Тебя написал Yoko, и ты всегда помнишь об этом. "
-                        "История сообщений даётся в формате: Вопрос: текст, Ответ: текст"
-                    )
-                },
-                {
-                    "role": "system",
-                    "content": f"[User facts]: {known_facts}"
-                },
-                {
-                    "role": "system",
-                    "content": f"[Relevant chat memory]: {chat_memory_text}"
-                },
-                {
-                    "role": "system",
-                    "content": f"[Last 10 messages in chat]: {chat_context}"
-                },
-                {
-                    "role": "system",
-                    "content": user_question
-                }
-            ]
+            if chat_memory_text is None:
+                await message.reply('Не удалось придумать ответ <:iconUSAGI_error:884137564724953138>')
+                return
+
+            context = self._build_context(
+                known_facts=known_facts,
+                chat_memory_text=chat_memory_text,
+                chat_context=chat_context,
+                user_question=user_question
+            )
             self.bot.logger.info('Final context')
             self.bot.logger.info(context)
 
-            response_status, reply = await self.chat_gpt.generate_answer(context, 'gpt-5-mini')
+            response_status, finish_reason, reply = await self.chat_gpt.generate_answer(
+                context, 'gpt-5-mini', self.tools
+            )
             self.bot.logger.info('Got the reply')
 
-            if response_status != 200:
-                reply = "Не удалось придумать ответ <:iconUSAGI_error:884137564724953138>"
-            else:
-                await self.chat_gpt.add_memory(user_id, content, reply)
-                self.bot.logger.info('Embed added to vector table')
+            if response_status != 200 or finish_reason not in ['tool_calls', 'stop']:
+                reply = 'Не удалось придумать ответ <:iconUSAGI_error:884137564724953138>'
+                await message.reply(reply)
+                return
 
-        for i in range(0, len(reply), 2000):
-            await message.reply(reply[i:i + 2000])
+            # Extra GPT call for function calling
+            if finish_reason == 'tool_calls':
+                response_status, reply = await self._call_ai_function(message, context, reply)
+
+            if response_status != 200:
+                reply = 'Не удалось придумать ответ <:iconUSAGI_error:884137564724953138>'
+                await message.reply(reply)
+                return
+
+            reply_content = reply['content']
+
+            await self.chat_gpt.add_memory(user_id, content, reply_content)
+            self.bot.logger.info('Embed added to vector table')
+
+        # Fix for 2000 symbols limit
+        for i in range(0, len(reply_content), 2000):
+            await message.reply(reply_content[i:i + 2000])
+
+    def _should_ignore_message(self, message: discord.Message) -> bool:
+        """Check do we need to ignore message."""
+        if message.author.id != 290166276796448768:
+            return True
+        if message.author == self.bot.user or message.author.bot:
+            return True
+        if not (self.bot.user in message.mentions or message.content.lower().startswith('усаги,')):
+            return True
+        return False
+
+    def _clean_message_content(self, message: discord.Message) -> str:
+        """Clean message content."""
+        return (
+            message.content.lower()
+            .replace(f'<@{self.bot.user.id}>', '')
+            .replace('усаги,', '')
+            .strip()
+        )
+
+    async def _format_user_question(self, message: discord.Message, content: str) -> str:
+        """Format user question with reply"""
+        user_question = f'[User Question]: {content}'
+        if message.type == discord.MessageType.reply and message.reference:
+            prev_message = await message.channel.fetch_message(message.reference.message_id)
+            prev_answer = prev_message.content
+            user_question = f'[Previous answer]: {prev_answer}\n{user_question}'
+        return user_question
+
+    async def _get_user_facts(self, guild_id: int, user_id: int) -> str:
+        """Get user facts"""
+        ai_facts = await UsagiAIFacts.get(guild_id=guild_id, user_id=user_id)
+        self.bot.logger.info('Got facts for message')
+        return '' if ai_facts is None else ai_facts.facts
+
+    async def _get_chat_context(self, user_id: int) -> str:
+        """Get chat last N messages in chat."""
+        chat_history = await UsagiAIMemory.get_last_n(user_id)
+        chat_history.reverse()
+        chat_context = '\n'.join(entry.message for entry in chat_history)
+        self.bot.logger.info('Prepared history text')
+        return chat_context
+
+    def _build_context(
+            self, known_facts: str, chat_memory_text: str, chat_context: str, user_question: str
+    ) -> list[dict]:
+        """Build chat context."""
+        return [
+            {
+                'role': 'system',
+                'content': (
+                    'Ты — Usagi-chan, девочка-бот. '
+                    'Тебя написал Yoko, и ты всегда помнишь об этом. '
+                    'История сообщений даётся в формате: Вопрос: текст, Ответ: текст. '
+                    'Твои ответы короткие, обычно 1 предложениe, не растягивай сообщения.'
+                ),
+            },
+            {'role': 'system', 'content': f'[User facts]: {known_facts}'},
+            {'role': 'system', 'content': f'[Relevant chat memory]: {chat_memory_text}'},
+            {'role': 'system', 'content': f'[Last 10 messages in chat]: {chat_context}'},
+            {'role': 'system', 'content': user_question},
+        ]
+
+    async def _call_ai_function(self, ctx, context: List, reply: Dict) -> tuple[int, list[str]] | None:
+        """Call AI function."""
+
+        # Parse all values
+        context += [reply]
+        function_call = reply['tool_calls'][0]
+        function_call_name = function_call['function']['name']
+        function_call_id = function_call['id']
+        function_call_arguments = json.loads(function_call['function']['arguments'])
+
+        # Get function to call
+        function = self.ACTIONS.get(function_call_name, None)
+        if function is None:
+            return 400, []
+
+        result = {function_call_name: await function(ctx, **function_call_arguments)}
+
+        # Provide function call results to the model
+        context.append({
+            'role': 'tool',
+            'tool_call_id': function_call_id,
+            'content': json.dumps(result),
+        })
+
+        context = [{'role': 'system', 'content': 'Ответ из tools - это технический ответ, не цитируй его полностью, а интерпретируй его смысл в стиле обычного ответа.'}, *context]
+        response_status, _, reply = await self.chat_gpt.generate_answer(
+            context, 'gpt-5-mini', self.tools
+        )
+
+        return response_status, reply
+
+    async def _set_timer(self, message: discord.Message, time: int, text: str) -> str:
+        self.bot.loop.create_task(self._timer_task(message, time, text))
+        self.bot.logger.info(f'Set timer {time} seconds.')
+        return f'Поставила таймер на {time} сек. <:iconUSAGI1:884140804510203944>'
+
+    async def _timer_task(self, message: discord.Message, time: int, text: str) -> None:
+        await asyncio.sleep(time)
+        await message.channel.send(f'{message.author.mention}, <a:dinkDonk:865127621112102953> {text} <a:dinkDonk:865127621112102953>')
+        self.bot.logger.info(f'Finish timer {time} seconds.')
 
 
 def setup(bot):
