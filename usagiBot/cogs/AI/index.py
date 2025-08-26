@@ -1,3 +1,4 @@
+import discord
 from discord.ext import commands
 
 from usagiBot.cogs.AI.ai_utils import OpenAIHandler
@@ -57,97 +58,86 @@ class OpenAICog(commands.Cog):
         if message.author == self.bot.user or message.author.bot:
             return
 
-        if self.bot.user in message.mentions or message.content.lower().startswith('усаги,'):
-            self.bot.logger.info('Got new message')
+        if not (self.bot.user in message.mentions or message.content.lower().startswith('усаги,')):
+            return
 
-            user_id = message.author.id
+        self.bot.logger.info('Got new message')
 
-            content = message.content.lower() \
-               .replace('<@801153197552304129>', '') \
-               .replace('усаги,', '')
+        user_id = message.author.id
+        content = message.content.lower() \
+           .replace('<@801153197552304129>', '') \
+           .replace('усаги,', '')
 
-            if self.bot.ai_facts_buffer.get(user_id, None) is None:
-                self.bot.ai_facts_buffer[user_id] = []
+        user_question = f"[User Question]: {content}"
+        if message.type is discord.MessageType.reply:
+            prev_message = await message.channel.fetch_message(message.reference.message_id)
+            prev_answer = prev_message.content
+            user_question = f"[Previous answer]: {prev_answer}\n{user_question}"
+        self.bot.logger.info(user_question)
 
-            self.bot.ai_facts_buffer[user_id].append(content)
+        self.bot.logger.info('Start typing')
+        async with message.channel.typing():
+            ai_facts = await UsagiAIFacts.get(guild_id=message.guild.id, user_id=user_id)
+            known_facts = '' if ai_facts is None else ai_facts.facts
+            self.bot.logger.info('Got facts for message')
 
-            if len(self.bot.ai_facts_buffer[user_id]) >= 20:
-                self.bot.logger.info('Start uploading facts')
-                facts = '||'.join(self.bot.ai_facts_buffer[user_id])
-                await self.chat_gpt.update_fact(message, facts)
-                await message.channel.send("Обновила память <:iconUSAGI1:884140804510203944>")
+            chat_history = await UsagiAIMemory.get_last_n(user_id)
+            chat_history.reverse()
+            chat_context = '\n'.join([entry.message for entry in chat_history])
+            self.bot.logger.info('Prepared history text')
 
-            #return # disable for now, while studying chat history
-            self.bot.logger.info('Start typing')
-            async with message.channel.typing():
-                ai_facts = await UsagiAIFacts.get(guild_id=message.guild.id, user_id=user_id)
-                known_facts = '' if ai_facts is None else ai_facts.facts
-                self.bot.logger.info('Got facts for message')
+            chat_memory_text = await self.chat_gpt.search_memory(user_id, content)
+            if chat_memory_text is None:
+                await message.reply("Не удалось придумать ответ <:iconUSAGI_error:884137564724953138>")
+                return
+            self.bot.logger.info('Prepared memory text')
 
-                chat_history = await UsagiAIMemory.get_last_n(user_id)
-                chat_history.reverse()
-                chat_context = [
-                    {
-                        "role": "user",
-                        "content": entry.message
-                    }
-                    for entry in chat_history
-                ]
-                self.bot.logger.info('Prepared history text')
+            self.bot.logger.info('Chat context')
+            self.bot.logger.info(chat_context)
+            self.bot.logger.info('Chat memory')
+            self.bot.logger.info(chat_memory_text)
+            self.bot.logger.info('Chat facts')
+            self.bot.logger.info(known_facts)
+            context = [
+                {
+                    "role": "system",
+                    "content": (
+                        "Ты — Usagi-chan, девочка-бот. "
+                        "Тебя написал Yoko, и ты всегда помнишь об этом. "
+                        "История сообщений даётся в формате: Вопрос: текст, Ответ: текст"
+                    )
+                },
+                {
+                    "role": "system",
+                    "content": f"[User facts]: {known_facts}"
+                },
+                {
+                    "role": "system",
+                    "content": f"[Relevant chat memory]: {chat_memory_text}"
+                },
+                {
+                    "role": "system",
+                    "content": f"[Last 10 messages in chat]: {chat_context}"
+                },
+                {
+                    "role": "system",
+                    "content": user_question
+                }
+            ]
+            self.bot.logger.info('Final context')
+            self.bot.logger.info(context)
 
-                chat_memory_text = await self.chat_gpt.search_memory(user_id, content)
-                if chat_memory_text is None:
-                    await message.reply("Не удалось придумать ответ <:iconUSAGI_error:884137564724953138>")
-                    return
-                self.bot.logger.info('Prepared memory text')
+            response_status, reply = await self.chat_gpt.generate_answer(context, 'gpt-5-mini')
+            self.bot.logger.info('Got the reply')
 
-                self.bot.logger.info('Chat context')
-                self.bot.logger.info(chat_context)
-                self.bot.logger.info('Chat memory')
-                self.bot.logger.info(chat_memory_text)
-                self.bot.logger.info('Chat facts')
-                self.bot.logger.info(known_facts)
-                context = [
-                    {
-                        "role": "system",
-                        "content": (
-                            "Ты — Usagi-chan, умная и немного ироничная девочка-бот. "
-                            "Ты дружелюбная, остроумная и слегка саркастичная, но не наигранная. "
-                            "Тебя написал Yoko, и ты всегда помнишь об этом. "
-                            "У тебя есть лёгкий фирменный стиль: ты иногда используешь уменьшительные слова, но не перегибаешь. "
-                            "Ты можешь слегка подшучивать, но делаешь это мягко. "
-                            "История сообщений даётся в формате: Вопрос: текст, Ответ: текст"
-                            "Иногда добавляешь эмодзи, но только если они уместны. "
-                            "Твои ответы короткие, обычно 1 предложениe, не растягивай сообщения, но всегда звучат так, будто это именно ты — Usagi-chan."
-                        )
-                    },
-                    {
-                        "role": "system",
-                        "content": f"[User Facts]: {known_facts}"
-                    },
-                    {
-                        "role": "system",
-                        "content": f"[Relevant Memory]: {chat_memory_text}"
-                    },
-                    *chat_context,
-                    {
-                        "role": "user",
-                        "content": f"[User Question]: {content}"
-                    }
-                ]
-                self.bot.logger.info('Final context')
-                self.bot.logger.info(context)
+            if response_status != 200:
+                reply = "Не удалось придумать ответ <:iconUSAGI_error:884137564724953138>"
+            else:
+                await self.chat_gpt.add_memory(user_id, content, reply)
+                self.bot.logger.info('Embed added to vector table')
 
-                response_status, reply = await self.chat_gpt.generate_answer(context, 'gpt-5-mini')
-                self.bot.logger.info('Got the reply')
-
-                if response_status != 200:
-                    reply = "Не удалось придумать ответ <:iconUSAGI_error:884137564724953138>"
-                else:
-                    await self.chat_gpt.add_memory(user_id, content, reply)
-                    self.bot.logger.info('Embed added to vector table')
-
-            await message.reply(reply)
+        for i in range(0, len(reply), 2000):
+            await message.reply(reply[i:i + 2000])
 
 
 def setup(bot):
