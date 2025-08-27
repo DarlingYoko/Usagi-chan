@@ -21,6 +21,7 @@ class OpenAICog(commands.Cog):
         self.chat_gpt = OpenAIHandler(OPENAI_API_KEY, bot)
         self.ACTIONS = {
             'set_reminder': self._set_reminder,
+            'clear_memory': self._clear_memory,
         }
         self.check_reminders.start()
 
@@ -150,8 +151,8 @@ class OpenAICog(commands.Cog):
 
     def _should_ignore_message(self, message: discord.Message) -> bool:
         """Check do we need to ignore message."""
-        if message.author.id != 290166276796448768:
-            return True
+        # if message.author.id != 290166276796448768:
+        #     return True
         if message.author == self.bot.user or message.author.bot:
             return True
         if not (self.bot.user in message.mentions or message.content.lower().startswith('усаги,')):
@@ -261,10 +262,16 @@ class OpenAICog(commands.Cog):
         self.bot.logger.info(f'Set reminder to {date} for {time} seconds')
         return f'Поставила таймер на {time} сек.'
 
-    # async def _timer_task(self, message: discord.Message, time: int, text: str) -> None:
-    #     await asyncio.sleep(time)
-    #     await message.channel.send(f'{message.author.mention}, <a:dinkDonk:865127621112102953> {text} <a:dinkDonk:865127621112102953>')
-    #     self.bot.logger.info(f'Finish timer {time} seconds.')
+    async def _clear_memory(self, message: discord.Message) -> str:
+        """Clear history and facts for user"""
+        await UsagiAIFacts.delete(guild_id=message.guild.id, user_id=message.author.id)
+
+        memory_list = await UsagiAIMemory.get_all_by(user_id=message.author.id)
+        memory_ids = [memory.id for memory in memory_list]
+        await UsagiAIMemory.delete_all(memory_ids)
+
+        self.bot.logger.info(f'Clear memory for {message.author.name}')
+        return f'Очистила память о тебе.'
 
 
 def setup(bot):

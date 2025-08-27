@@ -148,7 +148,7 @@ tools = [
                 'properties': {
                     'time': {
                         'type': 'integer',
-                        'description': 'Time to wait before ping',
+                        'description': 'Time to wait before ping, there is no limit for this parameter.',
                         "minimum": 60
                     },
                     'text': {
@@ -157,6 +157,20 @@ tools = [
                     },
                 },
                 'required': ['time', 'text'],
+                "additionalProperties": False
+            },
+        },
+    },
+    {
+        'type': 'function',
+        'function': {
+            'name': 'clear_memory',
+            'description': 'Clear memory and history for user. User can ask about clearing facts or his history',
+            "strict": True,
+            'parameters': {
+                'type': 'object',
+                'properties': {},
+                'required': [],
                 "additionalProperties": False
             },
         },
