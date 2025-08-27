@@ -134,3 +134,31 @@ class OpenAIHandler:
             message=query,
             embedding=embed_qa
         )
+
+
+tools = [
+    {
+        'type': 'function',
+        'function': {
+            'name': 'set_reminder',
+            'description': 'Set timer or reminder to ping user after N seconds.',
+            "strict": True,
+            'parameters': {
+                'type': 'object',
+                'properties': {
+                    'time': {
+                        'type': 'integer',
+                        'description': 'Time to wait before ping',
+                        "minimum": 60
+                    },
+                    'text': {
+                        'type': 'string',
+                        'description': 'Message text to send after timer ends',
+                    },
+                },
+                'required': ['time', 'text'],
+                "additionalProperties": False
+            },
+        },
+    }
+]

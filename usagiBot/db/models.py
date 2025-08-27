@@ -338,6 +338,15 @@ class UsagiAIMemory(Base, ModelAdmin):
     message = Column(Text)
     embedding = Column(Vector(1536))
 
+class UsagiAIReminder(Base, ModelAdmin):
+    __tablename__ = "usagi_ai_reminder"
+    id = Column(Integer, primary_key=True)
+    guild_id = Column(BigInteger)
+    channel_id = Column(BigInteger)
+    user_id = Column(BigInteger)
+    text = Column(Text)
+    date = Column(DateTime)
+
 
 async def create_tables():
     async with engine.begin() as conn:

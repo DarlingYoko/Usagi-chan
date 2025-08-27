@@ -1,12 +1,12 @@
-import asyncio
 import json
-from typing import List, Dict, Any, Coroutine
+from typing import List, Dict
+from datetime import datetime, timedelta, UTC
 
 import discord
-from discord.ext import commands
+from discord.ext import commands, tasks
 
-from usagiBot.cogs.AI.ai_utils import OpenAIHandler
-from usagiBot.db.models import UsagiAIFacts, UsagiAIMemory
+from usagiBot.cogs.AI.ai_utils import OpenAIHandler, tools
+from usagiBot.db.models import UsagiAIFacts, UsagiAIMemory, UsagiAIReminder
 from usagiBot.src.UsagiChecks import check_cog_whitelist
 from usagiBot.src.UsagiErrors import UsagiModuleDisabledError
 from usagiBot.src.UsagiUtils import get_embed
@@ -19,37 +19,36 @@ class OpenAICog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.chat_gpt = OpenAIHandler(OPENAI_API_KEY, bot)
-        self.tools = [
-            {
-                'type': 'function',
-                'function': {
-                    'name': 'set_timer',
-                    'description': 'Set timer to ping user after N seconds.',
-                    'parameters': {
-                        'type': 'object',
-                        'properties': {
-                            'time': {
-                                'type': 'integer',
-                                'description': 'Time to wait before ping',
-                            },
-                            'text': {
-                                'type': 'string',
-                                'description': 'Message text to send after timer ends',
-                            },
-                        },
-                        'required': ['time', 'text'],
-                    },
-                },
-            }
-        ]
         self.ACTIONS = {
-            'set_timer': self._set_timer,
+            'set_reminder': self._set_reminder,
         }
+        self.check_reminders.start()
 
     def cog_check(self, ctx):
         if check_cog_whitelist(self, ctx):
             return True
         raise UsagiModuleDisabledError()
+
+    @tasks.loop(minutes=1)
+    async def check_reminders(self):
+        reminders = await UsagiAIReminder.get_all()
+        date_now = datetime.now()
+
+        for reminder in reminders:
+            if reminder.date > date_now:
+                continue
+
+            guild = await self.bot.fetch_guild(reminder.guild_id)
+            channel = await guild.fetch_channel(reminder.channel_id)
+
+            await channel.send(f'<@{reminder.user_id}>, <a:dinkDonk:865127621112102953> {reminder.text}')
+            await UsagiAIReminder.delete(id=reminder.id)
+
+    @check_reminders.before_loop
+    async def before_check_reminders(self):
+        await self.bot.wait_until_ready()
+        self.bot.logger.info("Update check reminders.")
+
 
     @commands.slash_command(
         name='ask',
@@ -121,7 +120,7 @@ class OpenAICog(commands.Cog):
             self.bot.logger.info(context)
 
             response_status, finish_reason, reply = await self.chat_gpt.generate_answer(
-                context, 'gpt-5-mini', self.tools
+                context, 'gpt-5-mini', tools
             )
             self.bot.logger.info('Got the reply')
 
@@ -132,6 +131,7 @@ class OpenAICog(commands.Cog):
 
             # Extra GPT call for function calling
             if finish_reason == 'tool_calls':
+                # await message.reply("Выполняю команду!")
                 response_status, reply = await self._call_ai_function(message, context, reply)
 
             if response_status != 200:
@@ -234,22 +234,37 @@ class OpenAICog(commands.Cog):
             'content': json.dumps(result),
         })
 
-        context = [{'role': 'system', 'content': 'Ответ из tools - это технический ответ, не цитируй его полностью, а интерпретируй его смысл в стиле обычного ответа.'}, *context]
+        context = [
+            {
+                'role': 'system',
+                'content': 'Ответ из tools - это технический ответ, не цитируй его полностью, а интерпретируй его смысл в стиле обычного ответа. Но добавь в конце <:iconUSAGI1:884140804510203944>'
+            },
+            *context
+        ]
         response_status, _, reply = await self.chat_gpt.generate_answer(
-            context, 'gpt-5-mini', self.tools
+            context, 'gpt-5-mini', tools
         )
 
         return response_status, reply
 
-    async def _set_timer(self, message: discord.Message, time: int, text: str) -> str:
-        self.bot.loop.create_task(self._timer_task(message, time, text))
-        self.bot.logger.info(f'Set timer {time} seconds.')
-        return f'Поставила таймер на {time} сек. <:iconUSAGI1:884140804510203944>'
+    async def _set_reminder(self, message: discord.Message, time: int, text: str) -> str:
+        """Create new remind for user"""
+        now = datetime.now( )
+        date = now + timedelta(seconds=time)
+        await UsagiAIReminder.create(
+            guild_id=message.guild.id,
+            channel_id=message.channel.id,
+            user_id=message.author.id,
+            text=text,
+            date=date
+        )
+        self.bot.logger.info(f'Set reminder to {date} for {time} seconds')
+        return f'Поставила таймер на {time} сек.'
 
-    async def _timer_task(self, message: discord.Message, time: int, text: str) -> None:
-        await asyncio.sleep(time)
-        await message.channel.send(f'{message.author.mention}, <a:dinkDonk:865127621112102953> {text} <a:dinkDonk:865127621112102953>')
-        self.bot.logger.info(f'Finish timer {time} seconds.')
+    # async def _timer_task(self, message: discord.Message, time: int, text: str) -> None:
+    #     await asyncio.sleep(time)
+    #     await message.channel.send(f'{message.author.mention}, <a:dinkDonk:865127621112102953> {text} <a:dinkDonk:865127621112102953>')
+    #     self.bot.logger.info(f'Finish timer {time} seconds.')
 
 
 def setup(bot):
