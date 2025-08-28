@@ -75,8 +75,7 @@ class Main(commands.Cog):
         time_now = datetime.now()
 
         for timer in timers:
-            guild = await self.bot.fetch_guild(timer.guild_id)
-            channel = await guild.fetch_channel(timer.channel_id)
+            channel = self.bot.get_channel(timer.channel_id) or await self.bot.fetch_channel(timer.channel_id)
             delta = timer.date - time_now
             s = delta.seconds
             hours, remainder = divmod(s, 3600)

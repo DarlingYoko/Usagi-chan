@@ -38,7 +38,7 @@ class Twitch(commands.Cog):
             )
             if not config:
                 continue
-            channel = await self.bot.fetch_channel(config.generic_id)
+            channel = self.bot.get_channel(config.generic_id) or await self.bot.fetch_channel(config.generic_id)
 
             guild_notify = twitch_notify.setdefault(
                 stream.guild_id, {"channel_to_notify": channel}

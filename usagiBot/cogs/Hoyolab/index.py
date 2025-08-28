@@ -312,7 +312,7 @@ class Hoyolab(commands.Cog):
             if not config:
                 continue
             try:
-                channel = await self.bot.fetch_channel(config.generic_id)
+                channel = self.bot.get_channel(config.generic_id) or await self.bot.fetch_channel(config.generic_id)
             except discord.errors.Forbidden:
                 print(f"Cant get access to {config.generic_id}")
                 continue

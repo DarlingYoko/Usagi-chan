@@ -80,8 +80,7 @@ class Birthday(commands.Cog):
         time_now = datetime.now()
 
         for timer in timers:
-            guild = await self.bot.fetch_guild(timer.guild_id)
-            channel = await guild.fetch_channel(timer.channel_id)
+            channel = self.bot.get_channel(timer.channel_id) or await self.bot.fetch_channel(timer.channel_id)
             users_data = await UsagiBirthday.get_all_by(guild_id=timer.guild_id)
             user_birthdays = sorted(users_data, key=lambda x: x.date)
             br_data = None
@@ -94,8 +93,7 @@ class Birthday(commands.Cog):
                 return
 
             text = f"До др {br_data.name}"
-            category_id = channel.category_id
-            category = await guild.fetch_channel(category_id)
+            category = self.bot.get_channel(channel.category_id) or await guild.fetch_channel(channel.category_id)
             if category.name != text:
                 await category.edit(name=text, reason="Update birthday timer.")
             delta = br_data.date - time_now
