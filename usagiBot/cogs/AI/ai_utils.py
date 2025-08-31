@@ -13,7 +13,7 @@ class OpenAIHandler:
         self.bot = bot
 
         # Default values for gpt model
-        self._ai_model = "gpt-5"
+        self._ai_model = 'gpt-5'
 
     async def get_ai_model(self):
         return self._ai_model
@@ -28,20 +28,20 @@ class OpenAIHandler:
                 self._api_key,
                 timeout=200,
                 payload={
-                    "model": model,
-                    "messages": messages,
-                    "tools": tools,
+                    'model': model,
+                    'messages': messages,
+                    'tools': tools,
                 },
             )
 
             if response.status_code == 200:
-                response = response.json()["choices"][0]
-                finish_reason = response["finish_reason"]
-                message = response["message"]
+                response = response.json()['choices'][0]
+                finish_reason = response['finish_reason']
+                message = response['message']
                 return 200, finish_reason, message
 
                 # if finish_reason == 'stop':
-                #     return 200, message["content"]
+                #     return 200, message['content']
                 # elif finish_reason == 'tool_calls':
                 #     return 200, message
 
@@ -52,7 +52,7 @@ class OpenAIHandler:
                     await asyncio.sleep(2)
                     return await self.generate_answer(messages, model, tools, counter + 1)
                 else:
-                    return 400, _("Something went wrong")
+                    return 400, _('Something went wrong')
             else:
                 raise OpenAIError(response.json().get('error'), response.status_code)
 
@@ -68,8 +68,8 @@ class OpenAIHandler:
                 self._api_key,
                 timeout=200,
                 payload={
-                    "model": "text-embedding-3-small",
-                    "input": message_input
+                    'model': 'text-embedding-3-small',
+                    'input': message_input
                 },
             )
 
@@ -88,11 +88,11 @@ class OpenAIHandler:
         ai_facts = await UsagiAIFacts.get(guild_id=message.guild.id, user_id=message.author.id)
         known_facts = '' if ai_facts is None else ai_facts.facts
         context_facts = [
-            {"role": "system",
-             "content": "Извлеки важные факты о пользователе для будущего общения. Если фактов нет — верни пустую строку. "
-                        "Выдели 3-4 главных факта и только"},
-            {"role": "system", "content": f"[New messages]: {facts}"},
-            {"role": "system", "content": f"[Old facts]: {known_facts}"},
+            {'role': 'system',
+             'content': 'Извлеки важные факты о пользователе для будущего общения. Если фактов нет — верни пустую строку. '
+                        'Выдели 3-4 главных факта и только'},
+            {'role': 'system', 'content': f'[New messages]: {facts}'},
+            {'role': 'system', 'content': f'[Old facts]: {known_facts}'},
         ]
 
 
@@ -101,9 +101,9 @@ class OpenAIHandler:
             return None
 
         if ai_facts is None:
-            await UsagiAIFacts.create(guild_id=message.guild.id, user_id=message.author.id, facts=response["content"])
+            await UsagiAIFacts.create(guild_id=message.guild.id, user_id=message.author.id, facts=response['content'])
         else:
-            await UsagiAIFacts.update(id=ai_facts.id, facts=response["content"])
+            await UsagiAIFacts.update(id=ai_facts.id, facts=response['content'])
 
         self.bot.ai_facts_buffer[message.author.id] = []
         return True
@@ -122,7 +122,7 @@ class OpenAIHandler:
         ])
 
     async def add_memory(self, user_id, question, answer):
-        query = f"Question: {question}\nAnswer: {answer}"
+        query = f'Question: {question}\nAnswer: {answer}'
         response_status, embed_qa = await self.generate_embedding(query)
         self.bot.logger.info('Got embed for qa')
 
@@ -142,14 +142,14 @@ tools = [
         'function': {
             'name': 'set_reminder',
             'description': 'Set timer or reminder to ping user after N seconds.',
-            "strict": True,
+            'strict': True,
             'parameters': {
                 'type': 'object',
                 'properties': {
                     'time': {
                         'type': 'integer',
                         'description': 'Time to wait before ping, there is no limit for this parameter.',
-                        "minimum": 60
+                        'minimum': 60
                     },
                     'text': {
                         'type': 'string',
@@ -157,7 +157,7 @@ tools = [
                     },
                 },
                 'required': ['time', 'text'],
-                "additionalProperties": False
+                'additionalProperties': False
             },
         },
     },
@@ -166,11 +166,49 @@ tools = [
         'function': {
             'name': 'clear_memory',
             'description': 'Clear memory and history for user. User can ask about clearing facts or his history',
-            "strict": True,
+            'strict': True,
             'parameters': {
                 'type': 'object',
                 'properties': {},
                 'required': [],
+                'additionalProperties': False
+            },
+        },
+    },
+    {
+        'type': 'function',
+        'function': {
+            'name': 'set_fact',
+            'description': 'Add new fact about user, if user ask',
+            'strict': True,
+            'parameters': {
+                'type': 'object',
+                'properties': {
+                    'new_fact': {
+                        'type': 'string',
+                        'description': 'Text with new fact about user.',
+                    },
+                },
+                'required': ['new_fact'],
+                "additionalProperties": False
+            },
+        },
+    },
+    {
+        'type': 'function',
+        'function': {
+            'name': 'set_prompt',
+            'description': 'If user ask about setting new prompt for him.',
+            'strict': True,
+            'parameters': {
+                'type': 'object',
+                'properties': {
+                    'new_prompt': {
+                        'type': 'string',
+                        'description': 'New prompt for user.',
+                    },
+                },
+                'required': ['new_prompt'],
                 "additionalProperties": False
             },
         },

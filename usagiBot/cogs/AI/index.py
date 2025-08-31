@@ -1,12 +1,12 @@
 import json
 from typing import List, Dict
-from datetime import datetime, timedelta, UTC
+from datetime import datetime, timedelta
 
 import discord
 from discord.ext import commands, tasks
 
 from usagiBot.cogs.AI.ai_utils import OpenAIHandler, tools
-from usagiBot.db.models import UsagiAIFacts, UsagiAIMemory, UsagiAIReminder
+from usagiBot.db.models import UsagiAIFacts, UsagiAIMemory, UsagiAIReminder, UsagiAIPromt
 from usagiBot.src.UsagiChecks import check_cog_whitelist
 from usagiBot.src.UsagiErrors import UsagiModuleDisabledError
 from usagiBot.src.UsagiUtils import get_embed
@@ -22,6 +22,8 @@ class OpenAICog(commands.Cog):
         self.ACTIONS = {
             'set_reminder': self._set_reminder,
             'clear_memory': self._clear_memory,
+            'set_fact': self._set_new_fact,
+            'set_prompt': self._set_prompt,
         }
         self.check_reminders.start()
 
@@ -39,8 +41,7 @@ class OpenAICog(commands.Cog):
             if reminder.date > date_now:
                 continue
 
-            guild = await self.bot.fetch_guild(reminder.guild_id)
-            channel = await guild.fetch_channel(reminder.channel_id)
+            channel = self.bot.get_channel(reminder.channel_id) or await self.bot.fetch_channel(reminder.channel_id)
 
             await channel.send(f'<@{reminder.user_id}>, <a:dinkDonk:865127621112102953> {reminder.text}')
             await UsagiAIReminder.delete(id=reminder.id)
@@ -48,7 +49,7 @@ class OpenAICog(commands.Cog):
     @check_reminders.before_loop
     async def before_check_reminders(self):
         await self.bot.wait_until_ready()
-        self.bot.logger.info("Update check reminders.")
+        self.bot.logger.info('Update check reminders.')
 
 
     @commands.slash_command(
@@ -104,6 +105,7 @@ class OpenAICog(commands.Cog):
         self.bot.logger.info('Start typing')
         async with message.channel.typing():
             known_facts = await self._get_user_facts(message.guild.id, user_id)
+            known_prompt = await self._get_user_prompt(message.guild.id, user_id)
             chat_context = await self._get_chat_context(user_id)
             chat_memory_text = await self.chat_gpt.search_memory(user_id, content)
 
@@ -113,6 +115,7 @@ class OpenAICog(commands.Cog):
 
             context = self._build_context(
                 known_facts=known_facts,
+                known_prompt=known_prompt,
                 chat_memory_text=chat_memory_text,
                 chat_context=chat_context,
                 user_question=user_question
@@ -132,7 +135,7 @@ class OpenAICog(commands.Cog):
 
             # Extra GPT call for function calling
             if finish_reason == 'tool_calls':
-                # await message.reply("Выполняю команду!")
+                # await message.reply('Выполняю команду!')
                 response_status, reply = await self._call_ai_function(message, context, reply)
 
             if response_status != 200:
@@ -183,6 +186,12 @@ class OpenAICog(commands.Cog):
         self.bot.logger.info('Got facts for message')
         return '' if ai_facts is None else ai_facts.facts
 
+    async def _get_user_prompt(self, guild_id: int, user_id: int) -> str:
+        """Get user prompt"""
+        ai_prompt = await UsagiAIPromt.get(guild_id=guild_id, user_id=user_id)
+        self.bot.logger.info('Got prompt for message')
+        return '' if ai_prompt is None else ai_prompt.prompt
+
     async def _get_chat_context(self, user_id: int) -> str:
         """Get chat last N messages in chat."""
         chat_history = await UsagiAIMemory.get_last_n(user_id)
@@ -192,7 +201,7 @@ class OpenAICog(commands.Cog):
         return chat_context
 
     def _build_context(
-            self, known_facts: str, chat_memory_text: str, chat_context: str, user_question: str
+            self, known_facts: str, known_prompt: str, chat_memory_text: str, chat_context: str, user_question: str
     ) -> list[dict]:
         """Build chat context."""
         return [
@@ -203,8 +212,10 @@ class OpenAICog(commands.Cog):
                     'Тебя написал Yoko, и ты всегда помнишь об этом. '
                     'История сообщений даётся в формате: Вопрос: текст, Ответ: текст. '
                     'Твои ответы короткие, обычно 1 предложениe, не растягивай сообщения.'
+                    'Если юзер установил свой промпт, то используй его в приоритете.'
                 ),
             },
+            {'role': 'system', 'content': f'[User prompt]: {known_prompt}'},
             {'role': 'system', 'content': f'[User facts]: {known_facts}'},
             {'role': 'system', 'content': f'[Relevant chat memory]: {chat_memory_text}'},
             {'role': 'system', 'content': f'[Last 10 messages in chat]: {chat_context}'},
@@ -238,7 +249,8 @@ class OpenAICog(commands.Cog):
         context = [
             {
                 'role': 'system',
-                'content': 'Ответ из tools - это технический ответ, не цитируй его полностью, а интерпретируй его смысл в стиле обычного ответа. Но добавь в конце <:iconUSAGI1:884140804510203944>'
+                'content': 'Ответ из tools - это технический ответ, не цитируй его полностью, '
+                           'а интерпретируй его смысл в стиле обычного ответа. Но добавь в конце <:iconUSAGI1:884140804510203944>'
             },
             *context
         ]
@@ -264,7 +276,9 @@ class OpenAICog(commands.Cog):
 
     async def _clear_memory(self, message: discord.Message) -> str:
         """Clear history and facts for user"""
+        # message = await message.reply('Ты уверен что хочешь полностью очистить мою память о тебе? (да/нет)')
         await UsagiAIFacts.delete(guild_id=message.guild.id, user_id=message.author.id)
+        await UsagiAIPromt.delete(guild_id=message.guild.id, user_id=message.author.id)
 
         memory_list = await UsagiAIMemory.get_all_by(user_id=message.author.id)
         memory_ids = [memory.id for memory in memory_list]
@@ -272,6 +286,31 @@ class OpenAICog(commands.Cog):
 
         self.bot.logger.info(f'Clear memory for {message.author.name}')
         return f'Очистила память о тебе.'
+
+    async def _set_new_fact(self, message: discord.Message, new_fact: str) -> str:
+        """Add new fact about user"""
+        known_fact = await UsagiAIFacts.get(guild_id=message.guild.id, user_id=message.author.id)
+
+        if known_fact is None:
+            await UsagiAIFacts.create(guild_id=message.guild.id, user_id=message.author.id, facts=new_fact)
+            reply = 'Создала факты о тебе'
+        else:
+            await UsagiAIFacts.update(id=known_fact.id, facts=f'{known_fact.facts}\n{new_fact}')
+            reply = 'Добавила новый факт о тебе'
+
+        self.bot.logger.info(f'Add new fact for {message.author.name}')
+        return reply
+
+    async def _set_prompt(self, message: discord.Message, new_prompt: str) -> str:
+        """Set prompt for user"""
+        known_prompt = await UsagiAIPromt.get(guild_id=message.guild.id, user_id=message.author.id)
+        if known_prompt is None:
+            await UsagiAIPromt.create(guild_id=message.guild.id, user_id=message.author.id, prompt=new_prompt)
+        else:
+            await UsagiAIPromt.update(id=known_prompt.id, prompt=new_prompt)
+
+        self.bot.logger.info(f'Set new propmt for {message.author.name}')
+        return 'Записала твой новый промпт'
 
 
 def setup(bot):

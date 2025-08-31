@@ -331,6 +331,13 @@ class UsagiAIFacts(Base, ModelAdmin):
     user_id = Column(BigInteger)
     facts = Column(Text)
 
+class UsagiAIPromt(Base, ModelAdmin):
+    __tablename__ = "usagi_ai_promt"
+    id = Column(Integer, primary_key=True)
+    guild_id = Column(BigInteger)
+    user_id = Column(BigInteger)
+    prompt = Column(Text)
+
 class UsagiAIMemory(Base, ModelAdmin):
     __tablename__ = "usagi_ai_memory"
     id = Column(Integer, primary_key=True)
