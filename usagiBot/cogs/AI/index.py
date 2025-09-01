@@ -168,7 +168,7 @@ class OpenAICog(commands.Cog):
 
         if message.author == self.bot.user:
             return True
-        if not (self.bot.user not in message.mentions or pattern.match(message.content.lower())):
+        if not (self.bot.user in message.mentions or pattern.match(message.content.lower())):
             return True
         return False
 
