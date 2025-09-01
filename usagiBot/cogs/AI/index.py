@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 import discord
 from discord.ext import commands, tasks
 
-from usagiBot.cogs.AI.ai_utils import OpenAIHandler, tools
+from usagiBot.cogs.AI.ai_utils import OpenAIHandler, tools, RateLimiter
 from usagiBot.db.models import UsagiAIFacts, UsagiAIMemory, UsagiAIReminder, UsagiAIPromt
 from usagiBot.src.UsagiChecks import check_cog_whitelist
 from usagiBot.src.UsagiErrors import UsagiModuleDisabledError
@@ -19,6 +19,7 @@ class OpenAICog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.chat_gpt = OpenAIHandler(OPENAI_API_KEY, bot)
+        self.rate_limiter = RateLimiter()
         self.ACTIONS = {
             'set_reminder': self._set_reminder,
             'clear_memory': self._clear_memory,
@@ -94,6 +95,12 @@ class OpenAICog(commands.Cog):
             return
 
         self.bot.logger.info('Got new message')
+
+        allowed, reason = self.rate_limiter.check(message.author.id)
+        if not allowed:
+            self.bot.logger.info(f'RateLimit for user {message.author.name}')
+            await message.reply(reason)
+            return
 
         user_id = message.author.id
         content = self._clean_message_content(message)

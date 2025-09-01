@@ -1,9 +1,11 @@
 import asyncio
 import openai_async
+import time
 
 from usagiBot.db.models import UsagiAIFacts, UsagiAIMemory
 from usagiBot.src.UsagiErrors import OpenAIError
 from pycord18n.extension import _
+from collections import deque
 
 
 class OpenAIHandler:
@@ -134,6 +136,63 @@ class OpenAIHandler:
             message=query,
             embedding=embed_qa
         )
+
+
+class RateLimiter:
+    def __init__(
+        self,
+        min_interval: float = 10.0,     # minimum interval between messages
+        window_size: float = 120.0,     # windows size (sec)
+        max_messages: int = 5,          # max messages count in window
+        abuse_cooldown: float = 180.0   # time-out
+    ):
+        self.min_interval = min_interval
+        self.window_size = window_size
+        self.max_messages = max_messages
+        self.abuse_cooldown = abuse_cooldown
+
+        # save user's history
+        self.user_messages: dict[int, deque] = {}
+        self.user_last_time: dict[int, float] = {}
+        self.user_cooldowns: dict[int, float] = {}
+
+    def check(self, user_id: int) -> tuple[bool, str | None]:
+        """Can user send new message
+        Return: allowed, reason"""
+
+        now = time.time()
+
+        # Check global time-out
+        if user_id in self.user_cooldowns:
+            if now < self.user_cooldowns[user_id]:
+                remaining = int(self.user_cooldowns[user_id] - now)
+                return False, f"⏳ Подожди {remaining} сек. (тайм-аут за спам)"
+            else:
+                del self.user_cooldowns[user_id]
+
+        # Check minimum interval
+        last_time = self.user_last_time.get(user_id, 0)
+        if now - last_time < self.min_interval:
+            wait = int(self.min_interval - (now - last_time))
+            return False, f"⌛ Сообщения можно отправлять не чаще, чем раз в {int(self.min_interval)} сек. Подожди {wait} сек."
+
+        # Check window
+        if user_id not in self.user_messages:
+            self.user_messages[user_id] = deque()
+
+        # Remove old messages
+        while self.user_messages[user_id] and now - self.user_messages[user_id][0] > self.window_size:
+            self.user_messages[user_id].popleft()
+
+        if len(self.user_messages[user_id]) >= self.max_messages:
+            self.user_cooldowns[user_id] = now + self.abuse_cooldown
+            return False, f"🚫 Слишком много сообщений. Ты получил тайм-аут на {int(self.abuse_cooldown)} сек."
+
+        # State update
+        self.user_messages[user_id].append(now)
+        self.user_last_time[user_id] = now
+
+        return True, None
 
 
 tools = [
