@@ -1,4 +1,4 @@
-import json
+import json, re
 from typing import List, Dict
 from datetime import datetime, timedelta
 
@@ -163,9 +163,12 @@ class OpenAICog(commands.Cog):
         """Check do we need to ignore message."""
         # if message.author.id != 290166276796448768:
         #     return True
-        if message.author == self.bot.user or message.author.bot:
+        usagi_names = ['усаги', 'усами', 'умами', 'усага', 'усига', 'усуга', 'саги', 'усагна']
+        pattern = re.compile(rf"^({'|'.join(usagi_names)}),?$")
+
+        if message.author == self.bot.user:
             return True
-        if not (self.bot.user in message.mentions or message.content.lower().startswith('усаги,')):
+        if not (self.bot.user in message.mentions or pattern.match(message.content.lower())):
             return True
         return False
 
