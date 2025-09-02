@@ -153,6 +153,15 @@ class ModelAdmin:
                 messages = results.scalars().all()
                 return messages
 
+    @classmethod
+    async def get_last_by_thread_id(cls):
+        query = select(cls).order_by(cls.thread_id.desc())
+        async with async_session() as session:
+            async with session.begin():
+                results = await session.execute(query)
+                config = results.scalars().first()
+                return config
+
 
 class UsagiConfig(Base, ModelAdmin):
     __tablename__ = "usagi_config"
@@ -341,9 +350,17 @@ class UsagiAIPromt(Base, ModelAdmin):
 class UsagiAIMemory(Base, ModelAdmin):
     __tablename__ = "usagi_ai_memory"
     id = Column(Integer, primary_key=True)
+    guild_id = Column(BigInteger)
     user_id = Column(BigInteger)
     message = Column(Text)
+    thread_id = Column(BigInteger)
+    reply_id = Column(BigInteger)
     embedding = Column(Vector(1536))
+
+class UsagiAIThread(Base, ModelAdmin):
+    __tablename__ = "usagi_ai_thread"
+    id = Column(Integer, primary_key=True)
+    user_id = Column(BigInteger)
 
 class UsagiAIReminder(Base, ModelAdmin):
     __tablename__ = "usagi_ai_reminder"

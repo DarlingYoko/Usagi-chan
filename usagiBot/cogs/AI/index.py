@@ -91,7 +91,8 @@ class OpenAICog(commands.Cog):
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
         """Get only messages addresed to Usagi."""
-        if self._should_ignore_message(message):
+        ignore_message, thread_type = self._should_ignore_message(message)
+        if ignore_message:
             return
 
         self.bot.logger.info('Got new message')
@@ -101,6 +102,8 @@ class OpenAICog(commands.Cog):
             self.bot.logger.info(f'RateLimit for user {message.author.name}')
             await message.reply(reason)
             return
+
+        thread_id = await self._get_thread_id(message, thread_type)
 
         user_id = message.author.id
         content = self._clean_message_content(message)
@@ -152,25 +155,44 @@ class OpenAICog(commands.Cog):
 
             reply_content = reply['content']
 
-            await self.chat_gpt.add_memory(user_id, content, reply_content)
+
             self.bot.logger.info('Embed added to vector table')
 
         # Fix for 2000 symbols limit
+        reply_message = None
         for i in range(0, len(reply_content), 2000):
-            await message.reply(reply_content[i:i + 2000])
+            reply_message = await message.reply(reply_content[i:i + 2000])
 
-    def _should_ignore_message(self, message: discord.Message) -> bool:
-        """Check do we need to ignore message."""
+        if reply_message is not None:
+            reply_date = reply_message.created_at.astimezone().replace(tzinfo=None)
+            await self.chat_gpt.add_memory(user_id, content, reply_content, reply_date, thread_id)
+
+    def _should_ignore_message(self, message: discord.Message) -> tuple[bool, str]:
+        """Check do we need to ignore message and get thread type"""
         # if message.author.id != 290166276796448768:
         #     return True
         usagi_names = ['усаги', 'усами', 'умами', 'усага', 'усига', 'усуга', 'саги', 'усагна']
-        pattern = re.compile(rf"^({'|'.join(usagi_names)}),?$")
+        pattern = re.compile(rf"^({'|'.join(usagi_names)}),")
 
         if message.author == self.bot.user:
-            return True
-        if not (self.bot.user in message.mentions or pattern.match(message.content.lower())):
-            return True
-        return False
+            return True, ''
+        if self.bot.user in message.mentions:
+            return False, 'EXIST'
+        if pattern.match(message.content.lower()):
+            return False, 'NEW'
+        return True, ''
+
+    async def _get_thread_id(self, message: discord.Message, thread_type: str, reply: discord.Message = None) -> int:
+        """Get thread id from message or generate new one"""
+        if thread_type == 'NEW':
+            last_message = await UsagiAIMemory.get_last_by_thread_id()
+            return last_message.thread_id + 1
+        elif thread_type == 'EXIST' and reply is not None:
+            reply_date = reply.created_at.astimezone().replace(tzinfo=None)
+            thread = await UsagiAIMemory.get(user_id=message.author.id, date=reply_date)
+            return thread.thread_id
+        else:
+            return 0
 
     def _clean_message_content(self, message: discord.Message) -> str:
         """Clean message content."""
@@ -222,7 +244,7 @@ class OpenAICog(commands.Cog):
                     'Тебя написал Yoko, и ты всегда помнишь об этом. '
                     'История сообщений даётся в формате: Вопрос: текст, Ответ: текст. '
                     'Твои ответы короткие, обычно 1 предложениe, не растягивай сообщения.'
-                    'Если юзер установил свой промпт, то используй его в приоритете.'
+                    'Если юзер установил свой промпт, то используй только его, не используй предложения выше.'
                 ),
             },
             {'role': 'system', 'content': f'[User prompt]: {known_prompt}'},
