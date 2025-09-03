@@ -153,15 +153,6 @@ class ModelAdmin:
                 messages = results.scalars().all()
                 return messages
 
-    @classmethod
-    async def get_last_by_thread_id(cls):
-        query = select(cls).order_by(cls.thread_id.desc())
-        async with async_session() as session:
-            async with session.begin():
-                results = await session.execute(query)
-                config = results.scalars().first()
-                return config
-
 
 class UsagiConfig(Base, ModelAdmin):
     __tablename__ = "usagi_config"

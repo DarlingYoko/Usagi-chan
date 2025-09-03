@@ -13,6 +13,7 @@ class OpenAIHandler:
     def __init__(self, api_key, bot):
         self._api_key = api_key
         self.bot = bot
+        self.logger = bot.logger
 
         # Default values for gpt model
         self._ai_model = 'gpt-5'
@@ -112,7 +113,7 @@ class OpenAIHandler:
 
     async def search_memory(self, user_id, query):
         response_status, embed_question = await self.generate_embedding(query)
-        self.bot.logger.info('Got embed for message')
+        self.logger.info('Got embed for message')
 
         if response_status != 200:
             return None
@@ -123,19 +124,20 @@ class OpenAIHandler:
             for memory in chat_memory
         ])
 
-    async def add_memory(self, user_id, question, answer, date, thread_id):
+    async def add_memory(self, guild_id, user_id, question, answer, reply_id, thread_id):
         query = f'Question: {question}\nAnswer: {answer}'
         response_status, embed_qa = await self.generate_embedding(query)
-        self.bot.logger.info('Got embed for qa')
+        self.logger.info('Got embed for qa')
 
         if response_status != 200:
             return
 
         await UsagiAIMemory.create(
+            guild_id=guild_id,
             user_id=user_id,
             message=query,
             thread_id=thread_id,
-            date=date,
+            reply_id=reply_id,
             embedding=embed_qa
         )
 
