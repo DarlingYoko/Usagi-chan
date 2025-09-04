@@ -111,21 +111,21 @@ class OpenAIHandler:
         self.bot.ai_facts_buffer[message.author.id] = []
         return True
 
-    async def search_memory(self, user_id, query):
+    async def search_memory(self, guild_id, user_id, query):
         response_status, embed_question = await self.generate_embedding(query)
         self.logger.info('Got embed for message')
 
         if response_status != 200:
             return None
 
-        chat_memory = await UsagiAIMemory.get_memory(user_id, embed_question, 5)
+        chat_memory = await UsagiAIMemory.get_embedding(query_vec=embed_question, limit=5, guild_id=guild_id, user_id=user_id)
         return '||'.join([
             memory.message
             for memory in chat_memory
         ])
 
-    async def add_memory(self, guild_id, user_id, question, answer, reply_id, thread_id):
-        query = f'Question: {question}\nAnswer: {answer}'
+    async def add_memory(self, message, question, answer, reply_id, thread_id):
+        query = f'[Question][{message.author.name}]: {question}\n[Answer][Usagi-chan]: {answer}'
         response_status, embed_qa = await self.generate_embedding(query)
         self.logger.info('Got embed for qa')
 
@@ -133,8 +133,8 @@ class OpenAIHandler:
             return
 
         await UsagiAIMemory.create(
-            guild_id=guild_id,
-            user_id=user_id,
+            guild_id=message.guild.id,
+            user_id=message.author.id,
             message=query,
             thread_id=thread_id,
             reply_id=reply_id,

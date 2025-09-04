@@ -1,12 +1,12 @@
 import json, re
-from typing import List, Dict
+from typing import List, Dict, Any, Coroutine
 from datetime import datetime, timedelta
 
 import discord
 from discord.ext import commands, tasks
 
 from usagiBot.cogs.AI.ai_utils import OpenAIHandler, tools, RateLimiter
-from usagiBot.db.models import UsagiAIFacts, UsagiAIMemory, UsagiAIReminder, UsagiAIPromt
+from usagiBot.db.models import UsagiAIFacts, UsagiAIMemory, UsagiAIReminder, UsagiAIPromt, UsagiAIThread
 from usagiBot.src.UsagiChecks import check_cog_whitelist
 from usagiBot.src.UsagiErrors import UsagiModuleDisabledError
 from usagiBot.src.UsagiUtils import get_embed
@@ -104,7 +104,7 @@ class OpenAICog(commands.Cog):
             await message.reply(reason)
             return
 
-        thread_id = await self._get_thread_id(message, thread_type)
+        thread_id, thread_author_id = await self._get_thread_id(message, thread_type)
 
         user_id = message.author.id
         guild_id = message.guild.id
@@ -117,9 +117,9 @@ class OpenAICog(commands.Cog):
         self.logger.info('Start typing')
         async with message.channel.typing():
             known_facts = await self._get_user_facts(guild_id, user_id)
-            known_prompt = await self._get_user_prompt(guild_id, user_id)
-            chat_context = await self._get_chat_context(user_id)
-            chat_memory_text = await self.chat_gpt.search_memory(user_id, content)
+            known_prompt = await self._get_user_prompt(guild_id, thread_author_id)
+            chat_context = await self._get_chat_context(thread_id)
+            chat_memory_text = await self.chat_gpt.search_memory(guild_id, user_id, content)
 
             if chat_memory_text is None:
                 await message.reply('Не удалось придумать ответ <:iconUSAGI_error:884137564724953138>')
@@ -161,17 +161,14 @@ class OpenAICog(commands.Cog):
             self.logger.info('Embed added to vector table')
 
         # Fix for 2000 symbols limit
-        reply_message = None
         for i in range(0, len(reply_content), 2000):
             reply_message = await message.reply(reply_content[i:i + 2000])
-
-        if reply_message is not None:
-            await self.chat_gpt.add_memory(guild_id, user_id, content, reply_content, reply_message.id, thread_id)
+            await self.chat_gpt.add_memory(message, content, reply_content, reply_message.id, thread_id)
 
     def _should_ignore_message(self, message: discord.Message) -> tuple[bool, str]:
         """Check do we need to ignore message and get thread type"""
-        # if message.author.id != 290166276796448768:
-        #     return True
+        if message.author.id != 290166276796448768:
+            return True, ''
         usagi_names = ['усаги', 'усами', 'умами', 'усага', 'усига', 'усуга', 'саги', 'усагна']
         pattern = re.compile(rf"^({'|'.join(usagi_names)}),")
 
@@ -183,17 +180,21 @@ class OpenAICog(commands.Cog):
             return False, 'NEW'
         return True, ''
 
-    async def _get_thread_id(self, message: discord.Message, thread_type: str, reply: discord.Message = None) -> int:
+    async def _get_thread_id(self, message: discord.Message, thread_type: str, reply: discord.Message = None) -> tuple[int, int]:
         """Get thread id from message or generate new one"""
         if thread_type == 'NEW':
-
-            last_thread = await UsagiAIMemory.get_last_obj()
-            return last_thread.id + 1
+            last_thread = await UsagiAIThread.get_last_obj()
+            new_thread_id = 1 if last_thread is None else last_thread.id + 1
+            await UsagiAIThread.create(user_id=message.author.id)
+            self.logger.info(f'New thread id: {new_thread_id}')
+            return new_thread_id, message.author.id
         elif thread_type == 'EXIST' and reply is not None:
-            thread = await UsagiAIMemory.get(user_id=message.author.id, reply_id=reply.id)
-            return thread.thread_id
+            thread_message = await UsagiAIMemory.get(user_id=message.author.id, reply_id=reply.id)
+            thread_author = await UsagiAIThread.get(id=thread_message.thread_id)
+            self.logger.info(f'Existing thread id: {thread_message.thread_id}')
+            return thread_message.thread_id, thread_author.user_id
         else:
-            return 0
+            return 0, 0
 
     def _clean_message_content(self, message: discord.Message) -> str:
         """Clean message content."""
@@ -206,11 +207,11 @@ class OpenAICog(commands.Cog):
 
     async def _format_user_question(self, message: discord.Message, content: str) -> str:
         """Format user question with reply"""
-        user_question = f'[User Question]: {content}'
+        user_question = f'[User Question][{message.author.name}]: {content}'
         if message.type == discord.MessageType.reply and message.reference:
             prev_message = await message.channel.fetch_message(message.reference.message_id)
             prev_answer = prev_message.content
-            user_question = f'[Previous answer]: {prev_answer}\n{user_question}'
+            user_question = f'[Previous answer][Usagi-chan]: {prev_answer}\n{user_question}'
         return user_question
 
     async def _get_user_facts(self, guild_id: int, user_id: int) -> str:
@@ -225,9 +226,9 @@ class OpenAICog(commands.Cog):
         self.logger.info('Got prompt for message')
         return '' if ai_prompt is None else ai_prompt.prompt
 
-    async def _get_chat_context(self, user_id: int) -> str:
+    async def _get_chat_context(self, thread_id: int) -> str:
         """Get chat last N messages in chat."""
-        chat_history = await UsagiAIMemory.get_last_n(user_id)
+        chat_history = await UsagiAIMemory.get_last_n(thread_id=thread_id)
         chat_history.reverse()
         chat_context = '\n'.join(entry.message for entry in chat_history)
         self.logger.info('Prepared history text')
