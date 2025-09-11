@@ -15,20 +15,12 @@ class Twitch(commands.Cog):
     def __init__(self, bot):
         self.twitch = None
         self.bot = bot
-        self.twitch_auth_loop.start()
         self.twitch_notify_loop.start()
-
-    @tasks.loop(minutes=1, count=1)
-    async def twitch_auth_loop(self):
-        self.twitch = await twitch_auth()
-
-    @twitch_auth_loop.before_loop
-    async def before_twitch_auth_loop(self):
-        await self.bot.wait_until_ready()
-        self.bot.logger.info(f"Logged in Twitch.")
 
     @tasks.loop(minutes=5)
     async def twitch_notify_loop(self):
+        if self.twitch is None:
+            self.twitch = await twitch_auth()
         all_streams = await UsagiTwitchNotify.get_all()
         twitch_notify = {}
 
