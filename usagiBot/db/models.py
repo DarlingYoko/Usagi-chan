@@ -131,8 +131,9 @@ class ModelAdmin:
                 return config
 
     @classmethod
-    async def get_last_n(cls, user_id, limit = 10):
-        query = select(cls).where(and_(cls.user_id == user_id)).order_by(cls.id.desc()).limit(limit)
+    async def get_last_n(cls, limit = 10, **kwargs):
+        conditions = cls.generate_conditions(kwargs)
+        query = select(cls).where(and_(*conditions)).order_by(cls.id.desc()).limit(limit)
         async with async_session() as session:
             async with session.begin():
                 results = await session.execute(query)
@@ -140,10 +141,11 @@ class ModelAdmin:
                 return objects
 
     @classmethod
-    async def get_memory(cls, user_id: int, query_vec, limit: int = 10):
+    async def get_embedding(cls, query_vec, limit: int = 10, **kwargs):
+        conditions = cls.generate_conditions(kwargs)
         query = (
             select(cls)
-             .where(cls.user_id == user_id)
+             .where(and_(*conditions))
              .order_by(cls.embedding.l2_distance(query_vec))
              .limit(limit)
         )
@@ -341,9 +343,12 @@ class UsagiAIPromt(Base, ModelAdmin):
 class UsagiAIMemory(Base, ModelAdmin):
     __tablename__ = "usagi_ai_memory"
     id = Column(Integer, primary_key=True)
+    guild_id = Column(BigInteger)
     user_id = Column(BigInteger)
     message = Column(Text)
+    thread_id = Column(BigInteger)
     embedding = Column(Vector(1536))
+
 
 class UsagiAIReminder(Base, ModelAdmin):
     __tablename__ = "usagi_ai_reminder"
