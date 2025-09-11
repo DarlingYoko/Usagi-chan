@@ -124,7 +124,7 @@ class OpenAIHandler:
             for memory in chat_memory
         ])
 
-    async def add_memory(self, message, question, answer, reply_id, thread_id):
+    async def add_memory(self, message, question, answer, thread_id):
         query = f'[Question][{message.author.name}]: {question}\n[Answer][Usagi-chan]: {answer}'
         response_status, embed_qa = await self.generate_embedding(query)
         self.logger.info('Got embed for qa')
@@ -137,7 +137,6 @@ class OpenAIHandler:
             user_id=message.author.id,
             message=query,
             thread_id=thread_id,
-            reply_id=reply_id,
             embedding=embed_qa
         )
 

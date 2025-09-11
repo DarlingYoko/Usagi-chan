@@ -347,13 +347,8 @@ class UsagiAIMemory(Base, ModelAdmin):
     user_id = Column(BigInteger)
     message = Column(Text)
     thread_id = Column(BigInteger)
-    reply_id = Column(BigInteger)
     embedding = Column(Vector(1536))
 
-class UsagiAIThread(Base, ModelAdmin):
-    __tablename__ = "usagi_ai_thread"
-    id = Column(Integer, primary_key=True)
-    user_id = Column(BigInteger)
 
 class UsagiAIReminder(Base, ModelAdmin):
     __tablename__ = "usagi_ai_reminder"
