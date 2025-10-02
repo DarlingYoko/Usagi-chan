@@ -7,6 +7,7 @@ import discord
 import pytz
 import json
 
+from dateutil.relativedelta import relativedelta
 from discord import SlashCommandGroup
 from discord.ext import commands, tasks
 from pycord18n.extension import _
@@ -68,6 +69,7 @@ class Birthday(commands.Cog):
                 birthday_text = (birthday_texts[str(randint(1, birthday_texts_length))]
                                  .format(user_id=user_data.user_id))
                 await channel.send(content=birthday_text)
+                await UsagiBirthday.update(id=user_data.id, date=user_data.date + relativedelta(years=1))
 
     @check_birthday.before_loop
     async def before_check_resin_overflow(self):
