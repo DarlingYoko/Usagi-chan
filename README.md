@@ -31,3 +31,6 @@ Instalation requirements:
 
 psql access from docker:
 `docker compose exec -it postgres psql -U <user_name> -W <base_name>`
+
+You must enable vector extension in postgres: 
+`CREATE EXTENSION IF NOT EXISTS vector;`

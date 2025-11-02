@@ -6,3 +6,4 @@
 __pycache__
 /.coverage
 /usagi-variables.env
+/stack.env
