@@ -681,7 +681,7 @@ class VoiceState:
                         view=PlayerControlView(self.bot, self),
                     )
                 self.forbidden = False
-                self.voice.play(self.current.source, after=self.play_next_song)
+                self.voice.play(self.current.source, after=lambda e: self.play_next_song(e))
                 # Create a task for updating volume
                 self.volume_updater = self.bot.loop.create_task(self.update_volume())
                 await self.next.wait()
