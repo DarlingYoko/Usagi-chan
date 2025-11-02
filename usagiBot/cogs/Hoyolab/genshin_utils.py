@@ -45,7 +45,12 @@ class HoyolabAPI:
         if not cookies_result:
             return False
 
-        user = await self.client.get_hoyolab_user()
+        try:
+            user = await self.client.get_hoyolab_user()
+        except genshin.errors.InvalidCookies:
+            print("Skipped get_user_dataInvalidCookies -", db_id)
+            return {}
+
         data = {
             "nickname": user.nickname,
             "icon": user.icon,
