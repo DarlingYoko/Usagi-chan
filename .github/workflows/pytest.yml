@@ -1,4 +1,4 @@
-name: Test & Deploy to CapRover
+name: Test
 
 on:
   push:
@@ -7,31 +7,19 @@ on:
 jobs:
   test-and-deploy:
     runs-on: ubuntu-latest
-    environment: Caprover
+    environment: Portainer
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Set up Python 3.11
+    - name: Set up Python 3.12
       uses: actions/setup-python@v4
       with:
-        python-version: 3.11
+        python-version: 3.12
 
     - name: Install dependencies
       run: pip install -r requirements.txt
 
     - name: Run tests
       run: pytest
-
-#    - name: Install CapRover CLI
-#      run: npm install -g caprover
-#
-#    - name: Deploy to CapRover
-#      if: success()
-#      run: |
-#        caprover deploy \
-#          --caproverUrl '${{ secrets.CAPROVER_SERVER }}' \
-#          --appToken '${{ secrets.APP_TOKEN }}' \
-#          --appName '${{ secrets.APP_NAME }}' \
-#          -b universal
