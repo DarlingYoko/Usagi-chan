@@ -4,10 +4,17 @@ from typing import List, Dict
 import discord
 from discord.ext.commands._types import Error
 
-from usagiBot.env import BOT_OWNER, QbittorrentHOST, QbittorrentUSERNAME, QbittorrentPASSWORD
+from usagiBot.env import (
+    BOT_OWNER,
+    QbittorrentHOST,
+    QbittorrentUSERNAME,
+    QbittorrentPASSWORD,
+)
 from usagiBot.db.models import UsagiCogs, UsagiModerRoles, UsagiAutoRoles, UsagiLanguage
 
 import qbittorrentapi
+from PIL import Image, ImageDraw, ImageFont
+import io
 
 
 class UsagiEmbed(discord.Embed):
@@ -28,8 +35,87 @@ class UsagiEmbed(discord.Embed):
         return False
 
 
-async def error_notification_to_owner(ctx: discord.ext.commands.Context, error: Error, bot: discord.Bot,
-                                      app_command: bool = False):
+class Editor:
+    def __init__(self, source, mode="RGBA", color=(0, 0, 0, 0)):
+        if isinstance(source, (tuple, list)):
+            # Create blank canvas (width, height)
+            self.image = Image.new(mode, source, color)
+        elif isinstance(source, Image.Image):
+            self.image = source.convert("RGBA")
+        else:
+            # Load from file path
+            self.image = Image.open(source).convert("RGBA")
+        self.draw = ImageDraw.Draw(self.image)
+
+    def paste(self, image, position=(0, 0)):
+        # if image is another Editor instance — take its image
+        if isinstance(image, Editor):
+            image = image.image
+
+        # if image is path
+        if isinstance(image, str):
+            image = Image.open(image).convert("RGBA")
+
+        if not isinstance(image, Image.Image):
+            raise TypeError(f"paste() expected PIL.Image or Editor, got {type(image)}")
+
+        # Ensure RGBA
+        image = image.convert("RGBA")
+
+        # Use only alpha channel as mask
+        alpha = image.split()[-1]  # take A-channel
+        self.image.paste(image, position, alpha)
+
+        return self
+
+    def text(self, position, text, font, color="white"):
+        # Convert hex color if needed
+        if isinstance(color, str):
+            if color.startswith("#"):
+                hex_color = color[1:]
+                # support short form #fff
+                if len(hex_color) == 3:
+                    hex_color = "".join([c * 2 for c in hex_color])
+                color = tuple(int(hex_color[i : i + 2], 16) for i in (0, 2, 4)) + (255,)
+        self.draw.text(position, text, font=font, fill=color)
+        return self
+
+    @property
+    def image_bytes(self) -> io.BytesIO:
+        """Return image bytes
+
+        Returns
+        -------
+        BytesIO
+            Bytes from the image of Editor
+        """
+        _bytes = io.BytesIO()
+        self.image.save(_bytes, "png")
+
+        _bytes.seek(0)
+        return _bytes
+
+    def save(self, path):
+        self.image.save(path)
+
+    def show(self):
+        self.image.show()
+        return self
+
+    def get_image(self):
+        return self.image
+
+    @staticmethod
+    def font(path, size):
+        return ImageFont.truetype(path, size)
+
+
+async def error_notification_to_owner(
+    ctx: discord.ext.commands.Context,
+    error: Error,
+    bot: discord.Bot,
+    app_command: bool = False,
+):
     """
     Send error log to bot owner
     :param ctx: Discord Context
@@ -40,25 +126,27 @@ async def error_notification_to_owner(ctx: discord.ext.commands.Context, error: 
     """
     owner = await ctx.bot.fetch_user(BOT_OWNER)
     error_message = (
-            "**NEW ERROR OCCURRED**\n"
-            + f"> **Command** - {ctx.command.name}\n"
-            + f"> **User** - {ctx.author.mention}\n"
-            + f"> **Channel** - {ctx.channel.id}\n"
-            + f"> **Error** - {error}\n"
-            + f"> **Error type** - {type(error)}\n"
+        "**NEW ERROR OCCURRED**\n"
+        + f"> **Command** - {ctx.command.name}\n"
+        + f"> **User** - {ctx.author.mention}\n"
+        + f"> **Channel** - {ctx.channel.id}\n"
+        + f"> **Error** - {error}\n"
+        + f"> **Error type** - {type(error)}\n"
     )
 
     if not app_command:
         error_message += (
-                f"> **Message** - {ctx.message.id}\n"
-                + f"> **Args** - {ctx.args}\n"
-                + f"> **Kwargs** - {ctx.kwargs}\n"
+            f"> **Message** - {ctx.message.id}\n"
+            + f"> **Args** - {ctx.args}\n"
+            + f"> **Kwargs** - {ctx.kwargs}\n"
         )
     await owner.send(error_message)
     bot.logger.error(error)
 
 
-async def load_all_command_tags(bot: discord.ext.commands.Bot) -> List[discord.commands.options.OptionChoice]:
+async def load_all_command_tags(
+    bot: discord.ext.commands.Bot,
+) -> List[discord.commands.options.OptionChoice]:
     """
     Loads all command tags into bot
     :param bot:
@@ -79,8 +167,7 @@ async def load_all_command_tags(bot: discord.ext.commands.Bot) -> List[discord.c
 
 
 def check_arg_in_command_tags(
-        arg: str,
-        tags: List[discord.commands.options.OptionChoice]
+    arg: str, tags: List[discord.commands.options.OptionChoice]
 ) -> bool:
     """
     Check that command there is in command tags
@@ -120,13 +207,16 @@ async def init_auto_roles() -> Dict:
     auto_roles = await UsagiAutoRoles.get_all()
     for role in auto_roles:
         guild_payload = payload.setdefault(role.guild_id, {})
-        guild_payload.setdefault(role.message_id, {"name": role.name, "channel_id": role.channel_id})
+        guild_payload.setdefault(
+            role.message_id, {"name": role.name, "channel_id": role.channel_id}
+        )
     return payload
 
 
 async def init_language() -> Dict:
     langs = await UsagiLanguage.get_all()
     return {lang.user_id: lang.lang for lang in langs}
+
 
 async def init_qbt_client(logger) -> qbittorrentapi.Client:
     conn_info = dict(

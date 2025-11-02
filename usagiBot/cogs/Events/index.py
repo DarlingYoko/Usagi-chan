@@ -14,7 +14,6 @@ from usagiBot.src.UsagiUtils import (
     get_embed,
     init_auto_roles,
     init_language,
-    init_qbt_client
 )
 from usagiBot.src.UsagiErrors import *
 from usagiBot.db.models import (
@@ -106,14 +105,13 @@ class Events(commands.Cog):
         self.bot.logger.info(
             f"Running on: {platform.system()} {platform.release()} ({os.name})"
         )
-        self.bot.logger.info(f"Loaded command tags.")
-        self.bot.logger.info(f"Connected to database.")
-        self.bot.logger.info(f"Settings loaded.")
-        self.bot.logger.info(f"Moder roles loaded.")
+        self.bot.logger.info("Loaded command tags.")
+        self.bot.logger.info("Connected to database.")
+        self.bot.logger.info("Settings loaded.")
+        self.bot.logger.info("Moder roles loaded.")
         self.bot.logger.info("-------------------")
         await self.bot.change_presence(
-            status=discord.Status.online,
-            activity=discord.Game("/help")
+            status=discord.Status.online, activity=discord.Game("/help")
         )
 
     @commands.Cog.listener()
@@ -144,12 +142,16 @@ class Events(commands.Cog):
             )
         elif isinstance(error, UsagiCallFromNotModerError):
             await ctx.reply(
-                self.bot.i18n.get_text("You don't have permissions to use this command", user_lang),
+                self.bot.i18n.get_text(
+                    "You don't have permissions to use this command", user_lang
+                ),
                 delete_after=2 * 60,
             )
         elif isinstance(error, UsagiCallFromWrongChannelError):
             await ctx.reply(
-                self.bot.i18n.get_text("This is the wrong channel", user_lang).format(channel_id=error.channel_id),
+                self.bot.i18n.get_text("This is the wrong channel", user_lang).format(
+                    channel_id=error.channel_id
+                ),
                 delete_after=2 * 60,
             )
         elif isinstance(error, BadColourArgument):
@@ -218,7 +220,7 @@ class Events(commands.Cog):
                 ephemeral=True,
             )
         elif isinstance(error, discord.ApplicationCommandInvokeError):
-            print(error)
+            self.bot.logger.error(error)
             await ctx.respond(
                 self.bot.i18n.get_text("Smt went wrong try again later", user_lang),
                 ephemeral=True,
@@ -300,7 +302,9 @@ class Events(commands.Cog):
         if user_id == self.bot.user.id:
             return
 
-        if ai_quesion is not None and isinstance(emoji, discord.partial_emoji.PartialEmoji):
+        if ai_quesion is not None and isinstance(
+            emoji, discord.partial_emoji.PartialEmoji
+        ):
             if user_id == ai_quesion and emoji.name == "❌":
                 guild = await self.bot.fetch_guild(guild_id)
                 channel = await guild.fetch_channel(channel_id)

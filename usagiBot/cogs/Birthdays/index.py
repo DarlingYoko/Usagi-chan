@@ -17,12 +17,14 @@ from usagiBot.src.UsagiChecks import check_is_already_set_up, check_cog_whitelis
 from usagiBot.src.UsagiErrors import UsagiModuleDisabledError
 
 
-def get_days(ctx: discord.AutocompleteContext, ):
+def get_days(
+    ctx: discord.AutocompleteContext,
+):
     return [str(x) for x in range(1, 32)]
 
 
 async def get_birthdays(
-        ctx: discord.AutocompleteContext,
+    ctx: discord.AutocompleteContext,
 ) -> List[discord.OptionChoice]:
     """
     Returns a list of birthday user's names.
@@ -55,7 +57,7 @@ class Birthday(commands.Cog):
         timezone = pytz.timezone("Europe/Moscow")
         time = datetime.now(timezone)
         if time.hour == 12:
-            with open('./usagiBot/files/birthdays/texts.json') as f:
+            with open("./usagiBot/files/birthdays/texts.json") as f:
                 birthday_texts = json.load(f)
                 birthday_texts_length = len(birthday_texts)
             now = datetime.now()
@@ -63,13 +65,18 @@ class Birthday(commands.Cog):
             users_data = await UsagiBirthday.get_all_by(date=cur_data)
             for user_data in users_data:
                 guild = await self.bot.fetch_guild(user_data.guild_id)
-                guild_config = await UsagiConfig.get(guild_id=user_data.guild_id, command_tag="birthday")
+                guild_config = await UsagiConfig.get(
+                    guild_id=user_data.guild_id, command_tag="birthday"
+                )
                 channel = await guild.fetch_channel(guild_config.generic_id)
 
-                birthday_text = (birthday_texts[str(randint(1, birthday_texts_length))]
-                                 .format(user_id=user_data.user_id))
+                birthday_text = birthday_texts[
+                    str(randint(1, birthday_texts_length))
+                ].format(user_id=user_data.user_id)
                 await channel.send(content=birthday_text)
-                await UsagiBirthday.update(id=user_data.id, date=user_data.date + relativedelta(years=1))
+                await UsagiBirthday.update(
+                    id=user_data.id, date=user_data.date + relativedelta(years=1)
+                )
 
     @check_birthday.before_loop
     async def before_check_resin_overflow(self):
@@ -82,7 +89,9 @@ class Birthday(commands.Cog):
         time_now = datetime.now()
 
         for timer in timers:
-            channel = self.bot.get_channel(timer.channel_id) or await self.bot.fetch_channel(timer.channel_id)
+            channel = self.bot.get_channel(
+                timer.channel_id
+            ) or await self.bot.fetch_channel(timer.channel_id)
             users_data = await UsagiBirthday.get_all_by(guild_id=timer.guild_id)
             user_birthdays = sorted(users_data, key=lambda x: x.date)
             br_data = None
@@ -95,7 +104,9 @@ class Birthday(commands.Cog):
                 return
 
             text = f"До др {br_data.name}"
-            category = self.bot.get_channel(channel.category_id) or await guild.fetch_channel(channel.category_id)
+            category = self.bot.get_channel(
+                channel.category_id
+            ) or await guild.fetch_channel(channel.category_id)
             if category.name != text:
                 await category.edit(name=text, reason="Update birthday timer.")
             delta = br_data.date - time_now
@@ -120,9 +131,7 @@ class Birthday(commands.Cog):
         description="Celebrate users birthday!",
         description_localizations={"ru": "Празднуйте день рождения ваших друзей!"},
         command_tag="birthday",
-        checks=[
-            check_is_already_set_up().predicate
-        ],
+        checks=[check_is_already_set_up().predicate],
     )
 
     @birthday.command(
@@ -142,20 +151,17 @@ class Birthday(commands.Cog):
         choices=map(lambda x: str(x), range(1, 13)),
     )
     @discord.commands.option(
-        name="name",
-        name_localizations={"ru": "имя"},
-        required=False
+        name="name", name_localizations={"ru": "имя"}, required=False
     )
-    async def birthday_add(self, ctx, user: discord.User, day: int, month: int, name: str = ""):
+    async def birthday_add(
+        self, ctx, user: discord.User, day: int, month: int, name: str = ""
+    ):
         if not (0 < day < 32):
-            return await ctx.respond(
-                "Day out of range, 1 - 31"
-            )
+            return await ctx.respond("Day out of range, 1 - 31")
         exist_user = await UsagiBirthday.get(guild_id=ctx.guild.id, user_id=user.id)
         if exist_user:
             return await ctx.respond(
-                _("This user already added in birthday list"),
-                ephemeral=True
+                _("This user already added in birthday list"), ephemeral=True
             )
         now = datetime.now()
         cur_data = datetime(day=day, month=month, year=now.year)
@@ -182,8 +188,7 @@ class Birthday(commands.Cog):
         exist_user = await UsagiBirthday.get(guild_id=ctx.guild.id, user_id=user_id)
         if not exist_user:
             return await ctx.respond(
-                _("This user isn't in birthday list, add him firstly"),
-                ephemeral=True
+                _("This user isn't in birthday list, add him firstly"), ephemeral=True
             )
         await UsagiBirthday.delete(guild_id=ctx.guild.id, user_id=user_id)
         await ctx.respond(_("Done"), ephemeral=True)
@@ -199,7 +204,9 @@ class Birthday(commands.Cog):
         answer = "There is no timer setted"
         if guild:
             await UsagiBirthdayTimer.update(id=guild.id, enable=not guild.enable)
-            answer = "Disabled birthday timer" if guild.enable else "Enabled birthday timer"
+            answer = (
+                "Disabled birthday timer" if guild.enable else "Enabled birthday timer"
+            )
         await ctx.respond(_(answer), ephemeral=True)
 
     @birthday.command(
@@ -218,7 +225,9 @@ class Birthday(commands.Cog):
             await UsagiBirthdayTimer.update(id=guild.id, channel=channel.id)
             answer = "Updated birthday timer"
         else:
-            await UsagiBirthdayTimer.create(guild_id=ctx.guild.id, channel_id=channel.id, enable=True)
+            await UsagiBirthdayTimer.create(
+                guild_id=ctx.guild.id, channel_id=channel.id, enable=True
+            )
             answer = "Added birthday timer"
         await ctx.respond(_(answer), ephemeral=True)
 

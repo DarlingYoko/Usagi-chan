@@ -7,7 +7,6 @@ from usagiBot.tests.utils import *
 
 
 class TestFunMethods(IsolatedAsyncioTestCase):
-
     @mock.patch("usagiBot.db.models.UsagiConfig")
     @mock.patch.object(asyncio, "create_async_engine")
     @mock.patch.object(fun_utils, "get_exchange_rate_data")
@@ -15,6 +14,7 @@ class TestFunMethods(IsolatedAsyncioTestCase):
         self.bot = mock.AsyncMock()
 
         from usagiBot.cogs.Fun.index import Fun
+
         self.Fun = Fun(self.bot)
 
         mock_get_exchange_rate_data.return_value = {
@@ -60,7 +60,9 @@ class TestFunMethods(IsolatedAsyncioTestCase):
         await self.Fun.add_based_message(self.Fun, self.ctx, self.message)
 
         self.ctx.bot.fetch_channel.assert_called_with(54321)
-        self.ctx.respond.assert_called_with("Added based message <:pidoras:1084205028090318928>")
+        self.ctx.respond.assert_called_with(
+            "Added based message <:pidoras:1084205028090318928>"
+        )
         self.channel.send.assert_called_with(
             content="Based from test_author_mention\\ntest_content",
             files=[],
@@ -68,7 +70,6 @@ class TestFunMethods(IsolatedAsyncioTestCase):
         )
 
     async def test_get_exchange_rate(self) -> None:
-
         await self.Fun.get_exchange_rate(self.Fun, self.ctx)
 
         return_message = (
@@ -79,10 +80,8 @@ class TestFunMethods(IsolatedAsyncioTestCase):
             "```"
         )
         from usagiBot.src.UsagiUtils import get_embed
-        embed = get_embed(
-            title="Current exchange rate:",
-            description=return_message
-        )
+
+        embed = get_embed(title="Current exchange rate:", description=return_message)
         self.ctx.reply.assert_called_with(embed=embed)
 
     @mock.patch("random.randint")

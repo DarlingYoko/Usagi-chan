@@ -30,7 +30,9 @@ class Twitch(commands.Cog):
             )
             if not config:
                 continue
-            channel = self.bot.get_channel(config.generic_id) or await self.bot.fetch_channel(config.generic_id)
+            channel = self.bot.get_channel(
+                config.generic_id
+            ) or await self.bot.fetch_channel(config.generic_id)
 
             guild_notify = twitch_notify.setdefault(
                 stream.guild_id, {"channel_to_notify": channel}
@@ -83,7 +85,7 @@ class Twitch(commands.Cog):
     @twitch_notify_loop.before_loop
     async def before_twitch_notify_loop(self):
         await self.bot.wait_until_ready()
-        self.bot.logger.info(f"Listen Twitch streamers.")
+        self.bot.logger.info("Listen Twitch streamers.")
 
     def cog_check(self, ctx):
         if check_cog_whitelist(self, ctx):
@@ -94,7 +96,9 @@ class Twitch(commands.Cog):
         name="twitch_notify",
         name_localizations={"ru": "твич_уведы"},
         description="Follow your favorite streamer and get notified when it goes live!",
-        description_localizations={"ru": "Отслеживайте своих любимых стримеров прямо на сервере!."},
+        description_localizations={
+            "ru": "Отслеживайте своих любимых стримеров прямо на сервере!."
+        },
         command_tag="twitch_notify",
     )
 
@@ -102,7 +106,9 @@ class Twitch(commands.Cog):
         name="follow",
         name_localizations={"ru": "подписаться"},
         description="Follow streamer to notify.",
-        description_localizations={"ru": "Подпишись чтобы получить уведомление о начале стрима."},
+        description_localizations={
+            "ru": "Подпишись чтобы получить уведомление о начале стрима."
+        },
     )
     @discord.commands.option(
         name="streamer_name",
@@ -139,7 +145,10 @@ class Twitch(commands.Cog):
             twitch_username=streamer_name,
             started_at=datetime(year=2001, day=21, month=3).replace(tzinfo=None),
         )
-        await ctx.respond(_("Followed you to streamer_name").format(streamer_name=streamer_name), ephemeral=True)
+        await ctx.respond(
+            _("Followed you to streamer_name").format(streamer_name=streamer_name),
+            ephemeral=True,
+        )
 
     @twitch_notify.command(
         name="unfollow",
@@ -165,14 +174,19 @@ class Twitch(commands.Cog):
             twitch_username=streamer_name,
         )
         if streamer is None:
-            await ctx.respond(_("You are not followed to this streamer"), ephemeral=True)
+            await ctx.respond(
+                _("You are not followed to this streamer"), ephemeral=True
+            )
             return
         await UsagiTwitchNotify.delete(
             guild_id=ctx.guild.id,
             user_id=ctx.author.id,
             twitch_username=streamer_name,
         )
-        await ctx.respond(_("Unfollowed you from streamer_name").format(streamer_name=streamer_name), ephemeral=True)
+        await ctx.respond(
+            _("Unfollowed you from streamer_name").format(streamer_name=streamer_name),
+            ephemeral=True,
+        )
 
     @twitch_notify.command(
         name="show",
@@ -210,7 +224,9 @@ class Twitch(commands.Cog):
             guild_id=ctx.guild.id,
         )
         if streamers is None:
-            await ctx.respond(_("Your guild not followed to any streamer"), ephemeral=True)
+            await ctx.respond(
+                _("Your guild not followed to any streamer"), ephemeral=True
+            )
             return
         streamers = list(set(map(lambda x: f" - {x.twitch_username}\n", streamers)))
         streamers_list = _("All streamers") + "\n".join(streamers)

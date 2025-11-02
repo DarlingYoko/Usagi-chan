@@ -1,5 +1,5 @@
 # install python
-FROM python:3.11
+FROM python:3.12
 
 # set-up folder
 RUN mkdir /Usagi

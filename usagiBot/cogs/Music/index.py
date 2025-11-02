@@ -23,7 +23,7 @@ youtube_dl.utils.bug_reports_message = lambda: ""
 # Error messages for returning meaningfully error message to user
 error_messages = {
     "ERROR: Sign in to confirm your age\nThis video may be inappropriate for some users.": "This video is "
-                                                                                           "age-restricted",
+    "age-restricted",
     "Video unavailable": "Video Unavailable",
     "ERROR: Private video\nSign in if you've been granted access to this video": "This video is private video",
 }
@@ -1258,7 +1258,7 @@ class PlayerControlView(discord.ui.View):
         msg = await interaction.channel.send(
             embed=get_embed(
                 title="Stop current queue?",
-                description=f"Votes to stop - 1",
+                description="Votes to stop - 1",
             ),
             view=vote_view,
         )
@@ -1736,7 +1736,7 @@ class Music(commands.Cog):
         await ctx.send_followup(
             embed=get_embed(
                 title="Stop current queue?",
-                description=f"Votes to Stop - 1",
+                description="Votes to Stop - 1",
             ),
             view=vote_view,
         )
@@ -1882,7 +1882,7 @@ class Music(commands.Cog):
 
         await ctx.respond(
             embed=get_embed(
-                title=f"Song removed.",
+                title="Song removed.",
                 description=f"{name}",
                 color=discord.Color.green(),
             ),
@@ -2147,7 +2147,7 @@ class Music(commands.Cog):
         # For each song, combine the details to a string
         for count, entry in enumerate(result):
             embed.add_field(
-                name=f'{count + 1}. {entry["title"]}',
+                name=f"{count + 1}. {entry['title']}",
                 value=f"[Link]({entry['url']})\nDuration: {entry['duration']}\n",
                 inline=False,
             )

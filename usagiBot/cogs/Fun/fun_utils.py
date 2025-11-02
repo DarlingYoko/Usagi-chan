@@ -1,7 +1,12 @@
 import logging
 from typing import TYPE_CHECKING
 from bs4 import BeautifulSoup
-from usagiBot.env import VPN_USERNAME, VPN_PASSWORD, VPN_API_GET_LIST_URL, VPN_API_LOGIN_URL
+from usagiBot.env import (
+    VPN_USERNAME,
+    VPN_PASSWORD,
+    VPN_API_GET_LIST_URL,
+    VPN_API_LOGIN_URL,
+)
 
 import requests
 
@@ -14,7 +19,7 @@ def get_exchange_rate_data() -> dict:
     Get parsed exchange rates from tradingview
     :return: Rates Dict
     """
-    base_url = 'https://ru.tradingview.com/markets/currencies/'
+    base_url = "https://ru.tradingview.com/markets/currencies/"
 
     response_europe = requests.get(base_url + "rates-europe/")
     currency_europe = {}
@@ -37,15 +42,15 @@ def parse_exchange_rate(response: "Response") -> dict:
     :param response:
     :return: Parsed currencies dict
     """
-    soup = BeautifulSoup(response.text, 'html.parser')
-    table = soup.find_all('tr')[1:]
+    soup = BeautifulSoup(response.text, "html.parser")
+    table = soup.find_all("tr")[1:]
     rates = {}
 
     for currency in table:
-        name = currency.find('a').text
-        value = currency.find_all('td')[1].text
-        change = currency.find_all('td')[3].text
-        rates[name] = {'value': value, 'change': change}
+        name = currency.find("a").text
+        value = currency.find_all("td")[1].text
+        change = currency.find_all("td")[3].text
+        rates[name] = {"value": value, "change": change}
 
     return rates
 
@@ -59,6 +64,7 @@ def vpn_login():
         return None
 
     return session
+
 
 def get_vpn_list():
     session = vpn_login()
@@ -81,7 +87,8 @@ def get_vpn_list():
     if "obj" in data:
         for inbound in data["obj"]:
             for client in inbound["clientStats"]:
-                users_stats[client["email"]] = round((client["down"] + client["up"]) / (1024 ** 3), 2)
+                users_stats[client["email"]] = round(
+                    (client["down"] + client["up"]) / (1024**3), 2
+                )
 
     return dict(sorted(users_stats.items(), key=lambda x: x[1], reverse=True)[:10])
-

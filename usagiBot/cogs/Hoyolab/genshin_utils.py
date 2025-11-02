@@ -56,9 +56,9 @@ class HoyolabAPI:
                 res = await getattr(self.client, f"get_{source}_notes")()
                 data[source] = res
             except (
-                    genshin.errors.InvalidCookies,
-                    genshin.errors.AccountNotFound,
-                    genshin.errors.InternalDatabaseError
+                genshin.errors.InvalidCookies,
+                genshin.errors.AccountNotFound,
+                genshin.errors.InternalDatabaseError,
             ):
                 pass
             except genshin.errors.GeetestError:
@@ -119,20 +119,27 @@ def generate_fields(data) -> list[discord.EmbedField]:
             (datetime.now() + genshin_data.remaining_resin_recovery_time).timestamp()
         )
         realm_timer = int(
-            (datetime.now() + genshin_data.remaining_realm_currency_recovery_time).timestamp()
+            (
+                datetime.now() + genshin_data.remaining_realm_currency_recovery_time
+            ).timestamp()
         )
 
         resin_text = red_text if genshin_data.current_resin >= 150 else blue_text
         realm_text = (
             red_text
-            if genshin_data.current_realm_currency / genshin_data.max_realm_currency >= 0.8
+            if genshin_data.current_realm_currency / genshin_data.max_realm_currency
+            >= 0.8
             else blue_text
         )
 
         resin_count = resin_text.substitute({"count": genshin_data.current_resin})
-        realm_count = realm_text.substitute({"count": genshin_data.current_realm_currency})
+        realm_count = realm_text.substitute(
+            {"count": genshin_data.current_realm_currency}
+        )
 
-        daily_withdrawn = green_tick if genshin_data.claimed_commission_reward else red_thick
+        daily_withdrawn = (
+            green_tick if genshin_data.claimed_commission_reward else red_thick
+        )
 
         fields += [
             discord.EmbedField(
@@ -167,7 +174,9 @@ def generate_fields(data) -> list[discord.EmbedField]:
         )
 
         stamina_text = red_text if starrail_data.current_stamina >= 220 else blue_text
-        stamina_count = stamina_text.substitute({"count": starrail_data.current_stamina})
+        stamina_count = stamina_text.substitute(
+            {"count": starrail_data.current_stamina}
+        )
 
         expeditions = starrail_data.accepted_expedition_num
         total_expeditions = starrail_data.total_expedition_num
@@ -183,8 +192,7 @@ def generate_fields(data) -> list[discord.EmbedField]:
             discord.EmbedField(
                 name=_("Expeditions"),
                 value=_("expeditions count").format(
-                    expeditions_count=expeditions,
-                    max_expeditions=total_expeditions
+                    expeditions_count=expeditions, max_expeditions=total_expeditions
                 ),
                 inline=True,
             ),
@@ -200,13 +208,21 @@ def generate_fields(data) -> list[discord.EmbedField]:
             datetime.now().timestamp() + zzz_data.battery_charge.seconds_till_full
         )
 
-        energy_text = red_text if zzz_data.battery_charge.current >= zzz_data.battery_charge.max - 20 else blue_text
-        energy_count = energy_text.substitute({"count": zzz_data.battery_charge.current})
+        energy_text = (
+            red_text
+            if zzz_data.battery_charge.current >= zzz_data.battery_charge.max - 20
+            else blue_text
+        )
+        energy_count = energy_text.substitute(
+            {"count": zzz_data.battery_charge.current}
+        )
 
         engagement = zzz_data.engagement.current
         engagement_max = zzz_data.engagement.max
 
-        scratch_card_completed = green_tick if zzz_data.scratch_card_completed else red_thick
+        scratch_card_completed = (
+            green_tick if zzz_data.scratch_card_completed else red_thick
+        )
 
         fields += [
             discord.EmbedField(
@@ -221,7 +237,7 @@ def generate_fields(data) -> list[discord.EmbedField]:
                 value=_("engagement count").format(
                     engagement_count=engagement,
                     engagement_max=engagement_max,
-                    scratch_card_completed=scratch_card_completed
+                    scratch_card_completed=scratch_card_completed,
                 ),
                 inline=True,
             ),
@@ -242,9 +258,7 @@ def generate_notes_fields() -> list[discord.EmbedField]:
     if today.day < 16:
         abyss_reset_date = datetime(year=today.year, month=today.month, day=16, hour=3)
     else:
-        abyss_reset_date = (today.replace(day=1) + timedelta(days=32)).replace(
-            day=1
-        )
+        abyss_reset_date = (today.replace(day=1) + timedelta(days=32)).replace(day=1)
     abyss_reset_date = int(abyss_reset_date.timestamp())
 
     # Calculate the New patch date
@@ -280,7 +294,6 @@ def generate_notes_fields() -> list[discord.EmbedField]:
 
 
 def generate_all_subs_fields(user):
-
     genshin_resin_notify = green_tick if user.genshin_resin_sub else red_thick
     genshin_daily_reward = green_tick if user.genshin_daily_sub else red_thick
 
@@ -333,16 +346,12 @@ def generate_all_subs_fields(user):
         ),
         discord.EmbedField(
             name="_ _",
-            value=_("zzz_resin_notify_text").format(
-                resin_notify=zzz_resin_notify
-            ),
+            value=_("zzz_resin_notify_text").format(resin_notify=zzz_resin_notify),
             inline=True,
         ),
         discord.EmbedField(
             name="_ _",
-            value=_("zzz_daily_reward_text").format(
-                daily_reward=zzz_daily_reward
-            ),
+            value=_("zzz_daily_reward_text").format(daily_reward=zzz_daily_reward),
             inline=True,
         ),
         discord.EmbedField(
@@ -352,9 +361,7 @@ def generate_all_subs_fields(user):
         ),
         discord.EmbedField(
             name="_ _",
-            value=_("daily_claim_notify").format(
-                daily_notify_sub=daily_notify_sub
-            ),
+            value=_("daily_claim_notify").format(daily_notify_sub=daily_notify_sub),
             inline=True,
         ),
     ]

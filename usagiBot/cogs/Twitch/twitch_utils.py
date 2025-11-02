@@ -2,19 +2,20 @@ import textwrap
 import discord
 import requests
 
-from usagiBot.src.UsagiUtils import get_embed
+from usagiBot.src.UsagiUtils import get_embed, Editor
 from usagiBot.env import (
     TWITCH_TOKEN,
     REFRESH_TOKEN,
     CLIENT_ID,
     CLIENT_SECRET,
 )
+
 from twitchAPI.twitch import Twitch
-from twitchAPI.types import AuthScope
-from easy_pil import Editor
+from twitchAPI.helper import first
+from twitchAPI.type import AuthScope
+
 from PIL import Image, ImageFont, ImageOps
 from discord import File
-from twitchAPI.helper import first
 from io import BytesIO
 
 
@@ -91,7 +92,8 @@ def gen_pic(stream, icon_url):
     lines = textwrap.wrap(stream_title, width=40)
     y_text = 80
     for line in lines:
-        width, height = font_bold.getsize(line)
+        bbox = font_bold.getbbox(line)
+        width, height = bbox[2] - bbox[0], bbox[3] - bbox[1]
         background.text((245, y_text), line, font=font_bold, color="white")
         y_text += height
 

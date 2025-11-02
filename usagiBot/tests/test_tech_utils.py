@@ -6,7 +6,6 @@ from unittest import IsolatedAsyncioTestCase
 
 
 class TestTechUtils(IsolatedAsyncioTestCase):
-
     @mock.patch("usagiBot.db.models.UsagiUnicRoles", new_callable=mock.AsyncMock)
     @mock.patch.object(asyncio, "create_async_engine")
     async def test_get_user_roles(self, mock_engine, mock_UsagiUnicRoles) -> None:
@@ -25,7 +24,12 @@ class TestTechUtils(IsolatedAsyncioTestCase):
         role_4 = mock.MagicMock()
         role_4.id = 444
         role_4.name = "role_name_4"
-        ctx.interaction.guild.fetch_roles.return_value = [role_1, role_2, role_3, role_4]
+        ctx.interaction.guild.fetch_roles.return_value = [
+            role_1,
+            role_2,
+            role_3,
+            role_4,
+        ]
 
         role_ids = [
             mock.MagicMock(role_id=111),
@@ -33,6 +37,7 @@ class TestTechUtils(IsolatedAsyncioTestCase):
         ]
 
         import usagiBot.cogs.Tech.tech_utils as tech_utils
+
         importlib.reload(tech_utils)
 
         mock_UsagiUnicRoles.get_all_by.return_value = role_ids
@@ -51,9 +56,12 @@ class TestTechUtils(IsolatedAsyncioTestCase):
 
     @mock.patch("usagiBot.db.models.UsagiUnicRoles", new_callable=mock.AsyncMock)
     @mock.patch.object(asyncio, "create_async_engine")
-    async def test_get_user_roles_no_roles(self, mock_engine, mock_UsagiUnicRoles) -> None:
+    async def test_get_user_roles_no_roles(
+        self, mock_engine, mock_UsagiUnicRoles
+    ) -> None:
         mock_UsagiUnicRoles.get_all_by.return_value = None
         import usagiBot.cogs.Tech.tech_utils as tech_utils
+
         importlib.reload(tech_utils)
         ctx = mock.AsyncMock()
         result = await tech_utils.get_user_roles(ctx)
@@ -62,32 +70,43 @@ class TestTechUtils(IsolatedAsyncioTestCase):
     @mock.patch("usagiBot.db.models.UsagiUnicRoles", new_callable=mock.AsyncMock)
     @mock.patch.object(asyncio, "create_async_engine")
     async def test_get_user_role(self, mock_engine, mock_UsagiUnicRoles) -> None:
-
         import usagiBot.cogs.Tech.tech_utils as tech_utils
+
         ctx = mock.AsyncMock()
         ctx.guild.get_role = mock.MagicMock()
         ctx.guild.get_role.return_value = "test_role"
 
-        with mock.patch("usagiBot.cogs.Tech.tech_utils.get_user_roles", return_value=[
-            mock.MagicMock(value=111),
-            mock.MagicMock(value=444),
-        ]) as mock_get_user_roles:
+        with mock.patch(
+            "usagiBot.cogs.Tech.tech_utils.get_user_roles",
+            return_value=[
+                mock.MagicMock(value=111),
+                mock.MagicMock(value=444),
+            ],
+        ) as mock_get_user_roles:
             result = await tech_utils.get_user_role(ctx, 444)
             ctx.guild.get_role.assert_called_with(444)
             self.assertEqual(result, "test_role")
 
     @mock.patch("usagiBot.db.models.UsagiUnicRoles", new_callable=mock.AsyncMock)
     @mock.patch.object(asyncio, "create_async_engine")
-    async def test_get_user_role_not_user_role(self, mock_engine, mock_UsagiUnicRoles) -> None:
+    async def test_get_user_role_not_user_role(
+        self, mock_engine, mock_UsagiUnicRoles
+    ) -> None:
         import usagiBot.cogs.Tech.tech_utils as tech_utils
+
         ctx = mock.AsyncMock()
         ctx.guild.get_role = mock.MagicMock()
         ctx.guild.get_role.return_value = "test_role"
 
-        with mock.patch("usagiBot.cogs.Tech.tech_utils.get_user_roles", return_value=[
-            mock.MagicMock(value=111),
-            mock.MagicMock(value=444),
-        ]) as mock_get_user_roles:
+        with mock.patch(
+            "usagiBot.cogs.Tech.tech_utils.get_user_roles",
+            return_value=[
+                mock.MagicMock(value=111),
+                mock.MagicMock(value=444),
+            ],
+        ) as mock_get_user_roles:
             result = await tech_utils.get_user_role(ctx, 222)
-            ctx.respond.assert_called_with("It's not your role or you didn't create it", ephemeral=True)
+            ctx.respond.assert_called_with(
+                "It's not your role or you didn't create it", ephemeral=True
+            )
             self.assertIsNone(result)

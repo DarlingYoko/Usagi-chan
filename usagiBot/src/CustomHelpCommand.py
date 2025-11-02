@@ -9,6 +9,8 @@ class CustomHelpCommand(commands.HelpCommand):
 
     async def send_bot_help(self, mapping):
         ctx = self.context
-        await ctx.reply("Please use **/help** command to see help instructions.", delete_after=60)
+        await ctx.reply(
+            "Please use **/help** command to see help instructions.", delete_after=60
+        )
         if not isinstance(ctx.message.channel, discord.DMChannel):
             await ctx.message.delete(delay=60)

@@ -12,15 +12,20 @@ os.environ["BOT_ID"] = "1234567890"
 
 
 class TestUtilsMethods(IsolatedAsyncioTestCase):
-
     @mock.patch("usagiBot.db.models.UsagiModerRoles", new_callable=mock.AsyncMock)
     @mock.patch("usagiBot.db.models.UsagiCogs", new_callable=mock.AsyncMock)
     @mock.patch.object(asyncio, "create_async_engine")
     def setUp(self, mock_engine, mock_UsagiCogs, mock_UsagiModerRoles) -> None:
         mock_UsagiCogs.get_all.return_value = [
-            mock.MagicMock(guild_id="test_guild_id_1", module_name="test_module_id_1", access=True),
-            mock.MagicMock(guild_id="test_guild_id_1", module_name="test_module_id_2", access=False),
-            mock.MagicMock(guild_id="test_guild_id_2", module_name="test_module_id_3", access=True),
+            mock.MagicMock(
+                guild_id="test_guild_id_1", module_name="test_module_id_1", access=True
+            ),
+            mock.MagicMock(
+                guild_id="test_guild_id_1", module_name="test_module_id_2", access=False
+            ),
+            mock.MagicMock(
+                guild_id="test_guild_id_2", module_name="test_module_id_3", access=True
+            ),
         ]
 
         mock_UsagiModerRoles.get_all.return_value = [
@@ -30,6 +35,7 @@ class TestUtilsMethods(IsolatedAsyncioTestCase):
         ]
 
         import usagiBot.src.UsagiUtils as UsagiUtils
+
         importlib.reload(UsagiUtils)
         self.Usagi_Utils = UsagiUtils
 
@@ -41,7 +47,7 @@ class TestUtilsMethods(IsolatedAsyncioTestCase):
         self.message = mock.AsyncMock()
 
         self.error = mock.MagicMock()
-        self.error.__str__.return_value = 'test_error_message'
+        self.error.__str__.return_value = "test_error_message"
         self.user = mock.AsyncMock()
         self.ctx.command.name = "test_command_name"
         self.ctx.author.mention = "test_author_mention"
@@ -53,12 +59,20 @@ class TestUtilsMethods(IsolatedAsyncioTestCase):
         self.ctx.bot.fetch_user.return_value = self.user
 
     async def test_error_notification_to_owner(self) -> None:
-        await self.Usagi_Utils.error_notification_to_owner(ctx=self.ctx, error=self.error, bot=self.bot)
-        self.user.send.assert_called_with(f"**NEW ERROR OCCURRED**\n> **Command** - test_command_name\n> **User** - test_author_mention\n> **Channel** - test_channel_id\n> **Error** - test_error_message\n> **Error type** - {type(self.error)}\n> **Message** - test_message_id\n> **Args** - test_args\n> **Kwargs** - test_kwargs\n")
+        await self.Usagi_Utils.error_notification_to_owner(
+            ctx=self.ctx, error=self.error, bot=self.bot
+        )
+        self.user.send.assert_called_with(
+            f"**NEW ERROR OCCURRED**\n> **Command** - test_command_name\n> **User** - test_author_mention\n> **Channel** - test_channel_id\n> **Error** - test_error_message\n> **Error type** - {type(self.error)}\n> **Message** - test_message_id\n> **Args** - test_args\n> **Kwargs** - test_kwargs\n"
+        )
 
     async def test_error_notification_to_owner_app_command(self) -> None:
-        await self.Usagi_Utils.error_notification_to_owner(ctx=self.ctx, error=self.error, bot=self.bot, app_command=True)
-        self.user.send.assert_called_with(f"**NEW ERROR OCCURRED**\n> **Command** - test_command_name\n> **User** - test_author_mention\n> **Channel** - test_channel_id\n> **Error** - test_error_message\n> **Error type** - {type(self.error)}\n")
+        await self.Usagi_Utils.error_notification_to_owner(
+            ctx=self.ctx, error=self.error, bot=self.bot, app_command=True
+        )
+        self.user.send.assert_called_with(
+            f"**NEW ERROR OCCURRED**\n> **Command** - test_command_name\n> **User** - test_author_mention\n> **Channel** - test_channel_id\n> **Error** - test_error_message\n> **Error type** - {type(self.error)}\n"
+        )
 
     async def test_load_all_command_tags(self) -> None:
         main_cog = mock.MagicMock()
@@ -87,9 +101,11 @@ class TestUtilsMethods(IsolatedAsyncioTestCase):
             discord.OptionChoice(
                 name="main_command_2",
                 value="command_tag_command_2",
-            )
+            ),
         ]
-        response = self.Usagi_Utils.check_arg_in_command_tags("command_tag_command_1", tags)
+        response = self.Usagi_Utils.check_arg_in_command_tags(
+            "command_tag_command_1", tags
+        )
         self.assertTrue(response)
 
     async def test_check_arg_in_command_tags_false(self) -> None:
@@ -98,24 +114,30 @@ class TestUtilsMethods(IsolatedAsyncioTestCase):
 
     async def test_init_cogs_settings(self) -> None:
         response = await self.Usagi_Utils.init_cogs_settings()
-        self.assertEqual(response, {
-            "test_guild_id_1": {
-                "test_module_id_1": True,
-                "test_module_id_2": False
+        self.assertEqual(
+            response,
+            {
+                "test_guild_id_1": {
+                    "test_module_id_1": True,
+                    "test_module_id_2": False,
+                },
+                "test_guild_id_2": {
+                    "test_module_id_3": True,
+                },
             },
-            "test_guild_id_2": {
-                "test_module_id_3": True,
-            }
-        })
+        )
 
     async def test_init_moder_roles(self) -> None:
         response = await self.Usagi_Utils.init_moder_roles()
-        self.assertEqual(response, {
-            "test_guild_id_1": [
-                "test_role_id_1",
-                "test_role_id_2",
-            ],
-            "test_guild_id_2": [
-                "test_role_id_3",
-            ]
-        })
+        self.assertEqual(
+            response,
+            {
+                "test_guild_id_1": [
+                    "test_role_id_1",
+                    "test_role_id_2",
+                ],
+                "test_guild_id_2": [
+                    "test_role_id_3",
+                ],
+            },
+        )

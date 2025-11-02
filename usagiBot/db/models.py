@@ -1,5 +1,15 @@
 from usagiBot.db.base import Base, async_session, engine
-from sqlalchemy import Text, BigInteger, Boolean, Column, Integer, DateTime, ForeignKey, and_, or_
+from sqlalchemy import (
+    Text,
+    BigInteger,
+    Boolean,
+    Column,
+    Integer,
+    DateTime,
+    ForeignKey,
+    and_,
+    or_,
+)
 from sqlalchemy import update as sqlalchemy_update
 from sqlalchemy import delete as sqlalchemy_delete
 from sqlalchemy.future import select
@@ -7,13 +17,9 @@ from pgvector.sqlalchemy import Vector
 
 
 class ModelAdmin:
-
     @classmethod
     def generate_conditions(cls, kwargs):
-        conditions = [
-            getattr(cls, attr) == kwargs.get(attr)
-            for attr in kwargs.keys()
-        ]
+        conditions = [getattr(cls, attr) == kwargs.get(attr) for attr in kwargs.keys()]
         return conditions
 
     @classmethod
@@ -131,9 +137,11 @@ class ModelAdmin:
                 return config
 
     @classmethod
-    async def get_last_n(cls, limit = 10, **kwargs):
+    async def get_last_n(cls, limit=10, **kwargs):
         conditions = cls.generate_conditions(kwargs)
-        query = select(cls).where(and_(*conditions)).order_by(cls.id.desc()).limit(limit)
+        query = (
+            select(cls).where(and_(*conditions)).order_by(cls.id.desc()).limit(limit)
+        )
         async with async_session() as session:
             async with session.begin():
                 results = await session.execute(query)
@@ -145,9 +153,9 @@ class ModelAdmin:
         conditions = cls.generate_conditions(kwargs)
         query = (
             select(cls)
-             .where(and_(*conditions))
-             .order_by(cls.embedding.l2_distance(query_vec))
-             .limit(limit)
+            .where(and_(*conditions))
+            .order_by(cls.embedding.l2_distance(query_vec))
+            .limit(limit)
         )
         async with async_session() as session:
             async with session.begin():
@@ -267,7 +275,7 @@ class UsagiAutoRoles(Base, ModelAdmin):
 class UsagiAutoRolesData(Base, ModelAdmin):
     __tablename__ = "usagi_auto_roles_data"
     id = Column(Integer, primary_key=True)
-    message_id = Column(Text, ForeignKey('usagi_auto_roles.message_id'))
+    message_id = Column(Text, ForeignKey("usagi_auto_roles.message_id"))
     role_id = Column(BigInteger)
     emoji_id = Column(BigInteger)
     description = Column(Text)
@@ -318,6 +326,7 @@ class UsagiBirthdayTimer(Base, ModelAdmin):
     channel_id = Column(BigInteger)
     enable = Column(Boolean)
 
+
 class UsagiTorrent(Base, ModelAdmin):
     __tablename__ = "usagi_torrent"
     id = Column(Integer, primary_key=True)
@@ -326,6 +335,7 @@ class UsagiTorrent(Base, ModelAdmin):
     user_id = Column(BigInteger)
     tag = Column(Text)
 
+
 class UsagiAIFacts(Base, ModelAdmin):
     __tablename__ = "usagi_ai_facts"
     id = Column(Integer, primary_key=True)
@@ -333,12 +343,14 @@ class UsagiAIFacts(Base, ModelAdmin):
     user_id = Column(BigInteger)
     facts = Column(Text)
 
+
 class UsagiAIPromt(Base, ModelAdmin):
     __tablename__ = "usagi_ai_promt"
     id = Column(Integer, primary_key=True)
     guild_id = Column(BigInteger)
     user_id = Column(BigInteger)
     prompt = Column(Text)
+
 
 class UsagiAIMemory(Base, ModelAdmin):
     __tablename__ = "usagi_ai_memory"

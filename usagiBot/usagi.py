@@ -33,10 +33,13 @@ for cog_name in os.listdir(COGS_DIR):
         bot.load_extension(f"{cogs_dir_with_dots}.{cog_name}.index")
 
 # Define language
-i18n = I18nExtension([
-    Language("English", "en", json.load(open("usagiBot/files/language/en.json"))),
-    Language("Russian", "ru", json.load(open("usagiBot/files/language/ru.json"))),
-], fallback="en")
+i18n = I18nExtension(
+    [
+        Language("English", "en", json.load(open("usagiBot/files/language/en.json"))),
+        Language("Russian", "ru", json.load(open("usagiBot/files/language/ru.json"))),
+    ],
+    fallback="en",
+)
 
 
 def get_locale(ctx):

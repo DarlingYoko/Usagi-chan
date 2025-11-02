@@ -1,10 +1,10 @@
-import asyncio, random, qbittorrentapi
+import random
 import discord
 
-from discord.ext import commands, tasks
+from discord.ext import commands
 from discord import SlashCommandGroup
 from usagiBot.cogs.Fun.fun_utils import get_exchange_rate_data, get_vpn_list
-from usagiBot.db.models import UsagiConfig, UsagiTorrent
+from usagiBot.db.models import UsagiConfig
 from usagiBot.env import SHARED_FOLDER_URL
 from usagiBot.src.UsagiChecks import check_is_already_set_up, check_cog_whitelist
 from usagiBot.src.UsagiErrors import UsagiModuleDisabledError
@@ -12,7 +12,6 @@ from usagiBot.src.UsagiUtils import get_embed
 
 from pycord18n.extension import _
 from requests import get
-from datetime import datetime
 
 
 class Fun(commands.Cog):
@@ -35,15 +34,26 @@ class Fun(commands.Cog):
         ping = round(ctx.bot.latency * 1000)
         await ctx.reply(_("ping pong").format(ping=ping))
 
-    @commands.command(aliases=["понг"], name="pong", description="Check Usagi ping",)
+    @commands.command(
+        aliases=["понг"],
+        name="pong",
+        description="Check Usagi ping",
+    )
     async def pong_to_usagi(self, ctx) -> None:
         await ctx.reply(_("pong ping"))
 
-    @commands.command(name="link", description="Link to my webs.",)
+    @commands.command(
+        name="link",
+        description="Link to my webs.",
+    )
     async def get_stats_link(self, ctx) -> None:
-        await ctx.reply(_("link on my webs").format(shared_folder_url=SHARED_FOLDER_URL))
+        await ctx.reply(
+            _("link on my webs").format(shared_folder_url=SHARED_FOLDER_URL)
+        )
 
-    @commands.command(name="яишенка", aliases=["глазунья"], description="Как приготовить яишенку")
+    @commands.command(
+        name="яишенка", aliases=["глазунья"], description="Как приготовить яишенку"
+    )
     async def how_to_make_fried_eggs(self, ctx) -> None:
         answer = (
             "<a:read:859186021488525323> Ставишь сковороду на небольшую температуру, наливаешь немного масла, "
@@ -67,7 +77,9 @@ class Fun(commands.Cog):
     async def check_toxic_percent(self, ctx) -> None:
         return await ctx.send(_("toxic lvl").format(toxic=random.randint(1, 100)))
 
-    @commands.command(name="currency", aliases=["курс"], description="Check current exchange rate")
+    @commands.command(
+        name="currency", aliases=["курс"], description="Check current exchange rate"
+    )
     async def get_exchange_rate(self, ctx) -> None:
         return_message = "```autohotkey\n"
 
@@ -83,10 +95,7 @@ class Fun(commands.Cog):
 
         return_message += "```"
         await ctx.reply(
-            embed=get_embed(
-                title=_("currency"),
-                description=return_message
-            )
+            embed=get_embed(title=_("currency"), description=return_message)
         )
 
     @commands.command(name="iq", description="See your IQ")
@@ -106,10 +115,14 @@ class Fun(commands.Cog):
 
         await ctx.reply(f"Твой iq = {user_iq}\n{answer}")
 
-    @commands.command(aliases=["айпи"], name="ip", description="Check Usagi ip", )
+    @commands.command(
+        aliases=["айпи"],
+        name="ip",
+        description="Check Usagi ip",
+    )
     @commands.cooldown(per=60 * 1, rate=1, type=commands.BucketType.user)
     async def get_ip(self, ctx) -> None:
-        cur_ip = get('https://api.ipify.org').content.decode('utf8')
+        cur_ip = get("https://api.ipify.org").content.decode("utf8")
         await ctx.reply(cur_ip)
 
     # Slash commands
@@ -201,7 +214,6 @@ class Fun(commands.Cog):
     #             tag=db_record.tag,
     #         )
 
-
     # @check_torrents.before_loop
     # async def before_check_torrents(self):
     #     await self.bot.wait_until_ready()
@@ -225,7 +237,7 @@ class Fun(commands.Cog):
     async def vpn_top(self, ctx: discord.ApplicationContext):
         top_users = get_vpn_list()
         if top_users is None:
-            await ctx.respond('No data', ephemeral=True)
+            await ctx.respond("No data", ephemeral=True)
 
         title = _("Top vpn")
         result = list(
@@ -272,7 +284,9 @@ class Fun(commands.Cog):
                 files.append(file)
 
         await channel.send(
-            content=_("based from").format(mention=message.author.mention, message=message.content),
+            content=_("based from").format(
+                mention=message.author.mention, message=message.content
+            ),
             files=files,
             embeds=message.embeds,
         )
@@ -281,10 +295,7 @@ class Fun(commands.Cog):
     # User commands
     @commands.user_command(name="Get User Info")
     async def get_user_info(self, ctx, user: discord.User) -> None:
-        embed = get_embed(
-            title=user.name,
-            url_image=user.avatar
-        )
+        embed = get_embed(title=user.name, url_image=user.avatar)
         await ctx.respond(embed=embed)
 
 

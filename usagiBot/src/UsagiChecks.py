@@ -29,15 +29,12 @@ def check_correct_channel_command():
         if config and config.generic_id == ctx.channel.id:
             return True
 
-        raise UsagiCallFromWrongChannelError(
-            channel_id=config.generic_id
-        )
+        raise UsagiCallFromWrongChannelError(channel_id=config.generic_id)
 
     return commands.check(predicate)
 
 
 def check_cog_whitelist(cog, ctx) -> bool:
-
     if isinstance(ctx, ApplicationContext):
         channel = ctx.channel
     else:
@@ -76,5 +73,5 @@ def check_member_is_moder(ctx):
 def is_owner():
     async def predicate(ctx):
         return ctx.author.id == BOT_OWNER
-    return commands.check(predicate)
 
+    return commands.check(predicate)

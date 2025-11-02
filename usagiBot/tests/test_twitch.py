@@ -52,6 +52,18 @@ class TestTwitch(IsolatedAsyncioTestCase):
         self.Twitch.bot.i18n = init_i18n()
         self.Twitch.bot.language = {}
 
+        # IMPORTANT: override get_channel + fetch_channel
+        self.channels = {}
+
+        def mock_get_channel(cid):
+            return self.channels.get(cid)
+
+        async def mock_fetch_channel(cid):
+            return self.channels.get(cid)
+
+        self.Twitch.bot.get_channel = mock.MagicMock(side_effect=mock_get_channel)
+        self.Twitch.bot.fetch_channel = mock.AsyncMock(side_effect=mock_fetch_channel)
+
     async def test_twitch_notify_loop(self) -> None:
         self.mock_UsagiTwitchNotify.get_all.return_value = [
             mock.MagicMock(
@@ -96,14 +108,15 @@ class TestTwitch(IsolatedAsyncioTestCase):
             None,
         ]
 
-        notify_channel = mock.AsyncMock()
-        self.Twitch.bot.fetch_channel = mock.AsyncMock(return_value=notify_channel)
+        notify_channel = mock.AsyncMock(channel_id="test_generic_id_channel_to_notify")
+        self.channels["test_generic_id_channel_to_notify"] = notify_channel
+
         await self.Twitch.twitch_notify_loop(self.Twitch)
         self.mock_UsagiTwitchNotify.get_all.assert_called_with()
         self.mock_UsagiConfig.get.assert_called_with(
             guild_id="test_guild_id_1", command_tag="twitch_notify"
         )
-        self.Twitch.bot.fetch_channel.assert_called_with(
+        self.Twitch.bot.get_channel.assert_called_with(
             "test_generic_id_channel_to_notify"
         )
 
@@ -128,7 +141,7 @@ class TestTwitch(IsolatedAsyncioTestCase):
             started_at=datetime(year=2001, month=3, day=21),
         )
         self.ctx.respond.assert_called_with(
-            f"Followed you to **yoko_0**", ephemeral=True
+            "Followed you to **yoko_0**", ephemeral=True
         )
 
     async def test_follow_streamer_fake_streamer(self) -> None:
@@ -151,7 +164,7 @@ class TestTwitch(IsolatedAsyncioTestCase):
             twitch_username="uselessmouth",
         )
         self.ctx.respond.assert_called_with(
-            f"You are already followed to this streamer!", ephemeral=True
+            "You are already followed to this streamer!", ephemeral=True
         )
 
     async def test_unfollow_streamer(self) -> None:
@@ -170,7 +183,7 @@ class TestTwitch(IsolatedAsyncioTestCase):
             twitch_username="streamer_1",
         )
         self.ctx.respond.assert_called_with(
-            f"Unfollowed you from **streamer_1**", ephemeral=True
+            "Unfollowed you from **streamer_1**", ephemeral=True
         )
 
     async def test_unfollow_streamer_not_followed(self) -> None:
@@ -184,7 +197,7 @@ class TestTwitch(IsolatedAsyncioTestCase):
             twitch_username="streamer_2",
         )
         self.ctx.respond.assert_called_with(
-            f"You are not followed to this streamer.", ephemeral=True
+            "You are not followed to this streamer.", ephemeral=True
         )
 
     async def test_show_user_follows(self) -> None:

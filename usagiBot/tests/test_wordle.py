@@ -56,7 +56,7 @@ class TestWordleMethods(IsolatedAsyncioTestCase):
         interaction.guild.fetch_member.return_value = game_author
         interaction.user = winner
 
-        description = f"""
+        description = """
 ### Wordle game #1 is finished finished.
 ```ansi
 [0;2m[0m[0;2mWinner — test_winner[0m[2;32m[0m
@@ -65,12 +65,11 @@ Created by test_game_author[0m[2;32m[4;32m[4;32m[0;32m[0m[4;32m[0m[4;32
 ```"""
         thread = mock.MagicMock()
         thread.mention = "Wordle game #1 is finished"
-        game = mock.MagicMock(user_lang="en", bot=self.bot, game_id=123, owner_id=12345, thread=thread)
+        game = mock.MagicMock(
+            user_lang="en", bot=self.bot, game_id=123, owner_id=12345, thread=thread
+        )
         response_embed = await self.wordle_utils.create_finish_game_embed(
-            interaction=interaction,
-            result="win",
-            word="жопас",
-            game=game
+            interaction=interaction, result="win", word="жопас", game=game
         )
 
         interaction.guild.fetch_member.assert_called_with(12345)
@@ -89,7 +88,7 @@ Created by test_game_author[0m[2;32m[4;32m[4;32m[0;32m[0m[4;32m[0m[4;32
             timeout=180,
             bot=self.bot,
             user_lang="en",
-            thread=thread
+            thread=thread,
         )
 
         interaction = mock.AsyncMock()
@@ -117,7 +116,7 @@ Created by test_game_author[0m[2;32m[4;32m[4;32m[0;32m[0m[4;32m[0m[4;32
             timeout=180,
             bot=self.bot,
             user_lang="en",
-            thread=thread
+            thread=thread,
         )
         wordle_answer = self.wordle_utils.WordleAnswer(
             game=wordle_game, title="Your answer!"
@@ -162,7 +161,7 @@ Created by test_game_author[0m[2;32m[4;32m[4;32m[0;32m[0m[4;32m[0m[4;32
             timeout=180,
             bot=self.bot,
             user_lang="en",
-            thread=thread
+            thread=thread,
         )
         wordle_answer = self.wordle_utils.WordleAnswer(
             game=wordle_game, title="Your answer!"
@@ -196,7 +195,7 @@ Created by test_game_author[0m[2;32m[4;32m[4;32m[0;32m[0m[4;32m[0m[4;32
             timeout=180,
             bot=self.bot,
             user_lang="en",
-            thread=thread
+            thread=thread,
         )
         wordle_answer = self.wordle_utils.WordleAnswer(
             game=wordle_game, title="Your answer!"
@@ -230,7 +229,7 @@ Created by test_game_author[0m[2;32m[4;32m[4;32m[0;32m[0m[4;32m[0m[4;32
             timeout=180,
             bot=self.bot,
             user_lang="en",
-            thread=thread
+            thread=thread,
         )
         wordle_answer = self.wordle_utils.WordleAnswer(
             game=wordle_game, title="Your answer!"
@@ -268,7 +267,7 @@ Created by test_game_author[0m[2;32m[4;32m[4;32m[0;32m[0m[4;32m[0m[4;32
             timeout=180,
             bot=self.bot,
             user_lang="en",
-            thread=thread
+            thread=thread,
         )
         wordle_answer = self.wordle_utils.WordleAnswer(
             game=wordle_game, title="Your answer!"

@@ -52,13 +52,12 @@ class SubsSelect(discord.ui.Select):
                     description="Notify you about to claim daily reward.",
                     value="daily_notify",
                 ),
-            ]
+            ],
         )
 
     @discord.ui.select(
         placeholder="Select subscription",
         max_values=5,
-
     )
     async def callback(self, interaction):
         user = self.subs_acc_select.user
@@ -123,7 +122,6 @@ class SubsAccountSelect(discord.ui.Select):
         )
 
     async def callback(self, interaction: discord.Interaction):
-
         data_id = 0
         for i in range(len(self.users_data)):
             if self.users_data[i]["nickname"] == self.values[0]:
@@ -178,7 +176,6 @@ class LoginModal(discord.ui.Modal):
         self.add_item(discord.ui.InputText(label="cookie_token_v2"))
 
     async def callback(self, interaction: discord.Interaction):
-
         guild_id = interaction.guild_id
         user_id = interaction.user.id
         ltuid_v2 = self.children[0].value
@@ -281,7 +278,9 @@ class HoyolabAccountDeleteSelect(discord.ui.Select):
         if not self.users_data:
             await interaction.response.edit_message(view=None, content="Done")
             return
-        await interaction.response.edit_message(view=HoyolabAccountDeleteView(self.users_data, self.users))
+        await interaction.response.edit_message(
+            view=HoyolabAccountDeleteView(self.users_data, self.users)
+        )
 
 
 class HoyolabAccountDeleteView(discord.ui.View):
@@ -300,9 +299,7 @@ class Hoyolab(commands.Cog):
     @tasks.loop(minutes=30)
     async def check_resin_overflow(self):
         users = await UsagiHoyolab.get_all_by_or(
-            genshin_resin_sub=True,
-            starrail_resin_sub=True,
-            zzz_resin_sub=True
+            genshin_resin_sub=True, starrail_resin_sub=True, zzz_resin_sub=True
         )
 
         for user in users:
@@ -312,9 +309,11 @@ class Hoyolab(commands.Cog):
             if not config:
                 continue
             try:
-                channel = self.bot.get_channel(config.generic_id) or await self.bot.fetch_channel(config.generic_id)
+                channel = self.bot.get_channel(
+                    config.generic_id
+                ) or await self.bot.fetch_channel(config.generic_id)
             except discord.errors.Forbidden:
-                print(f"Cant get access to {config.generic_id}")
+                self.bot.logger.error(f"Cant get access to {config.generic_id}")
                 continue
 
             hoyolab_api = HoyolabAPI()
@@ -325,11 +324,15 @@ class Hoyolab(commands.Cog):
 
             if genshin_data and genshin_data.current_resin < 180:
                 if user.genshin_resin_sub_notified:
-                    await UsagiHoyolab.update(id=user.id, genshin_resin_sub_notified=False)
+                    await UsagiHoyolab.update(
+                        id=user.id, genshin_resin_sub_notified=False
+                    )
 
             if starrail_data and starrail_data.current_stamina < 220:
                 if user.starrail_resin_sub_notified:
-                    await UsagiHoyolab.update(id=user.id, starrail_resin_sub_notified=False)
+                    await UsagiHoyolab.update(
+                        id=user.id, starrail_resin_sub_notified=False
+                    )
 
             if zzz_data and zzz_data.battery_charge.current < 220:
                 if user.zzz_resin_sub_notified:
@@ -337,42 +340,41 @@ class Hoyolab(commands.Cog):
 
             lang = self.bot.language.get(user.user_id, "en")
             if (
-                    genshin_data and
-                    user.genshin_resin_sub and
-                    not user.genshin_resin_sub_notified and
-                    genshin_data.current_resin >= 180
+                genshin_data
+                and user.genshin_resin_sub
+                and not user.genshin_resin_sub_notified
+                and genshin_data.current_resin >= 180
             ):
                 notify_text = self.bot.i18n.get_text("resin cap", lang).format(
                     user_id=user.user_id,
                     nickname=data["nickname"],
-                    current_resin=genshin_data.current_resin
+                    current_resin=genshin_data.current_resin,
                 )
                 await channel.send(content=notify_text)
                 await UsagiHoyolab.update(id=user.id, genshin_resin_sub_notified=True)
             if (
-                    starrail_data and
-                    user.starrail_resin_sub and not
-                    user.starrail_resin_sub_notified and
-                    starrail_data.current_stamina >= 220
+                starrail_data
+                and user.starrail_resin_sub
+                and not user.starrail_resin_sub_notified
+                and starrail_data.current_stamina >= 220
             ):
                 notify_text = self.bot.i18n.get_text("stamina cap", lang).format(
                     user_id=user.user_id,
                     nickname=data["nickname"],
-                    current_stamina=starrail_data.current_stamina
+                    current_stamina=starrail_data.current_stamina,
                 )
                 await channel.send(content=notify_text)
                 await UsagiHoyolab.update(id=user.id, starrail_resin_sub_notified=True)
-
             if (
-                    zzz_data and
-                    user.zzz_resin_sub and not
-                    user.zzz_resin_sub_notified and
-                    zzz_data.battery_charge.current >= 220
+                zzz_data
+                and user.zzz_resin_sub
+                and not user.zzz_resin_sub_notified
+                and zzz_data.battery_charge.current >= 220
             ):
                 notify_text = self.bot.i18n.get_text("energy cap", lang).format(
                     user_id=user.user_id,
                     nickname=data["nickname"],
-                    current_energy=zzz_data.battery_charge.current
+                    current_energy=zzz_data.battery_charge.current,
                 )
                 await channel.send(content=notify_text)
                 await UsagiHoyolab.update(id=user.id, zzz_resin_sub_notified=True)
@@ -399,7 +401,9 @@ class Hoyolab(commands.Cog):
             if not config:
                 continue
             channel = await self.bot.fetch_channel(config.generic_id)
-            notify_channel = notify_channels.setdefault(channel.id, {"channel": channel, "users": []})
+            notify_channel = notify_channels.setdefault(
+                channel.id, {"channel": channel, "users": []}
+            )
             notify_channel["users"].append(user.user_id)
 
         for data in notify_channels.values():
@@ -408,9 +412,11 @@ class Hoyolab(commands.Cog):
 
             users_text = ", ".join(map(lambda user_id: f"<@{user_id}>", users))
             links = "\nGenshin - https://bit.ly/genshin_daily\nHonkai - https://bit.ly/honkai_daily\nZZZ - https://bit.ly/zzz_daily"
-            text = "Don't forget to claim your daily reward! <:UsagiLove:1084226975113158666> \n" \
-                   + users_text \
-                   + links
+            text = (
+                "Don't forget to claim your daily reward! <:UsagiLove:1084226975113158666> \n"
+                + users_text
+                + links
+            )
             await channel.send(text)
 
     @daily_reward_claim_notify.before_loop
@@ -425,9 +431,8 @@ class Hoyolab(commands.Cog):
         if time_in_moscow.hour != 19:
             return
         users = await UsagiHoyolab.get_all_by_or(
-            genshin_daily_sub=True,
-            starrail_daily_sub=True,
-            zzz_daily_sub=True)
+            genshin_daily_sub=True, starrail_daily_sub=True, zzz_daily_sub=True
+        )
         channels = []
         out_date_cookies = []
 
@@ -443,18 +448,15 @@ class Hoyolab(commands.Cog):
             respone = None
             if user.genshin_daily_sub:
                 respone = await hoyolab_api.claim_daily_reward(
-                    db_id=user.id,
-                    game=genshin.Game.GENSHIN
+                    db_id=user.id, game=genshin.Game.GENSHIN
                 )
             if user.starrail_daily_sub:
                 respone = await hoyolab_api.claim_daily_reward(
-                    db_id=user.id,
-                    game=genshin.Game.STARRAIL
+                    db_id=user.id, game=genshin.Game.STARRAIL
                 )
             if user.zzz_daily_sub:
                 respone = await hoyolab_api.claim_daily_reward(
-                    db_id=user.id,
-                    game=genshin.Game.ZZZ
+                    db_id=user.id, game=genshin.Game.ZZZ
                 )
             if respone == "InvalidCookies":
                 out_date_cookies.append((user.user_id, channel))
@@ -463,8 +465,10 @@ class Hoyolab(commands.Cog):
                 channels.append(channel)
         for channel in channels:
             await channel.send(
-                content=("Claimed daily rewards.\n"
-                         "To follow use `/hoyolab sub genshin_reward_claim/honkai_reward_claim `")
+                content=(
+                    "Claimed daily rewards.\n"
+                    "To follow use `/hoyolab sub genshin_reward_claim/honkai_reward_claim `"
+                )
             )
 
         for out_cookie in out_date_cookies:
@@ -475,7 +479,7 @@ class Hoyolab(commands.Cog):
     @claim_daily_reward.before_loop
     async def before_claim_daily_reward(self):
         await self.bot.wait_until_ready()
-        self.bot.logger.info(f"Checking daily reward.")
+        self.bot.logger.info("Checking daily reward.")
 
     def cog_check(self, ctx):
         if check_cog_whitelist(self, ctx):
@@ -484,12 +488,9 @@ class Hoyolab(commands.Cog):
 
     @commands.command(name="primogems", aliases=["примогемы"])
     async def primogems_link(self, ctx):
-        link_1 = (
-            "<https://docs.google.com/spreadsheets/d/1l9HPu2cAzTckdXtr7u-7D8NSKzZNUqOuvbmxERFZ_6w/edit#gid=955728278>")
-        link_2 = (
-            "<https://docs.google.com/spreadsheets/d/e/2PACX-1vRIWjzFwAZZoBvKw2oiNaVpppI9atoV0wxuOjulKRJECrg_BN404d7LoKlHp8RMX8hegDr4b8jlHjYy/pubhtml>")
-        link_3 = (
-            "<https://docs.google.com/spreadsheets/u/0/d/1nGCs3jx1nVysEdH-2CliKEMj7KIwhILUMXTkQKDQoJA/htmlview#gid=0>")
+        link_1 = "<https://docs.google.com/spreadsheets/d/1l9HPu2cAzTckdXtr7u-7D8NSKzZNUqOuvbmxERFZ_6w/edit#gid=955728278>"
+        link_2 = "<https://docs.google.com/spreadsheets/d/e/2PACX-1vRIWjzFwAZZoBvKw2oiNaVpppI9atoV0wxuOjulKRJECrg_BN404d7LoKlHp8RMX8hegDr4b8jlHjYy/pubhtml>"
+        link_3 = "<https://docs.google.com/spreadsheets/u/0/d/1nGCs3jx1nVysEdH-2CliKEMj7KIwhILUMXTkQKDQoJA/htmlview#gid=0>"
         answer = _("links to primogems")
         text = "\n".join([answer, link_1, link_2, link_3])
         return await ctx.reply(text)
@@ -518,24 +519,26 @@ class Hoyolab(commands.Cog):
         name="hoyolab",
         name_localizations={"ru": "хоелаб"},
         description="Follow your resin in Hoyolab!",
-        description_localizations={"ru": "Отслеживайте свою смолу и получайте дейли отметки в Хоёлабе!"},
+        description_localizations={
+            "ru": "Отслеживайте свою смолу и получайте дейли отметки в Хоёлабе!"
+        },
         command_tag="genshin",
-        checks=[
-            check_is_already_set_up().predicate
-        ],
+        checks=[check_is_already_set_up().predicate],
     )
 
     @hoyolab.command(
         name="login",
         name_localizations={"ru": "логин"},
         description="Necessary login Hoyolab account for using commands.",
-        description_localizations={"ru": "Обязательная авторизация для использования хоёлаб команд."},
+        description_localizations={
+            "ru": "Обязательная авторизация для использования хоёлаб команд."
+        },
     )
     async def login(self, ctx: discord.ApplicationContext):
         await ctx.respond(
             _("Please login hoyolab"),
             view=LoginButton(self.bot, ctx.user),
-            ephemeral=True
+            ephemeral=True,
         )
 
     @hoyolab.command(
@@ -559,16 +562,11 @@ class Hoyolab(commands.Cog):
             try:
                 user_id = int(user_id)
             except ValueError:
-                await ctx.respond(
-                    content=_("Wrong discord ID"),
-                    ephemeral=True
-                )
+                await ctx.respond(content=_("Wrong discord ID"), ephemeral=True)
                 return
         users = await UsagiHoyolab.get_all_by(guild_id=ctx.guild.id, user_id=user_id)
         if not users:
-            await ctx.respond(
-                content=_("You are not logged in"), ephemeral=True
-            )
+            await ctx.respond(content=_("You are not logged in"), ephemeral=True)
             return
         users_data = []
         for user in users:
@@ -577,10 +575,7 @@ class Hoyolab(commands.Cog):
             users_data.append(data)
 
         if not users_data:
-            await ctx.respond(
-                content=_("Your cookie out of date"),
-                ephemeral=True
-            )
+            await ctx.respond(content=_("Your cookie out of date"), ephemeral=True)
             return
 
         fields = generate_fields(users_data[0])
@@ -590,12 +585,16 @@ class Hoyolab(commands.Cog):
             author_icon_URL=users_data[0].get("icon", None),
             fields=fields,
         )
-        await ctx.send_followup(content="", embed=embed, view=HoyolabAccountView(self.bot, users_data))
+        await ctx.send_followup(
+            content="", embed=embed, view=HoyolabAccountView(self.bot, users_data)
+        )
 
         if users_data[0]["geetest_error"] is not None:
             await ctx.respond(
-                content=_("geetest error").format(geetest_error=users_data[0]["geetest_error"]),
-                ephemeral=True
+                content=_("geetest error").format(
+                    geetest_error=users_data[0]["geetest_error"]
+                ),
+                ephemeral=True,
             )
 
     @hoyolab.command(
@@ -667,26 +666,20 @@ class Hoyolab(commands.Cog):
     async def subscriptions(self, ctx) -> None:
         await ctx.defer(ephemeral=True)
 
-        users = await UsagiHoyolab.get_all_by(guild_id=ctx.guild.id, user_id=ctx.user.id)
+        users = await UsagiHoyolab.get_all_by(
+            guild_id=ctx.guild.id, user_id=ctx.user.id
+        )
         if not users:
-            await ctx.respond(
-                content=_("You are not logged in"), ephemeral=True
-            )
+            await ctx.respond(content=_("You are not logged in"), ephemeral=True)
             return
         users_data = []
         for user in users:
             hoyolab_api = HoyolabAPI()
             data = await hoyolab_api.get_user_data(db_id=user.id)
-            users_data.append({
-                "nickname": data["nickname"],
-                "icon": data["icon"]
-            })
+            users_data.append({"nickname": data["nickname"], "icon": data["icon"]})
 
         if not users_data:
-            await ctx.respond(
-                content=_("Your cookie out of date"),
-                ephemeral=True
-            )
+            await ctx.respond(content=_("Your cookie out of date"), ephemeral=True)
             return
 
         fields = generate_all_subs_fields(users[0])
@@ -708,26 +701,20 @@ class Hoyolab(commands.Cog):
     async def delete_hoyolab_account(self, ctx) -> None:
         await ctx.defer(ephemeral=True)
 
-        users = await UsagiHoyolab.get_all_by(guild_id=ctx.guild.id, user_id=ctx.user.id)
+        users = await UsagiHoyolab.get_all_by(
+            guild_id=ctx.guild.id, user_id=ctx.user.id
+        )
         if not users:
-            await ctx.respond(
-                content=_("You are not logged in"), ephemeral=True
-            )
+            await ctx.respond(content=_("You are not logged in"), ephemeral=True)
             return
         users_data = []
         for user in users:
             hoyolab_api = HoyolabAPI()
             data = await hoyolab_api.get_user_data(db_id=user.id)
-            users_data.append({
-                "nickname": data["nickname"],
-                "icon": data["icon"]
-            })
+            users_data.append({"nickname": data["nickname"], "icon": data["icon"]})
 
         if not users_data:
-            await ctx.respond(
-                content=_("Your cookie out of date"),
-                ephemeral=True
-            )
+            await ctx.respond(content=_("Your cookie out of date"), ephemeral=True)
             return
 
         await ctx.respond(content="", view=HoyolabAccountDeleteView(users_data, users))
