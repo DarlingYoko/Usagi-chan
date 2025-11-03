@@ -7,6 +7,7 @@ import pytest
 from sqlalchemy.ext import asyncio
 
 from usagiBot.src.UsagiErrors import *
+from usagiBot.tests.utils import *
 
 
 @pytest.fixture(autouse=True)
@@ -24,7 +25,7 @@ def clear_imports():
 
 
 class TestCheckMethods(IsolatedAsyncioTestCase):
-    @mock.patch("usagiBot.db.models.UsagiConfig", new_callable=mock.AsyncMock)
+    @mock.patch("usagiBot.cogs.Main.schemas.UsagiConfig", new_callable=mock.AsyncMock)
     @mock.patch.object(asyncio, "create_async_engine")
     def setUp(self, mock_engine, mock_UsagiConfig) -> None:
         self.mock_UsagiConfig = mock_UsagiConfig

@@ -12,7 +12,8 @@ from usagiBot.tests.utils import *
 def clear_imports():
     # Store the initial state of sys.modules
     initial_modules = dict(sys.modules)
-
+    from usagiBot.db.base import Base
+    Base.metadata.clear()
     # Yield control to the test
     yield
 
@@ -26,7 +27,7 @@ class TestTechMethods(IsolatedAsyncioTestCase):
     @mock.patch(
         "usagiBot.cogs.Tech.tech_utils.get_user_role", new_callable=mock.AsyncMock
     )
-    @mock.patch("usagiBot.db.models.UsagiUnicRoles", new_callable=mock.AsyncMock)
+    @mock.patch("usagiBot.cogs.Tech.schemas.UsagiUnicRoles", new_callable=mock.AsyncMock)
     @mock.patch.object(asyncio, "create_async_engine")
     def setUp(self, mock_engine, mock_UsagiUnicRoles, mock_get_user_role) -> None:
         self.mock_UsagiUnicRoles = mock_UsagiUnicRoles

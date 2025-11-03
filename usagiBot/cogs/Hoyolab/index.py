@@ -1,7 +1,7 @@
 import discord.ui
 import pytz
 
-from usagiBot.db.models import UsagiConfig
+from usagiBot.cogs.Main.schemas import UsagiConfig
 from usagiBot.cogs.Hoyolab.genshin_utils import *
 from usagiBot.src.UsagiUtils import get_embed
 from usagiBot.src.UsagiChecks import check_is_already_set_up, check_cog_whitelist

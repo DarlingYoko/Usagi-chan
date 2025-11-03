@@ -9,7 +9,7 @@ from PIL import Image, ImageFont
 from discord import File
 
 from usagiBot.env import BOT_ID
-from usagiBot.db.models import UsagiWordleGames, UsagiWordleResults
+from usagiBot.cogs.Wordle.schemas import UsagiWordleGames, UsagiWordleResults
 from usagiBot.src.UsagiUtils import get_embed, Editor
 
 from pycord18n.extension import _

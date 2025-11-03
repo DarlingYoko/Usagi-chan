@@ -12,9 +12,11 @@ from discord import SlashCommandGroup
 from discord.ext import commands, tasks
 from pycord18n.extension import _
 
-from usagiBot.db.models import UsagiBirthday, UsagiConfig, UsagiBirthdayTimer
+from usagiBot.cogs.Main.schemas import UsagiConfig
 from usagiBot.src.UsagiChecks import check_is_already_set_up, check_cog_whitelist
 from usagiBot.src.UsagiErrors import UsagiModuleDisabledError
+
+from usagiBot.cogs.Birthdays.schemas import UsagiBirthday, UsagiBirthdayTimer
 
 
 def get_days(
@@ -79,7 +81,7 @@ class Birthday(commands.Cog):
                 )
 
     @check_birthday.before_loop
-    async def before_check_resin_overflow(self):
+    async def before_check_birthday(self):
         await self.bot.wait_until_ready()
         self.bot.logger.info("Checking birthdays.")
 
@@ -106,7 +108,7 @@ class Birthday(commands.Cog):
             text = f"До др {br_data.name}"
             category = self.bot.get_channel(
                 channel.category_id
-            ) or await guild.fetch_channel(channel.category_id)
+            ) or await self.bot.fetch_channel(channel.category_id)
             if category.name != text:
                 await category.edit(name=text, reason="Update birthday timer.")
             delta = br_data.date - time_now
@@ -121,7 +123,7 @@ class Birthday(commands.Cog):
             await channel.edit(name=time, reason="Update birthday timer.")
 
     @update_birthday_timer.before_loop
-    async def before_check_resin_overflow(self):
+    async def before_update_birthday_timer(self):
         await self.bot.wait_until_ready()
         self.bot.logger.info("Update birthday timers.")
 

@@ -1,12 +1,28 @@
 import importlib
+import pytest
+import sys
 
 from sqlalchemy.ext import asyncio
 from unittest import mock
 from unittest import IsolatedAsyncioTestCase
 
 
+@pytest.fixture(autouse=True)
+def clear_imports():
+    # Store the initial state of sys.modules
+    initial_modules = dict(sys.modules)
+    from usagiBot.db.base import Base
+    Base.metadata.clear()
+    # Yield control to the test
+    yield
+
+    # Clear any new modules imported during the test
+    for module in list(sys.modules.keys()):
+        if module not in initial_modules:
+            del sys.modules[module]
+
 class TestTechUtils(IsolatedAsyncioTestCase):
-    @mock.patch("usagiBot.db.models.UsagiUnicRoles", new_callable=mock.AsyncMock)
+    @mock.patch("usagiBot.cogs.Tech.schemas.UsagiUnicRoles", new_callable=mock.AsyncMock)
     @mock.patch.object(asyncio, "create_async_engine")
     async def test_get_user_roles(self, mock_engine, mock_UsagiUnicRoles) -> None:
         ctx = mock.AsyncMock()
@@ -54,7 +70,7 @@ class TestTechUtils(IsolatedAsyncioTestCase):
         self.assertEqual("role_name_4", guessed_result[1].name)
         self.assertEqual("444", guessed_result[1].value)
 
-    @mock.patch("usagiBot.db.models.UsagiUnicRoles", new_callable=mock.AsyncMock)
+    @mock.patch("usagiBot.cogs.Tech.schemas.UsagiUnicRoles", new_callable=mock.AsyncMock)
     @mock.patch.object(asyncio, "create_async_engine")
     async def test_get_user_roles_no_roles(
         self, mock_engine, mock_UsagiUnicRoles
@@ -67,7 +83,7 @@ class TestTechUtils(IsolatedAsyncioTestCase):
         result = await tech_utils.get_user_roles(ctx)
         self.assertEqual(result, [])
 
-    @mock.patch("usagiBot.db.models.UsagiUnicRoles", new_callable=mock.AsyncMock)
+    @mock.patch("usagiBot.cogs.Tech.schemas.UsagiUnicRoles", new_callable=mock.AsyncMock)
     @mock.patch.object(asyncio, "create_async_engine")
     async def test_get_user_role(self, mock_engine, mock_UsagiUnicRoles) -> None:
         import usagiBot.cogs.Tech.tech_utils as tech_utils
@@ -87,7 +103,7 @@ class TestTechUtils(IsolatedAsyncioTestCase):
             ctx.guild.get_role.assert_called_with(444)
             self.assertEqual(result, "test_role")
 
-    @mock.patch("usagiBot.db.models.UsagiUnicRoles", new_callable=mock.AsyncMock)
+    @mock.patch("usagiBot.cogs.Tech.schemas.UsagiUnicRoles", new_callable=mock.AsyncMock)
     @mock.patch.object(asyncio, "create_async_engine")
     async def test_get_user_role_not_user_role(
         self, mock_engine, mock_UsagiUnicRoles

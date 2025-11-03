@@ -2,7 +2,8 @@ import discord
 from discord import SlashCommandGroup
 from discord.ext import commands
 
-from usagiBot.db.models import UsagiConfig, UsagiCogs, UsagiModerRoles
+from usagiBot.cogs.Main.schemas import UsagiConfig
+from usagiBot.cogs.Moderation.schemas import UsagiCogs, UsagiModerRoles
 from usagiBot.src.UsagiUtils import check_arg_in_command_tags
 from usagiBot.src.UsagiChecks import check_member_is_moder
 

@@ -6,7 +6,7 @@ from usagiBot.tests.utils import *
 
 
 class TestEventsMethods(IsolatedAsyncioTestCase):
-    @mock.patch("usagiBot.db.models.UsagiBackup", new_callable=mock.AsyncMock)
+    @mock.patch("usagiBot.cogs.Main.schemas.UsagiBackup", new_callable=mock.AsyncMock)
     @mock.patch.object(asyncio, "create_async_engine")
     def setUp(self, mock_engine, mock_UsagiBackup) -> None:
         self.ctx = mock.AsyncMock()

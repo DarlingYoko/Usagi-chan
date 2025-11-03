@@ -12,7 +12,8 @@ from usagiBot.tests.utils import *
 def clear_imports():
     # Store the initial state of sys.modules
     initial_modules = dict(sys.modules)
-
+    from usagiBot.db.base import Base
+    Base.metadata.clear()
     # Yield control to the test
     yield
 

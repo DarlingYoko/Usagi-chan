@@ -12,6 +12,8 @@ from usagiBot.tests.utils import *
 
 @pytest.fixture(autouse=True)
 def clear_imports():
+    from usagiBot.db.base import Base
+    Base.metadata.clear()
     initial_modules = dict(sys.modules)
     yield
     for module in list(sys.modules.keys()):
@@ -21,8 +23,8 @@ def clear_imports():
 
 class TestHoyolabMethods(IsolatedAsyncioTestCase):
     @mock.patch("usagiBot.cogs.Hoyolab.genshin_utils.HoyolabAPI")
-    @mock.patch("usagiBot.db.models.UsagiHoyolab", new_callable=mock.AsyncMock)
-    @mock.patch("usagiBot.db.models.UsagiConfig", new_callable=mock.AsyncMock)
+    @mock.patch("usagiBot.cogs.Hoyolab.schemas.UsagiHoyolab", new_callable=mock.AsyncMock)
+    @mock.patch("usagiBot.cogs.Main.schemas.UsagiConfig", new_callable=mock.AsyncMock)
     @mock.patch.object(asyncio, "create_async_engine")
     def setUp(
         self, mock_engine, mock_UsagiConfig, mock_UsagiHoyolab, mock_GenshinAPI

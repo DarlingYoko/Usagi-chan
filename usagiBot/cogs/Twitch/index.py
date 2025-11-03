@@ -4,7 +4,8 @@ from discord import SlashCommandGroup
 from discord.ext import commands, tasks
 
 from usagiBot.cogs.Twitch.twitch_utils import *
-from usagiBot.db.models import UsagiTwitchNotify, UsagiConfig
+from usagiBot.cogs.Twitch.schemas import UsagiTwitchNotify
+from usagiBot.cogs.Main.schemas import UsagiConfig
 from usagiBot.src.UsagiChecks import check_cog_whitelist
 from usagiBot.src.UsagiErrors import UsagiModuleDisabledError
 

@@ -2,7 +2,7 @@ import asyncio
 import openai_async
 import time
 
-from usagiBot.db.models import UsagiAIFacts, UsagiAIMemory
+from usagiBot.cogs.AI.schemas import UsagiAIFacts, UsagiAIMemory
 from usagiBot.src.UsagiErrors import OpenAIError
 from pycord18n.extension import _
 from collections import deque

@@ -14,7 +14,8 @@ from usagiBot.tests.utils import *
 def clear_imports():
     # Store the initial state of sys.modules
     initial_modules = dict(sys.modules)
-
+    from usagiBot.db.base import Base
+    Base.metadata.clear()
     # Yield control to the test
     yield
 
@@ -25,8 +26,8 @@ def clear_imports():
 
 
 class TestTwitch(IsolatedAsyncioTestCase):
-    @mock.patch("usagiBot.db.models.UsagiTwitchNotify", new_callable=mock.AsyncMock)
-    @mock.patch("usagiBot.db.models.UsagiConfig", new_callable=mock.AsyncMock)
+    @mock.patch("usagiBot.cogs.Twitch.schemas.UsagiTwitchNotify", new_callable=mock.AsyncMock)
+    @mock.patch("usagiBot.cogs.Main.schemas.UsagiConfig", new_callable=mock.AsyncMock)
     @mock.patch.object(asyncio, "create_async_engine")
     @mock.patch.object(helper, "first", new_callable=mock.AsyncMock)
     def setUp(

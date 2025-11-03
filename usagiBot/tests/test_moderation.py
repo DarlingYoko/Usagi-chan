@@ -12,7 +12,8 @@ from usagiBot.tests.utils import *
 def clear_imports():
     # Store the initial state of sys.modules
     initial_modules = dict(sys.modules)
-
+    from usagiBot.db.base import Base
+    Base.metadata.clear()
     # Yield control to the test
     yield
 
@@ -23,9 +24,9 @@ def clear_imports():
 
 
 class TestModerationMethods(IsolatedAsyncioTestCase):
-    @mock.patch("usagiBot.db.models.UsagiConfig", new_callable=mock.AsyncMock)
-    @mock.patch("usagiBot.db.models.UsagiCogs", new_callable=mock.AsyncMock)
-    @mock.patch("usagiBot.db.models.UsagiModerRoles", new_callable=mock.AsyncMock)
+    @mock.patch("usagiBot.cogs.Main.schemas.UsagiConfig", new_callable=mock.AsyncMock)
+    @mock.patch("usagiBot.cogs.Moderation.schemas.UsagiCogs", new_callable=mock.AsyncMock)
+    @mock.patch("usagiBot.cogs.Moderation.schemas.UsagiModerRoles", new_callable=mock.AsyncMock)
     @mock.patch.object(asyncio, "create_async_engine")
     def setUp(
         self, mock_engine, mock_UsagiModerRoles, mock_UsagiCogs, mock_UsagiConfig

@@ -2,7 +2,7 @@ from discord.ext import commands
 from discord import DMChannel, ApplicationContext
 
 from usagiBot.src.UsagiErrors import *
-from usagiBot.db.models import UsagiConfig
+from usagiBot.cogs.Main.schemas import UsagiConfig
 from usagiBot.env import BOT_OWNER
 
 

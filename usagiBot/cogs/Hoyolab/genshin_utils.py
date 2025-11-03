@@ -5,7 +5,7 @@ from string import Template
 import discord
 import genshin
 
-from usagiBot.db.models import UsagiHoyolab
+from usagiBot.cogs.Hoyolab.schemas import UsagiHoyolab
 from pycord18n.extension import _
 
 blue_text = Template("""```ansi\n[2;31m[2;34m$count[0m[2;31m[0m```""")

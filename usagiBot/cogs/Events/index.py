@@ -16,8 +16,7 @@ from usagiBot.src.UsagiUtils import (
     init_language,
 )
 from usagiBot.src.UsagiErrors import *
-from usagiBot.db.models import (
-    create_tables,
+from usagiBot.cogs.Main.schemas import (
     UsagiConfig,
     UsagiSaveRoles,
     UsagiMemberRoles,
@@ -88,10 +87,14 @@ class Events(commands.Cog):
         await UsagiBackup.delete_all(delete_ids)
         await UsagiBackup.insert_mappings(insert_mappings)
 
+    @dump_data.before_loop
+    async def before_dump_data(self):
+        await self.bot.wait_until_ready()
+        self.bot.logger.info("Runnnig dump data.")
+
     # Define main events
     @commands.Cog.listener()
     async def on_ready(self):
-        await create_tables()
         # self.bot.qbt_client = await init_qbt_client(self.bot.logger)
         self.bot.command_tags = await load_all_command_tags(self.bot)
         self.bot.guild_cogs_settings = await init_cogs_settings()
@@ -109,7 +112,7 @@ class Events(commands.Cog):
         self.bot.logger.info("Connected to database.")
         self.bot.logger.info("Settings loaded.")
         self.bot.logger.info("Moder roles loaded.")
-        self.bot.logger.info("-------------------")
+        self.bot.logger.info("------------------------------")
         await self.bot.change_presence(
             status=discord.Status.online, activity=discord.Game("/help")
         )

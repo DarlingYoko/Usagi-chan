@@ -10,7 +10,7 @@ from usagiBot.src.UsagiChecks import (
     check_member_is_moder,
 )
 from usagiBot.src.UsagiErrors import *
-from usagiBot.db.models import (
+from usagiBot.cogs.Main.schemas import (
     UsagiConfig,
     UsagiSaveRoles,
     UsagiAutoRoles,

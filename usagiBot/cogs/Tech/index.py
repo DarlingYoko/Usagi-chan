@@ -1,3 +1,5 @@
+import discord
+
 from discord import SlashCommandGroup
 from discord.ext import commands
 from datetime import timedelta
@@ -10,7 +12,8 @@ from usagiBot.src.UsagiChecks import (
     check_member_is_moder,
 )
 from usagiBot.src.UsagiErrors import UsagiModuleDisabledError
-from usagiBot.cogs.Tech.tech_utils import *
+from usagiBot.cogs.Tech.tech_utils import get_user_roles, get_user_role
+from usagiBot.cogs.Tech.schemas import UsagiUnicRoles
 
 from pycord18n.extension import _
 

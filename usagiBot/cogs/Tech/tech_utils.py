@@ -4,7 +4,7 @@ import discord
 from discord import OptionChoice
 from pycord18n.extension import _
 
-from usagiBot.db.models import UsagiUnicRoles
+from usagiBot.cogs.Tech.schemas import UsagiUnicRoles
 
 
 async def get_user_roles(ctx: discord.AutocompleteContext) -> List:

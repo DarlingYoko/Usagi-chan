@@ -12,8 +12,8 @@ os.environ["BOT_ID"] = "1234567890"
 
 
 class TestUtilsMethods(IsolatedAsyncioTestCase):
-    @mock.patch("usagiBot.db.models.UsagiModerRoles", new_callable=mock.AsyncMock)
-    @mock.patch("usagiBot.db.models.UsagiCogs", new_callable=mock.AsyncMock)
+    @mock.patch("usagiBot.cogs.Moderation.schemas.UsagiModerRoles", new_callable=mock.AsyncMock)
+    @mock.patch("usagiBot.cogs.Moderation.schemas.UsagiCogs", new_callable=mock.AsyncMock)
     @mock.patch.object(asyncio, "create_async_engine")
     def setUp(self, mock_engine, mock_UsagiCogs, mock_UsagiModerRoles) -> None:
         mock_UsagiCogs.get_all.return_value = [

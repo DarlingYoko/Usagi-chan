@@ -7,7 +7,7 @@ import discord
 from discord.ext import commands, tasks
 
 from usagiBot.cogs.AI.ai_utils import OpenAIHandler, tools, RateLimiter
-from usagiBot.db.models import (
+from usagiBot.cogs.AI.schemas import (
     UsagiAIFacts,
     UsagiAIMemory,
     UsagiAIReminder,

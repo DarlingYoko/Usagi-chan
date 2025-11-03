@@ -10,7 +10,8 @@ from usagiBot.env import (
     QbittorrentUSERNAME,
     QbittorrentPASSWORD,
 )
-from usagiBot.db.models import UsagiCogs, UsagiModerRoles, UsagiAutoRoles, UsagiLanguage
+from usagiBot.cogs.Main.schemas import UsagiAutoRoles, UsagiLanguage
+from usagiBot.cogs.Moderation.schemas import UsagiCogs, UsagiModerRoles
 
 import qbittorrentapi
 from PIL import Image, ImageDraw, ImageFont

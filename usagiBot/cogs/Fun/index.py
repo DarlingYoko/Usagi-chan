@@ -4,7 +4,7 @@ import discord
 from discord.ext import commands
 from discord import SlashCommandGroup
 from usagiBot.cogs.Fun.fun_utils import get_exchange_rate_data, get_vpn_list
-from usagiBot.db.models import UsagiConfig
+from usagiBot.cogs.Main.schemas import UsagiConfig
 from usagiBot.env import SHARED_FOLDER_URL
 from usagiBot.src.UsagiChecks import check_is_already_set_up, check_cog_whitelist
 from usagiBot.src.UsagiErrors import UsagiModuleDisabledError
