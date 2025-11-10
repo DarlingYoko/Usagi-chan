@@ -100,7 +100,6 @@ class Events(commands.Cog):
         self.bot.guild_cogs_settings = await init_cogs_settings()
         self.bot.moder_roles = await init_moder_roles()
         self.bot.auto_roles = await init_auto_roles()
-        self.bot.language = await init_language()
         self.bot.logger.info("---------NEW SESSION----------")
         self.bot.logger.info(f"Logged in as {self.bot.user.name}")
         self.bot.logger.info(f"discord.py API version: {discord.__version__}")
@@ -116,6 +115,8 @@ class Events(commands.Cog):
         await self.bot.change_presence(
             status=discord.Status.online, activity=discord.Game("/help")
         )
+        await self.bot.sync_commands()
+        self.bot.logger.info("✅ Slash-commands synced")
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):

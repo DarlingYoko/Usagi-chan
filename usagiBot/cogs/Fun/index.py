@@ -2,8 +2,8 @@ import random
 import discord
 
 from discord.ext import commands
-from discord import SlashCommandGroup
-from usagiBot.cogs.Fun.fun_utils import get_exchange_rate_data, get_vpn_list
+
+from usagiBot.cogs.Fun.fun_utils import get_exchange_rate_data
 from usagiBot.cogs.Main.schemas import UsagiConfig
 from usagiBot.env import SHARED_FOLDER_URL
 from usagiBot.src.UsagiChecks import check_is_already_set_up, check_cog_whitelist
@@ -219,47 +219,6 @@ class Fun(commands.Cog):
     #     await self.bot.wait_until_ready()
     #     await asyncio.sleep(5)
     #     self.bot.logger.info("Checking torrents.")
-
-    vpn = SlashCommandGroup(
-        name="vpn",
-        name_localizations={"ru": "впн"},
-        description="Check vpn info.",
-        description_localizations={"ru": "Получить информациб о впне."},
-    )
-
-    @vpn.command(
-        name="top",
-        name_localizations={"ru": "топ"},
-        description="Top of traffic used users.",
-        description_localizations={"ru": "Топ пользователей по потреблению траффика."},
-    )
-    @commands.cooldown(per=60, rate=1, type=commands.BucketType.channel)
-    async def vpn_top(self, ctx: discord.ApplicationContext):
-        top_users = get_vpn_list()
-        if top_users is None:
-            await ctx.respond("No data", ephemeral=True)
-
-        title = _("Top vpn")
-        result = list(
-            map(
-                lambda x: _("Counter vpn users").format(
-                    count=x[0] + 1,
-                    name=x[1],
-                    traffic=top_users[x[1]],
-                ),
-                enumerate(top_users),
-            )
-        )
-
-        max_len = max(len(line.split("-")[0]) for line in result)
-        formatted_result = []
-        for line in result:
-            name, traffic = line.split("- ")
-            formatted_result.append(f"{name.ljust(max_len)} - {traffic}")
-
-        result_text = "```\n" + "\n".join(formatted_result) + "\n```"
-        embed = get_embed(title=title, description=result_text)
-        await ctx.respond(embed=embed)
 
     # Message commands
     @commands.message_command(name="Get Message ID")

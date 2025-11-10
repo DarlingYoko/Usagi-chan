@@ -58,6 +58,7 @@ pluggy==1.6.0
 propcache==0.4.1
 psycopg2-binary==2.9.11
 py-cord @ git+https://github.com/Pycord-Development/pycord@fc0b6233a5c87de04f8d84ee06efbc1fc576d82f
+py3xui==0.5.3
 Pycord18n==1.0.1
 pycparser==2.23
 pycryptodomex==3.23.0

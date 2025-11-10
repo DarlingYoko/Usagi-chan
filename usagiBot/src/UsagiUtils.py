@@ -279,7 +279,7 @@ def get_embed(
     if title:
         embed.title = title
 
-    embed.timestamp = timestamp if timestamp is not None else datetime.utcnow()
+    embed.timestamp = timestamp if timestamp is not None else datetime.now()
 
     if fields:
         embed.clear_fields()

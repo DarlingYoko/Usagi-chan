@@ -1,12 +1,5 @@
-import logging
 from typing import TYPE_CHECKING
 from bs4 import BeautifulSoup
-from usagiBot.env import (
-    VPN_USERNAME,
-    VPN_PASSWORD,
-    VPN_API_GET_LIST_URL,
-    VPN_API_LOGIN_URL,
-)
 
 import requests
 
@@ -53,42 +46,3 @@ def parse_exchange_rate(response: "Response") -> dict:
         rates[name] = {"value": value, "change": change}
 
     return rates
-
-
-def vpn_login():
-    session = requests.Session()
-    login_data = {"username": VPN_USERNAME, "password": VPN_PASSWORD}
-    response = session.post(VPN_API_LOGIN_URL, data=login_data)
-
-    if response.status_code != 200:
-        return None
-
-    return session
-
-
-def get_vpn_list():
-    session = vpn_login()
-    if session is None:
-        return None
-
-    response = session.get(VPN_API_GET_LIST_URL)
-    if response.status_code != 200:
-        return None
-
-    try:
-        data = response.json()
-    except ValueError as e:
-        logging.info("JSON decode error: " + str(e))
-        logging.info("Raw response text: " + response.text)
-        return None
-
-    users_stats = {}
-
-    if "obj" in data:
-        for inbound in data["obj"]:
-            for client in inbound["clientStats"]:
-                users_stats[client["email"]] = round(
-                    (client["down"] + client["up"]) / (1024**3), 2
-                )
-
-    return dict(sorted(users_stats.items(), key=lambda x: x[1], reverse=True)[:10])
