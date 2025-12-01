@@ -399,6 +399,26 @@ class VPN(commands.Cog):
         await user.send(_('Your VPN renewal approved'))
         return None
 
+    @vpn.command(
+        name="request",
+        name_localizations={"ru": "запрос"},
+        description="Manual request for renew VPN subscription.",
+        description_localizations={"ru": "Ручной запрос на продление ВПН подписки."},
+    )
+    async def request_renew_vpn(self, ctx: discord.ApplicationContext):
+        vpn_profiles = await UsagiVpnUsers.get_all_by(user_id=ctx.author.id, active=True)
+        if not vpn_profiles:
+            await ctx.respond(_("VPN no profiles"))
+            return None
+
+        lang = self.bot.language.get(int(ctx.author.id), "en")
+        renewal_request_title = _("VPN manual renewal request")
+        embed = await generate_vpn_user_info(self.bot, vpn_profiles, lang)
+        embed.title = renewal_request_title
+        embed.fields = []
+        await ctx.respond(embed=embed, view=VpnRenewView(self.bot, vpn_profiles, lang))
+        return None
+
 
 def setup(bot):
     bot.add_cog(VPN(bot))

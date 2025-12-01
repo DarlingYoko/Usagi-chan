@@ -36,6 +36,7 @@ class Vpn3xui:
         client.id = uuid
         client.flow = 'xtls-rprx-vision'
         client.expiry_time = new_expiry_time
+        client.enable = True
 
         await self.api.client.update(client.id, client)
 
