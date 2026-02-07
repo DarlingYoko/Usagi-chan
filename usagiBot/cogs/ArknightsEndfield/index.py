@@ -200,7 +200,7 @@ class Endfield(commands.Cog):
             channel = await self.bot.fetch_channel(config.generic_id)
 
             client = EndfieldClient(
-                account_token='fbjxLs1eKgwR2Eheaf0Hh7H9'
+                account_token=user.token
             )
 
             await client.start()
