@@ -1,12 +1,12 @@
 services:
     usagi-chan:
         build: .
-        # volumes:
-        #     - .:/Usagi
-        ports:
-            - "8080:8080"
+#        volumes:
+#          - .:/Usagi
         env_file:
             - stack.env
+        depends_on:
+          - postgres
 
     postgres:
         image: pgvector/pgvector:pg17

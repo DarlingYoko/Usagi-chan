@@ -3,6 +3,17 @@
     "Model": "Model - {cur_model}",
     "Something went wrong": "Something went wrong, try again.",
 
+    "Login Gryphline account": "Login Gryphline account",
+    "Failed to auth Gryphline": "Failed to auth with your data, clear cache on Gryphline and relogin, than, try one more time.",
+    "Success login Gryphline": "🎉 Success login to Gryphline!",
+    "Please login Gryphline": "Please login with Gryphline to verify account. Steps to do:\n1. Go to <https://game.skport.com/endfield/sign-in>\n2. Log in\n3. Open browser DevTools (F12) → **Application** tab\n4. **Reload the page** (F5) with DevTools open so the cookies appear\n5. In the left sidebar, expand **Cookies** → click .skport.com\n6. Find the cookie named `ACCOUNT_TOKEN` and copy its **Value**",
+    "Authorisation failed":  "Authorisation failed!",
+    "Profile error": "Profile error: {message}",
+    "User not found": "There is no account bind with your discord account!",
+    "Deleted Gryphline account": "Your account `{uid}` deleted successfully!",
+    "Updated Endfield account": "For your account `{uid}` the `{option}` is set to **{result}**",
+    "sanity cap": "<@{user_id}>, you have already {current_sanity} sanity on `{nickname}` account! <a:dinkDonk:865127621112102953>",
+
     "This user already added in birthday list": "This user already added in birthday list, if you want edit him, remove firstly",
     "This user isn't in birthday list": "This user isn't in birthday list, add him firstly",
     "There is no timer setted": "There isn't any timer on this guild, add one beffore toggle",
@@ -198,5 +209,8 @@
     "Pending profiles rejected": "Pending profiles for {user_mention} rejected.",
     "No pending profiles": "No pending profiles for {user_mention}.",
     "Profiles successfully renewed": "Pending profiles for {user_mention} successfully renewed.",
-    "Your VPN renewal approved": "Your VPN renewal has been approved."
+    "Your VPN renewal approved": "Your VPN renewal has been approved.",
+
+    "ON": "ON",
+    "OFF": "OFF"
 }

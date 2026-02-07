@@ -3,6 +3,17 @@
     "Model": "Модель - {cur_model}",
     "Something went wrong": "Что-то пошло не так, попробуй ещё раз позже.",
 
+    "Login Gryphline account": "Логин в Gryphline аккаунт",
+    "Failed to auth Gryphline": "Не удалось авторизоваться с твоими данными. Пожалуйста очисти куки на Gryphline и перелогинься, а потом попробуй еще раз.",
+    "Success login Gryphline": "🎉Успешная авторизация на Gryphline!",
+    "Please login Gryphline": "Please login with Gryphline to verify account. Steps to do:\n1. Go to <https://game.skport.com/endfield/sign-in>\n2. Log in\n3. Open browser DevTools (F12) → **Application** tab\n4. **Reload the page** (F5) with DevTools open so the cookies appear\n5. In the left sidebar, expand **Cookies** → click .skport.com\n6. Find the cookie named `ACCOUNT_TOKEN` and copy its **Value**",
+    "Authorisation failed":  "Не удалось авторизоваться",
+    "Profile error": "Ошибка профиля: {message}",
+    "User not found": "К твоему дискорду не привязано ни одного аккаунта!",
+    "Deleted Gryphline account": "Такой акканут `{uid}` усмпешно удален!",
+    "Updated Endfield account": "Для твоего аккаунта `{uid}` опиця `{option}` переключена на **{result}**",
+    "sanity cap": "<@{user_id}>, у тебя уже **{current_sanity}** психики на `{nickname}` аккаунте! <a:dinkDonk:865127621112102953>",
+
     "This user already added in birthday list": "Пользователь уже есть списке, если ты хочешь изменить его, удали сначала.",
     "This user isn't in birthday list": "Пользователя нет в списке, добавь его сначала.",
     "There is no timer setted": "На этом сервере нет таймера",
@@ -198,5 +209,8 @@
     "Pending profiles rejected": "Профили {user_mention} отклонены.",
     "No pending profiles": "Нет профилей для {user_mention}.",
     "Profiles successfully renewed": "Профили для {user_mention} успешно продлены.",
-    "Your VPN renewal approved": "Ваша заявка на продление VPN была одобрена."
+    "Your VPN renewal approved": "Ваша заявка на продление VPN была одобрена.",
+
+    "ON": "ВКЛ",
+    "OFF": "ВЫКЛ"
 }
