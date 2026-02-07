@@ -260,7 +260,7 @@ class Endfield(commands.Cog):
 
         users_data = await UsagiGryphline.get_all_by(guild_id=ctx.guild.id, user_id=ctx.author.id)
         if not users_data:
-            ctx.respond(_("User not found!"))
+            ctx.respond(_("User not found"), ephemeral=True)
             return
 
         endfield_data = []
@@ -336,7 +336,7 @@ class Endfield(commands.Cog):
     async def endfield_settings(self, ctx: discord.ApplicationContext, option: str, uid: int):
         check_account = await UsagiGryphline.get(guild_id=ctx.guild.id, user_id=ctx.author.id, uid=uid)
         if not check_account:
-            ctx.respond(_("User not found!"))
+            ctx.respond(_("User not found"), ephemeral=True)
             return
 
         result = None
@@ -357,6 +357,7 @@ class Endfield(commands.Cog):
         )
         await ctx.respond(
             _("Updated Endfield account").format(uid=uid, option=option, result=result),
+            ephemeral=True
         )
 
 
@@ -379,7 +380,7 @@ class Endfield(commands.Cog):
     async def endfield_delete(self, ctx: discord.ApplicationContext, uid: int):
         check_account = await UsagiGryphline.get(guild_id=ctx.guild.id, user_id=ctx.author.id, uid=uid)
         if not check_account:
-            ctx.respond(_("User not found!"))
+            ctx.respond(_("User not found"), ephemeral=True)
             return
 
         await UsagiGryphline.delete(guild_id=ctx.guild.id, user_id=ctx.author.id, uid=uid)
