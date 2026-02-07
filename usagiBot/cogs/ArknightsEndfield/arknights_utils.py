@@ -108,6 +108,13 @@ class DailyMissionInfo:
 
 
 @dataclass
+class Domain:
+    name: str
+    aurylene_count: int
+    crate_count: int
+
+
+@dataclass
 class ProfileData:
     nickname: str
     avatar_url: str
@@ -117,6 +124,10 @@ class ProfileData:
     sanity: SanityInfo
     bp: BattlePassInfo
     daily: DailyMissionInfo
+    char_num: int
+    weapon_num: int
+    valley: Domain
+    wuling: Domain
 
 
 # ---------------------------------------------------------------------------
@@ -468,6 +479,26 @@ class EndfieldClient:
     def _parse_profile(self, data: dict) -> ApiResult[ProfileData]:
         try:
             d = data["data"]["detail"]
+
+            base_domain = Domain(
+                name="",
+                aurylene_count=0,
+                crate_count=0
+            )
+            domains = {}
+            for domain in d["domain"]:
+                aurylene_count = 0
+                crate_count = 0
+                for collection in domain["collections"]:
+                    aurylene_count += collection.get("puzzleCount", 0)
+                    crate_count += collection.get("trchestCount", 0)
+
+                domains[domain["name"]] = Domain(
+                    name=domain["name"],
+                    aurylene_count=aurylene_count,
+                    crate_count=crate_count
+                )
+
             return ApiResult(
                 True,
                 "Profile fetched",
@@ -490,6 +521,10 @@ class EndfieldClient:
                         current=d["dailyMission"]["dailyActivation"],
                         max=d["dailyMission"]["maxDailyActivation"],
                     ),
+                    char_num=d["base"]["charNum"],
+                    weapon_num=d["base"]["weaponNum"],
+                    valley=domains.get("Valley IV", base_domain),
+                    wuling=domains.get("Wuling", base_domain),
                 ),
             )
         except Exception as e:
@@ -536,33 +571,43 @@ class EndfieldClient:
 def generate_endfield_profile(p: ProfileData) -> discord.Embed:
     fields = [
         discord.EmbedField(
-            name='⭐ LVL',
-            value=f'```{p.level} (WL {p.world_level})```',
+            name='_ _ _ _ _ _ _ _ _ _⭐ LVL',
+            value=f'``` {p.level} (WL {p.world_level}) ```',
             inline=True,
         ),
         discord.EmbedField(
-            name="🎫 Battle Pass:",
-            value=f'```{p.bp.level}/{p.bp.max}```',
+            name="_ _  🎫 Battle Pass",
+            value=f'```   {p.bp.level}/{p.bp.max}   ```',
             inline=True,
         ),
         discord.EmbedField(
-            name="🧠 Sanity:",
-            value=f'```{p.sanity.current}/{p.sanity.max}```<t:{p.sanity.recover_ts}:R>',
+            name="_ _ _ _ _ _ 🧠 Sanity",
+            value=f'```  {p.sanity.current}/{p.sanity.max}  ``` <t:{p.sanity.recover_ts}:R>',
             inline=True,
         ),
         discord.EmbedField(
-            name=f"📅 Daily:",
-            value=f'```{p.daily.current}/{p.daily.max}```',
+            name=f"_ _ _ _ _ _ _ _ 📅 Daily",
+            value=f'```  {p.daily.current}/{p.daily.max} ```',
             inline=True,
         ),
         discord.EmbedField(
-            name="_ _",
-            value="_ _",
+            name="_ _ 🫃Characters",
+            value=f"```    {p.char_num}```",
             inline=True,
         ),
         discord.EmbedField(
-            name="_ _",
-            value="_ _",
+            name="_ _ _ _ 🔫 Weapons",
+            value=f"```    {p.weapon_num}```\n_ _",
+            inline=True,
+        ),
+        discord.EmbedField(
+            name="_ _ _ _ _ _ _ _ _ _ _ _ _ _🌄 Valley IV",
+            value=f"```Aurylene - {p.valley.aurylene_count}\nCrate - {p.valley.crate_count}```",
+            inline=True,
+        ),
+        discord.EmbedField(
+            name="_ _ _ _ _ _ _ _ _ _ _ _ _ _🐉 Wuling",
+            value=f"```Aurylene - {p.wuling.aurylene_count}\nCrate - {p.wuling.crate_count}```",
             inline=True,
         ),
     ]

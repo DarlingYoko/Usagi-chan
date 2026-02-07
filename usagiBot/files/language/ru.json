@@ -11,7 +11,7 @@
     "Profile error": "Ошибка профиля: {message}",
     "User not found": "К твоему дискорду не привязано ни одного аккаунта!",
     "Deleted Gryphline account": "Такой акканут `{uid}` усмпешно удален!",
-    "Updated Endfield account": "Для твоего аккаунта `{uid}` опиця `{option}` переключена на **{result}**",
+    "Updated Endfield account": "Для твоего аккаунта `{uid}` опция `{option}` переключена на **{result}**",
     "sanity cap": "<@{user_id}>, у тебя уже **{current_sanity}** психики на `{nickname}` аккаунте! <a:dinkDonk:865127621112102953>",
 
     "This user already added in birthday list": "Пользователь уже есть списке, если ты хочешь изменить его, удали сначала.",
