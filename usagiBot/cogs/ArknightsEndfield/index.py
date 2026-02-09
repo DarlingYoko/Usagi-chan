@@ -212,7 +212,8 @@ class Endfield(commands.Cog):
                 result = await client.get_attendance()
                 if result.success and channel not in channels:
                     channels.append(channel)
-                else:
+
+                if not result.success:
                     errors.append((user.user_id, channel, _("Profile error").format(message=result.message)))
 
             finally:
