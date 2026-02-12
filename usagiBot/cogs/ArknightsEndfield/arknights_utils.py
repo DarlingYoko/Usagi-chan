@@ -14,15 +14,21 @@ from __future__ import annotations
 
 import hashlib
 import hmac
+import io
 import json
 import logging
 import re
 import time
 from dataclasses import dataclass
+from datetime import datetime
+from io import BytesIO
 from typing import Optional, Generic, TypeVar
 
 import aiohttp
 import discord
+import requests
+
+from PIL import Image, ImageFont, ImageDraw, ImageEnhance
 
 from usagiBot.src.UsagiUtils import get_embed
 
@@ -110,6 +116,7 @@ class DailyMissionInfo:
 @dataclass
 class Domain:
     name: str
+    lvl: int
     aurylene_count: int
     crate_count: int
 
@@ -119,8 +126,10 @@ class ProfileData:
     nickname: str
     avatar_url: str
     uid: int
+    create_time: datetime
     level: int
     world_level: int
+    achieve_count: int
     sanity: SanityInfo
     bp: BattlePassInfo
     daily: DailyMissionInfo
@@ -482,6 +491,7 @@ class EndfieldClient:
 
             base_domain = Domain(
                 name="",
+                lvl=0,
                 aurylene_count=0,
                 crate_count=0
             )
@@ -495,6 +505,7 @@ class EndfieldClient:
 
                 domains[domain["name"]] = Domain(
                     name=domain["name"],
+                    lvl=domain["level"],
                     aurylene_count=aurylene_count,
                     crate_count=crate_count
                 )
@@ -506,6 +517,8 @@ class EndfieldClient:
                     nickname=d["base"]["name"],
                     avatar_url=d["base"]["avatarUrl"],
                     uid=self.uid,
+                    achieve_count=d["achieve"]["count"],
+                    create_time=datetime.fromtimestamp(float(d["base"]["createTime"])),
                     level=d["base"]["level"],
                     world_level=d["base"]["worldLevel"],
                     sanity=SanityInfo(
@@ -619,3 +632,141 @@ def generate_endfield_profile(p: ProfileData) -> discord.Embed:
         footer=[str(p.uid), ''],
         fields=fields,
     )
+
+def draw_endfield_profile(profile_data: ProfileData, background_url: str = None, color: str = None, theme: str = None) -> BytesIO:
+    background_path = "./usagiBot/files/photo/endfield/ENDFIELD_DEFAULT_BACKGROUND.png"
+    color = "#dd8181" if color is None else color
+    theme = "Dark" if theme is None else theme
+
+    try:
+        response_background = requests.get(background_url)
+        if response_background.status_code == 200:
+            background_path = BytesIO(response_background.content)
+    except requests.exceptions.RequestException as e:
+        pass
+
+    # Open background image
+    with Image.open(background_path) as background:
+        background = background.convert("RGBA").resize((2060, 1400))
+
+        # Open template and lines
+        theme = "_DARK" if theme == "Dark" else "_LIGHT"
+        template = Image.open(f"./usagiBot/files/photo/endfield/ENDFIELD_PROFILE{theme}.png").convert("RGBA")
+        lines = Image.open("./usagiBot/files/photo/endfield/ENDFIELD_PROFILE_LINES.png").convert("RGBA")
+        endfield_text = Image.open("./usagiBot/files/photo/endfield/ENDFIELD_PROFILE_TEXT_ENDFIELD.png").convert("RGBA")
+        timer_uid = Image.open("./usagiBot/files/photo/endfield/ENDFIELD_PROFILE_TIMER_UID.png").convert("RGBA")
+        sanity_icon = Image.open("./usagiBot/files/photo/endfield/ENDFIELD_SANITY_ICON.png").convert("RGBA")
+
+        # Open icon
+        response = requests.get(profile_data.avatar_url)
+        response.raise_for_status()
+        icon = Image.open(BytesIO(response.content)).convert("RGBA").resize((300, 300))
+
+        # Prepare text
+        txt = Image.new("RGBA", background.size, (255, 255, 255, 0))
+        profile_fnt = ImageFont.truetype("./usagiBot/files/fonts/HarmonyOS_Sans_Bold.ttf", 46)
+        lvl_fnt = ImageFont.truetype("./usagiBot/files/fonts/HarmonyOS_Sans_Medium.ttf", 42)
+        sanity_fnt = ImageFont.truetype("./usagiBot/files/fonts/HarmonyOS_Sans_Bold.ttf", 45)
+        region_fnt = ImageFont.truetype("./usagiBot/files/fonts/HarmonyOS_Sans_Medium.ttf", 60)
+        colletibles_fnt = ImageFont.truetype("./usagiBot/files/fonts/HarmonyOS_Sans_Bold.ttf", 65)
+        uid_fnt = ImageFont.truetype("./usagiBot/files/fonts/HarmonyOS_Sans_Bold.ttf", 40)
+        date_fnt = ImageFont.truetype("./usagiBot/files/fonts/HarmonyOS_Sans_Medium.ttf", 34)
+        text_fnt = ImageFont.truetype("./usagiBot/files/fonts/HarmonyOS_Sans_Medium.ttf", 38)
+        small_text_fnt = ImageFont.truetype("./usagiBot/files/fonts/HarmonyOS_Sans_Medium.ttf", 30)
+
+        # Draw Text
+        d = ImageDraw.Draw(txt)
+
+        # User personal info
+        d.text((445, 95), profile_data.nickname, font=profile_fnt, fill="#efefed") # User nickname
+        d.text((818, 286), profile_data.create_time.strftime("%d.%m.%Y"), font=date_fnt, fill="black") # Day of start
+        d.text((450, 340), str(profile_data.uid), font=uid_fnt, fill="#c2c2c0") # UID
+        d.text((490, 440), str(profile_data.level), font=lvl_fnt, fill="#efefed") # LVL
+        d.text((515, 495), str(profile_data.world_level), font=lvl_fnt, fill="#efefed") # WL
+
+        # User collectibles info
+        d.text((110, 610), str(profile_data.char_num), font=colletibles_fnt, fill=color)  # Characters
+        d.text((110, 690), "Оперативники", font=small_text_fnt, fill=color)  # Characters text
+
+        d.text((370, 610), str(profile_data.weapon_num), font=colletibles_fnt, fill=color)  # Weapons
+        d.text((370, 685), "Оружие", font=text_fnt, fill=color)  # Weapons text
+
+        d.text((620, 610), str(profile_data.achieve_count), font=colletibles_fnt, fill=color)  # Achivements
+        d.text((620, 685), "Путь славы", font=text_fnt, fill=color)  # Achivements text
+
+        d.text((120, 795), f"{profile_data.bp.level}/{profile_data.bp.max}", font=profile_fnt, fill=color)  # BP
+        d.text((115, 865), "Протопропуск", font=small_text_fnt, fill=color)  # BP text
+
+        d.text((370, 795), f"{profile_data.daily.current}/{profile_data.daily.max}", font=profile_fnt, fill=color)  # Daily
+        d.text((365, 850), "Очки", font=small_text_fnt, fill=color)  # Daily text
+        d.text((415, 880), "активности", font=small_text_fnt, fill=color)  # Daily text
+
+        d.text((620, 780), "UM", font=colletibles_fnt, fill=color)  # Umbral Monument
+        d.text((620, 850), "Сумрачный", font=small_text_fnt, fill=color)  # Umbral Monument text
+        d.text((680, 880), "монумент", font=small_text_fnt, fill=color)  # Umbral Monument text
+
+        # Region info
+        d.text((96, 967), "Сводка о развитии региона", font=text_fnt, fill=color)  # Text
+
+        # Valley IV
+        d.text((335, 1020), str(profile_data.valley.lvl), font=region_fnt, fill="#292928")  # Valley IV LVL
+        d.text((165, 1025), str(profile_data.valley.aurylene_count), font=lvl_fnt, fill="#706f6f")  # Valley IV auriki
+        d.text((165, 1075), str(profile_data.valley.crate_count), font=lvl_fnt, fill="#706f6f")  # Valley IV crate
+
+        # Wuling
+        d.text((700, 1020), str(profile_data.wuling.lvl), font=region_fnt, fill="#292928")  # Wuling LVL
+        d.text((500, 1025), str(profile_data.wuling.aurylene_count), font=lvl_fnt, fill="#706f6f")  # Wuling auriki
+        d.text((500, 1075), str(profile_data.wuling.crate_count), font=lvl_fnt, fill="#706f6f")  # Wuling crate
+
+        # Sanity timer
+        sanity_text = f"{profile_data.sanity.current}/{profile_data.sanity.max}"
+        sanity_datetime = datetime.fromtimestamp(profile_data.sanity.recover_ts)
+        sanity_max = sanity_datetime - datetime.now()
+        hours, remainder = divmod(sanity_max.seconds, 3600)
+        hours = hours + sanity_max.days * 24
+        minutes, seconds = divmod(remainder, 60)
+
+        d.text((1545, 880), sanity_text, font=sanity_fnt, fill="#d9d7d7")  # Sanity count
+
+        if sanity_datetime < datetime.now():
+            sanity_overcap = ((hours * -1) * 60 + minutes) // 8
+            d.text((1600, 930), f"утрачено {sanity_overcap}", font=sanity_fnt, fill="#8f1404")  # Sanity overcap
+        else:
+            d.text((1600, 930), f"через {hours}:{minutes}:{seconds}", font=sanity_fnt, fill="#d9d7d7")  # Sanity timer
+
+        # Colorized lines
+        colored_lines = Image.new("RGBA", lines.size, color)
+        alpha = lines.split()[3]
+        colored_lines.putalpha(alpha)
+
+        # Darker timer uid background
+        timer_uid_darker = ImageEnhance.Brightness(timer_uid).enhance(0.6)
+
+        # Nickname background
+        bbox = d.textbbox((445, 95), profile_data.nickname, font=profile_fnt)
+        nickname_width = int(bbox[2] - bbox[0] + 5 * 2 + 1)
+        nickname_background = Image.new("RGBA", (nickname_width, 60), "#b3b3af")
+        nickname_background.putalpha(127)
+        nickname_background = ImageEnhance.Brightness(nickname_background).enhance(0.6)
+
+        # Combine all images
+        background.paste(icon, (100, 80), icon)
+        background.paste(timer_uid_darker, (0, 0), timer_uid_darker)
+        background.paste(sanity_icon, (1560 + 25 * len(sanity_text), 885), sanity_icon)
+        background.paste(nickname_background, (440, 90), nickname_background)
+        background.paste(template, (0, 0), template)
+        background.paste(colored_lines, (0, 0), colored_lines)
+        background.paste(endfield_text, (0, 0), endfield_text)
+
+        # Combine template + text
+        out = Image.alpha_composite(background, txt)
+
+        _bytes = io.BytesIO()
+        out.save(_bytes, "png")
+        _bytes.seek(0)
+
+        return _bytes
+        # return File(
+        #     fp=_bytes,
+        #     filename=f"Endfield_profile_{profile_data.nickname}.png",
+        # )

@@ -19,3 +19,12 @@ class UsagiGryphline(Base, ModelAdmin):
     endfield_sanity_sub = Column(Boolean)
     endfield_sanity_sub_notified = Column(Boolean)
     endfield_daily_sub = Column(Boolean)
+
+class UsagiEndfieldProfile(Base, ModelAdmin):
+    __tablename__ = "usagi_endfield_profile"
+    id = Column(Integer, primary_key=True)
+    guild_id = Column(BigInteger)
+    user_id = Column(BigInteger)
+    background_url = Column(Text)
+    accent_color = Column(Text)
+    theme = Column(Text)

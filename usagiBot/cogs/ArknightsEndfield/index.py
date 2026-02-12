@@ -1,14 +1,17 @@
 from datetime import datetime
+from io import BytesIO
 
 import discord
 import pytz
+import requests
 from discord import SlashCommandGroup
 
 from discord.ext import commands, tasks
+from discord.ext.commands import ColorConverter
 
-from usagiBot.cogs.ArknightsEndfield.schemas import UsagiGryphline
+from usagiBot.cogs.ArknightsEndfield.schemas import UsagiGryphline, UsagiEndfieldProfile
 from usagiBot.cogs.Main.schemas import UsagiConfig
-from usagiBot.cogs.ArknightsEndfield.arknights_utils import EndfieldClient, generate_endfield_profile
+from usagiBot.cogs.ArknightsEndfield.arknights_utils import EndfieldClient, draw_endfield_profile
 from usagiBot.src.UsagiChecks import check_is_already_set_up, check_cog_whitelist
 from usagiBot.src.UsagiErrors import UsagiModuleDisabledError
 
@@ -16,14 +19,36 @@ from pycord18n.extension import _
 
 
 class EndfieldProfileView(discord.ui.View):
-    def __init__(self, bot: discord.Bot, author: discord.Member, endfield_data: list):
-        super().__init__(EndfieldProfileSelect(bot, author, endfield_data))
+    def __init__(self,
+                 bot: discord.Bot,
+                 author: discord.Member,
+                 endfield_data: list,
+                 profile_files: dict[str, BytesIO],
+                 background_url: str = None,
+                 color: str = None,
+                 theme: str = None
+                 ):
+        super().__init__(EndfieldProfileSelect(bot, author, endfield_data, profile_files, background_url, color, theme))
+        self.timeout = 300
 
 class EndfieldProfileSelect(discord.ui.Select):
-    def __init__(self, bot: discord.Bot, author: discord.Member, endfield_data: list):
+    def __init__(self,
+                 bot: discord.Bot,
+                 author: discord.Member,
+                 endfield_data: list,
+                 profile_files: dict[str, BytesIO],
+                 background_url: str = None,
+                 color: str = None,
+                 theme: str = None
+                 ):
         self.bot = bot
         self.author = author
         self.endfield_data = endfield_data
+        self.profile_files = profile_files
+        self.background_url = background_url
+        self.color = color
+        self.theme = theme
+        self.timeout = 300
 
         options = []
         for data in self.endfield_data:
@@ -44,7 +69,16 @@ class EndfieldProfileSelect(discord.ui.Select):
                 content="You are not authorized to use this modal", ephemeral=True )
             return
         data = [d for d in self.endfield_data if d.nickname == self.values[0]][0]
-        await interaction.response.edit_message(embed=generate_endfield_profile(data))
+        img_bytes = self.profile_files.get(data.nickname, None)
+        if img_bytes is None:
+            img_bytes = draw_endfield_profile(data, self.background_url, self.color, self.theme)
+            self.profile_files[data.nickname] = img_bytes
+
+        img_bytes.seek(0)
+        file = discord.File(
+            fp=img_bytes,
+            filename=f"Endfield_profile_{data.nickname}.png")
+        await interaction.response.edit_message(file=file)
 
 class LoginButton(discord.ui.View):
     def __init__(self, bot, user, *items):
@@ -256,6 +290,7 @@ class Endfield(commands.Cog):
             "ru": "Проверка вашего профиля!"
         },
     )
+    @commands.cooldown(per=60, rate=1, type=commands.BucketType.user)
     async def endfield_profile(self, ctx: discord.ApplicationContext):
         await ctx.defer()
 
@@ -287,12 +322,29 @@ class Endfield(commands.Cog):
             finally:
                 await client.close()
 
+        user_profile_data = await UsagiEndfieldProfile.get(guild_id=ctx.guild.id, user_id=ctx.author.id)
+        background_url = None
+        color = None
+        theme = None
+        if user_profile_data:
+            background_url = user_profile_data.background_url
+            color = user_profile_data.accent_color
+            theme = user_profile_data.theme
+
+        profile_bytes = {
+            endfield_data[0].nickname: draw_endfield_profile(endfield_data[0], background_url=background_url, color=color, theme=theme)
+        }
         endfield_view = None
         if len(endfield_data) > 1:
-            endfield_view = EndfieldProfileView(self.bot, ctx.author, endfield_data)
+            endfield_view = EndfieldProfileView(self.bot, ctx.author, endfield_data, profile_bytes, background_url, color, theme)
 
+        img_bytes = profile_bytes[endfield_data[0].nickname]
+        img_bytes.seek(0)
+        file = discord.File(
+            fp=img_bytes,
+            filename=f"Endfield_profile_{endfield_data[0].nickname}.png")
         await ctx.respond(
-            embed=generate_endfield_profile(endfield_data[0]),
+            file=file,
             view=endfield_view
         )
 
@@ -361,8 +413,6 @@ class Endfield(commands.Cog):
             ephemeral=True
         )
 
-
-
     @endfield.command(
         name="delete",
         name_localizations={"ru": "удалить"},
@@ -386,6 +436,97 @@ class Endfield(commands.Cog):
 
         await UsagiGryphline.delete(guild_id=ctx.guild.id, user_id=ctx.author.id, uid=uid)
         await ctx.respond(_("Deleted Gryphline account").format(uid=uid), ephemeral=True)
+
+    @endfield.command(
+        name="set_bg",
+        name_localizations={"ru": "поставить_фон"},
+        description="Set background image for your profile",
+        description_localizations={
+            "ru": "Поставьте себе фон для профиля"
+        },
+    )
+    @discord.commands.option(
+        name="url",
+        name_localizations={"ru": "ссылка"},
+        description="Background URL",
+        description_localizations={"ru": "Ссылка на профиль"},
+        required=True,
+    )
+    async def endfield_set_bg(self, ctx: discord.ApplicationContext, url: str):
+        try:
+            requests.get(url)
+        except requests.exceptions.RequestException as e:
+            await ctx.respond(_("wrong bg url"), ephemeral=True)
+            return
+
+        check_account = await UsagiEndfieldProfile.get(guild_id=ctx.guild.id, user_id=ctx.author.id)
+        if not check_account:
+            await UsagiEndfieldProfile.create(guild_id=ctx.guild.id, user_id=ctx.author.id, background_url=url)
+            await ctx.respond(_("bg url set"), ephemeral=True)
+        else:
+            await UsagiEndfieldProfile.update(id=check_account.id, background_url=url)
+            await ctx.respond(_("bg url updated"), ephemeral=True)
+
+
+    @endfield.command(
+        name="set_color",
+        name_localizations={"ru": "поставить_цвет"},
+        description="Set background image for your profile",
+        description_localizations={
+            "ru": "Поставьте себе фон для профиля"
+        },
+    )
+    @discord.commands.option(
+        name="color",
+        name_localizations={"ru": "цвет"},
+        description="Accent color for the profile in hexadecimal",
+        description_localizations={
+            "ru": "Акцентный цвет для профиля в шестнадцатеричной формате."
+        },
+        required=True,
+    )
+    async def endfield_set_color(self, ctx, color: ColorConverter) -> None:
+        color = '#%02x%02x%02x' % color.to_rgb()
+        check_account = await UsagiEndfieldProfile.get(guild_id=ctx.guild.id, user_id=ctx.author.id)
+
+        if not check_account:
+            await UsagiEndfieldProfile.create(guild_id=ctx.guild.id, user_id=ctx.author.id, accent_color=color)
+            await ctx.respond(_("accent color set"), ephemeral=True)
+        else:
+            await UsagiEndfieldProfile.update(id=check_account.id, accent_color=color)
+            await ctx.respond(_("accent color updated"), ephemeral=True)
+
+    @endfield.command(
+        name="set_theme",
+        name_localizations={"ru": "выбрать_тему"},
+        description="Choose the theme for your profile",
+        description_localizations={
+            "ru": "Выберите тему для профиля"
+        },
+    )
+    @discord.commands.option(
+        name="theme",
+        name_localizations={"ru": "тема"},
+        description="Theme for the profile",
+        description_localizations={
+            "ru": "Тема профиля"
+        },
+        choices=["Dark", "Light"],
+        required=True,
+    )
+    async def endfield_set_theme(self, ctx, theme: str) -> None:
+        if theme not in ["Dark", "Light"]:
+            await ctx.respond(_("wrong theme"), ephemeral=True)
+            return
+
+        check_account = await UsagiEndfieldProfile.get(guild_id=ctx.guild.id, user_id=ctx.author.id)
+
+        if not check_account:
+            await UsagiEndfieldProfile.create(guild_id=ctx.guild.id, user_id=ctx.author.id, theme=theme)
+            await ctx.respond(_("theme set"), ephemeral=True)
+        else:
+            await UsagiEndfieldProfile.update(id=check_account.id, theme=theme)
+            await ctx.respond(_("theme updated"), ephemeral=True)
 
 
 def setup(bot):
