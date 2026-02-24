@@ -17,6 +17,8 @@ from usagiBot.src.UsagiErrors import UsagiModuleDisabledError
 
 from pycord18n.extension import _
 
+from usagiBot.src.UsagiUtils import get_embed
+
 
 class EndfieldProfileView(discord.ui.View):
     def __init__(self,
@@ -290,7 +292,7 @@ class Endfield(commands.Cog):
             "ru": "Проверка вашего профиля!"
         },
     )
-    @commands.cooldown(per=60, rate=1, type=commands.BucketType.user)
+    @commands.cooldown(per=300, rate=1, type=commands.BucketType.user)
     async def endfield_profile(self, ctx: discord.ApplicationContext):
         await ctx.defer()
 
@@ -346,6 +348,66 @@ class Endfield(commands.Cog):
         await ctx.respond(
             file=file,
             view=endfield_view
+        )
+
+    @endfield.command(
+        name="sanity",
+        name_localizations={"ru": "психика"},
+        description="Check your sanity!",
+        description_localizations={
+            "ru": "Проверка психики!"
+        },
+    )
+    async def endfield_sanity(self, ctx: discord.ApplicationContext):
+        await ctx.defer(ephemeral=True,)
+
+        users_data = await UsagiGryphline.get_all_by(guild_id=ctx.guild.id, user_id=ctx.author.id)
+        if not users_data:
+            ctx.respond(_("User not found"), ephemeral=True)
+            return
+
+        endfield_data = []
+        for user_data in users_data:
+            client = EndfieldClient(
+                account_token=user_data.token
+            )
+
+            await client.start()
+
+            try:
+                if not await client.sign_in():
+                    await ctx.respond(_("Authorisation failed"))
+                    return
+
+                profile = await client.get_profile()
+
+                if not profile.success:
+                    await ctx.respond(_("Profile error").format(message=profile.message))
+                    return
+
+                endfield_data.append(profile.data)
+            finally:
+                await client.close()
+
+
+        fields = []
+        for sanity_data in endfield_data:
+            fields.append(
+                discord.EmbedField(
+                    name=f"{sanity_data.nickname} - {sanity_data.uid}",
+                    value=f'```  {sanity_data.sanity.current}/{sanity_data.sanity.max}  ``` <t:{sanity_data.sanity.recover_ts}:R>',
+                    inline=True,
+                )
+            )
+
+        sanity_embed = get_embed(
+            title="Sanity overview",
+            fields=fields
+        )
+
+        await ctx.respond(
+            embed=sanity_embed,
+            ephemeral=True,
         )
 
     @endfield.command(
