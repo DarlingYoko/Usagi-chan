@@ -1,3 +1,4 @@
+import uuid
 from typing import List
 
 import discord
@@ -75,7 +76,7 @@ class RenewVpnModal(discord.ui.Modal):
         )
         self.add_item(
             discord.ui.InputText(
-                label=self.bot.i18n.get_text('VPN device count', self.lang),
+                label=self.bot.i18n.get_text('VPN subscriptions count', self.lang),
                 value=str(len(vpn_profiles))
             )
         )
@@ -83,7 +84,7 @@ class RenewVpnModal(discord.ui.Modal):
     async def callback(self, interaction: discord.Interaction):
         try:
             amount = int(self.children[0].value)
-            device_count = int(self.children[1].value)
+            subscriptions_count = int(self.children[1].value)
         except ValueError:
             await interaction.respond(
                 embed=get_embed(
@@ -92,26 +93,27 @@ class RenewVpnModal(discord.ui.Modal):
                 )
             )
             return None
-        month_count = amount // device_count // 100
+        month_count = amount // subscriptions_count // 100
         if month_count < 1:
             await interaction.respond(
                 embed=get_embed(
-                    title=self.bot.i18n.get_text('Wrong amount and device count', self.lang),
+                    title=self.bot.i18n.get_text('Wrong amount and subscriptions count', self.lang),
                     color=discord.Color.red(),
                 )
             )
             return None
 
-        new_expiry = int(
-            (self.vpn_profiles[0].expiration_date + timedelta(days=month_count*31))
-            .timestamp() * 1000
-        )
         for vpn_profile in self.vpn_profiles:
             date = datetime.now()
+            past_date = max(vpn_profile.expiration_date, datetime.now())
+            new_expiry = int(
+                (past_date + timedelta(days=month_count * 31))
+                .timestamp() * 1000
+            )
             await UsagiVpnRenewalRequests.create(
                 user_id=vpn_profile.user_id,
-                vpn_username=vpn_profile.vpn_username,
-                uuid=vpn_profile.uuid,
+                sub_name=vpn_profile.sub_name,
+                uid=vpn_profile.uid,
                 months=month_count,
                 new_expiry=new_expiry,
                 previous_exp_date=vpn_profile.expiration_date,
@@ -128,7 +130,7 @@ class RenewVpnModal(discord.ui.Modal):
 
         renewal_vpns = []
         for idx, vpn_profiles in enumerate(self.vpn_profiles):
-            renewal_vpns.append(f'{idx + 1}. <@{vpn_profiles.user_id}> — {vpn_profiles.vpn_username} — {month_count} months')
+            renewal_vpns.append(f'{idx + 1}. <@{vpn_profiles.user_id}> — `{vpn_profiles.sub_name}` — {month_count} months')
         result_renewal_vpns = "\n".join(renewal_vpns)
 
         embed = get_embed(
@@ -199,6 +201,8 @@ class VPN(commands.Cog):
         vpn_profiles = await UsagiVpnUsers.get_all_by(active=True, notify_enabled=True)
         expired_users = {}
         for vpn_profile in vpn_profiles:
+            if not vpn_profile.expiration_date:
+                continue
             expiration_delta = vpn_profile.expiration_date - datetime.now()
             if expiration_delta < timedelta(days=2) and not vpn_profile.notified:
                 if expired_users.get(vpn_profile.user_id, None) is None:
@@ -215,7 +219,7 @@ class VPN(commands.Cog):
             notify_vpns = []
             for idx, expired_profile in enumerate(expired_profiles):
                 expired_timer = int(expired_profile.expiration_date.timestamp())
-                notify_vpns.append(f'{idx + 1}. {expired_profile.vpn_username} — <t:{expired_timer}:R>')
+                notify_vpns.append(f'{idx + 1}. {expired_profile.sub_name} — <t:{expired_timer}:R>')
 
             max_len = max(len(line.split("—")[0]) for line in notify_vpns)
             formatted_vpn_notify = []
@@ -252,15 +256,15 @@ class VPN(commands.Cog):
         description_localizations={"ru": "Вся информация про ВПН подписку"},
     )
     async def vpn_info(self, ctx: discord.ApplicationContext):
-        vpn_profiles = await UsagiVpnUsers.get_all_by(user_id = ctx.author.id, active = True)
+        vpn_users = await UsagiVpnUsers.get_all_by(user_id = ctx.author.id, active = True)
         lang = self.bot.language.get(int(ctx.author.id), "en")
 
-        if not vpn_profiles:
-            await ctx.respond(_("VPN no profiles"))
+        if not vpn_users:
+            await ctx.respond(_("VPN no clients"), ephemeral=True)
             return None
 
-        embed = await generate_vpn_user_info(self.bot, vpn_profiles, lang)
-        await ctx.respond(embed=embed, view=VpnInfoView(self.bot, vpn_profiles, lang))
+        embed = await generate_vpn_user_info(self.bot, vpn_users, lang)
+        await ctx.respond(embed=embed, view=VpnInfoView(self.bot, vpn_users, lang))
         return None
 
     @vpn.command(
@@ -281,8 +285,8 @@ class VPN(commands.Cog):
             map(
                 lambda x: _("Counter vpn users").format(
                     count=x[0] + 1,
-                    name=x[1],
-                    traffic=top_users[x[1]],
+                    name=top_users[x[1]]['sub_name'],
+                    traffic=top_users[x[1]]['traffic'],
                 ),
                 enumerate(top_users),
             )
@@ -350,18 +354,17 @@ class VPN(commands.Cog):
         # update all user's profiles
         for pending_profile in pending_profiles:
             # update in 3x-ui
-            self.bot.logger.info(f"Updating profile: {pending_profile.vpn_username}")
-            await vpn3xui.update_user_expiry_time(
-                pending_profile.vpn_username,
-                pending_profile.uuid,
+            self.bot.logger.info(f"Updating profile: {pending_profile.sub_name}")
+            await vpn3xui.update_user_expiry_time_by_sub_name(
+                pending_profile.uid,
                 pending_profile.new_expiry
             )
 
             # add logs
-            self.bot.logger.info(f"Adding log profile: {pending_profile.vpn_username}")
+            self.bot.logger.info(f"Adding log profile: {pending_profile.sub_name}")
             await UsagiVpnHistoryLogs.create(
                 user_id=pending_profile.user_id,
-                uuid = pending_profile.uuid,
+                uid = pending_profile.uid,
                 action = 'Renewal',
                 months = pending_profile.months,
                 new_expiry = datetime.fromtimestamp(pending_profile.new_expiry/1000),
@@ -370,16 +373,16 @@ class VPN(commands.Cog):
                 timestamp = cur_date
             )
 
-        # update in UsagiVpnUsers
-        self.bot.logger.info(f"Update profiles")
-        await UsagiVpnUsers.update_all(
-            {'user_id': pending_profiles[0].user_id},
-            {
-                'expiration_date': datetime.fromtimestamp(pending_profiles[0].new_expiry/1000),
-                'updated_at': cur_date,
-                'notified': False,
-            }
-        )
+            # update in UsagiVpnUsers
+            self.bot.logger.info(f"Update profile")
+            await UsagiVpnUsers.update_all(
+                {'sub_name': pending_profile.sub_name},
+                {
+                    'expiration_date': datetime.fromtimestamp(pending_profile.new_expiry / 1000),
+                    'updated_at': cur_date,
+                    'notified': False,
+                }
+            )
 
         # update in requests
         self.bot.logger.info(f"Update requests")
@@ -406,19 +409,74 @@ class VPN(commands.Cog):
         description_localizations={"ru": "Ручной запрос на продление ВПН подписки."},
     )
     async def request_renew_vpn(self, ctx: discord.ApplicationContext):
-        vpn_profiles = await UsagiVpnUsers.get_all_by(user_id=ctx.author.id, active=True)
-        if not vpn_profiles:
+        vpn_users = await UsagiVpnUsers.get_all_by(user_id=ctx.author.id, active=True)
+        if not vpn_users:
             await ctx.respond(_("VPN no profiles"))
             return None
 
         lang = self.bot.language.get(int(ctx.author.id), "en")
         renewal_request_title = _("VPN manual renewal request")
-        embed = await generate_vpn_user_info(self.bot, vpn_profiles, lang)
+        embed = await generate_vpn_user_info(self.bot, vpn_users, lang)
         embed.title = renewal_request_title
         embed.fields = []
-        await ctx.respond(embed=embed, view=VpnRenewView(self.bot, vpn_profiles, lang))
+        await ctx.respond(embed=embed, view=VpnRenewView(self.bot, vpn_users, lang))
         return None
 
+    @vpn.command(
+        name="create_user",
+        name_localizations={"ru": "создать_юзера"},
+        description="Create new subscription for VPN user.",
+        description_localizations={"ru": "Создать новую подписку для пользователя ВПН."},
+        checks=[is_owner().predicate]
+    )
+    @discord.commands.option(
+        name="sub_name",
+        name_localizations={"ru": "название_подписки"},
+        description="Name of the VPN subscription.",
+        description_localizations={"ru": "Название ВПН подписки."},
+        required=True,
+    )
+    @discord.commands.option(
+        name="expiry_date",
+        name_localizations={"ru": "окончание_подписки"},
+        description="Date of expiry of the VPN subscription.",
+        description_localizations={"ru": "Дата окончания ВПН подписки"},
+        required=False,
+    )
+    async def create_vpn_user(self, ctx: discord.ApplicationContext, user: discord.Member, sub_name: str, expiry_date: str):
+
+        try:
+            datetime_obj = datetime.strptime(expiry_date, "%d.%m.%Y") if expiry_date else None
+            new_expiry_time = int(datetime_obj.timestamp() * 1000) if datetime_obj else 0
+        except ValueError or KeyError:
+            return await ctx.respond(
+                embed=get_embed(
+                    title=_("Time data does not match format").format(expiry_date),
+                    color=discord.Color.red(),
+                ),
+                ephemeral=True,
+            )
+
+        vpn3xui = Vpn3xui()
+        await vpn3xui.login()
+
+        uid = str(uuid.uuid4().hex)
+        sub_url = await vpn3xui.create_user_sub(uid, sub_name, new_expiry_time)
+        await UsagiVpnUsers.create(
+            user_id = user.id,
+            uid = uid,
+            sub_name = sub_name,
+            expiration_date = datetime_obj,
+            active = True,
+            created_at = datetime.now(),
+            updated_at = datetime.now(),
+            notify_enabled = True,
+            notified = False,
+        )
+
+        await ctx.respond(_('User successfully created').format(sub_name=sub_name, sub_url=sub_url), ephemeral=True)
+
+        return None
 
 def setup(bot):
     bot.add_cog(VPN(bot))

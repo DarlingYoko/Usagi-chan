@@ -15,8 +15,8 @@ class UsagiVpnUsers(Base, ModelAdmin):
 
     id = Column(Integer, primary_key=True)
     user_id = Column(BigInteger)
-    uuid = Column(Text)
-    vpn_username = Column(Text)
+    uid = Column(Text)
+    sub_name = Column(Text)
     expiration_date = Column(DateTime)
     active = Column(Boolean)
     created_at = Column(DateTime)
@@ -28,7 +28,7 @@ class UsagiVpnHistoryLogs(Base, ModelAdmin):
     __tablename__ = "usagi_vpn_history_logs"
     id = Column(Integer, primary_key=True)
     user_id = Column(BigInteger)
-    uuid = Column(Text)
+    uid = Column(Text)
     action = Column(Text)
     months = Column(BigInteger)
     previous_exp_date = Column(DateTime)
@@ -41,8 +41,8 @@ class UsagiVpnRenewalRequests(Base, ModelAdmin):
 
     id = Column(Integer, primary_key=True)
     user_id = Column(BigInteger)
-    vpn_username = Column(Text)
-    uuid = Column(Text)
+    sub_name = Column(Text)
+    uid = Column(Text)
     months = Column(BigInteger)
     new_expiry = Column(BigInteger)
     previous_exp_date = Column(DateTime)

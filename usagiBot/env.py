@@ -31,5 +31,6 @@ QbittorrentPASSWORD = os.environ.get("QbittorrentPASSWORD")
 VPN_USERNAME = os.environ.get("VPN_USERNAME")
 VPN_PASSWORD = os.environ.get("VPN_PASSWORD")
 VPN_API_URL = os.environ.get("VPN_API_URL")
+VPN_SUB_URL = os.environ.get("VPN_SUB_URL")
 
 SHARED_FOLDER_URL = os.environ.get("SHARED_FOLDER_URL")
