@@ -218,6 +218,7 @@
     "No pending profiles": "No pending profiles for {user_mention}.",
     "Profiles successfully renewed": "Pending profiles for {user_mention} successfully renewed.",
     "User successfully created": "Clients for user `{sub_name}` successfully created. Subscription URL - {sub_url}",
+    "Users successfully filled": "Clients for Inbound `{inbound_id}` successfully filled.",
     "Your VPN renewal approved": "Your VPN renewal has been approved.",
 
     "ON": "ON",

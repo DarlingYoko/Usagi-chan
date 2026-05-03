@@ -478,5 +478,33 @@ class VPN(commands.Cog):
 
         return None
 
+    @vpn.command(
+        name="fill_inbound",
+        name_localizations={"ru": "наполнить_инбаунд"},
+        description="Fill VPN inbound with all users.",
+        description_localizations={"ru": "Наполнить ВПН инбауд всеми пользователями."},
+        checks=[is_owner().predicate]
+    )
+    @discord.commands.option(
+        name="inbound_id",
+        name_localizations={"ru": "id_инбаунда"},
+        description="Inbound ID.",
+        description_localizations={"ru": "Инбаунд ID."},
+        required=True,
+    )
+    async def fill_vpn_inbound(self, ctx: discord.ApplicationContext, inbound_id: int):
+        all_users = await UsagiVpnUsers.get_all_by(active=True)
+
+        vpn3xui = Vpn3xui()
+        await vpn3xui.login()
+        response = await vpn3xui.add_users_to_inboud(inbound_id, all_users)
+
+        if response:
+            await ctx.respond(_('Users successfully filled').format(inbound_id=inbound_id), ephemeral=True)
+        # else:
+        #     await ctx.respond(_('Users successfully filled').format(inbound_id), ephemeral=True)
+
+        return None
+
 def setup(bot):
     bot.add_cog(VPN(bot))

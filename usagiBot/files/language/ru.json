@@ -218,6 +218,7 @@
     "No pending profiles": "Нет профилей для {user_mention}.",
     "Profiles successfully renewed": "Профили для {user_mention} успешно продлены.",
     "User successfully created": "Профили для `{sub_name}` успешно созданы. Ссылка на подписку - {sub_url}",
+    "Users successfully filled": "Клиенты для Инбаунда `{inbound_id}` успешно добавлены.",
     "Your VPN renewal approved": "Ваша заявка на продление VPN была одобрена.",
 
     "ON": "ВКЛ",

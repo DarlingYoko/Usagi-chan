@@ -1,11 +1,12 @@
 import asyncio
 import uuid
 from collections import defaultdict
-from typing import Dict
+from typing import Dict, List
 
 import discord
 from discord.types.embed import Embed
 
+from usagiBot.cogs.VPN.schemas import UsagiVpnUsers
 from usagiBot.env import (
     VPN_USERNAME,
     VPN_PASSWORD,
@@ -134,6 +135,26 @@ class Vpn3xui:
                 reverse=True
             )[:10]
         )
+
+    async def add_users_to_inboud(self, inbound_id: int, users: List[UsagiVpnUsers]) -> bool:
+        inbound = await self.api.inbound.get_by_id(inbound_id)
+        clients = []
+
+        for user in users:
+            expiry_time = int(user.expiration_date.timestamp() * 1000) if user.expiration_date else 0
+            clients.append(
+                Client(
+                    id=str(uuid.uuid4()),
+                    email=f'{user.sub_name}-{inbound.remark}',
+                    sub_id=user.uid,
+                    # flow='xtls-rprx-vision',
+                    expiry_time=expiry_time,
+                    enable=True
+                )
+            )
+
+        await self.api.client.add(inbound_id, clients)
+        return True
 
 
 async def generate_vpn_user_info(bot, vpn_users, lang) -> Embed:
