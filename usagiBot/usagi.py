@@ -35,10 +35,14 @@ class UsagiBot(commands.Bot):
         self.logger.info("---------ALL COGS LOADED-------")
 
         # Define language
+        with open("usagiBot/files/language/en.json", encoding="utf-8") as en_file:
+            en_dict = json.load(en_file)
+        with open("usagiBot/files/language/ru.json", encoding="utf-8") as ru_file:
+            ru_dict = json.load(ru_file)
         i18n = I18nExtension(
             [
-                Language("English", "en", json.load(open("usagiBot/files/language/en.json"))),
-                Language("Russian", "ru", json.load(open("usagiBot/files/language/ru.json"))),
+                Language("English", "en", en_dict),
+                Language("Russian", "ru", ru_dict),
             ],
             fallback="en",
         )
@@ -58,8 +62,17 @@ class UsagiBot(commands.Bot):
         self.language = await init_language()
         self.logger.info("Languages loaded")
 
-# Define bot
-usegi_intents = discord.Intents.all()
+# Define bot — only the gateway events the cogs actually consume;
+# Intents.all() subscribed to presences/typing, the highest-volume events
+usegi_intents = discord.Intents(
+    guilds=True,
+    members=True,
+    messages=True,
+    message_content=True,
+    reactions=True,
+    voice_states=True,
+    emojis=True,
+)
 bot = UsagiBot(
     command_prefix="!",
     intents=usegi_intents,
