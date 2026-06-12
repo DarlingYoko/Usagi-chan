@@ -100,11 +100,10 @@ class TestHoyolabMethods(IsolatedAsyncioTestCase):
             ),
         ]
 
-        # Mock config per guild
-        self.mock_UsagiConfig.get.side_effect = [
-            mock.MagicMock(generic_id="ch1"),
-            mock.MagicMock(generic_id="ch1"),
-            mock.MagicMock(generic_id="ch2"),
+        # Mock config per guild — fetched once for all users
+        self.mock_UsagiConfig.get_all_by.return_value = [
+            mock.MagicMock(guild_id="g1", generic_id="ch1"),
+            mock.MagicMock(guild_id="g2", generic_id="ch2"),
         ]
 
         # Create fake channels with proper send() mocks
@@ -316,3 +315,33 @@ class TestHoyolabMethods(IsolatedAsyncioTestCase):
             content="You are not logged in. Pls go `/hoyolab login`", ephemeral=True
         )
         self.assertEqual(test_user, None)
+
+    async def test_check_resin_overflow_batches_config_lookup(self) -> None:
+        def make_user(uid, guild_id):
+            return mock.MagicMock(
+                id=uid,
+                guild_id=guild_id,
+                genshin_resin_sub_notified=False,
+                starrail_resin_sub_notified=False,
+                zzz_resin_sub_notified=False,
+            )
+
+        self.mock_UsagiHoyolab.get_all_by_or.return_value = [
+            make_user(1, "test_guild_1"),
+            make_user(2, "test_guild_1"),
+            make_user(3, "test_guild_2"),
+        ]
+        self.mock_UsagiConfig.get_all_by.return_value = [
+            mock.MagicMock(guild_id="test_guild_1", generic_id="chan_1"),
+            mock.MagicMock(guild_id="test_guild_2", generic_id="chan_2"),
+        ]
+        self.channels["chan_1"] = mock.AsyncMock()
+        self.channels["chan_2"] = mock.AsyncMock()
+        self.mock_GenshinAPI().get_user_data.return_value = {}
+
+        await self.Genshin.check_resin_overflow(self.Genshin)
+
+        self.mock_UsagiConfig.get_all_by.assert_awaited_once_with(
+            command_tag="genshin"
+        )
+        self.mock_UsagiConfig.get.assert_not_called()

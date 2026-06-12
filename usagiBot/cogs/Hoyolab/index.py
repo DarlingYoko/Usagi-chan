@@ -301,11 +301,11 @@ class Hoyolab(commands.Cog):
         users = await UsagiHoyolab.get_all_by_or(
             genshin_resin_sub=True, starrail_resin_sub=True, zzz_resin_sub=True
         )
+        configs = await UsagiConfig.get_all_by(command_tag="genshin")
+        configs_by_guild = {config.guild_id: config for config in configs}
 
         for user in users:
-            config = await UsagiConfig.get(
-                guild_id=user.guild_id, command_tag="genshin"
-            )
+            config = configs_by_guild.get(user.guild_id)
             if not config:
                 continue
             try:

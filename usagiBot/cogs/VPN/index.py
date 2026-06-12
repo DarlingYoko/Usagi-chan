@@ -208,6 +208,7 @@ class VPN(commands.Cog):
         """
         vpn_profiles = await UsagiVpnUsers.get_all_by(active=True, notify_enabled=True)
         expired_users = {}
+        renotify_ids = []
         for vpn_profile in vpn_profiles:
             if not vpn_profile.expiration_date:
                 continue
@@ -219,7 +220,10 @@ class VPN(commands.Cog):
                     expired_users[vpn_profile.user_id].append(vpn_profile)
 
             if expiration_delta > timedelta(days=2) and vpn_profile.notified:
-                await UsagiVpnUsers.update(vpn_profile.id, notified=False)
+                renotify_ids.append(vpn_profile.id)
+
+        if renotify_ids:
+            await UsagiVpnUsers.update_by_ids(renotify_ids, {"notified": False})
 
         for user_id, expired_profiles in expired_users.items():
             lang = self.bot.language.get(int(user_id), "en")

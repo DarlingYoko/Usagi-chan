@@ -42,13 +42,9 @@ class OpenAICog(commands.Cog):
 
     @tasks.loop(minutes=1)
     async def check_reminders(self):
-        reminders = await UsagiAIReminder.get_all()
-        date_now = datetime.now()
+        reminders = await UsagiAIReminder.get_due(datetime.now())
 
         for reminder in reminders:
-            if reminder.date > date_now:
-                continue
-
             channel = self.bot.get_channel(
                 reminder.channel_id
             ) or await self.bot.fetch_channel(reminder.channel_id)
@@ -56,7 +52,9 @@ class OpenAICog(commands.Cog):
             await channel.send(
                 f"<@{reminder.user_id}>, <a:dinkDonk:865127621112102953> {reminder.text}"
             )
-            await UsagiAIReminder.delete(id=reminder.id)
+
+        if reminders:
+            await UsagiAIReminder.delete_all([reminder.id for reminder in reminders])
 
     @check_reminders.before_loop
     async def before_check_reminders(self):

@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from unittest import IsolatedAsyncioTestCase
 from unittest import mock
 
@@ -118,3 +119,16 @@ class TestVpn(IsolatedAsyncioTestCase):
 
         called_embed = self.ctx.respond.call_args.kwargs["embed"]
         self.assertIn("01.01.2030", called_embed.title)
+
+    @mock.patch("usagiBot.cogs.VPN.index.UsagiVpnUsers", new_callable=mock.AsyncMock)
+    async def test_check_vpn_expiry_batches_notified_reset(self, mock_users) -> None:
+        far_future = datetime.now() + timedelta(days=30)
+        mock_users.get_all_by.return_value = [
+            mock.MagicMock(id=1, expiration_date=far_future, notified=True, user_id=111),
+            mock.MagicMock(id=2, expiration_date=far_future, notified=True, user_id=222),
+        ]
+
+        await self.VPN.check_vpn_expiry(self.VPN)
+
+        mock_users.update_by_ids.assert_awaited_once_with([1, 2], {"notified": False})
+        mock_users.update.assert_not_called()
