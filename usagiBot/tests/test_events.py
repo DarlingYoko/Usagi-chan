@@ -39,6 +39,7 @@ class TestEventsMethods(IsolatedAsyncioTestCase):
 
     async def test_on_command_error(self) -> None:
         user = mock.AsyncMock()
+        self.ctx.bot.get_user = mock.MagicMock(return_value=None)
         self.ctx.bot.fetch_user.return_value = user
         self.ctx.command.name = "test_command_name"
         self.ctx.author.mention = "test_author_mention"

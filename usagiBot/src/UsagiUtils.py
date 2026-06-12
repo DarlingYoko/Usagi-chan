@@ -125,7 +125,7 @@ async def error_notification_to_owner(
     :param app_command: Is command application
     :return:
     """
-    owner = await ctx.bot.fetch_user(BOT_OWNER)
+    owner = ctx.bot.get_user(BOT_OWNER) or await ctx.bot.fetch_user(BOT_OWNER)
     error_message = (
         "**NEW ERROR OCCURRED**\n"
         + f"> **Command** - {ctx.command.name}\n"

@@ -56,6 +56,7 @@ class TestUtilsMethods(IsolatedAsyncioTestCase):
         self.ctx.args = "test_args"
         self.ctx.kwargs = "test_kwargs"
 
+        self.ctx.bot.get_user = mock.MagicMock(return_value=None)
         self.ctx.bot.fetch_user.return_value = self.user
 
     async def test_error_notification_to_owner(self) -> None:

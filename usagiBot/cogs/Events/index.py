@@ -313,10 +313,15 @@ class Events(commands.Cog):
             emoji, discord.partial_emoji.PartialEmoji
         ):
             if user_id == ai_quesion and emoji.name == "❌":
-                guild = await self.bot.fetch_guild(guild_id)
-                channel = await guild.fetch_channel(channel_id)
-                message = await channel.fetch_message(message_id)
-                await message.delete(reason="Delete by Emoji")
+                guild = self.bot.get_guild(guild_id) or await self.bot.fetch_guild(
+                    guild_id
+                )
+                channel = guild.get_channel(channel_id) or await guild.fetch_channel(
+                    channel_id
+                )
+                await channel.get_partial_message(int(message_id)).delete(
+                    reason="Delete by Emoji"
+                )
                 del self.bot.ai_questions[int(message_id)]
 
         auto_roles = self.bot.auto_roles.get(guild_id, {})
@@ -328,13 +333,15 @@ class Events(commands.Cog):
         if role is None:
             return
 
-        guild = await self.bot.fetch_guild(guild_id)
+        guild = self.bot.get_guild(guild_id) or await self.bot.fetch_guild(guild_id)
         role = guild.get_role(role.role_id)
-        user = await guild.fetch_member(user_id)
+        user = guild.get_member(user_id) or await guild.fetch_member(user_id)
         try:
             await user.add_roles(role)
         except discord.errors.Forbidden:
-            channel = await guild.fetch_channel(role_data["channel_id"])
+            channel = guild.get_channel(
+                role_data["channel_id"]
+            ) or await guild.fetch_channel(role_data["channel_id"])
             await channel.send(
                 embed=get_embed(
                     title="Cannot give roles as my role has lower position.",
@@ -360,13 +367,15 @@ class Events(commands.Cog):
         if role is None:
             return
 
-        guild = await self.bot.fetch_guild(guild_id)
+        guild = self.bot.get_guild(guild_id) or await self.bot.fetch_guild(guild_id)
         role = guild.get_role(role.role_id)
-        user = await guild.fetch_member(user_id)
+        user = guild.get_member(user_id) or await guild.fetch_member(user_id)
         try:
             await user.remove_roles(role)
         except discord.errors.Forbidden:
-            channel = await guild.fetch_channel(role_data["channel_id"])
+            channel = guild.get_channel(
+                role_data["channel_id"]
+            ) or await guild.fetch_channel(role_data["channel_id"])
             await channel.send(
                 embed=get_embed(
                     title="Cannot remove roles as my role has lower position.",
