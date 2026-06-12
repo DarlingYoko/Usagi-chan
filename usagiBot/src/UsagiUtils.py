@@ -26,8 +26,8 @@ class UsagiEmbed(discord.Embed):
             for i in range(len(self._fields)):
                 if (
                     self._fields[i].name != other._fields[i].name
-                    and self._fields[i].value != other._fields[i].value
-                    and self._fields[i].inline != other._fields[i].inline
+                    or self._fields[i].value != other._fields[i].value
+                    or self._fields[i].inline != other._fields[i].inline
                 ):
                     return False
 

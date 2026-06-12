@@ -141,3 +141,19 @@ class TestUtilsMethods(IsolatedAsyncioTestCase):
                 ],
             },
         )
+
+    async def test_usagi_embed_fields_differ_in_one_attribute_not_equal(self) -> None:
+        embed_one = self.Usagi_Utils.UsagiEmbed(title="t", description="d")
+        embed_one.add_field(name="a", value="left", inline=True)
+        embed_two = self.Usagi_Utils.UsagiEmbed(title="t", description="d")
+        embed_two.add_field(name="a", value="right", inline=True)
+
+        self.assertNotEqual(embed_one, embed_two)
+
+    async def test_usagi_embed_identical_fields_equal(self) -> None:
+        embed_one = self.Usagi_Utils.UsagiEmbed(title="t", description="d")
+        embed_one.add_field(name="a", value="v", inline=True)
+        embed_two = self.Usagi_Utils.UsagiEmbed(title="t", description="d")
+        embed_two.add_field(name="a", value="v", inline=True)
+
+        self.assertEqual(embed_one, embed_two)
