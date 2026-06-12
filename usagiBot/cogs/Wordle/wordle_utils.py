@@ -1,3 +1,4 @@
+import asyncio
 from io import BytesIO
 
 from more_itertools import locate
@@ -13,6 +14,18 @@ from usagiBot.cogs.Wordle.schemas import UsagiWordleGames, UsagiWordleResults
 from usagiBot.src.UsagiUtils import get_embed, Editor
 
 from pycord18n.extension import _
+
+# Loaded once — every guess used to re-read these from disk
+with open("./usagiBot/files/dicts/russian.txt", "r", encoding="utf8") as _f:
+    GUESS_WORDS = _f.readline().split(",")
+with open("./usagiBot/files/dicts/check_ru_dict.txt", "r", encoding="utf8") as _f:
+    CHECK_WORDS = frozenset(_f.readline().split(","))
+
+FONT_ANSWER = ImageFont.truetype(font="./usagiBot/files/fonts/genshin.ttf", size=120)
+FONT_KEYBOARD = ImageFont.truetype(font="./usagiBot/files/fonts/genshin.ttf", size=60)
+GREEN_BLOCK = Image.open("./usagiBot/files/photo/wordle/green_block.png")
+YELLOW_BLOCK = Image.open("./usagiBot/files/photo/wordle/yellow_block.png")
+BLACK_BLOCK = Image.open("./usagiBot/files/photo/wordle/black_block.png")
 
 
 class WordleAnswer(discord.ui.Modal):
@@ -94,7 +107,8 @@ class WordleAnswer(discord.ui.Modal):
             self.game.yellow_letters = self.game.yellow_letters + new_yellow_letters
             self.game.black_letters = self.game.black_letters + new_black_letters
 
-        wordle_image = create_full_wordle_pic(
+        wordle_image = await asyncio.to_thread(
+            create_full_wordle_pic,
             word=answer,
             lang=self.game.word_language,
             lives_count=self.game.lives_count,
@@ -239,7 +253,8 @@ You have only [0;36m{lives_count}[0m tries and it's time to spend it![0m
 
     description = description_en if user_lang == "en" else description_ru
 
-    wordle_image = create_full_wordle_pic(
+    wordle_image = await asyncio.to_thread(
+        create_full_wordle_pic,
         word=word,
         lang=word_language,
         lives_count=lives_count,
@@ -296,10 +311,7 @@ def get_word(length: int) -> str | None:
     :param length: Length of word
     :return: New word
     """
-    with open("./usagiBot/files/dicts/russian.txt", "r", encoding="utf8") as f:
-        words = f.readline().split(",")
-
-    words = list(filter(lambda x: len(x) == length, words))
+    words = [word for word in GUESS_WORDS if len(word) == length]
     if not words:
         return None
     word = random.choice(words)
@@ -313,10 +325,7 @@ def check_word_for_reality(word: str) -> bool:
     :param word: Word to check
     :return: Boolean
     """
-    word_upper = word.upper()
-    with open("./usagiBot/files/dicts/check_ru_dict.txt", "r", encoding="utf8") as f:
-        words = f.readline().split(",")
-    return word_upper in words
+    return word.upper() in CHECK_WORDS
 
 
 def create_pic_for_answer(word: str, blocks: list[str]) -> Editor:
@@ -326,22 +335,13 @@ def create_pic_for_answer(word: str, blocks: list[str]) -> Editor:
     :param blocks: Colors for word
     :return: New word image
     """
-    green_block = Image.open("./usagiBot/files/photo/wordle/green_block.png").resize(
-        (153, 153)
-    )
-    yellow_block = Image.open("./usagiBot/files/photo/wordle/yellow_block.png").resize(
-        (153, 153)
-    )
-    black_block = Image.open("./usagiBot/files/photo/wordle/black_block.png").resize(
-        (153, 153)
-    )
     color_blocks = {
-        "green_block": green_block,
-        "yellow_block": yellow_block,
-        "black_block": black_block,
+        "green_block": GREEN_BLOCK.resize((153, 153)),
+        "yellow_block": YELLOW_BLOCK.resize((153, 153)),
+        "black_block": BLACK_BLOCK.resize((153, 153)),
     }
     background = Editor(Image.new("RGBA", (173 * len(blocks), 153), (0, 0, 0, 0)))
-    font = ImageFont.truetype(font="./usagiBot/files/fonts/genshin.ttf", size=120)
+    font = FONT_ANSWER
 
     for i in range(len(blocks)):
         background.paste(color_blocks[blocks[i]], (173 * i, 0))
@@ -369,10 +369,10 @@ def create_pic_for_keyboard(
     :param lang:
     :return: New keyboard image
     """
-    font = ImageFont.truetype(font="./usagiBot/files/fonts/genshin.ttf", size=60)
-    green_block = Image.open("./usagiBot/files/photo/wordle/green_block.png")
-    yellow_block = Image.open("./usagiBot/files/photo/wordle/yellow_block.png")
-    black_block = Image.open("./usagiBot/files/photo/wordle/black_block.png")
+    font = FONT_KEYBOARD
+    green_block = GREEN_BLOCK
+    yellow_block = YELLOW_BLOCK
+    black_block = BLACK_BLOCK
 
     ru_keyboard = "ё й ц у к е н г ш щ з х ъ,ф ы в а п р о л д ж э,я ч с м и т ь б ю"
     en_keyboard = "q w e r t y u i o p,a s d f g h j k l,z x c v b n m"
