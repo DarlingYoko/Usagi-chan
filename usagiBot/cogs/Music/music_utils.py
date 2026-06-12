@@ -1,4 +1,6 @@
 import asyncio
+import logging
+import math
 import os
 import shutil
 
@@ -8,6 +10,8 @@ import time
 from discord.ext import commands
 
 from usagiBot.src.UsagiUtils import get_embed
+
+logger = logging.getLogger(__name__)
 
 # Commandline options for youtube-dl and ffmpeg
 YTDL_OPTIONS_PLAYLIST = {
@@ -223,20 +227,74 @@ def get_children_by_id(children, custom_id):
     return None
 
 
-def create_music_embed(Music, ctx, page) -> discord.Embed:
-    return Music.queue_embed(
-        ctx.voice_state.songs,
+def queue_embed(data, page, header, description, song_id) -> discord.Embed:
+    """
+    Five songs per page from the queue/playlist; pages out of range clamp
+    to the closest valid page.
+    """
+    def get_total_duration(songs_data):
+        total_duration = 0
+        for song_data in songs_data:
+            total_duration += song_data["duration"]
+        return total_duration
+
+    items_per_page = 5
+    pages = math.ceil(len(data) / items_per_page)
+    if page < 1:
+        page = 1
+    page = min(pages, page)
+    start = (page - 1) * items_per_page
+    end = start + items_per_page
+    queue = ""
+    url = "https://youtu.be/" if song_id == "id" else ""
+    # If data has children, iterates through all children and create the body
+    if len(data):
+        for i, song in enumerate(data[start:end], start=start):
+            if "local@" in song[song_id]:
+                title = song["title"].replace("_", "\\_")
+                try:
+                    duration = parse_duration(song["duration"])
+                except Exception as e:
+                    logger.error("Couldn't parse duration: %s", e)
+                    duration = "Unknown"
+                queue += f"`{i + 1}.` **{title}** ({duration})\n"
+            else:
+                try:
+                    duration = parse_duration_raw(song["duration"])
+                except Exception as e:
+                    logger.error("Couldn't parse duration: %s", e)
+                    duration = "Unknown"
+                queue += f"`{i + 1}.` [**{song['title']}**]({url}{song[song_id]}) ({duration})\n"
+
+    else:
+        queue = "No songs in queue..."
+    embed = (
+        get_embed(title=header, description=description)
+        .add_field(
+            name=f"**{len(data)} tracks** - {parse_duration(get_total_duration(data))}",
+            value=queue,
+        )
+        .set_footer(text=f"Viewing page {page}/{pages}")
+    )
+    return embed
+
+
+def create_music_embed(holder, page) -> discord.Embed:
+    """Build the queue embed for anything carrying a .voice_state."""
+    state = holder.voice_state
+    return queue_embed(
+        state.songs,
         page,
         "Currently Playing",
         "[**{0}**]({1}) ({2} Left)".format(
-            ctx.voice_state.current.source.title,
-            ctx.voice_state.current.source.url,
+            state.current.source.title,
+            state.current.source.url,
             parse_duration(
-                ctx.voice_state.current.source.duration_int
+                state.current.source.duration_int
                 - int(
                     time.time()
-                    - ctx.voice_state.current.start_time
-                    - ctx.voice_state.current.pause_duration
+                    - state.current.start_time
+                    - state.current.pause_duration
                 )
             ),
         ),
@@ -284,7 +342,7 @@ async def unmute_self(ctx):
         await asyncio.sleep(1)
         await ctx.me.edit(suppress=False)
     except Exception as e:
-        print(f"ERROR 18- {e}")
+        logger.error("Couldn't unmute self: %s", e)
         # Unable to unmute itself, ask admin to invite the bot to speak (auto)
         await ctx.respond(
             embed=get_embed(
