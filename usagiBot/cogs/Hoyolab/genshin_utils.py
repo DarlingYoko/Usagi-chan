@@ -1,12 +1,16 @@
 import asyncio
+import logging
 from datetime import datetime, timedelta
 from string import Template
 
+import aiohttp
 import discord
 import genshin
 
 from usagiBot.cogs.Hoyolab.schemas import UsagiHoyolab
 from pycord18n.extension import _
+
+logger = logging.getLogger(__name__)
 
 blue_text = Template("""```ansi\n[2;31m[2;34m$count[0m[2;31m[0m```""")
 red_text = Template("""```ansi\n[2;31m$count[0m```""")
@@ -35,24 +39,27 @@ class HoyolabAPI:
         )
         return True
 
-    async def check_cookies(self, cookies) -> bool:
+    async def check_cookies(self, cookies: dict) -> bool:
         self.client.set_cookies(cookies)
         try:
             await self.client.get_genshin_user(COOKIE_CHECK_UID)
-        except genshin.InvalidCookies as e:
-            print("Error in check_cookies -", e)
+        except genshin.GenshinException as e:
+            logger.warning("check_cookies failed: %s", e)
+            return False
+        except (aiohttp.ClientError, asyncio.TimeoutError) as e:
+            logger.warning("check_cookies network error: %s", e)
             return False
         return True
 
-    async def get_user_data(self, db_id):
+    async def get_user_data(self, db_id: int) -> dict:
         cookies_result = await self.set_cookies(db_id=db_id)
         if not cookies_result:
-            return False
+            return {}
 
         try:
             user = await self.client.get_hoyolab_user()
-        except genshin.errors.InvalidCookies:
-            print("Skipped get_user_dataInvalidCookies -", db_id)
+        except genshin.GenshinException as e:
+            logger.warning("get_user_data failed for %s: %s", db_id, e)
             return {}
 
         data = {
@@ -64,40 +71,39 @@ class HoyolabAPI:
             try:
                 res = await getattr(self.client, f"get_{source}_notes")()
                 data[source] = res
-            except (
-                genshin.errors.InvalidCookies,
-                genshin.errors.AccountNotFound,
-                genshin.errors.InternalDatabaseError,
-            ):
-                pass
             except genshin.errors.GeetestError:
                 data["geetest_error"] = source
+            except genshin.GenshinException as e:
+                logger.warning(
+                    "get_%s_notes failed for %s: %s", source, db_id, e
+                )
 
         return data
 
-    async def redeem_code(self, code, game):
+    async def redeem_code(self, code: str, game: str, retries: int = 3) -> str:
         match game:
             case "Genshin":
                 game = genshin.Game.GENSHIN
             case "Star Rail":
                 game = genshin.Game.STARRAIL
-        try:
-            await self.client.redeem_code(code, game=game)
-        except genshin.RedemptionCooldown:
-            await asyncio.sleep(5)
-            await self.redeem_code(code, game=game)
-        except genshin.RedemptionException as e:
-            return e.msg
-        except genshin.errors.InvalidCookies:
-            print("Skipped user, invalid cookies")
-            return _("Your cookie out of date")
-        except genshin.errors.AccountNotFound:
-            print("Skipped user, no account")
-            return _("Your cookie out of date")
+        last_error = ""
+        for attempt in range(retries):
+            try:
+                await self.client.redeem_code(code, game=game)
+            except genshin.RedemptionCooldown as e:
+                last_error = e.msg
+                if attempt < retries - 1:
+                    await asyncio.sleep(5)
+                continue
+            except genshin.RedemptionException as e:
+                return e.msg
+            except (genshin.errors.InvalidCookies, genshin.errors.AccountNotFound):
+                logger.warning("redeem_code skipped, invalid cookies or no account")
+                return _("Your cookie out of date")
+            return _("Successfully redeemed")
+        return last_error
 
-        return _("Successfully redeemed")
-
-    async def claim_daily_reward(self, db_id, game):
+    async def claim_daily_reward(self, db_id: int, game) -> bool | str:
         cookies_result = await self.set_cookies(db_id=db_id)
         if not cookies_result:
             return False
@@ -107,13 +113,13 @@ class HoyolabAPI:
         except genshin.AlreadyClaimed:
             return False
         except genshin.errors.InvalidCookies:
-            print("Skipped user in claiming reward InvalidCookies -", db_id)
+            logger.warning("claim_daily_reward invalid cookies for %s", db_id)
             return "InvalidCookies"
         except genshin.errors.GeetestError:
-            print("Skipped user in claiming reward GeetestError -", db_id)
+            logger.warning("claim_daily_reward geetest triggered for %s", db_id)
             return "GeetestTriggered"
         except genshin.errors.GenshinException as e:
-            print(f"Skipped user in claiming reward {e} -", db_id)
+            logger.warning("claim_daily_reward failed for %s: %s", db_id, e)
             return False
 
 
