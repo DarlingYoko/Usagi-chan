@@ -46,6 +46,31 @@ FFMPEG_OPTIONS = {
 }
 
 
+async def get_audio_duration(source: str) -> int:
+    """
+    Get audio duration in whole seconds via ffprobe.
+
+    The source is passed as a single argv element (no shell), so shell
+    metacharacters in user-supplied links are never interpreted.
+    """
+    proc = await asyncio.create_subprocess_exec(
+        "ffprobe",
+        "-v",
+        "error",
+        "-show_entries",
+        "format=duration",
+        "-of",
+        "default=noprint_wrappers=1:nokey=1",
+        source,
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.DEVNULL,
+    )
+    stdout, _ = await proc.communicate()
+    if proc.returncode != 0:
+        raise RuntimeError(f"ffprobe exited with {proc.returncode} for {source!r}")
+    return int(float(stdout.decode("ascii").strip()))
+
+
 def parse_duration(duration: int):
     """
     Parse the duration to xx days xx hours xx minutes xx seconds

@@ -12,7 +12,6 @@ from usagiBot.src.UsagiChecks import check_cog_whitelist
 from usagiBot.src.UsagiErrors import UsagiModuleDisabledError
 from usagiBot.src.UsagiUtils import get_embed
 
-import subprocess
 import shutil
 import re
 
@@ -443,20 +442,7 @@ class VoiceState:
             url = url[6:]
             try:
                 # Try to get the duration of the uploaded file
-                duration = str(
-                    int(
-                        float(
-                            subprocess.check_output(
-                                f"ffprobe -v error -show_entries format=duration -of "
-                                f'default=noprint_wrappers=1:nokey=1 "{url}"',
-                                shell=True,
-                            )
-                            .decode("ascii")
-                            .replace("\r", "")
-                            .replace("\n", "")
-                        )
-                    )
-                )
+                duration = str(await get_audio_duration(url))
             except Exception as e:
                 print("ERROR 6- ", e)
                 return "error"
@@ -2026,18 +2012,7 @@ class Music(commands.Cog):
                                     "url": link,
                                     "title": title,
                                     "user": ctx.author,
-                                    "duration": int(
-                                        float(
-                                            subprocess.check_output(
-                                                f"ffprobe -v error -show_entries format=duration -of "
-                                                f'default=noprint_wrappers=1:nokey=1 "{link}"',
-                                                shell=True,
-                                            )
-                                            .decode("ascii")
-                                            .replace("\r", "")
-                                            .replace("\n", "")
-                                        )
-                                    ),
+                                    "duration": await get_audio_duration(link),
                                     "realurl": data["url"],
                                 }
                             )
