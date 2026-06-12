@@ -75,7 +75,9 @@ class EndfieldProfileSelect(discord.ui.Select):
         data = [d for d in self.endfield_data if d.nickname == self.values[0]][0]
         img_bytes = self.profile_files.get(data.nickname, None)
         if img_bytes is None:
-            img_bytes = draw_endfield_profile(data, self.background_bytes, self.color, self.theme)
+            img_bytes = await asyncio.to_thread(
+                draw_endfield_profile, data, self.background_bytes, self.color, self.theme
+            )
             self.profile_files[data.nickname] = img_bytes
 
         img_bytes.seek(0)
@@ -341,7 +343,13 @@ class Endfield(commands.Cog):
                     background_bytes = None
 
         profile_bytes = {
-            endfield_data[0].nickname: draw_endfield_profile(endfield_data[0], background_bytes=background_bytes, color=color, theme=theme)
+            endfield_data[0].nickname: await asyncio.to_thread(
+                draw_endfield_profile,
+                endfield_data[0],
+                background_bytes=background_bytes,
+                color=color,
+                theme=theme,
+            )
         }
         endfield_view = None
         if len(endfield_data) > 1:

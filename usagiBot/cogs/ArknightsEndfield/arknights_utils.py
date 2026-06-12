@@ -655,8 +655,8 @@ def draw_endfield_profile(profile_data: ProfileData, background_bytes: bytes = N
         timer_uid = Image.open("./usagiBot/files/photo/endfield/ENDFIELD_PROFILE_TIMER_UID.png").convert("RGBA")
         sanity_icon = Image.open("./usagiBot/files/photo/endfield/ENDFIELD_SANITY_ICON.png").convert("RGBA")
 
-        # Open icon
-        response = requests.get(profile_data.avatar_url)
+        # Open icon (sync is fine — callers run this whole function in a thread)
+        response = requests.get(profile_data.avatar_url, timeout=15)
         response.raise_for_status()
         icon = Image.open(BytesIO(response.content)).convert("RGBA").resize((300, 300))
 
