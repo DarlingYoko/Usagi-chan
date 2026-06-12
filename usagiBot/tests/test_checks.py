@@ -182,8 +182,8 @@ class TestCheckMethods(IsolatedAsyncioTestCase):
 
         self.assertTrue(respone)
 
-    async def test_check_member_is_moder_me(self) -> None:
-        self.ctx.author.id = 290166276796448768
+    async def test_check_member_is_moder_bot_owner(self) -> None:
+        self.ctx.author.id = 11111  # BOT_OWNER env var set in tests/utils.py
         self.ctx.author.guild_permissions.administrator = False
         self.ctx.bot.moder_roles = {}
         self.ctx.author.roles = []
@@ -195,6 +195,15 @@ class TestCheckMethods(IsolatedAsyncioTestCase):
             )
 
         self.assertTrue(respone)
+
+    async def test_check_member_is_moder_hardcoded_id_not_privileged(self) -> None:
+        self.ctx.author.id = 290166276796448768
+        self.ctx.author.guild_permissions.administrator = False
+        self.ctx.bot.moder_roles = {}
+        self.ctx.author.roles = []
+
+        with self.assertRaises(UsagiCallFromNotModerError):
+            self.UsagiChecks.check_member_is_moder(self.ctx)
 
     async def test_check_member_is_moder_failed(self) -> None:
         self.ctx.author.id = "test_author_id"

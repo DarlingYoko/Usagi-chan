@@ -8,6 +8,7 @@ from async_timeout import timeout
 from discord import SlashCommandGroup
 
 from usagiBot.cogs.Music.music_utils import *
+from usagiBot.env import BOT_OWNER
 from usagiBot.src.UsagiChecks import check_cog_whitelist
 from usagiBot.src.UsagiErrors import UsagiModuleDisabledError
 from usagiBot.src.UsagiUtils import get_embed
@@ -27,8 +28,8 @@ error_messages = {
     "ERROR: Private video\nSign in if you've been granted access to this video": "This video is private video",
 }
 
-# Insert authors' id in here, user in this set is allowed to use command "running-servers"
-authors = (290166276796448768,)
+# Users in this set are allowed to use command "running-servers"
+authors = (BOT_OWNER,)
 
 
 class VoiceError(Exception):

@@ -64,7 +64,7 @@ def check_member_is_moder(ctx):
     if ctx.author.guild_permissions.administrator:
         return True
 
-    if ctx.author.id == 290166276796448768:
+    if ctx.author.id == BOT_OWNER:
         return True
 
     raise UsagiCallFromNotModerError()
