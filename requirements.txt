@@ -22,6 +22,7 @@ click==8.3.0
 colorama==0.4.6
 commonmark==0.9.1
 coverage==7.11.0
+cryptography==48.0.1
 dill==0.4.0
 enum-tools==0.13.0
 ffmpeg-python==0.2.0

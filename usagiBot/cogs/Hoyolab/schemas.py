@@ -1,5 +1,6 @@
 from usagiBot.db.base import Base
 from usagiBot.db.models import ModelAdmin
+from usagiBot.db.types import EncryptedText
 from sqlalchemy import (
     Text,
     BigInteger,
@@ -17,8 +18,8 @@ class UsagiHoyolab(Base, ModelAdmin):
     ltuid_v2 = Column(Text)
     ltmid_v2 = Column(Text)
     account_id_v2 = Column(Text)
-    ltoken_v2 = Column(Text)
-    cookie_token_v2 = Column(Text)
+    ltoken_v2 = Column(EncryptedText)
+    cookie_token_v2 = Column(EncryptedText)
     genshin_resin_sub = Column(Boolean)
     genshin_resin_sub_notified = Column(Boolean)
     genshin_daily_sub = Column(Boolean)

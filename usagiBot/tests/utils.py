@@ -1,9 +1,13 @@
+from cryptography.fernet import Fernet
 from pycord18n.extension import I18nExtension, Language
 import json
 import os
 
 os.environ["BOT_OWNER"] = "11111"
 os.environ["BOT_ID"] = "1234567890"
+os.environ.setdefault(
+    "CREDENTIALS_ENCRYPTION_KEY", Fernet.generate_key().decode()
+)
 
 
 def init_i18n():
