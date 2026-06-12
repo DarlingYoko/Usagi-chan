@@ -1,9 +1,10 @@
+import asyncio
 from datetime import datetime
 from io import BytesIO
 
+import aiohttp
 import discord
 import pytz
-import requests
 from discord import SlashCommandGroup
 
 from discord.ext import commands, tasks
@@ -14,6 +15,7 @@ from usagiBot.cogs.Main.schemas import UsagiConfig
 from usagiBot.cogs.ArknightsEndfield.arknights_utils import EndfieldClient, draw_endfield_profile
 from usagiBot.src.UsagiChecks import check_is_already_set_up, check_cog_whitelist
 from usagiBot.src.UsagiErrors import UsagiModuleDisabledError
+from usagiBot.src.UsagiNet import UnsafeUrlError, fetch_image
 
 from pycord18n.extension import _
 
@@ -26,11 +28,11 @@ class EndfieldProfileView(discord.ui.View):
                  author: discord.Member,
                  endfield_data: list,
                  profile_files: dict[str, BytesIO],
-                 background_url: str = None,
+                 background_bytes: bytes = None,
                  color: str = None,
                  theme: str = None
                  ):
-        super().__init__(EndfieldProfileSelect(bot, author, endfield_data, profile_files, background_url, color, theme))
+        super().__init__(EndfieldProfileSelect(bot, author, endfield_data, profile_files, background_bytes, color, theme))
         self.timeout = 300
 
 class EndfieldProfileSelect(discord.ui.Select):
@@ -39,7 +41,7 @@ class EndfieldProfileSelect(discord.ui.Select):
                  author: discord.Member,
                  endfield_data: list,
                  profile_files: dict[str, BytesIO],
-                 background_url: str = None,
+                 background_bytes: bytes = None,
                  color: str = None,
                  theme: str = None
                  ):
@@ -47,7 +49,7 @@ class EndfieldProfileSelect(discord.ui.Select):
         self.author = author
         self.endfield_data = endfield_data
         self.profile_files = profile_files
-        self.background_url = background_url
+        self.background_bytes = background_bytes
         self.color = color
         self.theme = theme
         self.timeout = 300
@@ -73,7 +75,7 @@ class EndfieldProfileSelect(discord.ui.Select):
         data = [d for d in self.endfield_data if d.nickname == self.values[0]][0]
         img_bytes = self.profile_files.get(data.nickname, None)
         if img_bytes is None:
-            img_bytes = draw_endfield_profile(data, self.background_url, self.color, self.theme)
+            img_bytes = draw_endfield_profile(data, self.background_bytes, self.color, self.theme)
             self.profile_files[data.nickname] = img_bytes
 
         img_bytes.seek(0)
@@ -325,20 +327,25 @@ class Endfield(commands.Cog):
                 await client.close()
 
         user_profile_data = await UsagiEndfieldProfile.get(guild_id=ctx.guild.id, user_id=ctx.author.id)
-        background_url = None
+        background_bytes = None
         color = None
         theme = None
         if user_profile_data:
-            background_url = user_profile_data.background_url
             color = user_profile_data.accent_color
             theme = user_profile_data.theme
+            if user_profile_data.background_url:
+                try:
+                    background_bytes = await fetch_image(user_profile_data.background_url)
+                except (UnsafeUrlError, aiohttp.ClientError, asyncio.TimeoutError):
+                    # Stored URL went bad or unsafe — render the default background
+                    background_bytes = None
 
         profile_bytes = {
-            endfield_data[0].nickname: draw_endfield_profile(endfield_data[0], background_url=background_url, color=color, theme=theme)
+            endfield_data[0].nickname: draw_endfield_profile(endfield_data[0], background_bytes=background_bytes, color=color, theme=theme)
         }
         endfield_view = None
         if len(endfield_data) > 1:
-            endfield_view = EndfieldProfileView(self.bot, ctx.author, endfield_data, profile_bytes, background_url, color, theme)
+            endfield_view = EndfieldProfileView(self.bot, ctx.author, endfield_data, profile_bytes, background_bytes, color, theme)
 
         img_bytes = profile_bytes[endfield_data[0].nickname]
         img_bytes.seek(0)
@@ -516,8 +523,8 @@ class Endfield(commands.Cog):
     )
     async def endfield_set_bg(self, ctx: discord.ApplicationContext, url: str):
         try:
-            requests.get(url)
-        except requests.exceptions.RequestException as e:
+            await fetch_image(url)
+        except (UnsafeUrlError, aiohttp.ClientError, asyncio.TimeoutError):
             await ctx.respond(_("wrong bg url"), ephemeral=True)
             return
 
