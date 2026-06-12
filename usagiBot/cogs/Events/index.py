@@ -24,6 +24,9 @@ from usagiBot.cogs.Main.schemas import (
     UsagiBackup,
 )
 
+# Discord custom emoji: <:name:id> or animated <a:name:id>
+CUSTOM_EMOJI_RE = re.compile(r"<a?:\w+:\d+>")
+
 
 class Events(commands.Cog):
     def __init__(self, bot):
@@ -399,7 +402,7 @@ class Events(commands.Cog):
         if ".gif" in message.content:
             member["gifs"] += 1
 
-        if re.search("<*:*:*>", message.content):
+        if CUSTOM_EMOJI_RE.search(message.content):
             member["emojis"] += 1
 
         if message.stickers:

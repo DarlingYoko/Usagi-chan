@@ -63,3 +63,20 @@ class TestEventsMethods(IsolatedAsyncioTestCase):
         )
         await self.Events.on_command_error(self.ctx, self.error)
         user.send.assert_called_with(test_error_message)
+
+
+class TestCustomEmojiPattern(IsolatedAsyncioTestCase):
+    @mock.patch.object(asyncio, "create_async_engine")
+    def setUp(self, mock_engine) -> None:
+        from usagiBot.cogs.Events import index as events_index
+
+        self.pattern = events_index.CUSTOM_EMOJI_RE
+
+    def test_matches_custom_emoji(self) -> None:
+        self.assertTrue(self.pattern.search("hi <:pepe:1234567890>"))
+
+    def test_matches_animated_emoji(self) -> None:
+        self.assertTrue(self.pattern.search("<a:dinkDonk:865127621112102953>"))
+
+    def test_ignores_plain_colons(self) -> None:
+        self.assertFalse(self.pattern.search("meet at 12:30, ok :> friend"))
