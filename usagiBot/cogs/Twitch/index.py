@@ -72,7 +72,7 @@ class Twitch(commands.Cog):
                     " ".join(list(map(lambda x: f"<@{x}>", info["followers"])))
                     + " <a:dinkDonk:865127621112102953>"
                 )
-                embed, image = get_notify_src(
+                embed, image = await get_notify_src(
                     stream, update_streamer[streamer]["icon_url"]
                 )
                 await channel.send(content=followers, embed=embed, file=image)

@@ -65,7 +65,9 @@ class TestTwitch(IsolatedAsyncioTestCase):
         self.Twitch.bot.get_channel = mock.MagicMock(side_effect=mock_get_channel)
         self.Twitch.bot.fetch_channel = mock.AsyncMock(side_effect=mock_fetch_channel)
 
-    async def test_twitch_notify_loop(self) -> None:
+    @mock.patch("usagiBot.cogs.Twitch.index.get_notify_src", new_callable=mock.AsyncMock)
+    async def test_twitch_notify_loop(self, mock_get_notify_src) -> None:
+        mock_get_notify_src.return_value = (mock.MagicMock(), mock.MagicMock())
         self.mock_UsagiTwitchNotify.get_all.return_value = [
             mock.MagicMock(
                 guild_id="test_guild_id_1",
