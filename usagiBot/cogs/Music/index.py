@@ -2096,7 +2096,10 @@ class Music(commands.Cog):
         # Search from YouTube and returns 10 songs
         original_keyword = keyword
         keyword = "ytsearch10:" + keyword
-        data = YTDLSource.ytdl_playlist.extract_info(keyword, download=False)
+        partial = functools.partial(
+            YTDLSource.ytdl_playlist.extract_info, keyword, download=False
+        )
+        data = await self.bot.loop.run_in_executor(None, partial)
         result = []
         # Get 10 songs from the result
         for index, entry in enumerate(data["entries"]):
