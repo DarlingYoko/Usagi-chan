@@ -13,6 +13,10 @@ red_text = Template("""```ansi\n[2;31m$count[0m```""")
 green_tick = "<:greenTick:874767321007276143>"
 red_thick = "<:redThick:874767320915005471>"
 
+# Any real, public Genshin UID works here — cookie validation only needs a
+# request that requires auth to succeed.
+COOKIE_CHECK_UID = 701700971
+
 
 class HoyolabAPI:
     def __init__(self):
@@ -31,10 +35,10 @@ class HoyolabAPI:
         )
         return True
 
-    async def check_cookies(self, cookies):
+    async def check_cookies(self, cookies) -> bool:
         self.client.set_cookies(cookies)
         try:
-            await self.client.get_genshin_user(701700971)
+            await self.client.get_genshin_user(COOKIE_CHECK_UID)
         except genshin.InvalidCookies as e:
             print("Error in check_cookies -", e)
             return False
