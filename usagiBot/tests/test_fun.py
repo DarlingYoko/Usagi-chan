@@ -9,7 +9,7 @@ from usagiBot.tests.utils import *
 class TestFunMethods(IsolatedAsyncioTestCase):
     @mock.patch("usagiBot.cogs.Main.schemas.UsagiConfig")
     @mock.patch.object(asyncio, "create_async_engine")
-    @mock.patch.object(fun_utils, "get_exchange_rate_data")
+    @mock.patch.object(fun_utils, "get_exchange_rate_data", new_callable=mock.AsyncMock)
     def setUp(self, mock_get_exchange_rate_data, mock_engine, mock_UsagiConfig) -> None:
         self.bot = mock.AsyncMock()
 

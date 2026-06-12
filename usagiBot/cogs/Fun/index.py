@@ -83,7 +83,7 @@ class Fun(commands.Cog):
     async def get_exchange_rate(self, ctx) -> None:
         return_message = "```autohotkey\n"
 
-        rates = get_exchange_rate_data()
+        rates = await get_exchange_rate_data()
         required_rates = ["USDRUB", "USDUAH", "USDBYN", "USDKZT"]
         counter = 1
         for rate in required_rates:
