@@ -302,7 +302,7 @@ def get_word(length: int) -> str | None:
     words = list(filter(lambda x: len(x) == length, words))
     if not words:
         return None
-    word = words[random.randint(0, len(words))]
+    word = random.choice(words)
 
     return word.upper()
 

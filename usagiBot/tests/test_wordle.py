@@ -40,10 +40,11 @@ class TestWordleMethods(IsolatedAsyncioTestCase):
     def test_check_word_for_reality_not_in_dict(self):
         self.assertFalse(self.wordle_utils.check_word_for_reality("ksdngksdjfnkg"))
 
-    @mock.patch("random.randint")
-    def test_get_word(self, mock_randint):
-        mock_randint.return_value = 0
+    @mock.patch("random.choice")
+    def test_get_word(self, mock_choice):
+        mock_choice.side_effect = lambda words: words[0]
         self.assertEqual(self.wordle_utils.get_word(length=5), "АВТОР")
+        mock_choice.assert_called_once()
 
     async def test_create_finish_game_embed(self) -> None:
         game_author = mock.MagicMock()
