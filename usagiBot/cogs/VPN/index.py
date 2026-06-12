@@ -93,6 +93,14 @@ class RenewVpnModal(discord.ui.Modal):
                 )
             )
             return None
+        if subscriptions_count < 1:
+            await interaction.respond(
+                embed=get_embed(
+                    title=self.bot.i18n.get_text('Wrong amount and subscriptions count', self.lang),
+                    color=discord.Color.red(),
+                )
+            )
+            return None
         month_count = amount // subscriptions_count // 100
         if month_count < 1:
             await interaction.respond(
@@ -448,10 +456,10 @@ class VPN(commands.Cog):
         try:
             datetime_obj = datetime.strptime(expiry_date, "%d.%m.%Y") if expiry_date else None
             new_expiry_time = int(datetime_obj.timestamp() * 1000) if datetime_obj else 0
-        except ValueError or KeyError:
+        except (ValueError, KeyError):
             return await ctx.respond(
                 embed=get_embed(
-                    title=_("Time data does not match format").format(expiry_date),
+                    title=_("Time data does not match format").format(date=expiry_date),
                     color=discord.Color.red(),
                 ),
                 ephemeral=True,

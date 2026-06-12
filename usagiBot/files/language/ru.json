@@ -209,7 +209,7 @@
     "VPN renewal request": "Запрос на продление VPN",
     "VPN manual renewal request": "Мануальный запрос на продление VPN",
     "All fields must be integer": "Все поля должны быть числовыми!",
-    "Wrong amount and device count": "Неверная сумма или кол-во устройств!",
+    "Wrong amount and subscriptions count": "Неверная сумма или кол-во подписок!",
     "Successful renewal request": "Ваша заявка на продление была успешно отправлена! <:iconUSAGI1:884140804510203944>",
     "Wait for approval": "Пожалуйста ожидайте подтверждения (обычно в течении дня)",
     "New VPN renewal request": "Новая заявка на продление VPN была получена",
