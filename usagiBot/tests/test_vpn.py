@@ -46,6 +46,21 @@ class TestVpn(IsolatedAsyncioTestCase):
             "```",
         )
 
+    @staticmethod
+    def _make_inbound() -> mock.MagicMock:
+        gb = 1024 ** 3
+        client1 = mock.MagicMock(
+            sub_id="uid1", email="vpn_user1-DE", expiry_time=1000000000
+        )
+        client2 = mock.MagicMock(
+            sub_id="uid2", email="vpn_user2-DE", expiry_time=1005500000
+        )
+        stat1 = mock.MagicMock(email="vpn_user1-DE", up=0, down=100 * gb)
+        stat2 = mock.MagicMock(email="vpn_user2-DE", up=0, down=50 * gb)
+        inbound = mock.MagicMock(client_stats=[stat1, stat2])
+        inbound.settings.clients = [client1, client2]
+        return inbound
+
     @mock.patch("usagiBot.cogs.VPN.vpn_utils.Vpn3xui")
     @mock.patch("usagiBot.cogs.VPN.index.UsagiVpnUsers", new_callable=mock.AsyncMock)
     async def test_vpn_info(self, mock_UsagiVpnUsers, mock_Vpn3xui) -> None:
@@ -56,28 +71,44 @@ class TestVpn(IsolatedAsyncioTestCase):
         mock_UsagiVpnUsers.get_all_by.return_value = profiles
 
         vpn3xui = mock_Vpn3xui.return_value = mock.AsyncMock()
-        vpn3xui.get_sub.side_effect = [
-            {"expiryTime": 1000000, "traffic": 100},
-            {"expiryTime": 1005500, "traffic": 50},
-        ]
+        vpn3xui.api.inbound.get_list.return_value = [self._make_inbound()]
 
         await self.VPN.vpn_info.callback(self.VPN, self.ctx)
 
         mock_UsagiVpnUsers.get_all_by.assert_awaited_with(
             user_id=123456789, active=True
         )
-        vpn3xui.get_sub.assert_has_awaits(
-            [mock.call("uid1"), mock.call("uid2")],
-            any_order=False,
-        )
+        # one inbound fetch for the whole command, not one per profile
+        self.assertEqual(vpn3xui.api.inbound.get_list.await_count, 1)
 
         called_embed = self.ctx.respond.call_args.kwargs["embed"]
         self.assertEqual(called_embed.title, "Your VPN profiles")
         self.assertEqual(
             called_embed.description,
-            "`1. vpn_user1 ` — 100GB — <t:1000000:R>\n"
-            "`2. vpn_user2 ` — 50GB — <t:1005500:R>",
+            "`1. vpn_user1 ` — 100.0GB — <t:1000000:R>\n"
+            "`2. vpn_user2 ` — 50.0GB — <t:1005500:R>",
         )
+
+    def test_sub_info_from_inbounds(self) -> None:
+        from usagiBot.cogs.VPN.vpn_utils import sub_info_from_inbounds
+
+        info = sub_info_from_inbounds([self._make_inbound()], "uid1")
+
+        self.assertEqual(info, {"traffic": 100.0, "expiryTime": 1000000})
+
+    def test_top_traffic_from_inbounds(self) -> None:
+        from usagiBot.cogs.VPN.vpn_utils import top_traffic_from_inbounds
+
+        top = top_traffic_from_inbounds([self._make_inbound()])
+
+        self.assertEqual(
+            top,
+            {
+                "uid1": {"sub_name": "vpn_user1", "traffic": 100.0},
+                "uid2": {"sub_name": "vpn_user2", "traffic": 50.0},
+            },
+        )
+        self.assertEqual(list(top), ["uid1", "uid2"])
 
     async def test_renew_modal_rejects_zero_subscriptions(self) -> None:
         modal = self.vpn_index.RenewVpnModal(self.bot, [mock.MagicMock()], "en")
