@@ -36,59 +36,32 @@ class Events(commands.Cog):
 
     @tasks.loop(minutes=30)
     async def dump_data(self):
-        backup = await UsagiBackup.get_all()
+        messages_dump = self.bot.messages_dump
+        self.bot.messages_dump = {}
 
-        delete_ids = []
-        insert_mappings = []
-        last_user = await UsagiBackup.get_last_obj()
-        last_id = last_user.id + 1 if last_user is not None else 1
-        for user in backup:
-            exist_user = (
-                self.bot.messages_dump.get(user.guild_id, {})
-                .get(user.channel_id, {})
-                .get(user.user_id, None)
+        rows = []
+        for guild_id, channels in messages_dump.items():
+            for channel_id, users in channels.items():
+                for user_id, counters in users.items():
+                    rows.append(
+                        {
+                            "guild_id": guild_id,
+                            "channel_id": channel_id,
+                            "user_id": user_id,
+                            "messages": counters["messages"],
+                            "images": counters["images"],
+                            "gifs": counters["gifs"],
+                            "emojis": counters["emojis"],
+                            "stickers": counters["stickers"],
+                        }
+                    )
+
+        if rows:
+            await UsagiBackup.upsert_add(
+                rows,
+                conflict_columns=["guild_id", "channel_id", "user_id"],
+                counter_columns=["messages", "images", "gifs", "emojis", "stickers"],
             )
-
-            if exist_user is not None:
-                insert_mappings.append(
-                    UsagiBackup(
-                        id=last_id,
-                        guild_id=user.guild_id,
-                        channel_id=user.channel_id,
-                        user_id=user.user_id,
-                        messages=exist_user["messages"] + user.messages,
-                        images=exist_user["images"] + user.images,
-                        gifs=exist_user["gifs"] + user.gifs,
-                        emojis=exist_user["emojis"] + user.emojis,
-                        stickers=exist_user["stickers"] + user.stickers,
-                    )
-                )
-                delete_ids.append(user.id)
-
-                del self.bot.messages_dump[user.guild_id][user.channel_id][user.user_id]
-                last_id += 1
-
-        for guild in self.bot.messages_dump.keys():
-            for channel in self.bot.messages_dump[guild].keys():
-                for user in self.bot.messages_dump[guild][channel].keys():
-                    user_data = self.bot.messages_dump[guild][channel][user]
-                    insert_mappings.append(
-                        UsagiBackup(
-                            id=last_id,
-                            guild_id=guild,
-                            channel_id=channel,
-                            user_id=user,
-                            messages=user_data["messages"],
-                            images=user_data["images"],
-                            gifs=user_data["gifs"],
-                            emojis=user_data["emojis"],
-                            stickers=user_data["stickers"],
-                        )
-                    )
-                    last_id += 1
-
-        await UsagiBackup.delete_all(delete_ids)
-        await UsagiBackup.insert_mappings(insert_mappings)
 
     @dump_data.before_loop
     async def before_dump_data(self):

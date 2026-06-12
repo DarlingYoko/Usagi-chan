@@ -5,6 +5,7 @@ from sqlalchemy import (
 )
 from sqlalchemy import update as sqlalchemy_update
 from sqlalchemy import delete as sqlalchemy_delete
+from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.future import select
 
 
@@ -64,6 +65,26 @@ class ModelAdmin:
             .where(cls.id.in_(ids))
             .values(**new_values)
             .execution_options(synchronize_session=False)
+        )
+        async with async_session() as session:
+            async with session.begin():
+                await session.execute(query)
+
+    @classmethod
+    async def upsert_add(
+        cls, rows: list, conflict_columns: list, counter_columns: list
+    ) -> None:
+        """
+        Insert rows; on (conflict_columns) collision add counter_columns
+        onto the existing values. Postgres-only (ON CONFLICT DO UPDATE).
+        """
+        query = pg_insert(cls).values(rows)
+        query = query.on_conflict_do_update(
+            index_elements=conflict_columns,
+            set_={
+                column: getattr(cls.__table__.c, column) + getattr(query.excluded, column)
+                for column in counter_columns
+            },
         )
         async with async_session() as session:
             async with session.begin():

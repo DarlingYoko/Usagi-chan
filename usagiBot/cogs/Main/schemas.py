@@ -7,7 +7,8 @@ from sqlalchemy import (
     Integer,
     Boolean,
     ForeignKey,
-    DateTime
+    DateTime,
+    UniqueConstraint,
 )
 
 
@@ -42,6 +43,12 @@ class UsagiAutoRolesData(Base, ModelAdmin):
 
 class UsagiBackup(Base, ModelAdmin):
     __tablename__ = "usagi_backup"
+    __table_args__ = (
+        UniqueConstraint(
+            "guild_id", "channel_id", "user_id",
+            name="uq_usagi_backup_guild_channel_user",
+        ),
+    )
     id = Column(Integer, primary_key=True)
     guild_id = Column(BigInteger)
     channel_id = Column(BigInteger)
