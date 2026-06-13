@@ -2,6 +2,7 @@ import sys
 import pytest
 
 import discord
+from datetime import datetime, timedelta
 from sqlalchemy.ext import asyncio
 from unittest import IsolatedAsyncioTestCase, mock
 
@@ -70,3 +71,69 @@ class TestMainCommands(IsolatedAsyncioTestCase):
         await self.Main.remove_auto_role_message.callback(self.Main, self.ctx, "123")
 
         self.ctx.send_followup.assert_awaited()
+
+    async def test_remove_auto_role_pops_cache(self) -> None:
+        channel = mock.AsyncMock()
+        channel.fetch_message.return_value = mock.AsyncMock()
+        self.ctx.guild.fetch_channel.return_value = channel
+        self.ctx.bot.auto_roles = {"g1": {"123": {"channel_id": 1, "name": "n"}}}
+
+        await self.Main.remove_auto_role_message.callback(self.Main, self.ctx, "123")
+
+        self.assertNotIn("123", self.ctx.bot.auto_roles["g1"])
+
+    async def test_update_timer_clamps_expired(self) -> None:
+        past = datetime.now() - timedelta(hours=1)
+        self.mock_Timer.get_all.return_value = [
+            mock.MagicMock(channel_id="c1", date=past)
+        ]
+        channel = mock.AsyncMock()
+        self.Main.bot.get_channel = mock.MagicMock(return_value=channel)
+
+        await self.Main.update_timer.coro(self.Main)
+
+        channel.edit.assert_awaited_with(name=" 0 h. 0 m.", reason="Update timer.")
+
+    def _edit_ctx(self):
+        ctx = mock.AsyncMock()
+        ctx.guild_id = "g1"
+        ctx.bot.auto_roles = {"g1": {"123": {"channel_id": 1, "name": "n"}}}
+        msg = mock.AsyncMock()
+        msg.embeds = [mock.MagicMock()]
+        channel = mock.AsyncMock()
+        channel.fetch_message.return_value = msg
+        ctx.guild.fetch_channel.return_value = channel
+        return ctx
+
+    async def test_edit_role_unknown_role_responds(self) -> None:
+        ctx = self._edit_ctx()
+        self.mock_AutoRolesData.get_all_by.return_value = [
+            mock.MagicMock(role_id=999, emoji_id=888, description="d")
+        ]
+        await self.Main.edit_role_reaction_role.callback(
+            self.Main, ctx, "123", "555", mock.MagicMock(id=777)
+        )
+        ctx.send_followup.assert_awaited()
+        self.mock_AutoRolesData.update.assert_not_called()
+
+    async def test_edit_emoji_unknown_role_responds(self) -> None:
+        ctx = self._edit_ctx()
+        self.mock_AutoRolesData.get_all_by.return_value = [
+            mock.MagicMock(role_id=999, emoji_id=888, description="d")
+        ]
+        await self.Main.edit_emoji_reaction_role.callback(
+            self.Main, ctx, "123", "555", mock.MagicMock(id=777)
+        )
+        ctx.send_followup.assert_awaited()
+        self.mock_AutoRolesData.update.assert_not_called()
+
+    async def test_edit_description_unknown_role_responds(self) -> None:
+        ctx = self._edit_ctx()
+        self.mock_AutoRolesData.get_all_by.return_value = [
+            mock.MagicMock(role_id=999, emoji_id=888, description="d")
+        ]
+        await self.Main.edit_description_reaction_role.callback(
+            self.Main, ctx, "123", "555", "newdesc"
+        )
+        ctx.send_followup.assert_awaited()
+        self.mock_AutoRolesData.update.assert_not_called()

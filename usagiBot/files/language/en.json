@@ -226,5 +226,6 @@
 
     "VPN no profiles": "You have no active VPN profiles.",
     "Invalid date": "That date doesn't exist, check the day and month.",
-    "You already have a unic role": "You already have a personal role, delete it first."
+    "You already have a unic role": "You already have a personal role, delete it first.",
+    "Role not found": "That role isn't part of this message."
 }

@@ -85,12 +85,13 @@ class Main(commands.Cog):
                 timer.channel_id
             ) or await self.bot.fetch_channel(timer.channel_id)
             delta = timer.date - time_now
-            s = delta.seconds
-            hours, remainder = divmod(s, 3600)
-            minutes, seconds = divmod(remainder, 60)
+            total_seconds = max(int(delta.total_seconds()), 0)
+            days, remainder = divmod(total_seconds, 86400)
+            hours, remainder = divmod(remainder, 3600)
+            minutes, _seconds = divmod(remainder, 60)
             time = ""
-            if delta.days:
-                time += f"{delta.days} d."
+            if days:
+                time += f"{days} d."
             time += f" {hours} h. {minutes} m."
             await channel.edit(name=time, reason="Update timer.")
 
@@ -404,6 +405,7 @@ class Main(commands.Cog):
                 ),
                 ephemeral=True,
             )
+        ctx.bot.auto_roles.get(ctx.guild_id, {}).pop(message_id, None)
         await ctx.respond(
             embed=get_embed(title=_("Removed"), color=discord.Color.green()),
             ephemeral=True,
@@ -663,6 +665,13 @@ class Main(commands.Cog):
                 entity.role_id = new_role.id
             payload_emoji = await ctx.guild.fetch_emoji(entity.emoji_id)
             text += f"{counter}. <@&{entity.role_id}> – {entity.description} – {payload_emoji}\n"
+        if new_entity is None:
+            return await ctx.send_followup(
+                embed=get_embed(
+                    title=_("Role not found"), color=discord.Color.red()
+                ),
+                ephemeral=True,
+            )
         embed = get_embed(title=role_data["name"], description=text)
         try:
             await msg.edit(embed=embed)
@@ -762,6 +771,13 @@ class Main(commands.Cog):
                 entity.emoji_id = new_emoji.id
             payload_emoji = await ctx.guild.fetch_emoji(entity.emoji_id)
             text += f"{counter}. <@&{entity.role_id}> – {entity.description} – {payload_emoji}\n"
+        if new_entity is None:
+            return await ctx.send_followup(
+                embed=get_embed(
+                    title=_("Role not found"), color=discord.Color.red()
+                ),
+                ephemeral=True,
+            )
         embed = get_embed(title=role_data["name"], description=text)
         try:
             await msg.edit(embed=embed)
@@ -855,6 +871,13 @@ class Main(commands.Cog):
                 entity.description = new_description
             payload_emoji = await ctx.guild.fetch_emoji(entity.emoji_id)
             text += f"{counter}. <@&{entity.role_id}> – {entity.description} – {payload_emoji}\n"
+        if new_entity is None:
+            return await ctx.send_followup(
+                embed=get_embed(
+                    title=_("Role not found"), color=discord.Color.red()
+                ),
+                ephemeral=True,
+            )
         embed = get_embed(title=role_data["name"], description=text)
         try:
             await msg.edit(embed=embed)
