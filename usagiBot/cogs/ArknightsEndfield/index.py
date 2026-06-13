@@ -248,6 +248,7 @@ class Endfield(commands.Cog):
             try:
                 if not await client.sign_in():
                     errors.append((user.user_id, channel, _("Authorisation failed")))
+                    continue
 
                 result = await client.get_attendance()
                 if result.success and channel not in channels:
@@ -302,7 +303,7 @@ class Endfield(commands.Cog):
 
         users_data = await UsagiGryphline.get_all_by(guild_id=ctx.guild.id, user_id=ctx.author.id)
         if not users_data:
-            ctx.respond(_("User not found"), ephemeral=True)
+            await ctx.respond(_("User not found"), ephemeral=True)
             return
 
         endfield_data = []
@@ -378,7 +379,7 @@ class Endfield(commands.Cog):
 
         users_data = await UsagiGryphline.get_all_by(guild_id=ctx.guild.id, user_id=ctx.author.id)
         if not users_data:
-            ctx.respond(_("User not found"), ephemeral=True)
+            await ctx.respond(_("User not found"), ephemeral=True)
             return
 
         endfield_data = []
@@ -466,7 +467,7 @@ class Endfield(commands.Cog):
     async def endfield_settings(self, ctx: discord.ApplicationContext, option: str, uid: int):
         check_account = await UsagiGryphline.get(guild_id=ctx.guild.id, user_id=ctx.author.id, uid=uid)
         if not check_account:
-            ctx.respond(_("User not found"), ephemeral=True)
+            await ctx.respond(_("User not found"), ephemeral=True)
             return
 
         result = None
@@ -508,7 +509,7 @@ class Endfield(commands.Cog):
     async def endfield_delete(self, ctx: discord.ApplicationContext, uid: int):
         check_account = await UsagiGryphline.get(guild_id=ctx.guild.id, user_id=ctx.author.id, uid=uid)
         if not check_account:
-            ctx.respond(_("User not found"), ephemeral=True)
+            await ctx.respond(_("User not found"), ephemeral=True)
             return
 
         await UsagiGryphline.delete(guild_id=ctx.guild.id, user_id=ctx.author.id, uid=uid)
