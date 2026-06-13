@@ -4,6 +4,7 @@ import pytest
 from datetime import datetime, timedelta
 from sqlalchemy.ext import asyncio
 from unittest import IsolatedAsyncioTestCase, mock
+from freezegun import freeze_time
 
 from usagiBot.tests.utils import *
 
@@ -99,3 +100,37 @@ class TestBirthdayCommands(IsolatedAsyncioTestCase):
 
         mock_sleep.assert_not_called()
         channel.edit.assert_awaited()
+
+    @freeze_time("2026-06-13 09:00:00")  # 12:00 Europe/Moscow, when the loop runs
+    async def test_check_birthday_skips_when_config_none(self) -> None:
+        user = mock.MagicMock(guild_id="g1", user_id="u1", date=datetime(2026, 6, 13))
+        self.mock_UsagiBirthday.get_all_by.return_value = [user]
+        self.mock_UsagiConfig.get.return_value = None
+        guild = mock.AsyncMock()
+        self.Birthday.bot.fetch_guild = mock.AsyncMock(return_value=guild)
+
+        await self.Birthday.check_birthday.coro(self.Birthday)
+
+        guild.fetch_channel.assert_not_called()
+        self.mock_UsagiBirthday.update.assert_not_called()
+
+    @freeze_time("2026-06-13 09:00:00")
+    async def test_check_birthday_survives_db_error(self) -> None:
+        self.mock_UsagiBirthday.get_all_by.side_effect = Exception("db down")
+
+        await self.Birthday.check_birthday.coro(self.Birthday)
+
+        self.Birthday.bot.logger.exception.assert_called()
+
+    async def test_update_birthday_timer_survives_deleted_channel(self) -> None:
+        self.mock_UsagiBirthdayTimer.get_all_by.return_value = [
+            mock.MagicMock(guild_id="g1", channel_id="dead")
+        ]
+        self.Birthday.bot.get_channel = mock.MagicMock(return_value=None)
+        self.Birthday.bot.fetch_channel = mock.AsyncMock(
+            side_effect=Exception("gone")
+        )
+
+        await self.Birthday.update_birthday_timer.coro(self.Birthday)
+
+        self.Birthday.bot.logger.exception.assert_called()
