@@ -146,7 +146,9 @@ class Events(commands.Cog):
             )
         elif isinstance(error, discord.errors.Forbidden):
             await ctx.reply(
-                self.bot.i18n.get_text("Don't have permissions to do that", user_lang),
+                self.bot.i18n.get_text(
+                    "I don't have permissions to do that", user_lang
+                ),
                 delete_after=2 * 60,
             )
         else:
@@ -159,7 +161,7 @@ class Events(commands.Cog):
         user_lang = self.bot.language.get(ctx.author.id, "en")
         if isinstance(error, discord.errors.CheckFailure):
             await ctx.respond(
-                self.bot.i18n.get_text("Some requirements were not met.", user_lang),
+                self.bot.i18n.get_text("Some requirements were not met", user_lang),
                 ephemeral=True,
             )
         elif isinstance(error, UsagiNotSetUpError):
@@ -212,7 +214,7 @@ class Events(commands.Cog):
     async def on_member_join(self, member):
         guild = member.guild
         saving = await UsagiSaveRoles.get(guild_id=guild.id)
-        if saving is None or saving is False:
+        if saving is None or not saving.saving_roles:
             return
 
         command_tag = "save_roles_on_leave"
@@ -227,8 +229,13 @@ class Events(commands.Cog):
         roles_id = saved_roles.roles.split(",")
         if roles_id == [""]:
             return
-        roles = map(lambda role_id: guild.get_role(int(role_id)), roles_id)
-        await member.add_roles(*roles)
+        roles = [
+            role
+            for role in map(lambda role_id: guild.get_role(int(role_id)), roles_id)
+            if role is not None
+        ]
+        if roles:
+            await member.add_roles(*roles)
 
         channel = await guild.fetch_channel(config.generic_id)
         await channel.send(
@@ -240,7 +247,7 @@ class Events(commands.Cog):
     @commands.Cog.listener()
     async def on_member_remove(self, member):
         saving = await UsagiSaveRoles.get(guild_id=member.guild.id)
-        if saving is None or saving is False:
+        if saving is None or not saving.saving_roles:
             return
 
         command_tag = "save_roles_on_leave"

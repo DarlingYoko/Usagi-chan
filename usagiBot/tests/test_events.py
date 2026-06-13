@@ -1,3 +1,4 @@
+import discord
 from sqlalchemy.ext import asyncio
 from unittest import mock
 from unittest import IsolatedAsyncioTestCase
@@ -64,6 +65,79 @@ class TestEventsMethods(IsolatedAsyncioTestCase):
         )
         await self.Events.on_command_error(self.ctx, self.error)
         user.send.assert_called_with(test_error_message)
+
+    async def test_command_error_forbidden_resolves(self) -> None:
+        error = discord.errors.Forbidden(
+            mock.MagicMock(status=403, reason="Forbidden"), "x"
+        )
+        await self.Events.on_command_error(self.ctx, error)
+        self.ctx.reply.assert_awaited()
+
+    async def test_app_command_error_checkfailure_resolves(self) -> None:
+        await self.Events.on_application_command_error(
+            self.ctx, discord.errors.CheckFailure()
+        )
+        self.ctx.respond.assert_awaited()
+
+
+class TestSaveRoles(IsolatedAsyncioTestCase):
+    @mock.patch.object(asyncio, "create_async_engine")
+    def setUp(self, mock_engine) -> None:
+        self.bot = mock.MagicMock()
+        from usagiBot.cogs.Events.index import Events
+
+        self.Events = Events(self.bot)
+        self.bot.i18n = init_i18n()
+        self.bot.language = {}
+
+    @mock.patch(
+        "usagiBot.cogs.Events.index.UsagiMemberRoles", new_callable=mock.AsyncMock
+    )
+    @mock.patch("usagiBot.cogs.Events.index.UsagiConfig", new_callable=mock.AsyncMock)
+    @mock.patch(
+        "usagiBot.cogs.Events.index.UsagiSaveRoles", new_callable=mock.AsyncMock
+    )
+    async def test_on_member_remove_skips_when_disabled(
+        self, mock_Save, mock_Config, mock_Member
+    ) -> None:
+        mock_Save.get.return_value = mock.MagicMock(saving_roles=False)
+        member = mock.AsyncMock()
+        member.guild.id = "g1"
+        member.roles = [mock.MagicMock(id=1)]
+        member.roles[0].is_assignable.return_value = True
+
+        await self.Events.on_member_remove(member)
+
+        mock_Member.create.assert_not_called()
+        mock_Member.update.assert_not_called()
+
+    @mock.patch(
+        "usagiBot.cogs.Events.index.UsagiMemberRoles", new_callable=mock.AsyncMock
+    )
+    @mock.patch("usagiBot.cogs.Events.index.UsagiConfig", new_callable=mock.AsyncMock)
+    @mock.patch(
+        "usagiBot.cogs.Events.index.UsagiSaveRoles", new_callable=mock.AsyncMock
+    )
+    async def test_on_member_join_skips_deleted_roles(
+        self, mock_Save, mock_Config, mock_Member
+    ) -> None:
+        mock_Save.get.return_value = mock.MagicMock(saving_roles=True)
+        mock_Config.get.return_value = mock.MagicMock(generic_id=1)
+        mock_Member.get.return_value = mock.MagicMock(roles="1,2")
+
+        live_role = mock.MagicMock(id=1)
+        member = mock.AsyncMock()
+
+        def get_role(role_id):
+            return live_role if role_id == 1 else None
+
+        member.guild.get_role = mock.MagicMock(side_effect=get_role)
+
+        await self.Events.on_member_join(member)
+
+        member.add_roles.assert_awaited_once()
+        self.assertNotIn(None, member.add_roles.await_args.args)
+        self.assertIn(live_role, member.add_roles.await_args.args)
 
 
 class TestCustomEmojiPattern(IsolatedAsyncioTestCase):
