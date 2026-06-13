@@ -53,17 +53,23 @@ py-cord `tasks.loop` dies permanently on any exception outside
 `(OSError, ClientError, TimeoutError, gateway errors)`. Hoyolab got the fix
 (`b26e6b1`); the same pattern is needed in:
 
-- [ ] **2.1** `Main.update_timer` (deleted channel = NotFound = dead loop)
-- [ ] **2.2** `Events.dump_data` — also: counters are swapped out **before** the
+**Done 2026-06-13** (commits `67d1f21`..`684c11f`). All items below fixed
+with regression tests; suite green at 179. 2.6 shipped as `guard_loop`
+(whole-body safety net) + `guarded_item` (per-iteration isolation) in
+`UsagiUtils`; the new fixes use them, Hoyolab keeps its existing inline
+guards. VPN's hourly loop was out of the audit's Phase 2 list — left as-is.
+
+- [x] **2.1** `Main.update_timer` (deleted channel = NotFound = dead loop)
+- [x] **2.2** `Events.dump_data` — also: counters are swapped out **before** the
   upsert; a DB error loses 30 min of stats *and* kills the loop. Re-merge the
   dump back into `bot.messages_dump` on failure.
-- [ ] **2.3** `Twitch.twitch_notify_loop` — `TwitchAPIException` kills it; also
+- [x] **2.3** `Twitch.twitch_notify_loop` — `TwitchAPIException` kills it; also
   `self.twitch` auth failure path.
-- [ ] **2.4** `Birthdays.check_birthday` + `update_birthday_timer` — `guild_config.generic_id` with `config=None` is an AttributeError today; `texts.json` KeyError too.
-- [ ] **2.5** `Arknights.check_sanity_overflow` + `claim_endfield_daily_reward`
-- [ ] **2.6** Consider a shared helper in `UsagiUtils` (guarded-iteration pattern: per-item try/except + whole-body guard, log via `bot.logger.exception`) so the 10 loops don't each reinvent it. TDD like `test_genshin.py` survival tests.
-- [ ] **2.7 Reconnect hygiene** — `before_identify_hook` ignores its `initial` flag: run `create_tables()`/`init_language()` only when `initial=True`. Move one-time init out of `on_ready` (fires on every reconnect) or guard with a `self._ready_once` flag — especially `sync_commands()` (rate-limit-heavy global call).
-- [ ] **2.8 Error visibility** — `Events.on_application_command_error`: the
+- [x] **2.4** `Birthdays.check_birthday` + `update_birthday_timer` — `guild_config.generic_id` with `config=None` is an AttributeError today; `texts.json` KeyError too.
+- [x] **2.5** `Arknights.check_sanity_overflow` + `claim_endfield_daily_reward`
+- [x] **2.6** Consider a shared helper in `UsagiUtils` (guarded-iteration pattern: per-item try/except + whole-body guard, log via `bot.logger.exception`) so the 10 loops don't each reinvent it. TDD like `test_genshin.py` survival tests.
+- [x] **2.7 Reconnect hygiene** — `before_identify_hook` ignores its `initial` flag: run `create_tables()`/`init_language()` only when `initial=True`. Move one-time init out of `on_ready` (fires on every reconnect) or guard with a `self._ready_once` flag — especially `sync_commands()` (rate-limit-heavy global call).
+- [x] **2.8 Error visibility** — `Events.on_application_command_error`: the
   `ApplicationCommandInvokeError` branch logs `str(error)` (no traceback, no
   `error.original`) and never DMs the owner. Use `traceback.format_exception`,
   truncate to ~1900 chars, and call `error_notification_to_owner` there too.
