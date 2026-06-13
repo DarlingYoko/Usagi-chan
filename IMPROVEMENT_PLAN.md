@@ -25,22 +25,27 @@ background loop.
 
 ## Phase 1 — Crashes & correctness (do first)
 
-- [ ] **1.1 i18n missing keys** — add to both `en.json`+`ru.json` or repoint code
+**Done 2026-06-13** (commits `6308997`..`da5cf19`, + `4ce5e6e` test isolation).
+All items below fixed with regression tests; suite green at 159. The only
+carry-over is the dead-key deletion in 1.1 (cleanup, non-crashing) — moved to
+Phase 4.
+
+- [x] **1.1 i18n missing keys** — add to both `en.json`+`ru.json` or repoint code
   to the existing twin:
   - `Main/index.py:754` `"This emoji already used"` (dict has dead twin `"This emoji already use"`)
   - `Events/index.py:149` `"Don't have permissions to do that"` (dict has dead `"I don't have permissions to do that"`)
   - `Events/index.py:162` `"Some requirements were not met."` (period variant; no-period key exists)
   - `Birthdays/index.py:193` `"This user isn't in birthday list, add him firstly"` (dict has shorter dead twin)
   - `VPN/index.py:426` `"VPN no profiles"` — new `/vpn request` path, crashes today
-  - Delete 14 dead keys (incl. both typo twins, 6 old Hoyolab sub texts, `Geetest error`, `Stamina`, `Slash command group`, redeem-token pair). Keys passed via variables (`_(answer)` in Birthdays, `get_text(f"VPN notify {x}")`) are **used** — keep.
-- [ ] **1.2 Arknights missing awaits** — `index.py:305,381,469,511` `ctx.respond(...)` not awaited; after `defer` the user hangs forever.
-- [ ] **1.3 `except A or B`** — `Main/index.py:212` (`ValueError or KeyError`), `Main/index.py:400` (`Forbidden or NotFound`): only the first exception is caught. Use tuples.
-- [ ] **1.4 Save-roles flag never checked** — `Events/index.py:215,243`: `saving is False` is never true (row object); `saving.saving_roles` is ignored, so the feature can't be turned off. Also filter `None` from `guild.get_role(...)` before `add_roles` (deleted roles crash the restore).
-- [ ] **1.5 Birthdays** — `index.py:227` `update(channel=...)` → column is `channel_id` (re-pointing a timer crashes); `index.py:106` `return` → `continue` (one guild without upcoming birthday skips all remaining timers); validate `datetime(day, month)` (31.02 → unhandled ValueError); drop the `asyncio.sleep(600)` inside the loop body (serial 10-min sleeps per timer inside an hourly task).
-- [ ] **1.6 Tech** — `purge(limit + 1)` deletes one innocent extra message (slash commands have no invoking message); `/unic_role delete` only unassigns — `role.delete()` the guild role too, else orphan roles accumulate; cap unic roles to 1/user on create.
-- [ ] **1.7 Main auto-roles** — `edit role/emoji/description`: `new_entity` stays `None` when the picked role isn't in payload (stale autocomplete) → AttributeError; `remove_auto_role_message` never pops `bot.auto_roles` cache (deleted message still autocompletes until restart); `update_timer` shows garbage for expired timers (negative timedelta `.seconds`) — delete or zero them.
-- [ ] **1.8 Arknights claim loop** — after failed `sign_in()` it still calls `get_attendance()` (`index.py:249-257`); `continue` after recording the error.
-- [ ] **1.9 Small ones** — Twitch `if streamers is None` ×2 → `if not streamers` (empty list renders header-only message); Wordle top numbering starts at 0 (`enumerate(..., start=1)`).
+  - _(carried to Phase 4)_ Delete 14 dead keys (incl. the now-renamed emoji twin, 6 old Hoyolab sub texts, `Geetest error`, `Stamina`, `Slash command group`, redeem-token pair). Keys passed via variables (`_(answer)` in Birthdays, `get_text(f"VPN notify {x}")`) are **used** — keep.
+- [x] **1.2 Arknights missing awaits** — `index.py:305,381,469,511` `ctx.respond(...)` not awaited; after `defer` the user hangs forever.
+- [x] **1.3 `except A or B`** — `Main/index.py:212` (`ValueError or KeyError`), `Main/index.py:400` (`Forbidden or NotFound`): only the first exception is caught. Use tuples.
+- [x] **1.4 Save-roles flag never checked** — `Events/index.py:215,243`: `saving is False` is never true (row object); `saving.saving_roles` is ignored, so the feature can't be turned off. Also filter `None` from `guild.get_role(...)` before `add_roles` (deleted roles crash the restore).
+- [x] **1.5 Birthdays** — `index.py:227` `update(channel=...)` → column is `channel_id` (re-pointing a timer crashes); `index.py:106` `return` → `continue` (one guild without upcoming birthday skips all remaining timers); validate `datetime(day, month)` (31.02 → unhandled ValueError); drop the `asyncio.sleep(600)` inside the loop body (serial 10-min sleeps per timer inside an hourly task).
+- [x] **1.6 Tech** — `purge(limit + 1)` deletes one innocent extra message (slash commands have no invoking message); `/unic_role delete` only unassigns — `role.delete()` the guild role too, else orphan roles accumulate; cap unic roles to 1/user on create.
+- [x] **1.7 Main auto-roles** — `edit role/emoji/description`: `new_entity` stays `None` when the picked role isn't in payload (stale autocomplete) → AttributeError; `remove_auto_role_message` never pops `bot.auto_roles` cache (deleted message still autocompletes until restart); `update_timer` shows garbage for expired timers (negative timedelta `.seconds`) — delete or zero them.
+- [x] **1.8 Arknights claim loop** — after failed `sign_in()` it still calls `get_attendance()` (`index.py:249-257`); `continue` after recording the error.
+- [x] **1.9 Small ones** — Twitch `if streamers is None` ×2 → `if not streamers` (empty list renders header-only message); Wordle top numbering starts at 0 (`enumerate(..., start=1)`).
 
 ## Phase 2 — Reliability (the "stuck after a few days" class)
 
