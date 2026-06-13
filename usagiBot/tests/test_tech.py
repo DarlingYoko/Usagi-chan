@@ -65,6 +65,7 @@ class TestTechMethods(IsolatedAsyncioTestCase):
         )
 
     async def test_create_new_unic_role(self) -> None:
+        self.mock_UsagiUnicRoles.get_all_by.return_value = []
         await self.Tech.create_new_unic_role(
             self.Tech, self.ctx, "test_role_name", "111"
         )
@@ -93,10 +94,22 @@ class TestTechMethods(IsolatedAsyncioTestCase):
             user_id="test_author_id",
             role_id="test_role_id",
         )
-        self.ctx.author.remove_roles.assert_called_with(self.role)
+        self.role.delete.assert_awaited()
         self.ctx.respond.assert_called_with(
             "Successfully removed your role.", ephemeral=True
         )
+
+    async def test_purge_deletes_exact_count(self) -> None:
+        await self.Tech.purge(self.Tech, self.ctx, 5)
+        self.ctx.channel.purge.assert_called_with(limit=5)
+
+    async def test_create_unic_role_capped_at_one(self) -> None:
+        self.mock_UsagiUnicRoles.get_all_by.return_value = [mock.MagicMock()]
+        await self.Tech.create_new_unic_role(
+            self.Tech, self.ctx, "test_role_name", "111"
+        )
+        self.ctx.guild.create_role.assert_not_called()
+        self.mock_UsagiUnicRoles.create.assert_not_called()
 
     async def test_rename_unic_role(self) -> None:
         await self.Tech.rename_unic_role(
