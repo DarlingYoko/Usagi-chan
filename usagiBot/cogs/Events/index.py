@@ -1,4 +1,5 @@
 import re
+import traceback
 
 import discord
 import platform
@@ -234,7 +235,18 @@ class Events(commands.Cog):
                 ephemeral=True,
             )
         elif isinstance(error, discord.ApplicationCommandInvokeError):
-            self.bot.logger.error(error)
+            original = error.original or error
+            tb = "".join(
+                traceback.format_exception(
+                    type(original), original, original.__traceback__
+                )
+            )
+            self.bot.logger.error(
+                "ApplicationCommandInvokeError in %s:\n%s", ctx.command, tb
+            )
+            await error_notification_to_owner(
+                ctx, original, self.bot, app_command=True, traceback_str=tb
+            )
             await ctx.respond(
                 self.bot.i18n.get_text("Smt went wrong try again later", user_lang),
                 ephemeral=True,

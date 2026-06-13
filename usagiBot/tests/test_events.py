@@ -79,6 +79,24 @@ class TestEventsMethods(IsolatedAsyncioTestCase):
         )
         self.ctx.respond.assert_awaited()
 
+    async def test_app_command_invoke_error_notifies_owner(self) -> None:
+        owner = mock.AsyncMock()
+        self.ctx.bot.get_user = mock.MagicMock(return_value=None)
+        self.ctx.bot.fetch_user = mock.AsyncMock(return_value=owner)
+        self.ctx.command.name = "boom_cmd"
+
+        try:
+            raise ValueError("kaboom")
+        except ValueError as exc:
+            err = discord.ApplicationCommandInvokeError(exc)
+
+        await self.Events.on_application_command_error(self.ctx, err)
+
+        owner.send.assert_awaited()
+        sent = owner.send.call_args.args[0]
+        self.assertIn("kaboom", sent)
+        self.ctx.respond.assert_awaited()
+
 
 class TestSaveRoles(IsolatedAsyncioTestCase):
     @mock.patch.object(asyncio, "create_async_engine")
