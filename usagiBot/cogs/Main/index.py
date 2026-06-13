@@ -18,7 +18,7 @@ from usagiBot.cogs.Main.schemas import (
     UsagiTimer,
     UsagiLanguage,
 )
-from usagiBot.src.UsagiUtils import get_embed
+from usagiBot.src.UsagiUtils import get_embed, guard_loop, guarded_item
 from pycord18n.extension import _
 
 
@@ -76,24 +76,26 @@ class Main(commands.Cog):
         self.update_timer.start()
 
     @tasks.loop(minutes=10)
+    @guard_loop
     async def update_timer(self):
         timers = await UsagiTimer.get_all()
         time_now = datetime.now()
 
         for timer in timers:
-            channel = self.bot.get_channel(
-                timer.channel_id
-            ) or await self.bot.fetch_channel(timer.channel_id)
-            delta = timer.date - time_now
-            total_seconds = max(int(delta.total_seconds()), 0)
-            days, remainder = divmod(total_seconds, 86400)
-            hours, remainder = divmod(remainder, 3600)
-            minutes, _seconds = divmod(remainder, 60)
-            time = ""
-            if days:
-                time += f"{days} d."
-            time += f" {hours} h. {minutes} m."
-            await channel.edit(name=time, reason="Update timer.")
+            async with guarded_item(self.bot, "update_timer", timer.channel_id):
+                channel = self.bot.get_channel(
+                    timer.channel_id
+                ) or await self.bot.fetch_channel(timer.channel_id)
+                delta = timer.date - time_now
+                total_seconds = max(int(delta.total_seconds()), 0)
+                days, remainder = divmod(total_seconds, 86400)
+                hours, remainder = divmod(remainder, 3600)
+                minutes, _seconds = divmod(remainder, 60)
+                time = ""
+                if days:
+                    time += f"{days} d."
+                time += f" {hours} h. {minutes} m."
+                await channel.edit(name=time, reason="Update timer.")
 
     @commands.slash_command(
         name="help",

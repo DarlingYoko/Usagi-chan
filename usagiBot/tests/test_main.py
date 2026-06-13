@@ -46,6 +46,7 @@ class TestMainCommands(IsolatedAsyncioTestCase):
         self.mock_AutoRolesData = mock_AutoRolesData
 
         self.Main.bot = mock.AsyncMock()
+        self.Main.bot.logger = mock.MagicMock()
         self.Main.bot.i18n = init_i18n()
         self.Main.bot.language = {}
 
@@ -93,6 +94,37 @@ class TestMainCommands(IsolatedAsyncioTestCase):
         await self.Main.update_timer.coro(self.Main)
 
         channel.edit.assert_awaited_with(name=" 0 h. 0 m.", reason="Update timer.")
+
+    async def test_update_timer_survives_deleted_channel(self) -> None:
+        future = datetime.now() + timedelta(hours=2)
+        self.mock_Timer.get_all.return_value = [
+            mock.MagicMock(channel_id="dead", date=future),
+            mock.MagicMock(channel_id="live", date=future),
+        ]
+        live = mock.AsyncMock()
+
+        def get_channel(cid):
+            return None if cid == "dead" else live
+
+        async def fetch_channel(cid):
+            if cid == "dead":
+                raise _not_found()
+            return live
+
+        self.Main.bot.get_channel = mock.MagicMock(side_effect=get_channel)
+        self.Main.bot.fetch_channel = mock.AsyncMock(side_effect=fetch_channel)
+
+        await self.Main.update_timer.coro(self.Main)
+
+        live.edit.assert_awaited()
+        self.Main.bot.logger.exception.assert_called()
+
+    async def test_update_timer_survives_db_error(self) -> None:
+        self.mock_Timer.get_all.side_effect = Exception("db down")
+
+        await self.Main.update_timer.coro(self.Main)
+
+        self.Main.bot.logger.exception.assert_called()
 
     def _edit_ctx(self):
         ctx = mock.AsyncMock()
