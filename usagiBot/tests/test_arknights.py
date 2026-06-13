@@ -85,3 +85,82 @@ class TestEndfieldCommands(IsolatedAsyncioTestCase):
 
         client.sign_in.assert_awaited()
         client.get_attendance.assert_not_called()
+
+    async def test_check_sanity_survives_db_error(self) -> None:
+        self.mock_UsagiGryphline.get_all_by_or.side_effect = Exception("db down")
+
+        await self.Endfield.check_sanity_overflow.coro(self.Endfield)
+
+        self.Endfield.bot.logger.exception.assert_called()
+
+    async def test_check_sanity_survives_user_error(self) -> None:
+        self.mock_UsagiGryphline.get_all_by_or.return_value = [
+            mock.MagicMock(
+                guild_id="g1",
+                user_id="u1",
+                token="t1",
+                endfield_sanity_sub=True,
+                endfield_sanity_sub_notified=False,
+            ),
+            mock.MagicMock(
+                guild_id="g1",
+                user_id="u2",
+                token="t2",
+                endfield_sanity_sub=True,
+                endfield_sanity_sub_notified=False,
+            ),
+        ]
+        self.mock_UsagiConfig.get.return_value = mock.MagicMock(generic_id="ch")
+        channel = mock.AsyncMock()
+        self.Endfield.bot.get_channel = mock.MagicMock(return_value=channel)
+
+        client_bad = mock.MagicMock()
+        client_bad.start = mock.AsyncMock(side_effect=Exception("boom"))
+        client_bad.close = mock.AsyncMock()
+
+        client_good = mock.MagicMock()
+        client_good.start = mock.AsyncMock()
+        client_good.close = mock.AsyncMock()
+        client_good.sign_in = mock.AsyncMock(return_value=True)
+        profile = mock.MagicMock()
+        profile.success = True
+        profile.data.sanity.current = 400
+        profile.data.nickname = "nick"
+        client_good.get_profile = mock.AsyncMock(return_value=profile)
+
+        self.mock_EndfieldClient.side_effect = [client_bad, client_good]
+
+        await self.Endfield.check_sanity_overflow.coro(self.Endfield)
+
+        channel.send.assert_awaited_once()
+        self.Endfield.bot.logger.exception.assert_called()
+
+    @freeze_time("2026-06-13 16:00:00")
+    async def test_claim_loop_survives_user_error(self) -> None:
+        self.mock_UsagiGryphline.get_all_by_or.return_value = [
+            mock.MagicMock(guild_id="g1", user_id="u1", token="t1"),
+            mock.MagicMock(guild_id="g1", user_id="u2", token="t2"),
+        ]
+        self.mock_UsagiConfig.get.return_value = mock.MagicMock(generic_id="ch")
+        channel = mock.AsyncMock()
+        self.Endfield.bot.fetch_channel = mock.AsyncMock(return_value=channel)
+
+        client_bad = mock.MagicMock()
+        client_bad.start = mock.AsyncMock()
+        client_bad.close = mock.AsyncMock()
+        client_bad.sign_in = mock.AsyncMock(side_effect=Exception("boom"))
+
+        client_good = mock.MagicMock()
+        client_good.start = mock.AsyncMock()
+        client_good.close = mock.AsyncMock()
+        client_good.sign_in = mock.AsyncMock(return_value=True)
+        client_good.get_attendance = mock.AsyncMock(
+            return_value=mock.MagicMock(success=True)
+        )
+
+        self.mock_EndfieldClient.side_effect = [client_bad, client_good]
+
+        await self.Endfield.claim_endfield_daily_reward.coro(self.Endfield)
+
+        channel.send.assert_awaited()
+        self.Endfield.bot.logger.exception.assert_called()

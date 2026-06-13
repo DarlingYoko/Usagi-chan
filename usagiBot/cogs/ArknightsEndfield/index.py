@@ -16,6 +16,7 @@ from usagiBot.cogs.ArknightsEndfield.arknights_utils import EndfieldClient, draw
 from usagiBot.src.UsagiChecks import check_is_already_set_up, check_cog_whitelist
 from usagiBot.src.UsagiErrors import UsagiModuleDisabledError
 from usagiBot.src.UsagiNet import UnsafeUrlError, fetch_image
+from usagiBot.src.UsagiUtils import guard_loop, guarded_item
 
 from pycord18n.extension import _
 
@@ -159,61 +160,58 @@ class Endfield(commands.Cog):
         raise UsagiModuleDisabledError()
 
     @tasks.loop(minutes=60)
+    @guard_loop
     async def check_sanity_overflow(self):
         users = await UsagiGryphline.get_all_by_or(endfield_sanity_sub=True)
 
         for user in users:
-            config = await UsagiConfig.get(
-                guild_id=user.guild_id, command_tag="endfield"
-            )
-            if not config:
-                continue
-            try:
+            async with guarded_item(self.bot, "check_sanity_overflow", user.id):
+                config = await UsagiConfig.get(
+                    guild_id=user.guild_id, command_tag="endfield"
+                )
+                if not config:
+                    continue
                 channel = self.bot.get_channel(
                     config.generic_id
                 ) or await self.bot.fetch_channel(config.generic_id)
-            except discord.errors.Forbidden:
-                self.bot.logger.error(f"Cant get access to {config.generic_id}")
-                continue
 
-            client = EndfieldClient(
-                account_token=user.token
-            )
+                client = EndfieldClient(account_token=user.token)
+                await client.start()
 
-            await client.start()
+                try:
+                    if not await client.sign_in():
+                        continue
 
-            try:
-                if not await client.sign_in():
-                    continue
+                    profile = await client.get_profile()
 
-                profile = await client.get_profile()
+                    if not profile.success:
+                        continue
 
-                if not profile.success:
-                    continue
+                finally:
+                    await client.close()
 
-            finally:
-                await client.close()
+                if profile.data and profile.data.sanity.current < 340:
+                    if user.endfield_sanity_sub_notified:
+                        await UsagiGryphline.update(
+                            id=user.id, endfield_sanity_sub_notified=False
+                        )
 
-            if profile.data and profile.data.sanity.current < 340:
-                if user.endfield_sanity_sub_notified:
-                    await UsagiGryphline.update(
-                        id=user.id, endfield_sanity_sub_notified=False
+                lang = self.bot.language.get(user.user_id, "en")
+                if (
+                        profile.data
+                        and user.endfield_sanity_sub
+                        and not user.endfield_sanity_sub_notified
+                        and profile.data.sanity.current >= 340
+                ):
+                    notify_text = self.bot.i18n.get_text("sanity cap", lang).format(
+                        user_id=user.user_id,
+                        nickname=profile.data.nickname,
+                        current_sanity=profile.data.sanity.current,
                     )
-
-            lang = self.bot.language.get(user.user_id, "en")
-            if (
-                    profile.data
-                    and user.endfield_sanity_sub
-                    and not user.endfield_sanity_sub_notified
-                    and profile.data.sanity.current >= 340
-            ):
-                notify_text = self.bot.i18n.get_text("sanity cap", lang).format(
-                    user_id=user.user_id,
-                    nickname=profile.data.nickname,
-                    current_sanity=profile.data.sanity.current,
-                )
-                await channel.send(content=notify_text)
-                await UsagiGryphline.update(id=user.id, endfield_sanity_sub_notified=True)
+                    await channel.send(content=notify_text)
+                    await UsagiGryphline.update(
+                        id=user.id, endfield_sanity_sub_notified=True
+                    )
 
     @check_sanity_overflow.before_loop
     async def before_check_sanity_overflow(self):
@@ -221,6 +219,7 @@ class Endfield(commands.Cog):
         self.bot.logger.info("Checking sanity.")
 
     @tasks.loop(hours=1)
+    @guard_loop
     async def claim_endfield_daily_reward(self):
         moscow_tz = pytz.timezone("Europe/Moscow")
         time_in_moscow = datetime.now(moscow_tz)
@@ -232,46 +231,58 @@ class Endfield(commands.Cog):
         errors = []
 
         for user in users:
-            config = await UsagiConfig.get(
-                guild_id=user.guild_id, command_tag="endfield"
-            )
-            if not config:
-                continue
-            channel = await self.bot.fetch_channel(config.generic_id)
-
-            client = EndfieldClient(
-                account_token=user.token
-            )
-
-            await client.start()
-
-            try:
-                if not await client.sign_in():
-                    errors.append((user.user_id, channel, _("Authorisation failed")))
+            async with guarded_item(
+                self.bot, "claim_endfield_daily_reward", user.id
+            ):
+                config = await UsagiConfig.get(
+                    guild_id=user.guild_id, command_tag="endfield"
+                )
+                if not config:
                     continue
+                channel = await self.bot.fetch_channel(config.generic_id)
 
-                result = await client.get_attendance()
-                if result.success and channel not in channels:
-                    channels.append(channel)
+                client = EndfieldClient(account_token=user.token)
+                await client.start()
 
-                if not result.success:
-                    errors.append((user.user_id, channel, _("Profile error").format(message=result.message)))
+                try:
+                    if not await client.sign_in():
+                        errors.append(
+                            (user.user_id, channel, _("Authorisation failed"))
+                        )
+                        continue
 
-            finally:
-                await client.close()
+                    result = await client.get_attendance()
+                    if result.success and channel not in channels:
+                        channels.append(channel)
+
+                    if not result.success:
+                        errors.append(
+                            (
+                                user.user_id,
+                                channel,
+                                _("Profile error").format(message=result.message),
+                            )
+                        )
+
+                finally:
+                    await client.close()
 
         for channel in channels:
-            await channel.send(
-                content=(
-                    "Claimed daily rewards.\n"
-                    "To follow use `/endfield settings` and click for daily rewards."
+            async with guarded_item(
+                self.bot, "claim_endfield_daily_reward", channel
+            ):
+                await channel.send(
+                    content=(
+                        "Claimed daily rewards.\n"
+                        "To follow use `/endfield settings` and click for daily rewards."
+                    )
                 )
-            )
 
         for error in errors:
-            await error[1].send(
-                content=f"<@{error[0]}>, {error[2]}"
-            )
+            async with guarded_item(
+                self.bot, "claim_endfield_daily_reward", error[0]
+            ):
+                await error[1].send(content=f"<@{error[0]}>, {error[2]}")
 
     @claim_endfield_daily_reward.before_loop
     async def before_claim_endfield_daily_reward(self):
