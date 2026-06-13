@@ -137,7 +137,7 @@
     "This role already used": "Эта роль уже используется.",
     "Cannot edit original message": "Не могу изменить оригинальное сообщение. Проверьте мои права.",
     "Role edited": "Изменила роль.",
-    "This emoji already use": "Этот эмоджи уже используется.",
+    "This emoji already used": "Этот эмоджи уже используется.",
     "Emoji edited": "Изменила эмоджи.",
     "Description edited": "Изменила описание.",
     "Changed your language": "Изменила твой язык на {lang}.",
@@ -222,5 +222,9 @@
     "Your VPN renewal approved": "Ваша заявка на продление VPN была одобрена.",
 
     "ON": "ВКЛ",
-    "OFF": "ВЫКЛ"
+    "OFF": "ВЫКЛ",
+
+    "VPN no profiles": "У вас нет активных ВПН профилей.",
+    "Invalid date": "Такой даты не существует, проверьте день и месяц.",
+    "You already have a unic role": "У вас уже есть персональная роль, сначала удалите её."
 }
