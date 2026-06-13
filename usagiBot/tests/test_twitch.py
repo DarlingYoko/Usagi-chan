@@ -50,6 +50,7 @@ class TestTwitch(IsolatedAsyncioTestCase):
         self.Twitch.twitch = mock.AsyncMock()
         self.Twitch.twitch.get_users = mock.MagicMock()
         self.Twitch.bot = mock.AsyncMock()
+        self.Twitch.bot.logger = mock.MagicMock()
         self.Twitch.bot.i18n = init_i18n()
         self.Twitch.bot.language = {}
 
@@ -124,6 +125,62 @@ class TestTwitch(IsolatedAsyncioTestCase):
         )
 
         self.assertEqual(notify_channel.send.call_count, 1)
+
+    async def test_twitch_loop_survives_db_error(self) -> None:
+        self.mock_UsagiTwitchNotify.get_all.side_effect = Exception("db down")
+
+        await self.Twitch.twitch_notify_loop.coro(self.Twitch)
+
+        self.Twitch.bot.logger.exception.assert_called()
+
+    async def test_twitch_loop_survives_auth_failure(self) -> None:
+        self.Twitch.twitch = None
+        with mock.patch(
+            "usagiBot.cogs.Twitch.index.twitch_auth", new_callable=mock.AsyncMock
+        ) as mock_auth:
+            mock_auth.side_effect = Exception("auth down")
+            await self.Twitch.twitch_notify_loop.coro(self.Twitch)
+
+        self.Twitch.bot.logger.exception.assert_called()
+
+    @mock.patch("usagiBot.cogs.Twitch.index.get_notify_src", new_callable=mock.AsyncMock)
+    @mock.patch(
+        "usagiBot.cogs.Twitch.index.get_streamer_icon", new_callable=mock.AsyncMock
+    )
+    async def test_twitch_loop_survives_streamer_error(
+        self, mock_get_streamer_icon, mock_get_notify_src
+    ) -> None:
+        mock_get_streamer_icon.return_value = "http://icon"
+        # first streamer blows up rendering, second still gets notified
+        mock_get_notify_src.side_effect = [
+            Exception("boom"),
+            (mock.MagicMock(), mock.MagicMock()),
+        ]
+        self.mock_UsagiTwitchNotify.get_all.return_value = [
+            mock.MagicMock(
+                guild_id="g1",
+                user_id="u1",
+                twitch_username="s1",
+                started_at=datetime(2023, 1, 1),
+            ),
+            mock.MagicMock(
+                guild_id="g1",
+                user_id="u2",
+                twitch_username="s2",
+                started_at=datetime(2023, 1, 1),
+            ),
+        ]
+        self.mock_UsagiConfig.get.return_value = mock.MagicMock(generic_id="ch")
+        self.Twitch.twitch.get_streams = mock.MagicMock()
+        live = mock.MagicMock(started_at=datetime(2024, 1, 1))
+        self.mock_first.side_effect = [live, live]
+        channel = mock.AsyncMock()
+        self.channels["ch"] = channel
+
+        await self.Twitch.twitch_notify_loop.coro(self.Twitch)
+
+        self.assertEqual(channel.send.call_count, 1)
+        self.Twitch.bot.logger.exception.assert_called()
 
     @freeze_time("2001-03-21")
     async def test_follow_streamer(self) -> None:
