@@ -209,10 +209,10 @@ class Main(commands.Cog):
     ) -> None:
         try:
             datetime_obj = datetime.strptime(date, "%d.%m.%Y %H:%M:%S")
-        except ValueError or KeyError:
+        except (ValueError, KeyError):
             return await ctx.respond(
                 embed=get_embed(
-                    title=_("Time data does not match format").format(date),
+                    title=_("Time data does not match format").format(date=date),
                     color=discord.Color.red(),
                 ),
                 ephemeral=True,
@@ -397,7 +397,7 @@ class Main(commands.Cog):
             await msg.delete(reason=f"Remove by slash command {ctx.author.name}")
             await UsagiAutoRolesData.delete(message_id=message_id)
             await UsagiAutoRoles.delete(message_id=message_id)
-        except discord.errors.Forbidden or discord.errors.NotFound:
+        except (discord.errors.Forbidden, discord.errors.NotFound):
             return await ctx.send_followup(
                 embed=get_embed(
                     title=_("Cannot remove original message"), color=discord.Color.red()
