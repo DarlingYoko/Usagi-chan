@@ -103,7 +103,7 @@ class Birthday(commands.Cog):
                     break
 
             if br_data is None:
-                return
+                continue
 
             text = f"До др {br_data.name}"
             category = self.bot.get_channel(
@@ -119,7 +119,6 @@ class Birthday(commands.Cog):
             if delta.days:
                 time += f"{delta.days} d."
             time += f" {hours} h. {minutes} m."
-            await asyncio.sleep(10 * 60)
             await channel.edit(name=time, reason="Update birthday timer.")
 
     @update_birthday_timer.before_loop
@@ -166,9 +165,12 @@ class Birthday(commands.Cog):
                 _("This user already added in birthday list"), ephemeral=True
             )
         now = datetime.now()
-        cur_data = datetime(day=day, month=month, year=now.year)
-        if now > cur_data:
-            cur_data = datetime(day=day, month=month, year=now.year + 1)
+        try:
+            cur_data = datetime(day=day, month=month, year=now.year)
+            if now > cur_data:
+                cur_data = datetime(day=day, month=month, year=now.year + 1)
+        except ValueError:
+            return await ctx.respond(_("Invalid date"), ephemeral=True)
         await UsagiBirthday.create(
             guild_id=ctx.guild.id, user_id=user.id, date=cur_data, name=name
         )
@@ -190,7 +192,7 @@ class Birthday(commands.Cog):
         exist_user = await UsagiBirthday.get(guild_id=ctx.guild.id, user_id=user_id)
         if not exist_user:
             return await ctx.respond(
-                _("This user isn't in birthday list, add him firstly"), ephemeral=True
+                _("This user isn't in birthday list"), ephemeral=True
             )
         await UsagiBirthday.delete(guild_id=ctx.guild.id, user_id=user_id)
         await ctx.respond(_("Done"), ephemeral=True)
@@ -224,7 +226,7 @@ class Birthday(commands.Cog):
     async def add_birthday_timer(self, ctx, channel: discord.VoiceChannel):
         guild = await UsagiBirthdayTimer.get(guild_id=ctx.guild.id)
         if guild:
-            await UsagiBirthdayTimer.update(id=guild.id, channel=channel.id)
+            await UsagiBirthdayTimer.update(id=guild.id, channel_id=channel.id)
             answer = "Updated birthday timer"
         else:
             await UsagiBirthdayTimer.create(
