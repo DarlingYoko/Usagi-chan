@@ -54,6 +54,11 @@ class UsagiBot(commands.Bot):
         self.i18n = i18n
 
     async def before_identify_hook(self, shard_id, *, initial=False):
+        # Fires before every (re)identify; one-time DB/lang setup belongs to
+        # the first connect only, not to each reconnect.
+        if not initial:
+            return
+
         self.logger.info("Running DB migrations before bot connect")
         await create_tables()
         self.logger.info("DB Ready")

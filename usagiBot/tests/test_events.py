@@ -157,6 +157,34 @@ class TestCustomEmojiPattern(IsolatedAsyncioTestCase):
         self.assertFalse(self.pattern.search("meet at 12:30, ok :> friend"))
 
 
+class TestOnReady(IsolatedAsyncioTestCase):
+    @mock.patch.object(asyncio, "create_async_engine")
+    def setUp(self, mock_engine) -> None:
+        self.bot = mock.AsyncMock()
+        self.bot.logger = mock.MagicMock()
+        from usagiBot.cogs.Events.index import Events
+
+        self.Events = Events(self.bot)
+
+    @mock.patch(
+        "usagiBot.cogs.Events.index.init_auto_roles", new_callable=mock.AsyncMock
+    )
+    @mock.patch(
+        "usagiBot.cogs.Events.index.init_moder_roles", new_callable=mock.AsyncMock
+    )
+    @mock.patch(
+        "usagiBot.cogs.Events.index.init_cogs_settings", new_callable=mock.AsyncMock
+    )
+    @mock.patch(
+        "usagiBot.cogs.Events.index.load_all_command_tags", new_callable=mock.AsyncMock
+    )
+    async def test_on_ready_syncs_commands_once(self, *_mocks) -> None:
+        await self.Events.on_ready()
+        await self.Events.on_ready()
+
+        self.assertEqual(self.bot.sync_commands.await_count, 1)
+
+
 class TestDumpData(IsolatedAsyncioTestCase):
     @mock.patch("usagiBot.cogs.Main.schemas.UsagiBackup", new_callable=mock.AsyncMock)
     @mock.patch.object(asyncio, "create_async_engine")

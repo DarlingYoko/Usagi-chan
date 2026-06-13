@@ -97,6 +97,12 @@ class Events(commands.Cog):
     # Define main events
     @commands.Cog.listener()
     async def on_ready(self):
+        # on_ready fires on every reconnect; the init below (and the
+        # rate-limit-heavy sync_commands) must run only on first connect.
+        if getattr(self, "_ready_once", False):
+            self.bot.logger.info("Reconnected; skipping one-time on_ready init")
+            return
+        self._ready_once = True
         # self.bot.qbt_client = await init_qbt_client(self.bot.logger)
         self.bot.command_tags = await load_all_command_tags(self.bot)
         self.bot.guild_cogs_settings = await init_cogs_settings()
