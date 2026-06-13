@@ -14,6 +14,7 @@ from usagiBot.src.UsagiUtils import (
     get_embed,
     init_auto_roles,
     init_language,
+    guard_loop,
 )
 from usagiBot.src.UsagiErrors import *
 from usagiBot.cogs.Main.schemas import (
@@ -28,6 +29,22 @@ from usagiBot.cogs.Main.schemas import (
 CUSTOM_EMOJI_RE = re.compile(r"<a?:\w+:\d+>")
 
 
+def _merge_message_counts(dst: dict, src: dict) -> None:
+    """Add ``src`` message counters into ``dst``, summing per counter.
+
+    Used to restore a failed dump without clobbering counts that arrived
+    while the upsert was in flight.
+    """
+    for guild_id, channels in src.items():
+        d_channels = dst.setdefault(guild_id, {})
+        for channel_id, users in channels.items():
+            d_users = d_channels.setdefault(channel_id, {})
+            for user_id, counters in users.items():
+                d_counters = d_users.setdefault(user_id, {})
+                for key, value in counters.items():
+                    d_counters[key] = d_counters.get(key, 0) + value
+
+
 class Events(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -35,6 +52,7 @@ class Events(commands.Cog):
         self.dump_data.start()
 
     @tasks.loop(minutes=30)
+    @guard_loop
     async def dump_data(self):
         messages_dump = self.bot.messages_dump
         self.bot.messages_dump = {}
@@ -56,12 +74,20 @@ class Events(commands.Cog):
                         }
                     )
 
-        if rows:
+        if not rows:
+            return
+
+        try:
             await UsagiBackup.upsert_add(
                 rows,
                 conflict_columns=["guild_id", "channel_id", "user_id"],
                 counter_columns=["messages", "images", "gifs", "emojis", "stickers"],
             )
+        except Exception:
+            # Don't drop 30 min of stats on a transient DB error — fold the
+            # batch back into the live dump so the next tick retries it.
+            self.bot.logger.exception("dump_data: upsert failed, restoring counters")
+            _merge_message_counts(self.bot.messages_dump, messages_dump)
 
     @dump_data.before_loop
     async def before_dump_data(self):

@@ -202,3 +202,26 @@ class TestDumpData(IsolatedAsyncioTestCase):
         await self.Events.dump_data()
 
         mock_backup.upsert_add.assert_not_called()
+
+    @mock.patch("usagiBot.cogs.Events.index.UsagiBackup", new_callable=mock.AsyncMock)
+    async def test_dump_data_restores_counts_on_upsert_failure(
+        self, mock_backup
+    ) -> None:
+        zero = {"messages": 0, "images": 0, "gifs": 0, "emojis": 0, "stickers": 0}
+        self.bot.messages_dump = {"g1": {"c1": {"u1": {**zero, "messages": 3}}}}
+
+        async def boom(*args, **kwargs):
+            # a message arrives mid-flush, after the dict was swapped out
+            self.bot.messages_dump.setdefault("g1", {}).setdefault(
+                "c1", {}
+            ).setdefault("u1", dict(zero))["messages"] += 1
+            raise Exception("db down")
+
+        mock_backup.upsert_add.side_effect = boom
+
+        await self.Events.dump_data()  # must not raise
+
+        mock_backup.upsert_add.assert_awaited_once()
+        self.bot.logger.exception.assert_called()
+        # 3 restored + 1 that arrived during the failed flush
+        self.assertEqual(self.bot.messages_dump["g1"]["c1"]["u1"]["messages"], 4)
