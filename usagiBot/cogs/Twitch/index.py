@@ -203,7 +203,7 @@ class Twitch(commands.Cog):
             guild_id=ctx.guild.id,
             user_id=ctx.author.id,
         )
-        if streamers is None:
+        if not streamers:
             await ctx.respond(_("You are not followed to any streamer"), ephemeral=True)
             return
         streamers = list(map(lambda x: f" - {x.twitch_username}\n", streamers))
@@ -224,7 +224,7 @@ class Twitch(commands.Cog):
         streamers = await UsagiTwitchNotify.get_all_by(
             guild_id=ctx.guild.id,
         )
-        if streamers is None:
+        if not streamers:
             await ctx.respond(
                 _("Your guild not followed to any streamer"), ephemeral=True
             )

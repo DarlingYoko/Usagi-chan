@@ -291,3 +291,30 @@ Created by test_game_author[0m[2;32m[4;32m[4;32m[0;32m[0m[4;32m[0m[4;32
             word="ЗАЙЧИК",
             game=wordle_game,
         )
+
+
+class TestWordleTop(IsolatedAsyncioTestCase):
+    @mock.patch(
+        "usagiBot.cogs.Wordle.schemas.UsagiWordleResults", new_callable=mock.AsyncMock
+    )
+    @mock.patch.object(asyncio, "create_async_engine")
+    def setUp(self, mock_engine, mock_Results) -> None:
+        from usagiBot.cogs.Wordle.index import Wordle
+
+        self.Wordle = Wordle
+        self.mock_Results = mock_Results
+        self.Wordle.bot = mock.AsyncMock()
+        self.Wordle.bot.i18n = init_i18n()
+        self.Wordle.bot.language = {}
+        self.ctx = mock.AsyncMock()
+        self.ctx.guild.id = "g1"
+
+    async def test_wordle_top_numbering_starts_at_one(self) -> None:
+        self.mock_Results.get_all_by.return_value = [
+            mock.MagicMock(user_id=4, points=11, count_of_games=3),
+            mock.MagicMock(user_id=5, points=7, count_of_games=2),
+        ]
+        await self.Wordle.wordle_top.callback(self.Wordle, self.ctx)
+        embed = self.ctx.respond.call_args.kwargs["embed"]
+        self.assertIn("1.", embed.description)
+        self.assertNotIn("0.", embed.description)

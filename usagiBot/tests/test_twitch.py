@@ -251,3 +251,17 @@ class TestTwitch(IsolatedAsyncioTestCase):
         self.ctx.respond.assert_called_with(
             "Your guild not followed to any streamer.", ephemeral=True
         )
+
+    async def test_show_all_follows_empty_list(self) -> None:
+        self.mock_UsagiTwitchNotify.get_all_by.return_value = []
+        await self.Twitch.show_all_follows.callback(self.Twitch, self.ctx)
+        self.ctx.respond.assert_called_with(
+            "Your guild not followed to any streamer.", ephemeral=True
+        )
+
+    async def test_show_user_follows_empty_list(self) -> None:
+        self.mock_UsagiTwitchNotify.get_all_by.return_value = []
+        await self.Twitch.show_user_follows.callback(self.Twitch, self.ctx)
+        self.ctx.respond.assert_called_with(
+            "You are not followed to any streamer.", ephemeral=True
+        )

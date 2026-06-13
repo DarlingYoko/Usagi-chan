@@ -182,7 +182,7 @@ ask to generate a random word for yourself by the number of letters in it.[0m
                     points=x[1].points,
                     count_of_games=x[1].count_of_games,
                 ),
-                enumerate(top_players),
+                enumerate(top_players, start=1),
             )
         )
         result_text = "\n".join(result)
