@@ -24,4 +24,4 @@ class UsagiBirthdayTimer(Base, ModelAdmin):
     id = Column(Integer, primary_key=True)
     guild_id = Column(BigInteger)
     channel_id = Column(BigInteger)
-    enable = Column(Boolean)
+    enable = Column(Boolean, nullable=False, default=False, server_default="false")
