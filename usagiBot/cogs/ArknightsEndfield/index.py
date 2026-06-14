@@ -163,12 +163,14 @@ class Endfield(commands.Cog):
     @guard_loop
     async def check_sanity_overflow(self):
         users = await UsagiGryphline.get_all_by_or(endfield_sanity_sub=True)
+        if not users:
+            return
+        configs = await UsagiConfig.get_all_by(command_tag="endfield")
+        configs_by_guild = {config.guild_id: config for config in configs}
 
         for user in users:
             async with guarded_item(self.bot, "check_sanity_overflow", user.id):
-                config = await UsagiConfig.get(
-                    guild_id=user.guild_id, command_tag="endfield"
-                )
+                config = configs_by_guild.get(user.guild_id)
                 if not config:
                     continue
                 channel = self.bot.get_channel(
@@ -227,6 +229,10 @@ class Endfield(commands.Cog):
             return
 
         users = await UsagiGryphline.get_all_by_or(endfield_daily_sub=True)
+        if not users:
+            return
+        configs = await UsagiConfig.get_all_by(command_tag="endfield")
+        configs_by_guild = {config.guild_id: config for config in configs}
         channels = []
         errors = []
 
@@ -234,12 +240,12 @@ class Endfield(commands.Cog):
             async with guarded_item(
                 self.bot, "claim_endfield_daily_reward", user.id
             ):
-                config = await UsagiConfig.get(
-                    guild_id=user.guild_id, command_tag="endfield"
-                )
+                config = configs_by_guild.get(user.guild_id)
                 if not config:
                     continue
-                channel = await self.bot.fetch_channel(config.generic_id)
+                channel = self.bot.get_channel(
+                    config.generic_id
+                ) or await self.bot.fetch_channel(config.generic_id)
 
                 client = EndfieldClient(account_token=user.token)
                 await client.start()

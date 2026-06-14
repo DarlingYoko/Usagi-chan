@@ -73,7 +73,10 @@ class TestEndfieldCommands(IsolatedAsyncioTestCase):
         self.mock_UsagiGryphline.get_all_by_or.return_value = [
             mock.MagicMock(guild_id="g1", user_id="u1", token="t1")
         ]
-        self.mock_UsagiConfig.get.return_value = mock.MagicMock(generic_id=42)
+        self.mock_UsagiConfig.get_all_by.return_value = [
+            mock.MagicMock(guild_id="g1", generic_id=42)
+        ]
+        self.Endfield.bot.get_channel = mock.MagicMock(return_value=mock.AsyncMock())
 
         client = self.mock_EndfieldClient.return_value
         client.start = mock.AsyncMock()
@@ -110,7 +113,9 @@ class TestEndfieldCommands(IsolatedAsyncioTestCase):
                 endfield_sanity_sub_notified=False,
             ),
         ]
-        self.mock_UsagiConfig.get.return_value = mock.MagicMock(generic_id="ch")
+        self.mock_UsagiConfig.get_all_by.return_value = [
+            mock.MagicMock(guild_id="g1", generic_id="ch")
+        ]
         channel = mock.AsyncMock()
         self.Endfield.bot.get_channel = mock.MagicMock(return_value=channel)
 
@@ -134,6 +139,9 @@ class TestEndfieldCommands(IsolatedAsyncioTestCase):
 
         channel.send.assert_awaited_once()
         self.Endfield.bot.logger.exception.assert_called()
+        # config loaded once for the whole loop, not per user
+        self.mock_UsagiConfig.get_all_by.assert_awaited_once_with(command_tag="endfield")
+        self.mock_UsagiConfig.get.assert_not_called()
 
     @freeze_time("2026-06-13 16:00:00")
     async def test_claim_loop_survives_user_error(self) -> None:
@@ -141,9 +149,11 @@ class TestEndfieldCommands(IsolatedAsyncioTestCase):
             mock.MagicMock(guild_id="g1", user_id="u1", token="t1"),
             mock.MagicMock(guild_id="g1", user_id="u2", token="t2"),
         ]
-        self.mock_UsagiConfig.get.return_value = mock.MagicMock(generic_id="ch")
+        self.mock_UsagiConfig.get_all_by.return_value = [
+            mock.MagicMock(guild_id="g1", generic_id="ch")
+        ]
         channel = mock.AsyncMock()
-        self.Endfield.bot.fetch_channel = mock.AsyncMock(return_value=channel)
+        self.Endfield.bot.get_channel = mock.MagicMock(return_value=channel)
 
         client_bad = mock.MagicMock()
         client_bad.start = mock.AsyncMock()
