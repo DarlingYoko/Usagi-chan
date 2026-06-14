@@ -135,7 +135,36 @@ class TestMainCommands(IsolatedAsyncioTestCase):
         channel = mock.AsyncMock()
         channel.fetch_message.return_value = msg
         ctx.guild.fetch_channel.return_value = channel
+        # cache miss -> fall through to (awaited) fetch_emoji
+        ctx.guild.get_emoji = mock.MagicMock(return_value=None)
         return ctx
+
+    async def test_help_loads_config_once(self) -> None:
+        import usagiBot.cogs.Main.index as main_index
+
+        cmd = mock.MagicMock()
+        cmd.name = "follow"
+        cmd.description = "d"
+        cmd.parent = None
+        cmd.__original_kwargs__ = {"command_tag": "twitch_notify"}
+
+        module = mock.MagicMock()
+        module.qualified_name = "Twitch"
+        module.cog_check.return_value = True
+        module.walk_commands.return_value = [cmd]
+        self.ctx.bot.cogs = {"Twitch": module}
+
+        with mock.patch.object(
+            main_index, "UsagiConfig", new_callable=mock.AsyncMock
+        ) as mock_Config:
+            mock_Config.get_all_by.return_value = [
+                mock.MagicMock(command_tag="twitch_notify", generic_id=42)
+            ]
+            await self.Main.help_command.callback(self.Main, self.ctx, "Twitch")
+
+        mock_Config.get_all_by.assert_awaited_once_with(guild_id="g1")
+        mock_Config.get.assert_not_called()
+        self.ctx.respond.assert_awaited()
 
     async def test_edit_role_unknown_role_responds(self) -> None:
         ctx = self._edit_ctx()

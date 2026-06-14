@@ -50,7 +50,9 @@ async def get_timers(
     guild = ctx.bot.get_guild(ctx.interaction.guild_id)
     timer_names = []
     for timer in timers:
-        channel = await guild.fetch_channel(timer.channel_id)
+        channel = guild.get_channel(timer.channel_id) or await guild.fetch_channel(
+            timer.channel_id
+        )
         timer_names.append(
             discord.OptionChoice(name=channel.name, value=str(timer.channel_id))
         )
@@ -146,6 +148,9 @@ class Main(commands.Cog):
             title=title,
         )
 
+        configs = await UsagiConfig.get_all_by(guild_id=ctx.guild.id)
+        configs_by_tag = {config.command_tag: config for config in configs}
+
         commands_dict = {}
         for command in module.walk_commands():
             command_dict = {
@@ -159,9 +164,7 @@ class Main(commands.Cog):
             else:
                 command_tag = command.__original_kwargs__.get("command_tag")
             if command_tag:
-                config = await UsagiConfig.get(
-                    guild_id=ctx.guild.id, command_tag=command_tag
-                )
+                config = configs_by_tag.get(command_tag)
                 if not config:
                     command_dict["set_up"] = False
                 else:
@@ -498,7 +501,9 @@ class Main(commands.Cog):
                         ),
                         ephemeral=True,
                     )
-                payload_emoji = await ctx.guild.fetch_emoji(entity.emoji_id)
+                payload_emoji = ctx.guild.get_emoji(
+                    entity.emoji_id
+                ) or await ctx.guild.fetch_emoji(entity.emoji_id)
                 text += f"{counter}. <@&{entity.role_id}> – {entity.description} – {payload_emoji}\n"
                 counter += 1
 
@@ -574,9 +579,13 @@ class Main(commands.Cog):
         old_emoji = None
         for counter, entity in enumerate(payload, start=1):
             if entity.role_id == int(role):
-                old_emoji = await ctx.guild.fetch_emoji(entity.emoji_id)
+                old_emoji = ctx.guild.get_emoji(
+                    entity.emoji_id
+                ) or await ctx.guild.fetch_emoji(entity.emoji_id)
                 continue
-            payload_emoji = await ctx.guild.fetch_emoji(entity.emoji_id)
+            payload_emoji = ctx.guild.get_emoji(
+                entity.emoji_id
+            ) or await ctx.guild.fetch_emoji(entity.emoji_id)
             text += f"{counter}. <@&{entity.role_id}> – {entity.description} – {payload_emoji}\n"
         embed = get_embed(title=role_data["name"], description=text)
 
@@ -665,7 +674,9 @@ class Main(commands.Cog):
             if entity.role_id == int(role):
                 new_entity = entity
                 entity.role_id = new_role.id
-            payload_emoji = await ctx.guild.fetch_emoji(entity.emoji_id)
+            payload_emoji = ctx.guild.get_emoji(
+                entity.emoji_id
+            ) or await ctx.guild.fetch_emoji(entity.emoji_id)
             text += f"{counter}. <@&{entity.role_id}> – {entity.description} – {payload_emoji}\n"
         if new_entity is None:
             return await ctx.send_followup(
@@ -771,7 +782,9 @@ class Main(commands.Cog):
                 new_entity = entity
                 old_emoji = entity.emoji_id
                 entity.emoji_id = new_emoji.id
-            payload_emoji = await ctx.guild.fetch_emoji(entity.emoji_id)
+            payload_emoji = ctx.guild.get_emoji(
+                entity.emoji_id
+            ) or await ctx.guild.fetch_emoji(entity.emoji_id)
             text += f"{counter}. <@&{entity.role_id}> – {entity.description} – {payload_emoji}\n"
         if new_entity is None:
             return await ctx.send_followup(
@@ -784,7 +797,9 @@ class Main(commands.Cog):
         try:
             await msg.edit(embed=embed)
             await msg.add_reaction(new_emoji)
-            payload_emoji = await ctx.guild.fetch_emoji(old_emoji)
+            payload_emoji = ctx.guild.get_emoji(
+                old_emoji
+            ) or await ctx.guild.fetch_emoji(old_emoji)
             await msg.clear_reaction(payload_emoji)
         except discord.errors.Forbidden:
             return await ctx.send_followup(
@@ -871,7 +886,9 @@ class Main(commands.Cog):
             if entity.role_id == int(role):
                 new_entity = entity
                 entity.description = new_description
-            payload_emoji = await ctx.guild.fetch_emoji(entity.emoji_id)
+            payload_emoji = ctx.guild.get_emoji(
+                entity.emoji_id
+            ) or await ctx.guild.fetch_emoji(entity.emoji_id)
             text += f"{counter}. <@&{entity.role_id}> – {entity.description} – {payload_emoji}\n"
         if new_entity is None:
             return await ctx.send_followup(
