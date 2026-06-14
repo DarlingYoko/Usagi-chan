@@ -234,7 +234,9 @@ class Fun(commands.Cog):
             guild_id=ctx.guild.id, command_tag="based_message_channel"
         )
         based_message_channel_id = config.generic_id
-        channel = await ctx.bot.fetch_channel(based_message_channel_id)
+        channel = ctx.bot.get_channel(
+            based_message_channel_id
+        ) or await ctx.bot.fetch_channel(based_message_channel_id)
         files = []
 
         if message.attachments:

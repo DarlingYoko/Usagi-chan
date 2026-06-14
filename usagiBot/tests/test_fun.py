@@ -55,6 +55,7 @@ class TestFunMethods(IsolatedAsyncioTestCase):
     async def test_add_based_message_successful(self) -> None:
         self.ctx.guild.id = 12345
         self.ctx.command.__original_kwargs__ = {"command_tag": "based_message_channel"}
+        self.ctx.bot.get_channel = mock.MagicMock(return_value=None)  # cache miss
         self.ctx.bot.fetch_channel.return_value = self.channel
 
         await self.Fun.add_based_message(self.Fun, self.ctx, self.message)
