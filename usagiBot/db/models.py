@@ -170,6 +170,24 @@ class ModelAdmin:
             return results.scalars().all()
 
     @classmethod
+    async def get_top(cls, order_by: str, limit: int = 10, **kwargs):
+        """Top `limit` rows ordered by `order_by` column descending.
+
+        Pushes the sort+limit into Postgres instead of loading the whole
+        table and sorting in Python.
+        """
+        column = getattr(cls, order_by, None)
+        if column is None:
+            raise AttributeError(f"{cls.__name__} has no column {order_by!r}")
+        conditions = cls.generate_conditions(kwargs)
+        query = (
+            select(cls).where(and_(*conditions)).order_by(column.desc()).limit(limit)
+        )
+        async with async_session() as session:
+            results = await session.execute(query)
+            return results.scalars().all()
+
+    @classmethod
     async def get_embedding(cls, query_vec, limit: int = 10, **kwargs):
         conditions = cls.generate_conditions(kwargs)
         query = (

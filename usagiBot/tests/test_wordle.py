@@ -310,7 +310,7 @@ class TestWordleTop(IsolatedAsyncioTestCase):
         self.ctx.guild.id = "g1"
 
     async def test_wordle_top_numbering_starts_at_one(self) -> None:
-        self.mock_Results.get_all_by.return_value = [
+        self.mock_Results.get_top.return_value = [
             mock.MagicMock(user_id=4, points=11, count_of_games=3),
             mock.MagicMock(user_id=5, points=7, count_of_games=2),
         ]
@@ -318,3 +318,11 @@ class TestWordleTop(IsolatedAsyncioTestCase):
         embed = self.ctx.respond.call_args.kwargs["embed"]
         self.assertIn("1.", embed.description)
         self.assertNotIn("0.", embed.description)
+
+    async def test_wordle_top_orders_in_sql(self) -> None:
+        self.mock_Results.get_top.return_value = []
+        await self.Wordle.wordle_top.callback(self.Wordle, self.ctx)
+        self.mock_Results.get_top.assert_awaited_once_with(
+            order_by="points", limit=10, guild_id="g1"
+        )
+        self.mock_Results.get_all_by.assert_not_called()

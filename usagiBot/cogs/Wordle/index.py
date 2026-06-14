@@ -171,8 +171,9 @@ ask to generate a random word for yourself by the number of letters in it.[0m
     )
     @commands.cooldown(per=60, rate=1, type=commands.BucketType.channel)
     async def wordle_top(self, ctx):
-        all_results = await UsagiWordleResults.get_all_by(guild_id=ctx.guild.id)
-        top_players = sorted(all_results, key=lambda x: x.points, reverse=True)[:10]
+        top_players = await UsagiWordleResults.get_top(
+            order_by="points", limit=10, guild_id=ctx.guild.id
+        )
         title = _("Top players")
         result = list(
             map(
