@@ -66,8 +66,14 @@ class TestTwitch(IsolatedAsyncioTestCase):
         self.Twitch.bot.get_channel = mock.MagicMock(side_effect=mock_get_channel)
         self.Twitch.bot.fetch_channel = mock.AsyncMock(side_effect=mock_fetch_channel)
 
+    @mock.patch(
+        "usagiBot.cogs.Twitch.index.get_streamer_icon", new_callable=mock.AsyncMock
+    )
     @mock.patch("usagiBot.cogs.Twitch.index.get_notify_src", new_callable=mock.AsyncMock)
-    async def test_twitch_notify_loop(self, mock_get_notify_src) -> None:
+    async def test_twitch_notify_loop(
+        self, mock_get_notify_src, mock_get_streamer_icon
+    ) -> None:
+        mock_get_streamer_icon.return_value = "http://icon"
         mock_get_notify_src.return_value = (mock.MagicMock(), mock.MagicMock())
         self.mock_UsagiTwitchNotify.get_all.return_value = [
             mock.MagicMock(
@@ -96,29 +102,43 @@ class TestTwitch(IsolatedAsyncioTestCase):
             ),
         ]
 
-        self.Twitch.twitch.get_streams = mock.MagicMock()
-        self.mock_UsagiConfig.get.return_value = mock.MagicMock(
-            generic_id="test_generic_id_channel_to_notify"
-        )
-        stream = mock.MagicMock(
-            user_name="test_twitch_username_1",
-            title="test_title_1",
-            game_name="test_game_name_1",
-        )
-        self.mock_first.side_effect = [
-            stream,
-            None,
-            None,
-            None,
+        self.mock_UsagiConfig.get_all_by.return_value = [
+            mock.MagicMock(
+                guild_id="test_guild_id_1",
+                generic_id="test_generic_id_channel_to_notify",
+            )
         ]
+        # Only streamer 1 is live, with a started_at newer than the stored one.
+        live = mock.MagicMock(
+            user_login="test_twitch_username_1",
+            started_at=datetime(year=2024, month=1, day=1),
+        )
+        self.captured_logins = []
+
+        async def fake_get_streams(user_login=None):
+            self.captured_logins.append(set(user_login))
+            for s in [live]:
+                if s.user_login in user_login:
+                    yield s
+
+        self.Twitch.twitch.get_streams = fake_get_streams
 
         notify_channel = mock.AsyncMock(channel_id="test_generic_id_channel_to_notify")
         self.channels["test_generic_id_channel_to_notify"] = notify_channel
 
-        await self.Twitch.twitch_notify_loop(self.Twitch)
+        await self.Twitch.twitch_notify_loop.coro(self.Twitch)
         self.mock_UsagiTwitchNotify.get_all.assert_called_with()
-        self.mock_UsagiConfig.get.assert_called_with(
-            guild_id="test_guild_id_1", command_tag="twitch_notify"
+        self.mock_UsagiConfig.get_all_by.assert_called_with(command_tag="twitch_notify")
+        self.mock_UsagiConfig.get.assert_not_called()
+        # one batched call resolving every followed streamer
+        self.assertEqual(len(self.captured_logins), 1)
+        self.assertEqual(
+            self.captured_logins[0],
+            {
+                "test_twitch_username_1",
+                "test_twitch_username_2",
+                "test_twitch_username_3",
+            },
         )
         self.Twitch.bot.get_channel.assert_called_with(
             "test_generic_id_channel_to_notify"
@@ -170,10 +190,18 @@ class TestTwitch(IsolatedAsyncioTestCase):
                 started_at=datetime(2023, 1, 1),
             ),
         ]
-        self.mock_UsagiConfig.get.return_value = mock.MagicMock(generic_id="ch")
-        self.Twitch.twitch.get_streams = mock.MagicMock()
-        live = mock.MagicMock(started_at=datetime(2024, 1, 1))
-        self.mock_first.side_effect = [live, live]
+        self.mock_UsagiConfig.get_all_by.return_value = [
+            mock.MagicMock(guild_id="g1", generic_id="ch")
+        ]
+        s1 = mock.MagicMock(user_login="s1", started_at=datetime(2024, 1, 1))
+        s2 = mock.MagicMock(user_login="s2", started_at=datetime(2024, 1, 1))
+
+        async def fake_get_streams(user_login=None):
+            for s in [s1, s2]:
+                if s.user_login in user_login:
+                    yield s
+
+        self.Twitch.twitch.get_streams = fake_get_streams
         channel = mock.AsyncMock()
         self.channels["ch"] = channel
 
