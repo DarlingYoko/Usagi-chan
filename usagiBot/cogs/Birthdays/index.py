@@ -36,7 +36,9 @@ async def get_birthdays(
     users = await UsagiBirthday.get_all_by(guild_id=ctx.interaction.guild_id)
     guild = ctx.bot.get_guild(ctx.interaction.guild_id)
     for user_data in users:
-        user = await guild.fetch_member(user_data.user_id)
+        user = guild.get_member(user_data.user_id) or await guild.fetch_member(
+            user_data.user_id
+        )
         user_names.append(discord.OptionChoice(name=user.name, value=str(user.id)))
 
     return user_names
@@ -68,15 +70,18 @@ class Birthday(commands.Cog):
         now = datetime.now()
         cur_data = datetime(day=now.day, month=now.month, year=now.year)
         users_data = await UsagiBirthday.get_all_by(date=cur_data)
+        if not users_data:
+            return
+        configs = await UsagiConfig.get_all_by(command_tag="birthday")
+        configs_by_guild = {config.guild_id: config for config in configs}
         for user_data in users_data:
             async with guarded_item(self.bot, "check_birthday", user_data.user_id):
-                guild = await self.bot.fetch_guild(user_data.guild_id)
-                guild_config = await UsagiConfig.get(
-                    guild_id=user_data.guild_id, command_tag="birthday"
-                )
+                guild_config = configs_by_guild.get(user_data.guild_id)
                 if guild_config is None:
                     continue
-                channel = await guild.fetch_channel(guild_config.generic_id)
+                channel = self.bot.get_channel(
+                    guild_config.generic_id
+                ) or await self.bot.fetch_channel(guild_config.generic_id)
 
                 birthday_text = choice(list(birthday_texts.values())).format(
                     user_id=user_data.user_id

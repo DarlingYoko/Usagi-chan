@@ -105,14 +105,28 @@ class TestBirthdayCommands(IsolatedAsyncioTestCase):
     async def test_check_birthday_skips_when_config_none(self) -> None:
         user = mock.MagicMock(guild_id="g1", user_id="u1", date=datetime(2026, 6, 13))
         self.mock_UsagiBirthday.get_all_by.return_value = [user]
-        self.mock_UsagiConfig.get.return_value = None
-        guild = mock.AsyncMock()
-        self.Birthday.bot.fetch_guild = mock.AsyncMock(return_value=guild)
+        self.mock_UsagiConfig.get_all_by.return_value = []  # no guild configured
 
         await self.Birthday.check_birthday.coro(self.Birthday)
 
-        guild.fetch_channel.assert_not_called()
         self.mock_UsagiBirthday.update.assert_not_called()
+
+    @freeze_time("2026-06-13 09:00:00")
+    async def test_check_birthday_batches_config_lookup(self) -> None:
+        user = mock.MagicMock(guild_id="g1", user_id="u1", date=datetime(2026, 6, 13))
+        self.mock_UsagiBirthday.get_all_by.return_value = [user]
+        self.mock_UsagiConfig.get_all_by.return_value = [
+            mock.MagicMock(guild_id="g1", generic_id="ch")
+        ]
+        channel = mock.AsyncMock()
+        self.Birthday.bot.get_channel = mock.MagicMock(return_value=channel)
+
+        await self.Birthday.check_birthday.coro(self.Birthday)
+
+        self.mock_UsagiConfig.get_all_by.assert_awaited_once_with(command_tag="birthday")
+        self.mock_UsagiConfig.get.assert_not_called()
+        channel.send.assert_awaited_once()
+        self.mock_UsagiBirthday.update.assert_awaited_once()
 
     @freeze_time("2026-06-13 09:00:00")
     async def test_check_birthday_survives_db_error(self) -> None:
