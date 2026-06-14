@@ -150,12 +150,39 @@ class TestSaveRoles(IsolatedAsyncioTestCase):
             return live_role if role_id == 1 else None
 
         member.guild.get_role = mock.MagicMock(side_effect=get_role)
+        # cache miss -> fall through to (awaited) fetch_channel
+        member.guild.get_channel = mock.MagicMock(return_value=None)
 
         await self.Events.on_member_join(member)
 
         member.add_roles.assert_awaited_once()
         self.assertNotIn(None, member.add_roles.await_args.args)
         self.assertIn(live_role, member.add_roles.await_args.args)
+
+    @mock.patch(
+        "usagiBot.cogs.Events.index.UsagiMemberRoles", new_callable=mock.AsyncMock
+    )
+    @mock.patch("usagiBot.cogs.Events.index.UsagiConfig", new_callable=mock.AsyncMock)
+    @mock.patch(
+        "usagiBot.cogs.Events.index.UsagiSaveRoles", new_callable=mock.AsyncMock
+    )
+    async def test_on_member_join_prefers_channel_cache(
+        self, mock_Save, mock_Config, mock_Member
+    ) -> None:
+        mock_Save.get.return_value = mock.MagicMock(saving_roles=True)
+        mock_Config.get.return_value = mock.MagicMock(generic_id=7)
+        mock_Member.get.return_value = mock.MagicMock(roles="1")
+
+        member = mock.AsyncMock()
+        member.guild.get_role = mock.MagicMock(return_value=mock.MagicMock(id=1))
+        cached = mock.AsyncMock()
+        member.guild.get_channel = mock.MagicMock(return_value=cached)
+
+        await self.Events.on_member_join(member)
+
+        member.guild.get_channel.assert_called_once_with(7)
+        member.guild.fetch_channel.assert_not_called()
+        cached.send.assert_awaited()
 
 
 class TestCustomEmojiPattern(IsolatedAsyncioTestCase):

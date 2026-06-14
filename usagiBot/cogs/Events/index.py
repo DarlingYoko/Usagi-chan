@@ -281,7 +281,9 @@ class Events(commands.Cog):
         if roles:
             await member.add_roles(*roles)
 
-        channel = await guild.fetch_channel(config.generic_id)
+        channel = guild.get_channel(config.generic_id) or await guild.fetch_channel(
+            config.generic_id
+        )
         await channel.send(
             embed=get_embed(
                 title="Returned all roles to", description=f"{member.mention}"
@@ -313,7 +315,9 @@ class Events(commands.Cog):
         else:
             await UsagiMemberRoles.update(id=saved_roles.id, roles=str_user_roles)
 
-        channel = await member.guild.fetch_channel(config.generic_id)
+        channel = member.guild.get_channel(
+            config.generic_id
+        ) or await member.guild.fetch_channel(config.generic_id)
         await channel.send(
             embed=get_embed(
                 title="Saved all roles for", description=f"{member.mention}"
