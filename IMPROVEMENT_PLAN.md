@@ -76,12 +76,20 @@ guards. VPN's hourly loop was out of the audit's Phase 2 list — left as-is.
 
 ## Phase 3 — Performance
 
-- [ ] **3.1 Batch config lookups** (pattern from `check_resin_overflow`): Twitch loop, Birthdays `check_birthday`, both Arknights loops, `/help` (one `get_all_by(guild_id=...)` instead of per-command `get`).
-- [ ] **3.2 Twitch single API call** — `get_streams(user_login=[...])` accepts 100 logins; currently one call per streamer per 5 min.
-- [ ] **3.3 Cache-first Discord lookups** — `guild.get_emoji` before `fetch_emoji` in Main auto-roles (5 sites, one API call per row per edit today); `get_channel`-first in Events listeners, Fun `add_based_message`, Birthdays loop, and both autocompletes (`get_timers`, `get_birthdays` — `fetch_member` per row inside a 3-second autocomplete budget).
-- [ ] **3.4 Indexes** — migration SQL: composite `(guild_id, user_id)` on `usagi_hoyolab`, `usagi_birthday`, `usagi_twitch_notify`, `usagi_wordle_results`, `usagi_member_roles`, `usagi_gryphline`; `(guild_id, command_tag)` on `usagi_config`; `(message_id)` on `usagi_auto_roles_data`.
-- [ ] **3.5 Sort in SQL** — Wordle top loads the whole table and sorts in Python; add `get_top(limit, **filters)` (ORDER BY points DESC LIMIT n) to ModelAdmin.
-- [ ] **3.6 Schema hardening** — NOT NULL + server defaults for counters and booleans (nullable booleans are three-state bugs waiting); needs a backfill migration.
+**Done 2026-06-14** (commits `0f6134c`..`f99fb5b`). 3.1 reuses the
+`check_resin_overflow` batch pattern (load all configs once, dict by
+guild/tag); Hoyolab already had it. 3.2 adds `Twitch._fetch_live_streams`
+(one batched get_streams per 100 logins). 3.5 adds
+`ModelAdmin.get_top(order_by, limit, **filters)`. 3.4/3.6 are hand-apply
+SQL in `migrations/2026-06-14-*.sql` (create_all never alters existing
+tables) — **run both before deploy**. Suite green at 185.
+
+- [x] **3.1 Batch config lookups** (pattern from `check_resin_overflow`): Twitch loop, Birthdays `check_birthday`, both Arknights loops, `/help` (one `get_all_by(guild_id=...)` instead of per-command `get`).
+- [x] **3.2 Twitch single API call** — `get_streams(user_login=[...])` accepts 100 logins; currently one call per streamer per 5 min.
+- [x] **3.3 Cache-first Discord lookups** — `guild.get_emoji` before `fetch_emoji` in Main auto-roles (5 sites, one API call per row per edit today); `get_channel`-first in Events listeners, Fun `add_based_message`, Birthdays loop, and both autocompletes (`get_timers`, `get_birthdays` — `fetch_member` per row inside a 3-second autocomplete budget).
+- [x] **3.4 Indexes** — migration SQL: composite `(guild_id, user_id)` on `usagi_hoyolab`, `usagi_birthday`, `usagi_twitch_notify`, `usagi_wordle_results`, `usagi_member_roles`, `usagi_gryphline`; `(guild_id, command_tag)` on `usagi_config`; `(message_id)` on `usagi_auto_roles_data`.
+- [x] **3.5 Sort in SQL** — Wordle top loads the whole table and sorts in Python; add `get_top(limit, **filters)` (ORDER BY points DESC LIMIT n) to ModelAdmin.
+- [x] **3.6 Schema hardening** — NOT NULL + server defaults for counters and booleans (nullable booleans are three-state bugs waiting); needs a backfill migration.
 
 ## Phase 4 — Security & operations
 
