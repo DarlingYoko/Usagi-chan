@@ -92,3 +92,28 @@ class TestFunMethods(IsolatedAsyncioTestCase):
 
         return_message = "Твой iq = 69\n+ секс"
         self.ctx.reply.assert_called_with(return_message)
+
+    async def test_get_ip_uses_async_helper(self) -> None:
+        with mock.patch(
+            "usagiBot.cogs.Fun.index.get_public_ip",
+            new_callable=mock.AsyncMock,
+        ) as mock_get_public_ip:
+            mock_get_public_ip.return_value = "1.2.3.4"
+            await self.Fun.get_ip(self.Fun, self.ctx)
+
+        mock_get_public_ip.assert_awaited_once()
+        self.ctx.reply.assert_called_with("1.2.3.4")
+
+    async def test_get_ip_is_owner_gated(self) -> None:
+        from usagiBot.env import BOT_OWNER
+
+        checks = self.Fun.get_ip.checks
+        self.assertEqual(len(checks), 1, "get_ip must carry exactly the owner check")
+
+        owner_ctx = mock.MagicMock()
+        owner_ctx.author.id = BOT_OWNER
+        other_ctx = mock.MagicMock()
+        other_ctx.author.id = BOT_OWNER + 1
+
+        self.assertTrue(await checks[0](owner_ctx))
+        self.assertFalse(await checks[0](other_ctx))

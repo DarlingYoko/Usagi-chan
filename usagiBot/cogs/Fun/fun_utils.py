@@ -4,6 +4,18 @@ from bs4 import BeautifulSoup
 REQUEST_TIMEOUT = aiohttp.ClientTimeout(total=15)
 
 
+async def get_public_ip() -> str:
+    """
+    Get the host's current public IP from ipify.
+    :return: IP string, or empty string on failure
+    """
+    async with aiohttp.ClientSession(timeout=REQUEST_TIMEOUT) as session:
+        async with session.get("https://api.ipify.org") as response:
+            if response.status == 200:
+                return await response.text()
+    return ""
+
+
 async def get_exchange_rate_data() -> dict:
     """
     Get parsed exchange rates from tradingview

@@ -3,15 +3,18 @@ import discord
 
 from discord.ext import commands
 
-from usagiBot.cogs.Fun.fun_utils import get_exchange_rate_data
+from usagiBot.cogs.Fun.fun_utils import get_exchange_rate_data, get_public_ip
 from usagiBot.cogs.Main.schemas import UsagiConfig
 from usagiBot.env import SHARED_FOLDER_URL
-from usagiBot.src.UsagiChecks import check_is_already_set_up, check_cog_whitelist
+from usagiBot.src.UsagiChecks import (
+    check_is_already_set_up,
+    check_cog_whitelist,
+    is_owner,
+)
 from usagiBot.src.UsagiErrors import UsagiModuleDisabledError
 from usagiBot.src.UsagiUtils import get_embed
 
 from pycord18n.extension import _
-from requests import get
 
 
 class Fun(commands.Cog):
@@ -120,9 +123,10 @@ class Fun(commands.Cog):
         name="ip",
         description="Check Usagi ip",
     )
+    @is_owner()
     @commands.cooldown(per=60 * 1, rate=1, type=commands.BucketType.user)
     async def get_ip(self, ctx) -> None:
-        cur_ip = get("https://api.ipify.org").content.decode("utf8")
+        cur_ip = await get_public_ip()
         await ctx.reply(cur_ip)
 
     # Slash commands
