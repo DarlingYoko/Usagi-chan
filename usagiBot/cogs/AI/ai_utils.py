@@ -1,5 +1,4 @@
 import asyncio
-import openai_async
 import time
 
 from usagiBot.cogs.AI.schemas import UsagiAIFacts, UsagiAIMemory
@@ -26,6 +25,12 @@ class OpenAIHandler:
         if model is None:
             model = await self.get_ai_model()
         try:
+            # Lazy import: openai_async is an archived package kept out of the
+            # dependency tree (the cog is disabled, see #28). Importing here
+            # rather than at module load lets the cog be scanned at boot without
+            # the package installed; a missing import degrades to the 402 path.
+            import openai_async
+
             response = await openai_async.chat_complete(
                 self._api_key,
                 timeout=200,
@@ -67,6 +72,8 @@ class OpenAIHandler:
 
     async def generate_embedding(self, message_input):
         try:
+            import openai_async
+
             response = await openai_async.embeddings(
                 self._api_key,
                 timeout=200,
