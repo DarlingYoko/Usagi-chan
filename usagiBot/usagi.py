@@ -6,7 +6,7 @@ from discord.ext import commands
 from pycord18n.extension import I18nExtension, Language
 
 from usagiBot.db.models import create_tables
-from usagiBot.env import COGS_DIR
+from usagiBot.env import COGS_DIR, LOG_LEVEL
 from usagiBot.src.CustomHelpCommand import CustomHelpCommand
 from usagiBot.src.UsagiUtils import init_language
 
@@ -17,8 +17,11 @@ class UsagiBot(commands.Bot):
         self.language = None
 
         # Define logger
-        self.logger = logging.getLogger("mylogger")
-        logging.basicConfig(format="%(asctime)s - %(message)s", level=logging.INFO)
+        logging.basicConfig(
+            format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+            level=getattr(logging, LOG_LEVEL.upper(), logging.INFO),
+        )
+        self.logger = logging.getLogger("usagi")
 
         # Define variables
         self.command_tags = []

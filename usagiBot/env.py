@@ -11,6 +11,8 @@ HOYOLAB_CLIENT_SECRET = os.environ.get("HOYOLAB_CLIENT_SECRET")
 
 COGS_DIR = os.environ.get("COGS_DIR")
 
+LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO")
+
 POSTGRES_DB = os.environ.get("POSTGRES_DB")
 POSTGRES_USER = os.environ.get("POSTGRES_USER")
 POSTGRES_PASSWORD = os.environ.get("POSTGRES_PASSWORD")
