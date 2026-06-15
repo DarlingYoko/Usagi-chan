@@ -37,7 +37,7 @@ Phase 4.
   - `Events/index.py:162` `"Some requirements were not met."` (period variant; no-period key exists)
   - `Birthdays/index.py:193` `"This user isn't in birthday list, add him firstly"` (dict has shorter dead twin)
   - `VPN/index.py:426` `"VPN no profiles"` — new `/vpn request` path, crashes today
-  - _(carried to Phase 4)_ Delete 14 dead keys (incl. the now-renamed emoji twin, 6 old Hoyolab sub texts, `Geetest error`, `Stamina`, `Slash command group`, redeem-token pair). Keys passed via variables (`_(answer)` in Birthdays, `get_text(f"VPN notify {x}")`) are **used** — keep.
+  - _(done in Phase 4, 2026-06-15)_ Deleted 15 dead keys (6 old Hoyolab sub texts, `Geetest error`, `Stamina`, `Slash command group`, redeem-token pair, + 4 torrent strings once the torrent feature was removed). The emoji twin was already gone. Keys passed via variables (`_(answer)` in Birthdays, `get_text(f"VPN notify {x}")`/`notifications`) and the permission/birthday twins repointed in 1.1 are **used** — kept.
 - [x] **1.2 Arknights missing awaits** — `index.py:305,381,469,511` `ctx.respond(...)` not awaited; after `defer` the user hangs forever.
 - [x] **1.3 `except A or B`** — `Main/index.py:212` (`ValueError or KeyError`), `Main/index.py:400` (`Forbidden or NotFound`): only the first exception is caught. Use tuples.
 - [x] **1.4 Save-roles flag never checked** — `Events/index.py:215,243`: `saving is False` is never true (row object); `saving.saving_roles` is ignored, so the feature can't be turned off. Also filter `None` from `guild.get_role(...)` before `add_roles` (deleted roles crash the restore).
@@ -93,11 +93,16 @@ tables) — **run both before deploy**. Suite green at 185.
 
 ## Phase 4 — Security & operations
 
-- [ ] **4.1 `!ip`** (`Fun/index.py:125`) — sync `requests.get`, no timeout, on the event loop, and prints the host's public IP to any chat member. Owner-gate it + aiohttp, or delete it.
-- [ ] **4.2 Logging** — named loggers per module (`logging.getLogger(__name__)` is already the convention in new files), rename `mylogger`, add level via env var.
-- [ ] **4.3 Alembic** — replace `create_all` migrations-by-restart; with 2.7 the per-reconnect `create_tables()` goes away anyway. The two hand-written SQL files in `migrations/` become alembic revisions.
-- [ ] **4.4 Dead code & deps** — torrent block (`Fun/index.py:151-221`), `init_qbt_client` + `qbittorrentapi` import (`UsagiUtils.py`) + dependency + 3 `Qbittorrent*` env vars; commented `redeem_code`/`redeem_code_all` in Hoyolab; verify-then-drop unused env vars (`DISCORD_TEST*`, `HOYOLAB_CLIENT_ID/SECRET`).
-- [ ] **4.5 AI cog decision** — disabled since #28 but still imported at cog scan, pinning archived `openai-async`. Either delete the cog (git keeps history) or migrate to the official `openai` client when re-enabling; then drop the dep.
+**Done 2026-06-15** (commits `22a872e`..`3ea515a`) except 4.3, which the
+owner deferred to a dedicated PR. Suite green at 187. The carried-over
+Phase 1.1 dead-key cleanup landed here too (15 keys, see below).
+
+- [x] **4.1 `!ip`** (`Fun/index.py`) — was sync `requests.get`, no timeout, on the event loop, leaking the host's public IP to any member. Now owner-gated (`is_owner()`) and fetched via the aiohttp `get_public_ip()` helper with a timeout; regression tests in `test_fun.py`.
+- [x] **4.2 Logging** — app logger renamed `mylogger` → `usagi`, root level driven by `LOG_LEVEL` env (default INFO), name/levelname added to the format; duplicate `basicConfig` removed from `arknights_utils`.
+- [ ] **4.3 Alembic** — _deferred to its own PR (owner decision 2026-06-15)._ Replace `create_all` migrations-by-restart; with 2.7 the per-reconnect `create_tables()` goes away anyway. The hand-written SQL files in `migrations/` become alembic revisions.
+- [x] **4.4 Dead code & deps** — removed torrent block (Fun command + loop), `init_qbt_client` + `qbittorrentapi` import + `qbittorrent-api` dep + 3 `Qbittorrent*` env vars, the commented `redeem_code`/`redeem_code_all` cog commands in Hoyolab (the live `GenshinAPI.redeem_code` wrapper stays), and unused env vars (`DISCORD_TEST*`, `HOYOLAB_CLIENT_ID/SECRET`).
+- [x] **4.5 AI cog decision** — kept disabled but unpinned: `openai_async` is now a lazy import inside the two methods that use it (boot no longer needs the package), and `openai-async` is dropped from requirements. Re-enabling should migrate to the official `openai` client.
+- [x] **1.1 carry-over** — deleted 15 dead i18n keys from both `en.json`/`ru.json`: 4 torrent strings, the redeem-token reload pair, bare `Stamina`, 6 superseded Hoyolab sub texts, `Geetest error`, `Slash command group`. Kept the runtime-built VPN `notify`/`notifications` pairs and the permission/birthday strings Phase 1.1 repointed code onto (those twins are live, not dead).
 
 ## Phase 5 — Tests & CI
 
