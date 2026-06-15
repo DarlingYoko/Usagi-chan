@@ -106,9 +106,12 @@ Phase 1.1 dead-key cleanup landed here too (15 keys, see below).
 
 ## Phase 5 — Tests & CI
 
-- [ ] **5.1** Coverage visibility: run `coverage run --source=usagiBot -m pytest` so never-imported files (Main, Birthdays, Arknights, AI) stop hiding; current "63%" overstates.
-- [ ] **5.2** New tests, priority order: Main auto-roles flows + timer loop (915 untested lines, moderator-facing), Birthdays (both loops + 1.5 regressions), Arknights (mock `EndfieldClient`; 1.2/1.8 regressions), Events listeners (1.4 regression).
-- [ ] **5.3** Add `--cov-fail-under` gate once 5.1 baseline is known.
+**Framework done 2026-06-15** (commits `449b83e`, `ee50e77`). 5.1 and 5.3
+complete; 5.2 advanced (Main, the priority-#1 target). Suite 203.
+
+- [x] **5.1** Coverage visibility: `.coveragerc` scopes measurement to `usagiBot` and omits the test files. Real source-only baseline is **53%** (the old "63%" mixed in 100%-covered test files). Per-file report now exposes the never-imported gaps (e.g. `usagi.py` 0%, the Music monolith 16–26%).
+- [~] **5.2** New tests — **Main done** (timer add/remove, save_roles toggle, auto-role create + add/remove reaction-role, language switch, autocomplete helpers): `Main/index.py` 55% → 82%. _Still open:_ Birthdays (both loops + 1.5 regressions), Arknights happy-path command bodies (mock `EndfieldClient`/PIL; 1.2/1.8 regressions already covered), Events counting listeners (1.4 regression already covered). The largest uncovered mass is the **Music monolith** — raising the global floor meaningfully depends on the Music split (REFACTOR_PLAN), not more cog tests.
+- [x] **5.3** Coverage gate: CI runs `coverage run -m pytest` + `coverage report`; `.coveragerc` sets `fail_under = 50` (3 pts under the 53% baseline so routine churn doesn't flake, while real regressions fail the build). Raise the floor as Music gets tested.
 
 ## Suggested order
 
