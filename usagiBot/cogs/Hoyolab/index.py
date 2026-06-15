@@ -686,47 +686,6 @@ class Hoyolab(commands.Cog):
         )
         await ctx.send_followup(content="", embed=embed)
 
-    # @hoyolab.command(
-    #     name="redeem_code",
-    #     name_localizations={"ru": "код"},
-    #     description="Activate genshin promo code.",
-    #     description_localizations={"ru": "Активировать код."},
-    # )
-    # @discord.commands.option(
-    #     name="code",
-    #     name_localizations={"ru": "код"},
-    #     description="Code to activate",
-    #     description_localizations={"ru": "Код для активации."},
-    # )
-    # @discord.commands.option(
-    #     name="game",
-    #     name_localizations={"ru": "игра"},
-    #     description="For which game code",
-    #     description_localizations={"ru": "Для какой игры этот код."},
-    #     choices=["Genshin", "Star Rail"],
-    # )
-    # async def redeem_code(self, ctx, code: str, game: str) -> None:
-    #     await ctx.defer(ephemeral=True)
-    #
-    #     hoyolab_api = GenshinAPI()
-    #     cookies_response = await hoyolab_api.set_cookies(
-    #         guild_id=ctx.guild.id,
-    #         user_id=ctx.user.id,
-    #         redemtion_check=True
-    #     )
-    #     if cookies_response is False:
-    #         await ctx.send_followup(
-    #             content=_("You are not logged in"), ephemeral=True
-    #         )
-    #         return
-    #     elif cookies_response == "Error cookie_token_v2":
-    #         await ctx.send_followup(
-    #             content=_("Need to provide cookie_token_v2"), ephemeral=True
-    #         )
-    #         return
-    #     redeem_response = await hoyolab_api.redeem_code(code, game)
-    #     await ctx.send_followup(content=redeem_response)
-
     @hoyolab.command(
         name="subscription",
         name_localizations={"ru": "подписки"},
@@ -800,21 +759,6 @@ class Hoyolab(commands.Cog):
             )
 
         await ctx.respond(content="", view=HoyolabAccountDeleteView(users_data, users))
-
-    # @commands.command()
-    # @is_owner()
-    # async def redeem_code_all(self, ctx, *, codes: str) -> None:
-    #     users = await UsagiHoyolab.get_all_by(code_sub=True)
-    #     response_codes = {}
-    #     for user in users:
-    #         hoyolab_api = GenshinAPI()
-    #         await hoyolab_api.set_cookies(guild_id=user.guild_id, user_id=user.user_id)
-    #         for code in codes.split(","):
-    #             response = await hoyolab_api.redeem_code(code.strip())
-    #             user_codes = response_codes.setdefault(user.user_id, {})
-    #             user_codes.setdefault(code, response)
-    #
-    #     await ctx.reply(response_codes)
 
 
 def setup(bot):

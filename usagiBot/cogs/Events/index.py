@@ -104,7 +104,6 @@ class Events(commands.Cog):
             self.bot.logger.info("Reconnected; skipping one-time on_ready init")
             return
         self._ready_once = True
-        # self.bot.qbt_client = await init_qbt_client(self.bot.logger)
         self.bot.command_tags = await load_all_command_tags(self.bot)
         self.bot.guild_cogs_settings = await init_cogs_settings()
         self.bot.moder_roles = await init_moder_roles()

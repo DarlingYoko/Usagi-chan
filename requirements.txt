@@ -64,7 +64,6 @@ python-engineio==4.12.3
 python-socketio==5.14.3
 pytokens==0.2.0
 pytz==2025.2
-qbittorrent-api==2025.7.0
 requests==2.32.5
 rich==14.2.0
 simple-websocket==1.1.0
