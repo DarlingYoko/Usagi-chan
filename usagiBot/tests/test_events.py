@@ -3,6 +3,13 @@ from sqlalchemy.ext import asyncio
 from unittest import mock
 from unittest import IsolatedAsyncioTestCase
 from discord.ext import commands
+from discord.ext.commands import BadColourArgument
+from usagiBot.src.UsagiErrors import (
+    UsagiNotSetUpError,
+    UsagiModuleDisabledError,
+    UsagiCallFromNotModerError,
+    UsagiCallFromWrongChannelError,
+)
 from usagiBot.tests.utils import *
 
 
@@ -97,6 +104,47 @@ class TestEventsMethods(IsolatedAsyncioTestCase):
         self.assertIn("kaboom", sent)
         self.ctx.respond.assert_awaited()
 
+    async def test_command_error_branches_reply(self) -> None:
+        for error in (
+            UsagiNotSetUpError(),
+            UsagiModuleDisabledError(),
+            UsagiCallFromNotModerError(),
+            UsagiCallFromWrongChannelError(channel_id=5),
+            BadColourArgument("nope"),
+            discord.errors.CheckFailure(),
+        ):
+            self.ctx.reply.reset_mock()
+            await self.Events.on_command_error(self.ctx, error)
+            self.ctx.reply.assert_awaited()
+
+    async def test_app_command_error_branches_respond(self) -> None:
+        cooldown = commands.CommandOnCooldown(
+            cooldown=commands.Cooldown(rate=1, per=60.0),
+            retry_after=30.0,
+            type=commands.BucketType.user,
+        )
+        for error in (
+            UsagiNotSetUpError(),
+            cooldown,
+            UsagiModuleDisabledError(),
+            UsagiCallFromNotModerError(),
+            UsagiCallFromWrongChannelError(channel_id=5),
+            BadColourArgument("nope"),
+        ):
+            self.ctx.respond.reset_mock()
+            await self.Events.on_application_command_error(self.ctx, error)
+            self.ctx.respond.assert_awaited()
+
+    async def test_app_command_error_unknown_notifies_owner(self) -> None:
+        owner = mock.AsyncMock()
+        self.ctx.bot.get_user = mock.MagicMock(return_value=None)
+        self.ctx.bot.fetch_user = mock.AsyncMock(return_value=owner)
+        self.ctx.command.name = "cmd"
+
+        await self.Events.on_application_command_error(self.ctx, ValueError("x"))
+
+        owner.send.assert_awaited()
+
 
 class TestSaveRoles(IsolatedAsyncioTestCase):
     @mock.patch.object(asyncio, "create_async_engine")
@@ -183,6 +231,197 @@ class TestSaveRoles(IsolatedAsyncioTestCase):
         member.guild.get_channel.assert_called_once_with(7)
         member.guild.fetch_channel.assert_not_called()
         cached.send.assert_awaited()
+
+    @mock.patch(
+        "usagiBot.cogs.Events.index.UsagiMemberRoles", new_callable=mock.AsyncMock
+    )
+    @mock.patch("usagiBot.cogs.Events.index.UsagiConfig", new_callable=mock.AsyncMock)
+    @mock.patch(
+        "usagiBot.cogs.Events.index.UsagiSaveRoles", new_callable=mock.AsyncMock
+    )
+    async def test_on_member_remove_creates_when_absent(
+        self, mock_Save, mock_Config, mock_Member
+    ) -> None:
+        mock_Save.get.return_value = mock.MagicMock(saving_roles=True)
+        mock_Config.get.return_value = mock.MagicMock(generic_id=7)
+        mock_Member.get.return_value = None  # no saved row yet
+
+        member = mock.AsyncMock()
+        member.guild.id = "g1"
+        member.id = "u1"
+        role = mock.MagicMock(id=5)
+        role.is_assignable.return_value = True
+        member.roles = [role]
+        member.guild.get_channel = mock.MagicMock(return_value=mock.AsyncMock())
+
+        await self.Events.on_member_remove(member)
+
+        mock_Member.create.assert_awaited_once()
+        self.assertEqual(mock_Member.create.await_args.kwargs["roles"], "5")
+
+    @mock.patch(
+        "usagiBot.cogs.Events.index.UsagiMemberRoles", new_callable=mock.AsyncMock
+    )
+    @mock.patch("usagiBot.cogs.Events.index.UsagiConfig", new_callable=mock.AsyncMock)
+    @mock.patch(
+        "usagiBot.cogs.Events.index.UsagiSaveRoles", new_callable=mock.AsyncMock
+    )
+    async def test_on_member_remove_updates_when_present(
+        self, mock_Save, mock_Config, mock_Member
+    ) -> None:
+        mock_Save.get.return_value = mock.MagicMock(saving_roles=True)
+        mock_Config.get.return_value = mock.MagicMock(generic_id=7)
+        mock_Member.get.return_value = mock.MagicMock(id=42)
+
+        member = mock.AsyncMock()
+        member.guild.id = "g1"
+        member.id = "u1"
+        role = mock.MagicMock(id=5)
+        role.is_assignable.return_value = True
+        member.roles = [role]
+        member.guild.get_channel = mock.MagicMock(return_value=mock.AsyncMock())
+
+        await self.Events.on_member_remove(member)
+
+        mock_Member.update.assert_awaited_once_with(id=42, roles="5")
+
+
+class TestReactionRoles(IsolatedAsyncioTestCase):
+    @mock.patch.object(asyncio, "create_async_engine")
+    def setUp(self, mock_engine) -> None:
+        self.bot = mock.MagicMock()
+        self.bot.user.id = 999
+        self.bot.ai_questions = {}
+        self.bot.wait_until_ready = mock.AsyncMock()
+        from usagiBot.cogs.Events.index import Events
+
+        self.Events = Events(self.bot)
+
+    def _payload(self):
+        payload = mock.MagicMock()
+        payload.message_id = 111
+        payload.user_id = 1
+        payload.guild_id = "g1"
+        payload.channel_id = "c1"
+        payload.emoji = mock.MagicMock(id=7)
+        return payload
+
+    @mock.patch(
+        "usagiBot.cogs.Events.index.UsagiAutoRolesData", new_callable=mock.AsyncMock
+    )
+    async def test_reaction_add_assigns_role(self, mock_Data) -> None:
+        self.bot.auto_roles = {"g1": {"111": {"channel_id": "c1"}}}
+        mock_Data.get.return_value = mock.MagicMock(role_id=55)
+
+        guild = mock.MagicMock()
+        role = mock.MagicMock()
+        guild.get_role = mock.MagicMock(return_value=role)
+        member = mock.AsyncMock()
+        guild.get_member = mock.MagicMock(return_value=member)
+        self.bot.get_guild = mock.MagicMock(return_value=guild)
+
+        await self.Events.on_raw_reaction_add(self._payload())
+
+        member.add_roles.assert_awaited_once_with(role)
+
+    @mock.patch(
+        "usagiBot.cogs.Events.index.UsagiAutoRolesData", new_callable=mock.AsyncMock
+    )
+    async def test_reaction_add_skips_unknown_message(self, mock_Data) -> None:
+        self.bot.auto_roles = {}
+        await self.Events.on_raw_reaction_add(self._payload())
+        mock_Data.get.assert_not_called()
+
+    @mock.patch(
+        "usagiBot.cogs.Events.index.UsagiAutoRolesData", new_callable=mock.AsyncMock
+    )
+    async def test_reaction_remove_removes_role(self, mock_Data) -> None:
+        self.bot.auto_roles = {"g1": {"111": {"channel_id": "c1"}}}
+        mock_Data.get.return_value = mock.MagicMock(role_id=55)
+
+        guild = mock.MagicMock()
+        role = mock.MagicMock()
+        guild.get_role = mock.MagicMock(return_value=role)
+        member = mock.AsyncMock()
+        guild.get_member = mock.MagicMock(return_value=member)
+        self.bot.get_guild = mock.MagicMock(return_value=guild)
+
+        await self.Events.on_raw_reaction_remove(self._payload())
+
+        member.remove_roles.assert_awaited_once_with(role)
+
+    async def test_reaction_add_ignores_bot_self(self) -> None:
+        payload = self._payload()
+        payload.user_id = 999  # the bot itself
+        self.bot.auto_roles = {}
+        await self.Events.on_raw_reaction_add(payload)  # must not raise
+
+
+class TestOnMessageCounters(IsolatedAsyncioTestCase):
+    @mock.patch.object(asyncio, "create_async_engine")
+    def setUp(self, mock_engine) -> None:
+        self.bot = mock.MagicMock()
+        self.bot.messages_dump = {}
+        self.bot.wait_until_ready = mock.AsyncMock()
+        from usagiBot.cogs.Events.index import Events
+
+        self.Events = Events(self.bot)
+        self.bot.messages_dump = {}
+
+    def _message(self):
+        message = mock.MagicMock()
+        message.author.bot = False
+        message.author.id = "u1"
+        message.channel = mock.MagicMock(spec=discord.TextChannel)
+        message.channel.id = "c1"
+        message.guild.id = "g1"
+        message.attachments = []
+        message.stickers = []
+        message.content = ""
+        return message
+
+    async def test_counts_message_and_emoji(self) -> None:
+        message = self._message()
+        message.content = "hello <:pepe:1234567890>"
+        await self.Events.on_message(message)
+        counters = self.bot.messages_dump["g1"]["c1"]["u1"]
+        self.assertEqual(counters["messages"], 1)
+        self.assertEqual(counters["emojis"], 1)
+
+    async def test_counts_image_gif_sticker(self) -> None:
+        message = self._message()
+        png = mock.MagicMock(content_type="image/png")
+        gif = mock.MagicMock(content_type="image/gif")
+        message.attachments = [png, gif]
+        message.content = "look .gif"
+        message.stickers = [mock.MagicMock(), mock.MagicMock()]
+        await self.Events.on_message(message)
+        counters = self.bot.messages_dump["g1"]["c1"]["u1"]
+        self.assertEqual(counters["images"], 1)
+        self.assertEqual(counters["gifs"], 2)  # attachment gif + ".gif" in content
+        self.assertEqual(counters["stickers"], 2)
+
+    async def test_ignores_bots(self) -> None:
+        message = self._message()
+        message.author.bot = True
+        await self.Events.on_message(message)
+        self.assertEqual(self.bot.messages_dump, {})
+
+    async def test_ignores_dm(self) -> None:
+        message = self._message()
+        message.channel = mock.MagicMock(spec=discord.DMChannel)
+        await self.Events.on_message(message)
+        self.assertEqual(self.bot.messages_dump, {})
+
+
+class TestEventsSetup(IsolatedAsyncioTestCase):
+    @mock.patch.object(asyncio, "create_async_engine")
+    def test_setup_adds_cog(self, mock_engine) -> None:
+        from usagiBot.cogs.Events.index import setup
+
+        bot = mock.MagicMock()
+        setup(bot)
+        bot.add_cog.assert_called_once()
 
 
 class TestCustomEmojiPattern(IsolatedAsyncioTestCase):

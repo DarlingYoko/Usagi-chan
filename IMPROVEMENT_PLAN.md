@@ -109,8 +109,14 @@ Phase 1.1 dead-key cleanup landed here too (15 keys, see below).
 **Framework done 2026-06-15** (commits `449b83e`, `ee50e77`). 5.1 and 5.3
 complete; 5.2 advanced (Main, the priority-#1 target). Suite 203.
 
+**5.2 cog tests done 2026-06-16.** Birthdays 75%→98%, Events 56%→92%,
+Arknights 45%→73% (happy-path command bodies + render paths; UI View/Modal
+classes left untested). Source-only total 53%→57%, suite 243; `.coveragerc`
+floor raised 50→54. Remaining uncovered mass is the Music monolith — needs
+voice-path test scaffolding, not more cog tests.
+
 - [x] **5.1** Coverage visibility: `.coveragerc` scopes measurement to `usagiBot` and omits the test files. Real source-only baseline is **53%** (the old "63%" mixed in 100%-covered test files). Per-file report now exposes the never-imported gaps (e.g. `usagi.py` 0%, the Music monolith 16–26%).
-- [~] **5.2** New tests — **Main done** (timer add/remove, save_roles toggle, auto-role create + add/remove reaction-role, language switch, autocomplete helpers): `Main/index.py` 55% → 82%. _Still open:_ Birthdays (both loops + 1.5 regressions), Arknights happy-path command bodies (mock `EndfieldClient`/PIL; 1.2/1.8 regressions already covered), Events counting listeners (1.4 regression already covered). The largest uncovered mass is the **Music monolith** — raising the global floor meaningfully depends on the Music split (REFACTOR_PLAN), not more cog tests.
+- [x] **5.2** New tests — **Main done** (timer add/remove, save_roles toggle, auto-role create + add/remove reaction-role, language switch, autocomplete helpers): `Main/index.py` 55% → 82%. **Birthdays/Events/Arknights done 2026-06-16**: Birthdays happy-paths + autocompletes + off-hour/empty loop returns (75%→98%); Events error-branch fan-out, member-remove save create/update, reaction-role add/remove, on_message counters, setup (56%→92%); Arknights settings/delete/login + set_bg/color/theme + profile/sanity render bodies (45%→73%, UI View/Modal classes still untested). The largest uncovered mass is now the **Music monolith** — raising the global floor further depends on voice-path test scaffolding, not more cog tests.
 - [x] **5.3** Coverage gate: CI runs `coverage run -m pytest` + `coverage report`; `.coveragerc` sets `fail_under = 50` (3 pts under the 53% baseline so routine churn doesn't flake, while real regressions fail the build). Raise the floor as Music gets tested.
 
 ## Suggested order
