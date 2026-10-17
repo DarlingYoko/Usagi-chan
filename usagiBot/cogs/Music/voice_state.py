@@ -59,8 +59,9 @@ class VoiceState:
         self.__init__(self.bot, ctx, cog)
 
     def __del__(self):
-        if self.audio_player:
-            self.audio_player.cancel()
+        audio_player = getattr(self, "audio_player", None)
+        if audio_player:
+            audio_player.cancel()
 
     @property
     def loop(self):

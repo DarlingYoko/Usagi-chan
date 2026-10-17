@@ -786,7 +786,7 @@ class Music(commands.Cog):
         except Exception as e:
             logger.error("musicreload disconnect failed: %s", e)
         try:
-            await ctx.voice_client.clean_up()
+            ctx.voice_client.cleanup()
         except Exception as e:
             logger.error("musicreload clean_up failed: %s", e)
         self.voice_states.pop(ctx.guild.id, None)

@@ -1,10 +1,13 @@
 # install python
 FROM python:3.12
 
-# ffmpeg for the Music cog; first so code changes don't bust this layer
+# ffmpeg + libopus (voice encoding) for the Music cog; first so code changes don't bust this layer
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends ffmpeg \
+    && apt-get install -y --no-install-recommends ffmpeg libopus0 \
     && rm -rf /var/lib/apt/lists/*
+
+# JS runtime yt-dlp needs to solve YouTube's signature challenges (yt-dlp-ejs)
+COPY --from=denoland/deno:bin-2.9.7 /deno /usr/local/bin/deno
 
 RUN useradd --create-home usagi
 
