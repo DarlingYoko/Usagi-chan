@@ -15,9 +15,13 @@ from usagiBot.cogs.Music.music_utils import (
     parse_duration,
     parse_duration_raw,
 )
+from usagiBot.cogs.Music.ytdlp_preload import preload_ytdlp
 from usagiBot.src.UsagiUtils import get_embed
 
 logger = logging.getLogger(__name__)
+
+# Load yt-dlp's lazy modules before executor threads can race on them
+preload_ytdlp()
 
 # Silence useless bug reports messages
 youtube_dl.utils.bug_reports_message = lambda: ""
