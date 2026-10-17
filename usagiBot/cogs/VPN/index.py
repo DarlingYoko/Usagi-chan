@@ -10,7 +10,7 @@ from usagiBot.cogs.VPN.schemas import UsagiVpnUsers, UsagiVpnRenewalRequests, Us
 from usagiBot.cogs.VPN.vpn_utils import generate_vpn_user_info, Vpn3xui
 from usagiBot.env import BOT_OWNER
 from usagiBot.src.UsagiChecks import is_owner
-from usagiBot.src.UsagiUtils import get_embed
+from usagiBot.src.UsagiUtils import get_embed, guard_loop, guarded_item
 
 from datetime import datetime, timedelta
 
@@ -198,6 +198,7 @@ class VPN(commands.Cog):
         self.check_vpn_expiry.start()
 
     @tasks.loop(hours=1)
+    @guard_loop
     async def check_vpn_expiry(self):
         """ Checks VPN expiry
             1. Every hour checks VPN expiry.
@@ -226,28 +227,39 @@ class VPN(commands.Cog):
             await UsagiVpnUsers.update_by_ids(renotify_ids, {"notified": False})
 
         for user_id, expired_profiles in expired_users.items():
-            lang = self.bot.language.get(int(user_id), "en")
-            notify_title = self.bot.i18n.get_text('VPN expire', lang)
-            notify_vpns = []
-            for idx, expired_profile in enumerate(expired_profiles):
-                expired_timer = int(expired_profile.expiration_date.timestamp())
-                notify_vpns.append(f'{idx + 1}. {expired_profile.sub_name} — <t:{expired_timer}:R>')
+            async with guarded_item(self.bot, "check_vpn_expiry", user_id):
+                await self._notify_expiring_user(user_id, expired_profiles)
 
-            max_len = max(len(line.split("—")[0]) for line in notify_vpns)
-            formatted_vpn_notify = []
-            for line in notify_vpns:
-                name, date = line.split(" — ")
-                formatted_vpn_notify.append(f"`{name.ljust(max_len)}` — {date}")
+    async def _notify_expiring_user(self, user_id: int, expired_profiles: list) -> None:
+        lang = self.bot.language.get(int(user_id), "en")
+        notify_title = self.bot.i18n.get_text('VPN expire', lang)
+        notify_vpns = []
+        for idx, expired_profile in enumerate(expired_profiles):
+            expired_timer = int(expired_profile.expiration_date.timestamp())
+            notify_vpns.append(f'{idx + 1}. {expired_profile.sub_name} — <t:{expired_timer}:R>')
 
-            result_vpn_info = "\n".join(formatted_vpn_notify)
-            embed = get_embed(title=notify_title, description=result_vpn_info)
+        max_len = max(len(line.split("—")[0]) for line in notify_vpns)
+        formatted_vpn_notify = []
+        for line in notify_vpns:
+            name, date = line.split(" — ")
+            formatted_vpn_notify.append(f"`{name.ljust(max_len)}` — {date}")
 
-            user = self.bot.get_user(user_id) or await self.bot.fetch_user(user_id)
+        result_vpn_info = "\n".join(formatted_vpn_notify)
+        embed = get_embed(title=notify_title, description=result_vpn_info)
+
+        user = self.bot.get_user(user_id) or await self.bot.fetch_user(user_id)
+        try:
             await user.send(embed=embed, view=VpnRenewView(self.bot, expired_profiles, lang))
-            await UsagiVpnUsers.update_all(
-                {'user_id': expired_profiles[0].user_id},
-                {'notified': True}
+        except discord.Forbidden:
+            # DMs closed or no mutual guild: retrying every hour can't help,
+            # so mark notified and let a renewal reset the flag.
+            self.bot.logger.warning(
+                "check_vpn_expiry: cannot DM user %s (DMs closed / no mutual guild)", user_id
             )
+        await UsagiVpnUsers.update_all(
+            {'user_id': expired_profiles[0].user_id},
+            {'notified': True}
+        )
 
     @check_vpn_expiry.before_loop
     async def before_check_vpn_expiry(self):

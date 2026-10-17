@@ -65,7 +65,7 @@ class Birthday(commands.Cog):
         if time.hour != 12:
             return
 
-        with open("./usagiBot/files/birthdays/texts.json") as f:
+        with open("./usagiBot/files/birthdays/texts.json", encoding="utf-8") as f:
             birthday_texts = json.load(f)
         now = datetime.now()
         cur_data = datetime(day=now.day, month=now.month, year=now.year)

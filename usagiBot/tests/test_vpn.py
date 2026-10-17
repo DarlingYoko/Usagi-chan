@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 from unittest import IsolatedAsyncioTestCase
 from unittest import mock
 
+import discord
 from sqlalchemy.ext import asyncio as sa_asyncio
 
 from usagiBot.tests.utils import *
@@ -163,3 +164,38 @@ class TestVpn(IsolatedAsyncioTestCase):
 
         mock_users.update_by_ids.assert_awaited_once_with([1, 2], {"notified": False})
         mock_users.update.assert_not_called()
+
+    @mock.patch("usagiBot.cogs.VPN.index.UsagiVpnUsers", new_callable=mock.AsyncMock)
+    async def test_check_vpn_expiry_survives_closed_dms(self, mock_users) -> None:
+        soon = datetime.now() + timedelta(hours=5)
+        mock_users.get_all_by.return_value = [
+            mock.MagicMock(
+                id=1, user_id=111, sub_name="a", expiration_date=soon, notified=False
+            ),
+            mock.MagicMock(
+                id=2, user_id=222, sub_name="b", expiration_date=soon, notified=False
+            ),
+        ]
+        blocked = mock.AsyncMock()
+        blocked.send.side_effect = discord.Forbidden(
+            mock.MagicMock(status=403, reason="Forbidden"),
+            {"code": 50278, "message": "Cannot send messages to this user"},
+        )
+        reachable = mock.AsyncMock()
+        self.bot.logger = mock.MagicMock()
+        self.bot.get_user = mock.MagicMock(
+            side_effect=lambda uid: {111: blocked, 222: reachable}[uid]
+        )
+
+        cog = self.VPN.__new__(self.VPN)  # helper methods need a real instance
+        cog.bot = self.bot
+        await cog.check_vpn_expiry.coro(cog)
+
+        reachable.send.assert_awaited_once()
+        # unreachable user is marked notified so the hourly tick stops retrying
+        notified_users = [
+            call.args[0]["user_id"] for call in mock_users.update_all.await_args_list
+        ]
+        self.assertCountEqual(notified_users, [111, 222])
+        self.bot.logger.warning.assert_called()
+

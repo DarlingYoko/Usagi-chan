@@ -350,3 +350,30 @@ class TestTwitch(IsolatedAsyncioTestCase):
         self.ctx.respond.assert_called_with(
             "You are not followed to any streamer.", ephemeral=True
         )
+
+
+class TestTwitchAuth(IsolatedAsyncioTestCase):
+    async def test_twitch_auth_falls_back_to_app_auth_on_dead_refresh_token(self) -> None:
+        from twitchAPI.type import InvalidRefreshTokenException
+        from usagiBot.cogs.Twitch import twitch_utils
+
+        user_client = mock.MagicMock()
+        user_client.set_user_authentication = mock.AsyncMock(
+            side_effect=InvalidRefreshTokenException("Invalid refresh token")
+        )
+
+        class AppClient(mock.MagicMock):
+            def __await__(self):
+                async def _ready():
+                    return self
+
+                return _ready().__await__()
+
+        app_client = AppClient()
+        with mock.patch.object(
+            twitch_utils, "Twitch", side_effect=[user_client, app_client]
+        ):
+            result = await twitch_utils.twitch_auth()
+
+        self.assertIs(result, app_client)
+

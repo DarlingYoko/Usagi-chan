@@ -1,4 +1,5 @@
 import asyncio
+import logging
 import textwrap
 
 import aiohttp
@@ -14,11 +15,17 @@ from usagiBot.env import (
 
 from twitchAPI.twitch import Twitch
 from twitchAPI.helper import first
-from twitchAPI.type import AuthScope
+from twitchAPI.type import (
+    AuthScope,
+    InvalidRefreshTokenException,
+    InvalidTokenException,
+)
 
 from PIL import Image, ImageFont, ImageOps
 from discord import File
 from io import BytesIO
+
+logger = logging.getLogger(__name__)
 
 REQUEST_TIMEOUT = aiohttp.ClientTimeout(total=15)
 
@@ -30,7 +37,10 @@ FONT_REGULAR = ImageFont.truetype(font="./usagiBot/files/fonts/Inter-Regular.ttf
 
 async def twitch_auth() -> Twitch:
     """
-    Create new object to Twitch API
+    Create new object to Twitch API.
+
+    Stream lookups only need app auth, so a revoked/expired user token pair
+    degrades to app auth instead of leaving the notifier without a client.
     :return: new Twitch
     """
     twitch = Twitch(CLIENT_ID, CLIENT_SECRET)
@@ -38,7 +48,14 @@ async def twitch_auth() -> Twitch:
         AuthScope.CHANNEL_READ_REDEMPTIONS,
         AuthScope.CHANNEL_MANAGE_REDEMPTIONS,
     ]
-    await twitch.set_user_authentication(TWITCH_TOKEN, target_scope, REFRESH_TOKEN)
+    try:
+        await twitch.set_user_authentication(TWITCH_TOKEN, target_scope, REFRESH_TOKEN)
+    except (InvalidRefreshTokenException, InvalidTokenException):
+        logger.warning(
+            "Twitch user token is invalid or revoked; regenerate TWITCH_TOKEN and "
+            "REFRESH_TOKEN. Falling back to app auth (stream notifications still work)."
+        )
+        twitch = await Twitch(CLIENT_ID, CLIENT_SECRET)
     return twitch
 
 
