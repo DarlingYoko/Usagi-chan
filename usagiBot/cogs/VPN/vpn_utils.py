@@ -58,30 +58,8 @@ class Vpn3xui:
         }
 
     async def get_sub(self, uid: str) -> Dict[str, float]:
-        expiry_time = 0
-        traffic = 0
         inbounds = await self.api.inbound.get_list()
-
-        tasks = []
-        clients = []
-
-        for inbound in inbounds:
-            for client in inbound.settings.clients:
-                if client.sub_id == uid:
-                    tasks.append(self.api.client.get_by_email(client.email))
-                    clients.append(client)
-
-
-        users = await asyncio.gather(*tasks)
-
-        for client, user in zip(clients, users):
-            traffic += round((user.down + user.up) / (1024 ** 3), 2)
-            expiry_time = client.expiry_time // 1000
-
-        return {
-            "traffic": traffic,
-            "expiryTime": expiry_time
-        }
+        return sub_info_from_inbounds(inbounds, uid)
 
     async def update_user_expiry_time_by_sub_name(self, uid: str, new_expiry_time: int):
         inbounds = await self.api.inbound.get_list()
@@ -105,36 +83,8 @@ class Vpn3xui:
         await self.api.client.update(client_data.id, client_data)
 
     async def get_top_traffic(self) -> Dict[str, Dict[str, float]]:
-        users_traffic = defaultdict(lambda: {"sub_name": "", "traffic": 0.0})
-
         inbounds = await self.api.inbound.get_list()
-
-        tasks = []
-        clients = []
-
-        for inbound in inbounds:
-            for client in inbound.settings.clients:
-                tasks.append(self.api.client.get_by_email(client.email))
-                clients.append(client)
-
-        users = await asyncio.gather(*tasks)
-
-        for client, user in zip(clients, users):
-            traffic = (user.down + user.up) / (1024 ** 3)
-            data = users_traffic[client.sub_id]
-            client_name = client.email.split('-')[0]
-
-            data["sub_name"] = client_name
-            data["traffic"] += traffic
-
-        return dict(
-            sorted(
-                ((k, {"sub_name": v["sub_name"], "traffic": round(v["traffic"], 2)})
-                 for k, v in users_traffic.items()),
-                key=lambda x: x[1]["traffic"],
-                reverse=True
-            )[:10]
-        )
+        return top_traffic_from_inbounds(inbounds)
 
     async def add_users_to_inboud(self, inbound_id: int, users: List[UsagiVpnUsers]) -> bool:
         inbound = await self.api.inbound.get_by_id(inbound_id)
@@ -157,13 +107,65 @@ class Vpn3xui:
         return True
 
 
+def stats_by_email(inbounds) -> dict:
+    """Map email -> traffic stat from the clientStats the inbound list already carries."""
+    stats = {}
+    for inbound in inbounds:
+        for stat in inbound.client_stats or []:
+            stats[stat.email] = stat
+    return stats
+
+
+def sub_info_from_inbounds(inbounds, uid: str) -> Dict[str, float]:
+    """Total traffic and expiry for a sub id, computed from one inbound list."""
+    traffic = 0
+    expiry_time = 0
+    stats = stats_by_email(inbounds)
+    for inbound in inbounds:
+        for client in inbound.settings.clients:
+            if client.sub_id != uid:
+                continue
+            stat = stats.get(client.email)
+            if stat is not None:
+                traffic += round((stat.down + stat.up) / (1024 ** 3), 2)
+            expiry_time = client.expiry_time // 1000
+    return {
+        "traffic": traffic,
+        "expiryTime": expiry_time,
+    }
+
+
+def top_traffic_from_inbounds(inbounds) -> Dict[str, Dict[str, float]]:
+    """Top-10 subs by traffic, computed from one inbound list."""
+    users_traffic = defaultdict(lambda: {"sub_name": "", "traffic": 0.0})
+    stats = stats_by_email(inbounds)
+    for inbound in inbounds:
+        for client in inbound.settings.clients:
+            stat = stats.get(client.email)
+            if stat is None:
+                continue
+            data = users_traffic[client.sub_id]
+            data["sub_name"] = client.email.split("-")[0]
+            data["traffic"] += (stat.down + stat.up) / (1024 ** 3)
+
+    return dict(
+        sorted(
+            ((k, {"sub_name": v["sub_name"], "traffic": round(v["traffic"], 2)})
+             for k, v in users_traffic.items()),
+            key=lambda x: x[1]["traffic"],
+            reverse=True
+        )[:10]
+    )
+
+
 async def generate_vpn_user_info(bot, vpn_users, lang) -> Embed:
     vpn3xui = Vpn3xui()
     await vpn3xui.login()
+    inbounds = await vpn3xui.api.inbound.get_list()
 
     vpn_info = []
     for idx, vpn_user in enumerate(vpn_users):
-        user_info = await vpn3xui.get_sub(vpn_user.uid)
+        user_info = sub_info_from_inbounds(inbounds, vpn_user.uid)
 
         expiry_time = user_info['expiryTime']
         vpn_timer = f'<t:{expiry_time}:R>' if expiry_time else '∞'

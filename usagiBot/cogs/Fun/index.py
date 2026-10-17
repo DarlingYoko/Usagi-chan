@@ -3,21 +3,23 @@ import discord
 
 from discord.ext import commands
 
-from usagiBot.cogs.Fun.fun_utils import get_exchange_rate_data
+from usagiBot.cogs.Fun.fun_utils import get_exchange_rate_data, get_public_ip
 from usagiBot.cogs.Main.schemas import UsagiConfig
 from usagiBot.env import SHARED_FOLDER_URL
-from usagiBot.src.UsagiChecks import check_is_already_set_up, check_cog_whitelist
+from usagiBot.src.UsagiChecks import (
+    check_is_already_set_up,
+    check_cog_whitelist,
+    is_owner,
+)
 from usagiBot.src.UsagiErrors import UsagiModuleDisabledError
 from usagiBot.src.UsagiUtils import get_embed
 
 from pycord18n.extension import _
-from requests import get
 
 
 class Fun(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        # self.check_torrents.start()
 
     def cog_check(self, ctx):
         if check_cog_whitelist(self, ctx):
@@ -83,7 +85,7 @@ class Fun(commands.Cog):
     async def get_exchange_rate(self, ctx) -> None:
         return_message = "```autohotkey\n"
 
-        rates = get_exchange_rate_data()
+        rates = await get_exchange_rate_data()
         required_rates = ["USDRUB", "USDUAH", "USDBYN", "USDKZT"]
         counter = 1
         for rate in required_rates:
@@ -120,9 +122,10 @@ class Fun(commands.Cog):
         name="ip",
         description="Check Usagi ip",
     )
+    @is_owner()
     @commands.cooldown(per=60 * 1, rate=1, type=commands.BucketType.user)
     async def get_ip(self, ctx) -> None:
-        cur_ip = get("https://api.ipify.org").content.decode("utf8")
+        cur_ip = await get_public_ip()
         await ctx.reply(cur_ip)
 
     # Slash commands
@@ -148,78 +151,6 @@ class Fun(commands.Cog):
             content=_("random number").format(number=number),
         )
 
-    # @commands.slash_command(
-    #     name="torrent",
-    #     description="Download torrent by url or file to the shared folder.",
-    #     name_localizations={"ru": "торрент"},
-    #     description_localizations={"ru": "Скачать торрент с помощью ссылки или файла в общую папку."},
-    # )
-    # @discord.commands.option(
-    #     name="URL",
-    #     name_localizations={"ru": "Ссылка"},
-    #     required=False,
-    # )
-    # @discord.commands.option(
-    #     name="File",
-    #     name_localizations={"ru": "Файл"},
-    #     required=False,
-    # )
-    # async def download_torrent_file(self, ctx, url: str = None, file: discord.Attachment = None) -> None:
-    #     response = ''
-    #     added = False
-    #     time = datetime.now().timestamp().__floor__()
-    #     tag = f'{ctx.author.id}-{time}'
-    #     try:
-    #         if file:
-    #             bytes_file = await file.read()
-    #             self.bot.qbt_client.torrents_add(torrent_files=bytes_file, tags=tag)
-    #             response = _('added torrent file').format(filename=file.filename)
-    #             added = True
-    #         if url:
-    #             self.bot.qbt_client.torrents_add(urls=url, tags=tag)
-    #             response = _('added torrent url')
-    #             added = True
-    #     except Exception as e:
-    #             response=_('torrent error').format(e=e)
-
-    #     if added:
-    #         await UsagiTorrent.create(
-    #             guild_id=ctx.guild.id,
-    #             channel_id=ctx.channel.id,
-    #             user_id=ctx.author.id,
-    #             tag=tag
-    #         )
-
-    #     await ctx.respond(content=response)
-
-    # @tasks.loop(minutes=1)
-    # async def check_torrents(self):
-    #     usagi_torrents = await UsagiTorrent.get_all()
-    #     usagi_tags = list(map(lambda x: x.tag, usagi_torrents))
-    #     finished_torrents = list(filter(
-    #         lambda x: x.state == qbittorrentapi.TorrentState.UPLOADING and x.tags in usagi_tags,
-    #         self.bot.qbt_client.torrents_info()
-    #     ))
-
-    #     for torrent in finished_torrents:
-    #         db_record = list(filter(lambda x: x.tag == torrent.tags, usagi_torrents))[0]
-    #         guild = self.bot.get_guild(db_record.guild_id)
-    #         channel = await guild.fetch_channel(db_record.channel_id)
-    #         await channel.send(_('torrent finished').format(user_id=db_record.user_id, torrent_name=torrent.name))
-
-    #         await UsagiTorrent.delete(
-    #             guild_id=guild.id,
-    #             channel_id=channel.id,
-    #             user_id=db_record.user_id,
-    #             tag=db_record.tag,
-    #         )
-
-    # @check_torrents.before_loop
-    # async def before_check_torrents(self):
-    #     await self.bot.wait_until_ready()
-    #     await asyncio.sleep(5)
-    #     self.bot.logger.info("Checking torrents.")
-
     # Message commands
     @commands.message_command(name="Get Message ID")
     async def get_message_id(self, ctx, message: discord.Message) -> None:
@@ -234,7 +165,9 @@ class Fun(commands.Cog):
             guild_id=ctx.guild.id, command_tag="based_message_channel"
         )
         based_message_channel_id = config.generic_id
-        channel = await ctx.bot.fetch_channel(based_message_channel_id)
+        channel = ctx.bot.get_channel(
+            based_message_channel_id
+        ) or await ctx.bot.fetch_channel(based_message_channel_id)
         files = []
 
         if message.attachments:

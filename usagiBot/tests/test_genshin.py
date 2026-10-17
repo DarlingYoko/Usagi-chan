@@ -2,6 +2,7 @@ import datetime
 import sys
 import pytest
 
+import discord
 import genshin
 from sqlalchemy.ext import asyncio
 from unittest import IsolatedAsyncioTestCase, mock
@@ -100,11 +101,10 @@ class TestHoyolabMethods(IsolatedAsyncioTestCase):
             ),
         ]
 
-        # Mock config per guild
-        self.mock_UsagiConfig.get.side_effect = [
-            mock.MagicMock(generic_id="ch1"),
-            mock.MagicMock(generic_id="ch1"),
-            mock.MagicMock(generic_id="ch2"),
+        # Mock config per guild — fetched once for all users
+        self.mock_UsagiConfig.get_all_by.return_value = [
+            mock.MagicMock(guild_id="g1", generic_id="ch1"),
+            mock.MagicMock(guild_id="g2", generic_id="ch2"),
         ]
 
         # Create fake channels with proper send() mocks
@@ -189,11 +189,13 @@ class TestHoyolabMethods(IsolatedAsyncioTestCase):
                 id="test_user_id_3",
             ),
         ]
-        self.mock_UsagiConfig.get.side_effect = [
-            mock.MagicMock(generic_id="generic_channel_id_12"),
-            mock.MagicMock(generic_id="generic_channel_id_12"),
-            mock.MagicMock(generic_id="generic_channel_id_22"),
-            None,
+        self.mock_UsagiConfig.get_all_by.return_value = [
+            mock.MagicMock(
+                guild_id="test_guild_id_12", generic_id="generic_channel_id_12"
+            ),
+            mock.MagicMock(
+                guild_id="test_guild_id_22", generic_id="generic_channel_id_22"
+            ),
         ]
         # Create fake channels with proper send() mocks
         channel_1 = mock.AsyncMock()
@@ -212,23 +214,14 @@ class TestHoyolabMethods(IsolatedAsyncioTestCase):
             genshin_daily_sub=True, starrail_daily_sub=True, zzz_daily_sub=True
         )
 
-        self.mock_UsagiConfig.get.assert_has_calls(
-            [
-                mock.call(guild_id="test_guild_id_12", command_tag="genshin"),
-                mock.call(guild_id="test_guild_id_12", command_tag="genshin"),
-                mock.call(guild_id="test_guild_id_22", command_tag="genshin"),
-            ],
-            any_order=False,
+        # configs fetched once for all users, no per-user lookups
+        self.mock_UsagiConfig.get_all_by.assert_awaited_once_with(
+            command_tag="genshin"
         )
+        self.mock_UsagiConfig.get.assert_not_called()
+        # channels come from the cache, no API fetch needed
+        self.Genshin.bot.fetch_channel.assert_not_called()
 
-        self.Genshin.bot.fetch_channel.assert_has_calls(
-            [
-                mock.call("generic_channel_id_12"),
-                mock.call("generic_channel_id_12"),
-                mock.call("generic_channel_id_22"),
-            ],
-            any_order=False,
-        )
         self.mock_GenshinAPI().claim_daily_reward.assert_has_calls(
             [
                 mock.call(db_id="test_user_id_1", game=genshin.Game.GENSHIN),
@@ -316,3 +309,276 @@ class TestHoyolabMethods(IsolatedAsyncioTestCase):
             content="You are not logged in. Pls go `/hoyolab login`", ephemeral=True
         )
         self.assertEqual(test_user, None)
+
+    async def test_check_resin_overflow_batches_config_lookup(self) -> None:
+        def make_user(uid, guild_id):
+            return mock.MagicMock(
+                id=uid,
+                guild_id=guild_id,
+                genshin_resin_sub_notified=False,
+                starrail_resin_sub_notified=False,
+                zzz_resin_sub_notified=False,
+            )
+
+        self.mock_UsagiHoyolab.get_all_by_or.return_value = [
+            make_user(1, "test_guild_1"),
+            make_user(2, "test_guild_1"),
+            make_user(3, "test_guild_2"),
+        ]
+        self.mock_UsagiConfig.get_all_by.return_value = [
+            mock.MagicMock(guild_id="test_guild_1", generic_id="chan_1"),
+            mock.MagicMock(guild_id="test_guild_2", generic_id="chan_2"),
+        ]
+        self.channels["chan_1"] = mock.AsyncMock()
+        self.channels["chan_2"] = mock.AsyncMock()
+        self.mock_GenshinAPI().get_user_data.return_value = {}
+
+        await self.Genshin.check_resin_overflow(self.Genshin)
+
+        self.mock_UsagiConfig.get_all_by.assert_awaited_once_with(
+            command_tag="genshin"
+        )
+        self.mock_UsagiConfig.get.assert_not_called()
+
+    def _resin_user(self, uid, guild_id, user_id):
+        return mock.MagicMock(
+            id=uid,
+            guild_id=guild_id,
+            user_id=user_id,
+            genshin_resin_sub=True,
+            genshin_resin_sub_notified=False,
+            starrail_resin_sub=False,
+            starrail_resin_sub_notified=False,
+            zzz_resin_sub=False,
+            zzz_resin_sub_notified=False,
+        )
+
+    @staticmethod
+    def _overflow_data():
+        return {
+            "nickname": "aboba",
+            "icon": "icon",
+            "genshin": mock.MagicMock(current_resin=195),
+            "starrail": None,
+            "zzz": None,
+            "geetest_error": None,
+        }
+
+    async def test_check_resin_overflow_survives_user_error(self) -> None:
+        self.mock_UsagiHoyolab.get_all_by_or.return_value = [
+            self._resin_user(1, "g1", "u1"),
+            self._resin_user(2, "g1", "u2"),
+        ]
+        self.mock_UsagiConfig.get_all_by.return_value = [
+            mock.MagicMock(guild_id="g1", generic_id="ch1"),
+        ]
+        ch1 = mock.AsyncMock()
+        self.channels["ch1"] = ch1
+        # first user blows up mid-API (e.g. Hoyolab maintenance), second is fine
+        self.mock_GenshinAPI().get_user_data.side_effect = [
+            genshin.errors.GenshinException({}, "maintenance"),
+            self._overflow_data(),
+        ]
+
+        await self.Genshin.check_resin_overflow(self.Genshin)
+
+        assert ch1.send.await_count == 1
+        self.Genshin.bot.logger.exception.assert_called()
+
+    async def test_check_resin_overflow_skips_unfetchable_channel(self) -> None:
+        self.mock_UsagiHoyolab.get_all_by_or.return_value = [
+            self._resin_user(1, "g_bad", "u1"),
+            self._resin_user(2, "g_good", "u2"),
+        ]
+        self.mock_UsagiConfig.get_all_by.return_value = [
+            mock.MagicMock(guild_id="g_bad", generic_id="bad_ch"),
+            mock.MagicMock(guild_id="g_good", generic_id="good_ch"),
+        ]
+        good_ch = mock.AsyncMock()
+        self.channels["good_ch"] = good_ch
+
+        async def mock_fetch(cid):
+            if cid == "bad_ch":
+                raise discord.NotFound(
+                    mock.MagicMock(status=404, reason="Not Found"),
+                    "Unknown Channel",
+                )
+            return self.channels.get(cid)
+
+        self.Genshin.bot.fetch_channel = mock.AsyncMock(side_effect=mock_fetch)
+        self.mock_GenshinAPI().get_user_data.side_effect = [self._overflow_data()]
+
+        await self.Genshin.check_resin_overflow(self.Genshin)
+
+        assert good_ch.send.await_count == 1
+
+    async def test_check_resin_overflow_skips_deleted_user(self) -> None:
+        self.mock_UsagiHoyolab.get_all_by_or.return_value = [
+            self._resin_user(1, "g1", "u1"),
+        ]
+        self.mock_UsagiConfig.get_all_by.return_value = [
+            mock.MagicMock(guild_id="g1", generic_id="ch1"),
+        ]
+        ch1 = mock.AsyncMock()
+        self.channels["ch1"] = ch1
+        # row vanished between the query and the API call
+        self.mock_GenshinAPI().get_user_data.return_value = {}
+
+        await self.Genshin.check_resin_overflow(self.Genshin)
+
+        ch1.send.assert_not_awaited()
+        self.mock_UsagiHoyolab.update.assert_not_called()
+
+    async def test_check_resin_overflow_survives_db_error(self) -> None:
+        self.mock_UsagiHoyolab.get_all_by_or.side_effect = Exception("db down")
+
+        await self.Genshin.check_resin_overflow(self.Genshin)
+
+        self.Genshin.bot.logger.exception.assert_called()
+
+    @freeze_time("2001-03-21 16:00:00")
+    async def test_claim_daily_reward_survives_claim_error(self) -> None:
+        self.mock_UsagiHoyolab.get_all_by_or.return_value = [
+            mock.MagicMock(
+                guild_id="g1",
+                user_id="u1",
+                genshin_daily_sub=True,
+                starrail_daily_sub=False,
+                zzz_daily_sub=False,
+                id=1,
+            ),
+            mock.MagicMock(
+                guild_id="g1",
+                user_id="u2",
+                genshin_daily_sub=True,
+                starrail_daily_sub=False,
+                zzz_daily_sub=False,
+                id=2,
+            ),
+        ]
+        self.mock_UsagiConfig.get_all_by.return_value = [
+            mock.MagicMock(guild_id="g1", generic_id="ch1"),
+        ]
+        ch1 = mock.AsyncMock()
+        self.channels["ch1"] = ch1
+        self.mock_GenshinAPI().claim_daily_reward.side_effect = [
+            Exception("boom"),
+            True,
+        ]
+
+        await self.Genshin.claim_daily_reward(self.Genshin)
+
+        assert ch1.send.await_count == 1
+        self.Genshin.bot.logger.exception.assert_called()
+
+    @freeze_time("2001-03-21 16:00:00")
+    async def test_daily_reward_claim_notify_batches_config_lookup(self) -> None:
+        self.mock_UsagiHoyolab.get_all_by.return_value = [
+            mock.MagicMock(guild_id="g1", user_id="u1"),
+            mock.MagicMock(guild_id="g1", user_id="u2"),
+            mock.MagicMock(guild_id="g2", user_id="u3"),
+        ]
+        self.mock_UsagiConfig.get_all_by.return_value = [
+            mock.MagicMock(guild_id="g1", generic_id="ch1"),
+            mock.MagicMock(guild_id="g2", generic_id="ch2"),
+        ]
+        ch1 = mock.AsyncMock()
+        ch2 = mock.AsyncMock()
+        self.channels["ch1"] = ch1
+        self.channels["ch2"] = ch2
+
+        await self.Genshin.daily_reward_claim_notify(self.Genshin)
+
+        self.mock_UsagiConfig.get_all_by.assert_awaited_once_with(
+            command_tag="genshin"
+        )
+        self.mock_UsagiConfig.get.assert_not_called()
+        self.Genshin.bot.fetch_channel.assert_not_called()
+
+        links = (
+            "\nGenshin - https://bit.ly/genshin_daily"
+            "\nHonkai - https://bit.ly/honkai_daily"
+            "\nZZZ - https://bit.ly/zzz_daily"
+        )
+        ch1.send.assert_awaited_once_with(
+            "Don't forget to claim your daily reward!"
+            " <:UsagiLove:1084226975113158666> \n<@u1>, <@u2>" + links
+        )
+        ch2.send.assert_awaited_once_with(
+            "Don't forget to claim your daily reward!"
+            " <:UsagiLove:1084226975113158666> \n<@u3>" + links
+        )
+
+    async def test_check_resin_count_expired_cookie(self) -> None:
+        ctx = mock.AsyncMock()
+        ctx.guild.id = "g1"
+        ctx.user.id = "u1"
+        self.mock_UsagiHoyolab.get_all_by.return_value = [mock.MagicMock(id=1)]
+        self.mock_GenshinAPI().get_user_data.return_value = {}
+
+        await self.Genshin.check_resin_count.callback(self.Genshin, ctx)
+
+        ctx.respond.assert_called_with(
+            content="Your cookie is out of date, pls relogin `/hoyolab login`",
+            ephemeral=True,
+        )
+
+
+class TestHoyolabAPI(IsolatedAsyncioTestCase):
+    @mock.patch.object(asyncio, "create_async_engine")
+    def setUp(self, mock_engine) -> None:
+        import usagiBot.cogs.Hoyolab.genshin_utils as genshin_utils
+
+        self.genshin_utils = genshin_utils
+        init_i18n()
+        self.api = genshin_utils.HoyolabAPI()
+        self.api.client = mock.MagicMock()
+
+    async def test_get_user_data_returns_empty_on_genshin_error(self) -> None:
+        with mock.patch.object(
+            self.genshin_utils, "UsagiHoyolab", new_callable=mock.AsyncMock
+        ) as mock_hoyolab:
+            mock_hoyolab.get.return_value = mock.MagicMock(
+                ltuid_v2="1", ltmid_v2="2", ltoken_v2="3", cookie_token_v2="4"
+            )
+            self.api.client.get_hoyolab_user = mock.AsyncMock(
+                side_effect=genshin.errors.GenshinException({}, "maintenance")
+            )
+            data = await self.api.get_user_data(db_id=1)
+
+        self.assertEqual(data, {})
+
+    async def test_check_cookies_false_on_generic_error(self) -> None:
+        self.api.client.get_genshin_user = mock.AsyncMock(
+            side_effect=genshin.errors.GenshinException({}, "maintenance")
+        )
+
+        result = await self.api.check_cookies({"ltuid_v2": "1"})
+
+        self.assertFalse(result)
+
+    async def test_redeem_code_cooldown_then_success(self) -> None:
+        self.api.client.redeem_code = mock.AsyncMock(
+            side_effect=[genshin.RedemptionCooldown(), None]
+        )
+
+        with mock.patch.object(
+            self.genshin_utils.asyncio, "sleep", new_callable=mock.AsyncMock
+        ):
+            result = await self.api.redeem_code("CODE", "Genshin")
+
+        self.assertEqual(result, "Successfully redeemed.")
+        self.assertEqual(self.api.client.redeem_code.await_count, 2)
+
+    async def test_redeem_code_cooldown_bounded(self) -> None:
+        self.api.client.redeem_code = mock.AsyncMock(
+            side_effect=genshin.RedemptionCooldown()
+        )
+
+        with mock.patch.object(
+            self.genshin_utils.asyncio, "sleep", new_callable=mock.AsyncMock
+        ):
+            result = await self.api.redeem_code("CODE", "Genshin")
+
+        self.assertEqual(result, genshin.RedemptionCooldown.msg)
+        self.assertLessEqual(self.api.client.redeem_code.await_count, 3)

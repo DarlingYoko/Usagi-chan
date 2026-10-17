@@ -9,7 +9,7 @@ from usagiBot.tests.utils import *
 class TestFunMethods(IsolatedAsyncioTestCase):
     @mock.patch("usagiBot.cogs.Main.schemas.UsagiConfig")
     @mock.patch.object(asyncio, "create_async_engine")
-    @mock.patch.object(fun_utils, "get_exchange_rate_data")
+    @mock.patch.object(fun_utils, "get_exchange_rate_data", new_callable=mock.AsyncMock)
     def setUp(self, mock_get_exchange_rate_data, mock_engine, mock_UsagiConfig) -> None:
         self.bot = mock.AsyncMock()
 
@@ -55,6 +55,7 @@ class TestFunMethods(IsolatedAsyncioTestCase):
     async def test_add_based_message_successful(self) -> None:
         self.ctx.guild.id = 12345
         self.ctx.command.__original_kwargs__ = {"command_tag": "based_message_channel"}
+        self.ctx.bot.get_channel = mock.MagicMock(return_value=None)  # cache miss
         self.ctx.bot.fetch_channel.return_value = self.channel
 
         await self.Fun.add_based_message(self.Fun, self.ctx, self.message)
@@ -91,3 +92,28 @@ class TestFunMethods(IsolatedAsyncioTestCase):
 
         return_message = "Твой iq = 69\n+ секс"
         self.ctx.reply.assert_called_with(return_message)
+
+    async def test_get_ip_uses_async_helper(self) -> None:
+        with mock.patch(
+            "usagiBot.cogs.Fun.index.get_public_ip",
+            new_callable=mock.AsyncMock,
+        ) as mock_get_public_ip:
+            mock_get_public_ip.return_value = "1.2.3.4"
+            await self.Fun.get_ip(self.Fun, self.ctx)
+
+        mock_get_public_ip.assert_awaited_once()
+        self.ctx.reply.assert_called_with("1.2.3.4")
+
+    async def test_get_ip_is_owner_gated(self) -> None:
+        from usagiBot.env import BOT_OWNER
+
+        checks = self.Fun.get_ip.checks
+        self.assertEqual(len(checks), 1, "get_ip must carry exactly the owner check")
+
+        owner_ctx = mock.MagicMock()
+        owner_ctx.author.id = BOT_OWNER
+        other_ctx = mock.MagicMock()
+        other_ctx.author.id = BOT_OWNER + 1
+
+        self.assertTrue(await checks[0](owner_ctx))
+        self.assertFalse(await checks[0](other_ctx))

@@ -1,15 +1,12 @@
 import os
 
 BOT_TOKEN = os.environ.get("DISCORD_TOKEN")
-TEST_BOT_TOKEN = os.environ.get("DISCORD_TEST_TOKEN")
-DISCORD_TEST2_TOKEN = os.environ.get("DISCORD_TEST2_TOKEN")
 BOT_OWNER = int(os.environ.get("BOT_OWNER"))
 BOT_ID = int(os.environ.get("BOT_ID"))
 
-HOYOLAB_CLIENT_ID = os.environ.get("HOYOLAB_CLIENT_ID")
-HOYOLAB_CLIENT_SECRET = os.environ.get("HOYOLAB_CLIENT_SECRET")
-
 COGS_DIR = os.environ.get("COGS_DIR")
+
+LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO")
 
 POSTGRES_DB = os.environ.get("POSTGRES_DB")
 POSTGRES_USER = os.environ.get("POSTGRES_USER")
@@ -23,10 +20,6 @@ CLIENT_ID = os.environ.get("CLIENT_ID")
 CLIENT_SECRET = os.environ.get("CLIENT_SECRET")
 
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
-
-QbittorrentHOST = os.environ.get("QbittorrentHOST")
-QbittorrentUSERNAME = os.environ.get("QbittorrentUSERNAME")
-QbittorrentPASSWORD = os.environ.get("QbittorrentPASSWORD")
 
 VPN_USERNAME = os.environ.get("VPN_USERNAME")
 VPN_PASSWORD = os.environ.get("VPN_PASSWORD")

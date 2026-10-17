@@ -1,41 +1,45 @@
-from typing import TYPE_CHECKING
+import aiohttp
 from bs4 import BeautifulSoup
 
-import requests
-
-if TYPE_CHECKING:
-    from requests import Response
+REQUEST_TIMEOUT = aiohttp.ClientTimeout(total=15)
 
 
-def get_exchange_rate_data() -> dict:
+async def get_public_ip() -> str:
+    """
+    Get the host's current public IP from ipify.
+    :return: IP string, or empty string on failure
+    """
+    async with aiohttp.ClientSession(timeout=REQUEST_TIMEOUT) as session:
+        async with session.get("https://api.ipify.org") as response:
+            if response.status == 200:
+                return await response.text()
+    return ""
+
+
+async def get_exchange_rate_data() -> dict:
     """
     Get parsed exchange rates from tradingview
     :return: Rates Dict
     """
     base_url = "https://ru.tradingview.com/markets/currencies/"
 
-    response_europe = requests.get(base_url + "rates-europe/")
-    currency_europe = {}
-    if response_europe.status_code == 200:
-        currency_europe = parse_exchange_rate(response_europe)
-
-    response_asia = requests.get(base_url + "rates-asia/")
-    currency_asia = {}
-    if response_asia.status_code == 200:
-        currency_asia = parse_exchange_rate(response_asia)
-
-    rates = {**currency_europe, **currency_asia}
+    rates = {}
+    async with aiohttp.ClientSession(timeout=REQUEST_TIMEOUT) as session:
+        for path in ("rates-europe/", "rates-asia/"):
+            async with session.get(base_url + path) as response:
+                if response.status == 200:
+                    rates.update(parse_exchange_rate(await response.text()))
 
     return rates
 
 
-def parse_exchange_rate(response: "Response") -> dict:
+def parse_exchange_rate(html: str) -> dict:
     """
-    Parse rates from web response
-    :param response:
+    Parse rates from web response body
+    :param html: Response body
     :return: Parsed currencies dict
     """
-    soup = BeautifulSoup(response.text, "html.parser")
+    soup = BeautifulSoup(html, "html.parser")
     table = soup.find_all("tr")[1:]
     rates = {}
 

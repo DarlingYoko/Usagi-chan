@@ -1,4 +1,5 @@
 import re
+import traceback
 
 import discord
 import platform
@@ -14,6 +15,7 @@ from usagiBot.src.UsagiUtils import (
     get_embed,
     init_auto_roles,
     init_language,
+    guard_loop,
 )
 from usagiBot.src.UsagiErrors import *
 from usagiBot.cogs.Main.schemas import (
@@ -24,6 +26,25 @@ from usagiBot.cogs.Main.schemas import (
     UsagiBackup,
 )
 
+# Discord custom emoji: <:name:id> or animated <a:name:id>
+CUSTOM_EMOJI_RE = re.compile(r"<a?:\w+:\d+>")
+
+
+def _merge_message_counts(dst: dict, src: dict) -> None:
+    """Add ``src`` message counters into ``dst``, summing per counter.
+
+    Used to restore a failed dump without clobbering counts that arrived
+    while the upsert was in flight.
+    """
+    for guild_id, channels in src.items():
+        d_channels = dst.setdefault(guild_id, {})
+        for channel_id, users in channels.items():
+            d_users = d_channels.setdefault(channel_id, {})
+            for user_id, counters in users.items():
+                d_counters = d_users.setdefault(user_id, {})
+                for key, value in counters.items():
+                    d_counters[key] = d_counters.get(key, 0) + value
+
 
 class Events(commands.Cog):
     def __init__(self, bot):
@@ -32,60 +53,42 @@ class Events(commands.Cog):
         self.dump_data.start()
 
     @tasks.loop(minutes=30)
+    @guard_loop
     async def dump_data(self):
-        backup = await UsagiBackup.get_all()
+        messages_dump = self.bot.messages_dump
+        self.bot.messages_dump = {}
 
-        delete_ids = []
-        insert_mappings = []
-        last_user = await UsagiBackup.get_last_obj()
-        last_id = last_user.id + 1 if last_user is not None else 1
-        for user in backup:
-            exist_user = (
-                self.bot.messages_dump.get(user.guild_id, {})
-                .get(user.channel_id, {})
-                .get(user.user_id, None)
+        rows = []
+        for guild_id, channels in messages_dump.items():
+            for channel_id, users in channels.items():
+                for user_id, counters in users.items():
+                    rows.append(
+                        {
+                            "guild_id": guild_id,
+                            "channel_id": channel_id,
+                            "user_id": user_id,
+                            "messages": counters["messages"],
+                            "images": counters["images"],
+                            "gifs": counters["gifs"],
+                            "emojis": counters["emojis"],
+                            "stickers": counters["stickers"],
+                        }
+                    )
+
+        if not rows:
+            return
+
+        try:
+            await UsagiBackup.upsert_add(
+                rows,
+                conflict_columns=["guild_id", "channel_id", "user_id"],
+                counter_columns=["messages", "images", "gifs", "emojis", "stickers"],
             )
-
-            if exist_user is not None:
-                insert_mappings.append(
-                    UsagiBackup(
-                        id=last_id,
-                        guild_id=user.guild_id,
-                        channel_id=user.channel_id,
-                        user_id=user.user_id,
-                        messages=exist_user["messages"] + user.messages,
-                        images=exist_user["images"] + user.images,
-                        gifs=exist_user["gifs"] + user.gifs,
-                        emojis=exist_user["emojis"] + user.emojis,
-                        stickers=exist_user["stickers"] + user.stickers,
-                    )
-                )
-                delete_ids.append(user.id)
-
-                del self.bot.messages_dump[user.guild_id][user.channel_id][user.user_id]
-                last_id += 1
-
-        for guild in self.bot.messages_dump.keys():
-            for channel in self.bot.messages_dump[guild].keys():
-                for user in self.bot.messages_dump[guild][channel].keys():
-                    user_data = self.bot.messages_dump[guild][channel][user]
-                    insert_mappings.append(
-                        UsagiBackup(
-                            id=last_id,
-                            guild_id=guild,
-                            channel_id=channel,
-                            user_id=user,
-                            messages=user_data["messages"],
-                            images=user_data["images"],
-                            gifs=user_data["gifs"],
-                            emojis=user_data["emojis"],
-                            stickers=user_data["stickers"],
-                        )
-                    )
-                    last_id += 1
-
-        await UsagiBackup.delete_all(delete_ids)
-        await UsagiBackup.insert_mappings(insert_mappings)
+        except Exception:
+            # Don't drop 30 min of stats on a transient DB error — fold the
+            # batch back into the live dump so the next tick retries it.
+            self.bot.logger.exception("dump_data: upsert failed, restoring counters")
+            _merge_message_counts(self.bot.messages_dump, messages_dump)
 
     @dump_data.before_loop
     async def before_dump_data(self):
@@ -95,7 +98,12 @@ class Events(commands.Cog):
     # Define main events
     @commands.Cog.listener()
     async def on_ready(self):
-        # self.bot.qbt_client = await init_qbt_client(self.bot.logger)
+        # on_ready fires on every reconnect; the init below (and the
+        # rate-limit-heavy sync_commands) must run only on first connect.
+        if getattr(self, "_ready_once", False):
+            self.bot.logger.info("Reconnected; skipping one-time on_ready init")
+            return
+        self._ready_once = True
         self.bot.command_tags = await load_all_command_tags(self.bot)
         self.bot.guild_cogs_settings = await init_cogs_settings()
         self.bot.moder_roles = await init_moder_roles()
@@ -170,7 +178,9 @@ class Events(commands.Cog):
             )
         elif isinstance(error, discord.errors.Forbidden):
             await ctx.reply(
-                self.bot.i18n.get_text("Don't have permissions to do that", user_lang),
+                self.bot.i18n.get_text(
+                    "I don't have permissions to do that", user_lang
+                ),
                 delete_after=2 * 60,
             )
         else:
@@ -183,7 +193,7 @@ class Events(commands.Cog):
         user_lang = self.bot.language.get(ctx.author.id, "en")
         if isinstance(error, discord.errors.CheckFailure):
             await ctx.respond(
-                self.bot.i18n.get_text("Some requirements were not met.", user_lang),
+                self.bot.i18n.get_text("Some requirements were not met", user_lang),
                 ephemeral=True,
             )
         elif isinstance(error, UsagiNotSetUpError):
@@ -224,7 +234,18 @@ class Events(commands.Cog):
                 ephemeral=True,
             )
         elif isinstance(error, discord.ApplicationCommandInvokeError):
-            self.bot.logger.error(error)
+            original = error.original or error
+            tb = "".join(
+                traceback.format_exception(
+                    type(original), original, original.__traceback__
+                )
+            )
+            self.bot.logger.error(
+                "ApplicationCommandInvokeError in %s:\n%s", ctx.command, tb
+            )
+            await error_notification_to_owner(
+                ctx, original, self.bot, app_command=True, traceback_str=tb
+            )
             await ctx.respond(
                 self.bot.i18n.get_text("Smt went wrong try again later", user_lang),
                 ephemeral=True,
@@ -236,7 +257,7 @@ class Events(commands.Cog):
     async def on_member_join(self, member):
         guild = member.guild
         saving = await UsagiSaveRoles.get(guild_id=guild.id)
-        if saving is None or saving is False:
+        if saving is None or not saving.saving_roles:
             return
 
         command_tag = "save_roles_on_leave"
@@ -251,10 +272,17 @@ class Events(commands.Cog):
         roles_id = saved_roles.roles.split(",")
         if roles_id == [""]:
             return
-        roles = map(lambda role_id: guild.get_role(int(role_id)), roles_id)
-        await member.add_roles(*roles)
+        roles = [
+            role
+            for role in map(lambda role_id: guild.get_role(int(role_id)), roles_id)
+            if role is not None
+        ]
+        if roles:
+            await member.add_roles(*roles)
 
-        channel = await guild.fetch_channel(config.generic_id)
+        channel = guild.get_channel(config.generic_id) or await guild.fetch_channel(
+            config.generic_id
+        )
         await channel.send(
             embed=get_embed(
                 title="Returned all roles to", description=f"{member.mention}"
@@ -264,7 +292,7 @@ class Events(commands.Cog):
     @commands.Cog.listener()
     async def on_member_remove(self, member):
         saving = await UsagiSaveRoles.get(guild_id=member.guild.id)
-        if saving is None or saving is False:
+        if saving is None or not saving.saving_roles:
             return
 
         command_tag = "save_roles_on_leave"
@@ -286,7 +314,9 @@ class Events(commands.Cog):
         else:
             await UsagiMemberRoles.update(id=saved_roles.id, roles=str_user_roles)
 
-        channel = await member.guild.fetch_channel(config.generic_id)
+        channel = member.guild.get_channel(
+            config.generic_id
+        ) or await member.guild.fetch_channel(config.generic_id)
         await channel.send(
             embed=get_embed(
                 title="Saved all roles for", description=f"{member.mention}"
@@ -310,10 +340,15 @@ class Events(commands.Cog):
             emoji, discord.partial_emoji.PartialEmoji
         ):
             if user_id == ai_quesion and emoji.name == "❌":
-                guild = await self.bot.fetch_guild(guild_id)
-                channel = await guild.fetch_channel(channel_id)
-                message = await channel.fetch_message(message_id)
-                await message.delete(reason="Delete by Emoji")
+                guild = self.bot.get_guild(guild_id) or await self.bot.fetch_guild(
+                    guild_id
+                )
+                channel = guild.get_channel(channel_id) or await guild.fetch_channel(
+                    channel_id
+                )
+                await channel.get_partial_message(int(message_id)).delete(
+                    reason="Delete by Emoji"
+                )
                 del self.bot.ai_questions[int(message_id)]
 
         auto_roles = self.bot.auto_roles.get(guild_id, {})
@@ -325,13 +360,15 @@ class Events(commands.Cog):
         if role is None:
             return
 
-        guild = await self.bot.fetch_guild(guild_id)
+        guild = self.bot.get_guild(guild_id) or await self.bot.fetch_guild(guild_id)
         role = guild.get_role(role.role_id)
-        user = await guild.fetch_member(user_id)
+        user = guild.get_member(user_id) or await guild.fetch_member(user_id)
         try:
             await user.add_roles(role)
         except discord.errors.Forbidden:
-            channel = await guild.fetch_channel(role_data["channel_id"])
+            channel = guild.get_channel(
+                role_data["channel_id"]
+            ) or await guild.fetch_channel(role_data["channel_id"])
             await channel.send(
                 embed=get_embed(
                     title="Cannot give roles as my role has lower position.",
@@ -357,13 +394,15 @@ class Events(commands.Cog):
         if role is None:
             return
 
-        guild = await self.bot.fetch_guild(guild_id)
+        guild = self.bot.get_guild(guild_id) or await self.bot.fetch_guild(guild_id)
         role = guild.get_role(role.role_id)
-        user = await guild.fetch_member(user_id)
+        user = guild.get_member(user_id) or await guild.fetch_member(user_id)
         try:
             await user.remove_roles(role)
         except discord.errors.Forbidden:
-            channel = await guild.fetch_channel(role_data["channel_id"])
+            channel = guild.get_channel(
+                role_data["channel_id"]
+            ) or await guild.fetch_channel(role_data["channel_id"])
             await channel.send(
                 embed=get_embed(
                     title="Cannot remove roles as my role has lower position.",
@@ -399,7 +438,7 @@ class Events(commands.Cog):
         if ".gif" in message.content:
             member["gifs"] += 1
 
-        if re.search("<*:*:*>", message.content):
+        if CUSTOM_EMOJI_RE.search(message.content):
             member["emojis"] += 1
 
         if message.stickers:

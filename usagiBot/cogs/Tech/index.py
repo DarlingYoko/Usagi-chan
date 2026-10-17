@@ -38,7 +38,7 @@ class Tech(commands.Cog):
     @commands.slash_command()
     @commands.check(check_member_is_moder)
     async def purge(self, ctx, limit: int):
-        await ctx.channel.purge(limit=limit + 1)
+        await ctx.channel.purge(limit=limit)
         await ctx.respond("Успешно удалила", delete_after=10)
 
     @commands.slash_command(
@@ -102,6 +102,13 @@ class Tech(commands.Cog):
         },
     )
     async def create_new_unic_role(self, ctx, name: str, color: ColorConverter) -> None:
+        existing = await UsagiUnicRoles.get_all_by(
+            guild_id=ctx.guild.id, user_id=ctx.author.id
+        )
+        if existing:
+            return await ctx.respond(
+                _("You already have a unic role"), ephemeral=True
+            )
         role = await ctx.guild.create_role(
             name=name,
             colour=color,
@@ -144,7 +151,9 @@ class Tech(commands.Cog):
                 user_id=ctx.author.id,
                 role_id=role.id,
             )
-            await ctx.author.remove_roles(role)
+            await role.delete(
+                reason=f"Deleted by {ctx.author.name}, id = {ctx.author.id}"
+            )
             await ctx.respond(_("Successfully removed your role"), ephemeral=True)
 
     @customize_role_modify.command(

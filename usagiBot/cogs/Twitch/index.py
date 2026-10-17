@@ -8,6 +8,7 @@ from usagiBot.cogs.Twitch.schemas import UsagiTwitchNotify
 from usagiBot.cogs.Main.schemas import UsagiConfig
 from usagiBot.src.UsagiChecks import check_cog_whitelist
 from usagiBot.src.UsagiErrors import UsagiModuleDisabledError
+from usagiBot.src.UsagiUtils import guard_loop, guarded_item
 
 from pycord18n.extension import _
 
@@ -18,35 +19,61 @@ class Twitch(commands.Cog):
         self.bot = bot
         self.twitch_notify_loop.start()
 
+    @staticmethod
+    async def _fetch_live_streams(twitch, logins: set) -> dict:
+        """Resolve every followed login in batched get_streams calls.
+
+        get_streams accepts up to 100 logins per call and only returns live
+        streams, so one call per 100 logins replaces one call per streamer.
+        """
+        logins = list(logins)
+        streams = {}
+        for start in range(0, len(logins), 100):
+            chunk = logins[start : start + 100]
+            async for stream in twitch.get_streams(user_login=chunk):
+                streams[stream.user_login.lower()] = stream
+        return streams
+
     @tasks.loop(minutes=5)
+    @guard_loop
     async def twitch_notify_loop(self):
         if self.twitch is None:
             self.twitch = await twitch_auth()
         all_streams = await UsagiTwitchNotify.get_all()
+        if not all_streams:
+            return
+        configs = await UsagiConfig.get_all_by(command_tag="twitch_notify")
+        configs_by_guild = {config.guild_id: config for config in configs}
         twitch_notify = {}
 
         for stream in all_streams:
-            config = await UsagiConfig.get(
-                guild_id=stream.guild_id, command_tag="twitch_notify"
-            )
-            if not config:
-                continue
-            channel = self.bot.get_channel(
-                config.generic_id
-            ) or await self.bot.fetch_channel(config.generic_id)
+            async with guarded_item(self.bot, "twitch_notify_loop", stream.guild_id):
+                config = configs_by_guild.get(stream.guild_id)
+                if not config:
+                    continue
+                channel = self.bot.get_channel(
+                    config.generic_id
+                ) or await self.bot.fetch_channel(config.generic_id)
 
-            guild_notify = twitch_notify.setdefault(
-                stream.guild_id, {"channel_to_notify": channel}
-            )
-            streamers_notify = guild_notify.setdefault("streamers", {})
-            username_notify = streamers_notify.setdefault(
-                stream.twitch_username,
-                {"followers": [], "started_at": stream.started_at},
-            )
-            username_notify["followers"].append(stream.user_id)
-            username_notify["started_at"] = max(
-                username_notify["started_at"], stream.started_at
-            )
+                guild_notify = twitch_notify.setdefault(
+                    stream.guild_id, {"channel_to_notify": channel}
+                )
+                streamers_notify = guild_notify.setdefault("streamers", {})
+                username_notify = streamers_notify.setdefault(
+                    stream.twitch_username,
+                    {"followers": [], "started_at": stream.started_at},
+                )
+                username_notify["followers"].append(stream.user_id)
+                username_notify["started_at"] = max(
+                    username_notify["started_at"], stream.started_at
+                )
+
+        all_logins = {
+            streamer
+            for data in twitch_notify.values()
+            for streamer in data.get("streamers", {})
+        }
+        live_streams = await self._fetch_live_streams(self.twitch, all_logins)
 
         update_streamer = {}
         # {"streamer": {"start_at": "stream_start_at", "icon_url": "url"}}
@@ -54,34 +81,36 @@ class Twitch(commands.Cog):
             # go through every streamer on this guild and send a message
             channel = data["channel_to_notify"]
             for streamer, info in data["streamers"].items():
-                stream = await first(self.twitch.get_streams(user_login=[streamer]))
+                async with guarded_item(self.bot, "twitch_notify_loop", streamer):
+                    stream = live_streams.get(streamer.lower())
 
-                if stream is None:
-                    continue
-                if stream.started_at.replace(tzinfo=None) == info["started_at"]:
-                    continue
+                    if stream is None:
+                        continue
+                    if stream.started_at.replace(tzinfo=None) == info["started_at"]:
+                        continue
 
-                update_streamer.setdefault(
-                    streamer,
-                    {
-                        "started_at": stream.started_at,
-                        "icon_url": await get_streamer_icon(self.twitch, streamer),
-                    },
-                )
-                followers = (
-                    " ".join(list(map(lambda x: f"<@{x}>", info["followers"])))
-                    + " <a:dinkDonk:865127621112102953>"
-                )
-                embed, image = get_notify_src(
-                    stream, update_streamer[streamer]["icon_url"]
-                )
-                await channel.send(content=followers, embed=embed, file=image)
+                    update_streamer.setdefault(
+                        streamer,
+                        {
+                            "started_at": stream.started_at,
+                            "icon_url": await get_streamer_icon(self.twitch, streamer),
+                        },
+                    )
+                    followers = (
+                        " ".join(list(map(lambda x: f"<@{x}>", info["followers"])))
+                        + " <a:dinkDonk:865127621112102953>"
+                    )
+                    embed, image = await get_notify_src(
+                        stream, update_streamer[streamer]["icon_url"]
+                    )
+                    await channel.send(content=followers, embed=embed, file=image)
 
         for streamer, data in update_streamer.items():
-            await UsagiTwitchNotify.update_all(
-                {"twitch_username": streamer},
-                {"started_at": data["started_at"].replace(tzinfo=None)},
-            )
+            async with guarded_item(self.bot, "twitch_notify_loop", streamer):
+                await UsagiTwitchNotify.update_all(
+                    {"twitch_username": streamer},
+                    {"started_at": data["started_at"].replace(tzinfo=None)},
+                )
 
     @twitch_notify_loop.before_loop
     async def before_twitch_notify_loop(self):
@@ -203,7 +232,7 @@ class Twitch(commands.Cog):
             guild_id=ctx.guild.id,
             user_id=ctx.author.id,
         )
-        if streamers is None:
+        if not streamers:
             await ctx.respond(_("You are not followed to any streamer"), ephemeral=True)
             return
         streamers = list(map(lambda x: f" - {x.twitch_username}\n", streamers))
@@ -224,7 +253,7 @@ class Twitch(commands.Cog):
         streamers = await UsagiTwitchNotify.get_all_by(
             guild_id=ctx.guild.id,
         )
-        if streamers is None:
+        if not streamers:
             await ctx.respond(
                 _("Your guild not followed to any streamer"), ephemeral=True
             )

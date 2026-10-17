@@ -1,5 +1,6 @@
 from usagiBot.db.base import Base
 from usagiBot.db.models import ModelAdmin
+from usagiBot.db.types import EncryptedText
 from sqlalchemy import (
     Text,
     BigInteger,
@@ -17,15 +18,15 @@ class UsagiHoyolab(Base, ModelAdmin):
     ltuid_v2 = Column(Text)
     ltmid_v2 = Column(Text)
     account_id_v2 = Column(Text)
-    ltoken_v2 = Column(Text)
-    cookie_token_v2 = Column(Text)
-    genshin_resin_sub = Column(Boolean)
-    genshin_resin_sub_notified = Column(Boolean)
-    genshin_daily_sub = Column(Boolean)
-    daily_notify_sub = Column(Boolean)
-    starrail_daily_sub = Column(Boolean)
-    starrail_resin_sub = Column(Boolean)
-    starrail_resin_sub_notified = Column(Boolean)
-    zzz_daily_sub = Column(Boolean)
-    zzz_resin_sub = Column(Boolean)
-    zzz_resin_sub_notified = Column(Boolean)
+    ltoken_v2 = Column(EncryptedText)
+    cookie_token_v2 = Column(EncryptedText)
+    genshin_resin_sub = Column(Boolean, nullable=False, default=False, server_default="false")
+    genshin_resin_sub_notified = Column(Boolean, nullable=False, default=False, server_default="false")
+    genshin_daily_sub = Column(Boolean, nullable=False, default=False, server_default="false")
+    daily_notify_sub = Column(Boolean, nullable=False, default=False, server_default="false")
+    starrail_daily_sub = Column(Boolean, nullable=False, default=False, server_default="false")
+    starrail_resin_sub = Column(Boolean, nullable=False, default=False, server_default="false")
+    starrail_resin_sub_notified = Column(Boolean, nullable=False, default=False, server_default="false")
+    zzz_daily_sub = Column(Boolean, nullable=False, default=False, server_default="false")
+    zzz_resin_sub = Column(Boolean, nullable=False, default=False, server_default="false")
+    zzz_resin_sub_notified = Column(Boolean, nullable=False, default=False, server_default="false")

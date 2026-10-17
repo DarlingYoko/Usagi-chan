@@ -1,6 +1,8 @@
+import asyncio
 import textwrap
+
+import aiohttp
 import discord
-import requests
 
 from usagiBot.src.UsagiUtils import get_embed, Editor
 from usagiBot.env import (
@@ -17,6 +19,13 @@ from twitchAPI.type import AuthScope
 from PIL import Image, ImageFont, ImageOps
 from discord import File
 from io import BytesIO
+
+REQUEST_TIMEOUT = aiohttp.ClientTimeout(total=15)
+
+# Parsed once — gen_pic runs for every stream notification
+FONT_BOLD = ImageFont.truetype(font="./usagiBot/files/fonts/Inter-Bold.ttf", size=30)
+FONT_BOLD_BIG = ImageFont.truetype(font="./usagiBot/files/fonts/Inter-Bold.ttf", size=40)
+FONT_REGULAR = ImageFont.truetype(font="./usagiBot/files/fonts/Inter-Regular.ttf", size=38)
 
 
 async def twitch_auth() -> Twitch:
@@ -44,7 +53,7 @@ async def get_streamer_icon(twitch, streamer) -> str:
     return user.profile_image_url
 
 
-def get_notify_src(stream, icon_url) -> tuple[discord.Embed, File]:
+async def get_notify_src(stream, icon_url) -> tuple[discord.Embed, File]:
     """
     Generate notify embed and image
     :param stream:  stream obj
@@ -52,7 +61,11 @@ def get_notify_src(stream, icon_url) -> tuple[discord.Embed, File]:
     :return: embed
     """
     link = f"<https://www.twitch.tv/{stream.user_login}>"
-    image = gen_pic(stream, icon_url)
+    async with aiohttp.ClientSession(timeout=REQUEST_TIMEOUT) as session:
+        async with session.get(icon_url) as response:
+            response.raise_for_status()
+            icon_bytes = await response.read()
+    image = await asyncio.to_thread(gen_pic, stream, icon_bytes)
     embed = get_embed(
         description=f"### [{stream.user_name}]({link}) start stream!",
         url_image=f"attachment://{stream.user_login}_image.png",
@@ -60,26 +73,20 @@ def get_notify_src(stream, icon_url) -> tuple[discord.Embed, File]:
     return embed, image
 
 
-def gen_pic(stream, icon_url):
+def gen_pic(stream, icon_bytes: bytes) -> File:
     game = stream.game_name
     stream_title = stream.title
     viewer_count = str(stream.viewer_count)
 
     blank = Image.open("./usagiBot/files/photo/stream.png")
     mask = Image.open("./usagiBot/files/photo/mask2.png").convert("L")
-    image = Image.open(requests.get(icon_url, stream=True).raw)
+    image = Image.open(BytesIO(icon_bytes))
 
     background = Editor(Image.new("RGBA", (1050, 1050), (0, 0, 0, 0)))
 
-    font_bold = ImageFont.truetype(
-        font="./usagiBot/files/fonts/Inter-Bold.ttf", size=30
-    )
-    font_bold_big = ImageFont.truetype(
-        font="./usagiBot/files/fonts/Inter-Bold.ttf", size=40
-    )
-    font_regular = ImageFont.truetype(
-        font="./usagiBot/files/fonts/Inter-Regular.ttf", size=38
-    )
+    font_bold = FONT_BOLD
+    font_bold_big = FONT_BOLD_BIG
+    font_regular = FONT_REGULAR
 
     output = ImageOps.fit(image, mask.size, centering=(0.5, 0.5))
     output.putalpha(mask)

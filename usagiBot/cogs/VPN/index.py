@@ -93,6 +93,14 @@ class RenewVpnModal(discord.ui.Modal):
                 )
             )
             return None
+        if subscriptions_count < 1:
+            await interaction.respond(
+                embed=get_embed(
+                    title=self.bot.i18n.get_text('Wrong amount and subscriptions count', self.lang),
+                    color=discord.Color.red(),
+                )
+            )
+            return None
         month_count = amount // subscriptions_count // 100
         if month_count < 1:
             await interaction.respond(
@@ -200,6 +208,7 @@ class VPN(commands.Cog):
         """
         vpn_profiles = await UsagiVpnUsers.get_all_by(active=True, notify_enabled=True)
         expired_users = {}
+        renotify_ids = []
         for vpn_profile in vpn_profiles:
             if not vpn_profile.expiration_date:
                 continue
@@ -211,7 +220,10 @@ class VPN(commands.Cog):
                     expired_users[vpn_profile.user_id].append(vpn_profile)
 
             if expiration_delta > timedelta(days=2) and vpn_profile.notified:
-                await UsagiVpnUsers.update(vpn_profile.id, notified=False)
+                renotify_ids.append(vpn_profile.id)
+
+        if renotify_ids:
+            await UsagiVpnUsers.update_by_ids(renotify_ids, {"notified": False})
 
         for user_id, expired_profiles in expired_users.items():
             lang = self.bot.language.get(int(user_id), "en")
@@ -448,10 +460,10 @@ class VPN(commands.Cog):
         try:
             datetime_obj = datetime.strptime(expiry_date, "%d.%m.%Y") if expiry_date else None
             new_expiry_time = int(datetime_obj.timestamp() * 1000) if datetime_obj else 0
-        except ValueError or KeyError:
+        except (ValueError, KeyError):
             return await ctx.respond(
                 embed=get_embed(
-                    title=_("Time data does not match format").format(expiry_date),
+                    title=_("Time data does not match format").format(date=expiry_date),
                     color=discord.Color.red(),
                 ),
                 ephemeral=True,

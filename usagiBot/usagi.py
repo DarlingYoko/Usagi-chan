@@ -6,7 +6,7 @@ from discord.ext import commands
 from pycord18n.extension import I18nExtension, Language
 
 from usagiBot.db.models import create_tables
-from usagiBot.env import COGS_DIR
+from usagiBot.env import COGS_DIR, LOG_LEVEL
 from usagiBot.src.CustomHelpCommand import CustomHelpCommand
 from usagiBot.src.UsagiUtils import init_language
 
@@ -17,8 +17,11 @@ class UsagiBot(commands.Bot):
         self.language = None
 
         # Define logger
-        self.logger = logging.getLogger("mylogger")
-        logging.basicConfig(format="%(asctime)s - %(message)s", level=logging.INFO)
+        logging.basicConfig(
+            format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+            level=getattr(logging, LOG_LEVEL.upper(), logging.INFO),
+        )
+        self.logger = logging.getLogger("usagi")
 
         # Define variables
         self.command_tags = []
@@ -35,10 +38,14 @@ class UsagiBot(commands.Bot):
         self.logger.info("---------ALL COGS LOADED-------")
 
         # Define language
+        with open("usagiBot/files/language/en.json", encoding="utf-8") as en_file:
+            en_dict = json.load(en_file)
+        with open("usagiBot/files/language/ru.json", encoding="utf-8") as ru_file:
+            ru_dict = json.load(ru_file)
         i18n = I18nExtension(
             [
-                Language("English", "en", json.load(open("usagiBot/files/language/en.json"))),
-                Language("Russian", "ru", json.load(open("usagiBot/files/language/ru.json"))),
+                Language("English", "en", en_dict),
+                Language("Russian", "ru", ru_dict),
             ],
             fallback="en",
         )
@@ -50,6 +57,11 @@ class UsagiBot(commands.Bot):
         self.i18n = i18n
 
     async def before_identify_hook(self, shard_id, *, initial=False):
+        # Fires before every (re)identify; one-time DB/lang setup belongs to
+        # the first connect only, not to each reconnect.
+        if not initial:
+            return
+
         self.logger.info("Running DB migrations before bot connect")
         await create_tables()
         self.logger.info("DB Ready")
@@ -58,8 +70,17 @@ class UsagiBot(commands.Bot):
         self.language = await init_language()
         self.logger.info("Languages loaded")
 
-# Define bot
-usegi_intents = discord.Intents.all()
+# Define bot — only the gateway events the cogs actually consume;
+# Intents.all() subscribed to presences/typing, the highest-volume events
+usegi_intents = discord.Intents(
+    guilds=True,
+    members=True,
+    messages=True,
+    message_content=True,
+    reactions=True,
+    voice_states=True,
+    emojis=True,
+)
 bot = UsagiBot(
     command_prefix="!",
     intents=usegi_intents,

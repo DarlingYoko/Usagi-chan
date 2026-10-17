@@ -56,6 +56,7 @@ class TestUtilsMethods(IsolatedAsyncioTestCase):
         self.ctx.args = "test_args"
         self.ctx.kwargs = "test_kwargs"
 
+        self.ctx.bot.get_user = mock.MagicMock(return_value=None)
         self.ctx.bot.fetch_user.return_value = self.user
 
     async def test_error_notification_to_owner(self) -> None:
@@ -141,3 +142,77 @@ class TestUtilsMethods(IsolatedAsyncioTestCase):
                 ],
             },
         )
+
+    async def test_usagi_embed_fields_differ_in_one_attribute_not_equal(self) -> None:
+        embed_one = self.Usagi_Utils.UsagiEmbed(title="t", description="d")
+        embed_one.add_field(name="a", value="left", inline=True)
+        embed_two = self.Usagi_Utils.UsagiEmbed(title="t", description="d")
+        embed_two.add_field(name="a", value="right", inline=True)
+
+        self.assertNotEqual(embed_one, embed_two)
+
+    async def test_usagi_embed_identical_fields_equal(self) -> None:
+        embed_one = self.Usagi_Utils.UsagiEmbed(title="t", description="d")
+        embed_one.add_field(name="a", value="v", inline=True)
+        embed_two = self.Usagi_Utils.UsagiEmbed(title="t", description="d")
+        embed_two.add_field(name="a", value="v", inline=True)
+
+        self.assertEqual(embed_one, embed_two)
+
+    async def test_guard_loop_swallows_and_logs(self) -> None:
+        cog = mock.MagicMock()
+
+        @self.Usagi_Utils.guard_loop
+        async def body(self):
+            raise ValueError("boom")
+
+        await body(cog)  # must not raise
+        cog.bot.logger.exception.assert_called()
+
+    async def test_guard_loop_passes_value_through(self) -> None:
+        cog = mock.MagicMock()
+
+        @self.Usagi_Utils.guard_loop
+        async def body(self):
+            return 42
+
+        result = await body(cog)
+        self.assertEqual(result, 42)
+        cog.bot.logger.exception.assert_not_called()
+
+    async def test_guarded_item_swallows_and_logs(self) -> None:
+        bot = mock.MagicMock()
+        async with self.Usagi_Utils.guarded_item(bot, "loop", 7):
+            raise RuntimeError("x")
+        bot.logger.exception.assert_called()
+
+    async def test_guarded_item_clean_no_log(self) -> None:
+        bot = mock.MagicMock()
+        ran = False
+        async with self.Usagi_Utils.guarded_item(bot, "loop", 7):
+            ran = True
+        self.assertTrue(ran)
+        bot.logger.exception.assert_not_called()
+
+    async def test_error_notification_includes_traceback(self) -> None:
+        await self.Usagi_Utils.error_notification_to_owner(
+            ctx=self.ctx,
+            error=self.error,
+            bot=self.bot,
+            app_command=True,
+            traceback_str="Traceback...\nValueError: boom",
+        )
+        sent = self.user.send.call_args.args[0]
+        self.assertIn("ValueError: boom", sent)
+        self.assertLessEqual(len(sent), 2000)
+
+    async def test_error_notification_truncates_long_traceback(self) -> None:
+        await self.Usagi_Utils.error_notification_to_owner(
+            ctx=self.ctx,
+            error=self.error,
+            bot=self.bot,
+            app_command=True,
+            traceback_str="X" * 5000,
+        )
+        sent = self.user.send.call_args.args[0]
+        self.assertLessEqual(len(sent), 2000)

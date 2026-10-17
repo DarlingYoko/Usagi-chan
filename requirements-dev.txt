@@ -1,0 +1,8 @@
+-r requirements.txt
+astroid==4.0.1
+black==25.9.0
+coverage==7.11.0
+freezegun==1.5.5
+isort==7.0.0
+pytest-asyncio==1.2.0
+pytest==8.4.2

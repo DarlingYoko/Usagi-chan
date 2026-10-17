@@ -297,87 +297,110 @@ class Hoyolab(commands.Cog):
         self.daily_reward_claim_notify.start()
 
     @tasks.loop(minutes=30)
-    async def check_resin_overflow(self):
-        users = await UsagiHoyolab.get_all_by_or(
-            genshin_resin_sub=True, starrail_resin_sub=True, zzz_resin_sub=True
-        )
+    async def check_resin_overflow(self) -> None:
+        # Any exception escaping a tasks.loop body permanently stops the
+        # loop, so the body must never raise.
+        try:
+            users = await UsagiHoyolab.get_all_by_or(
+                genshin_resin_sub=True, starrail_resin_sub=True, zzz_resin_sub=True
+            )
+            configs = await UsagiConfig.get_all_by(command_tag="genshin")
+        except Exception:
+            self.bot.logger.exception(
+                "check_resin_overflow: failed to load subscriptions"
+            )
+            return
+        configs_by_guild = {config.guild_id: config for config in configs}
 
         for user in users:
-            config = await UsagiConfig.get(
-                guild_id=user.guild_id, command_tag="genshin"
-            )
+            config = configs_by_guild.get(user.guild_id)
             if not config:
                 continue
             try:
                 channel = self.bot.get_channel(
                     config.generic_id
                 ) or await self.bot.fetch_channel(config.generic_id)
-            except discord.errors.Forbidden:
+            except discord.DiscordException:
                 self.bot.logger.error(f"Cant get access to {config.generic_id}")
                 continue
 
-            hoyolab_api = HoyolabAPI()
-            data = await hoyolab_api.get_user_data(db_id=user.id)
-            genshin_data = data.get("genshin", None)
-            starrail_data = data.get("starrail", None)
-            zzz_data = data.get("zzz", None)
+            try:
+                hoyolab_api = HoyolabAPI()
+                data = await hoyolab_api.get_user_data(db_id=user.id)
+                if not data:
+                    continue
+                genshin_data = data.get("genshin", None)
+                starrail_data = data.get("starrail", None)
+                zzz_data = data.get("zzz", None)
 
-            if genshin_data and genshin_data.current_resin < 180:
-                if user.genshin_resin_sub_notified:
-                    await UsagiHoyolab.update(
-                        id=user.id, genshin_resin_sub_notified=False
+                if genshin_data and genshin_data.current_resin < 180:
+                    if user.genshin_resin_sub_notified:
+                        await UsagiHoyolab.update(
+                            id=user.id, genshin_resin_sub_notified=False
+                        )
+
+                if starrail_data and starrail_data.current_stamina < 220:
+                    if user.starrail_resin_sub_notified:
+                        await UsagiHoyolab.update(
+                            id=user.id, starrail_resin_sub_notified=False
+                        )
+
+                if zzz_data and zzz_data.battery_charge.current < 220:
+                    if user.zzz_resin_sub_notified:
+                        await UsagiHoyolab.update(
+                            id=user.id, zzz_resin_sub_notified=False
+                        )
+
+                lang = self.bot.language.get(user.user_id, "en")
+                if (
+                    genshin_data
+                    and user.genshin_resin_sub
+                    and not user.genshin_resin_sub_notified
+                    and genshin_data.current_resin >= 180
+                ):
+                    notify_text = self.bot.i18n.get_text("resin cap", lang).format(
+                        user_id=user.user_id,
+                        nickname=data["nickname"],
+                        current_resin=genshin_data.current_resin,
                     )
-
-            if starrail_data and starrail_data.current_stamina < 220:
-                if user.starrail_resin_sub_notified:
+                    await channel.send(content=notify_text)
                     await UsagiHoyolab.update(
-                        id=user.id, starrail_resin_sub_notified=False
+                        id=user.id, genshin_resin_sub_notified=True
                     )
-
-            if zzz_data and zzz_data.battery_charge.current < 220:
-                if user.zzz_resin_sub_notified:
-                    await UsagiHoyolab.update(id=user.id, zzz_resin_sub_notified=False)
-
-            lang = self.bot.language.get(user.user_id, "en")
-            if (
-                genshin_data
-                and user.genshin_resin_sub
-                and not user.genshin_resin_sub_notified
-                and genshin_data.current_resin >= 180
-            ):
-                notify_text = self.bot.i18n.get_text("resin cap", lang).format(
-                    user_id=user.user_id,
-                    nickname=data["nickname"],
-                    current_resin=genshin_data.current_resin,
+                if (
+                    starrail_data
+                    and user.starrail_resin_sub
+                    and not user.starrail_resin_sub_notified
+                    and starrail_data.current_stamina >= 220
+                ):
+                    notify_text = self.bot.i18n.get_text("stamina cap", lang).format(
+                        user_id=user.user_id,
+                        nickname=data["nickname"],
+                        current_stamina=starrail_data.current_stamina,
+                    )
+                    await channel.send(content=notify_text)
+                    await UsagiHoyolab.update(
+                        id=user.id, starrail_resin_sub_notified=True
+                    )
+                if (
+                    zzz_data
+                    and user.zzz_resin_sub
+                    and not user.zzz_resin_sub_notified
+                    and zzz_data.battery_charge.current >= 220
+                ):
+                    notify_text = self.bot.i18n.get_text("energy cap", lang).format(
+                        user_id=user.user_id,
+                        nickname=data["nickname"],
+                        current_energy=zzz_data.battery_charge.current,
+                    )
+                    await channel.send(content=notify_text)
+                    await UsagiHoyolab.update(
+                        id=user.id, zzz_resin_sub_notified=True
+                    )
+            except Exception:
+                self.bot.logger.exception(
+                    "check_resin_overflow: failed for user %s", user.id
                 )
-                await channel.send(content=notify_text)
-                await UsagiHoyolab.update(id=user.id, genshin_resin_sub_notified=True)
-            if (
-                starrail_data
-                and user.starrail_resin_sub
-                and not user.starrail_resin_sub_notified
-                and starrail_data.current_stamina >= 220
-            ):
-                notify_text = self.bot.i18n.get_text("stamina cap", lang).format(
-                    user_id=user.user_id,
-                    nickname=data["nickname"],
-                    current_stamina=starrail_data.current_stamina,
-                )
-                await channel.send(content=notify_text)
-                await UsagiHoyolab.update(id=user.id, starrail_resin_sub_notified=True)
-            if (
-                zzz_data
-                and user.zzz_resin_sub
-                and not user.zzz_resin_sub_notified
-                and zzz_data.battery_charge.current >= 220
-            ):
-                notify_text = self.bot.i18n.get_text("energy cap", lang).format(
-                    user_id=user.user_id,
-                    nickname=data["nickname"],
-                    current_energy=zzz_data.battery_charge.current,
-                )
-                await channel.send(content=notify_text)
-                await UsagiHoyolab.update(id=user.id, zzz_resin_sub_notified=True)
 
     @check_resin_overflow.before_loop
     async def before_check_resin_overflow(self):
@@ -385,22 +408,34 @@ class Hoyolab(commands.Cog):
         self.bot.logger.info("Checking resin.")
 
     @tasks.loop(hours=1)
-    async def daily_reward_claim_notify(self):
+    async def daily_reward_claim_notify(self) -> None:
         moscow_tz = pytz.timezone("Europe/Moscow")
         time_in_moscow = datetime.now(moscow_tz)
         if time_in_moscow.hour != 19:
             return
 
-        users = await UsagiHoyolab.get_all_by(daily_notify_sub=True)
+        try:
+            users = await UsagiHoyolab.get_all_by(daily_notify_sub=True)
+            configs = await UsagiConfig.get_all_by(command_tag="genshin")
+        except Exception:
+            self.bot.logger.exception(
+                "daily_reward_claim_notify: failed to load subscriptions"
+            )
+            return
+        configs_by_guild = {config.guild_id: config for config in configs}
         notify_channels = {}
 
         for user in users:
-            config = await UsagiConfig.get(
-                guild_id=user.guild_id, command_tag="genshin"
-            )
+            config = configs_by_guild.get(user.guild_id)
             if not config:
                 continue
-            channel = await self.bot.fetch_channel(config.generic_id)
+            try:
+                channel = self.bot.get_channel(
+                    config.generic_id
+                ) or await self.bot.fetch_channel(config.generic_id)
+            except discord.DiscordException:
+                self.bot.logger.error(f"Cant get access to {config.generic_id}")
+                continue
             notify_channel = notify_channels.setdefault(
                 channel.id, {"channel": channel, "users": []}
             )
@@ -417,7 +452,12 @@ class Hoyolab(commands.Cog):
                 + users_text
                 + links
             )
-            await channel.send(text)
+            try:
+                await channel.send(text)
+            except discord.DiscordException:
+                self.bot.logger.error(
+                    f"daily_reward_claim_notify: cant send to {channel.id}"
+                )
 
     @daily_reward_claim_notify.before_loop
     async def before_daily_reward_claim_notify(self):
@@ -425,56 +465,84 @@ class Hoyolab(commands.Cog):
         self.bot.logger.info("daily_reward_claim_notify")
 
     @tasks.loop(hours=1)
-    async def claim_daily_reward(self):
+    async def claim_daily_reward(self) -> None:
         moscow_tz = pytz.timezone("Europe/Moscow")
         time_in_moscow = datetime.now(moscow_tz)
         if time_in_moscow.hour != 19:
             return
-        users = await UsagiHoyolab.get_all_by_or(
-            genshin_daily_sub=True, starrail_daily_sub=True, zzz_daily_sub=True
-        )
+        try:
+            users = await UsagiHoyolab.get_all_by_or(
+                genshin_daily_sub=True, starrail_daily_sub=True, zzz_daily_sub=True
+            )
+            configs = await UsagiConfig.get_all_by(command_tag="genshin")
+        except Exception:
+            self.bot.logger.exception(
+                "claim_daily_reward: failed to load subscriptions"
+            )
+            return
+        configs_by_guild = {config.guild_id: config for config in configs}
         channels = []
         out_date_cookies = []
 
         for user in users:
-            config = await UsagiConfig.get(
-                guild_id=user.guild_id, command_tag="genshin"
-            )
+            config = configs_by_guild.get(user.guild_id)
             if not config:
                 continue
-            channel = await self.bot.fetch_channel(config.generic_id)
+            try:
+                channel = self.bot.get_channel(
+                    config.generic_id
+                ) or await self.bot.fetch_channel(config.generic_id)
+            except discord.DiscordException:
+                self.bot.logger.error(f"Cant get access to {config.generic_id}")
+                continue
 
-            hoyolab_api = HoyolabAPI()
-            respone = None
-            if user.genshin_daily_sub:
-                respone = await hoyolab_api.claim_daily_reward(
-                    db_id=user.id, game=genshin.Game.GENSHIN
+            try:
+                hoyolab_api = HoyolabAPI()
+                respone = None
+                if user.genshin_daily_sub:
+                    respone = await hoyolab_api.claim_daily_reward(
+                        db_id=user.id, game=genshin.Game.GENSHIN
+                    )
+                if user.starrail_daily_sub:
+                    respone = await hoyolab_api.claim_daily_reward(
+                        db_id=user.id, game=genshin.Game.STARRAIL
+                    )
+                if user.zzz_daily_sub:
+                    respone = await hoyolab_api.claim_daily_reward(
+                        db_id=user.id, game=genshin.Game.ZZZ
+                    )
+            except Exception:
+                self.bot.logger.exception(
+                    "claim_daily_reward: failed for user %s", user.id
                 )
-            if user.starrail_daily_sub:
-                respone = await hoyolab_api.claim_daily_reward(
-                    db_id=user.id, game=genshin.Game.STARRAIL
-                )
-            if user.zzz_daily_sub:
-                respone = await hoyolab_api.claim_daily_reward(
-                    db_id=user.id, game=genshin.Game.ZZZ
-                )
+                continue
             if respone == "InvalidCookies":
                 out_date_cookies.append((user.user_id, channel))
                 respone = None
             if respone and channel not in channels:
                 channels.append(channel)
         for channel in channels:
-            await channel.send(
-                content=(
-                    "Claimed daily rewards.\n"
-                    "To follow use `/hoyolab sub genshin_reward_claim/honkai_reward_claim `"
+            try:
+                await channel.send(
+                    content=(
+                        "Claimed daily rewards.\n"
+                        "To follow use `/hoyolab sub genshin_reward_claim/honkai_reward_claim `"
+                    )
                 )
-            )
+            except discord.DiscordException:
+                self.bot.logger.error(
+                    f"claim_daily_reward: cant send to {channel.id}"
+                )
 
         for out_cookie in out_date_cookies:
-            await out_cookie[1].send(
-                content=f"<@{out_cookie[0]}>, " + _("Your cookie out of date")
-            )
+            try:
+                await out_cookie[1].send(
+                    content=f"<@{out_cookie[0]}>, " + _("Your cookie out of date")
+                )
+            except discord.DiscordException:
+                self.bot.logger.error(
+                    f"claim_daily_reward: cant notify user {out_cookie[0]}"
+                )
 
     @claim_daily_reward.before_loop
     async def before_claim_daily_reward(self):
@@ -572,6 +640,8 @@ class Hoyolab(commands.Cog):
         for user in users:
             hoyolab_api = HoyolabAPI()
             data = await hoyolab_api.get_user_data(db_id=user.id)
+            if not data:
+                continue
             users_data.append(data)
 
         if not users_data:
@@ -589,7 +659,7 @@ class Hoyolab(commands.Cog):
             content="", embed=embed, view=HoyolabAccountView(self.bot, users_data)
         )
 
-        if users_data[0]["geetest_error"] is not None:
+        if users_data[0].get("geetest_error") is not None:
             await ctx.respond(
                 content=_("geetest error").format(
                     geetest_error=users_data[0]["geetest_error"]
@@ -616,47 +686,6 @@ class Hoyolab(commands.Cog):
         )
         await ctx.send_followup(content="", embed=embed)
 
-    # @hoyolab.command(
-    #     name="redeem_code",
-    #     name_localizations={"ru": "код"},
-    #     description="Activate genshin promo code.",
-    #     description_localizations={"ru": "Активировать код."},
-    # )
-    # @discord.commands.option(
-    #     name="code",
-    #     name_localizations={"ru": "код"},
-    #     description="Code to activate",
-    #     description_localizations={"ru": "Код для активации."},
-    # )
-    # @discord.commands.option(
-    #     name="game",
-    #     name_localizations={"ru": "игра"},
-    #     description="For which game code",
-    #     description_localizations={"ru": "Для какой игры этот код."},
-    #     choices=["Genshin", "Star Rail"],
-    # )
-    # async def redeem_code(self, ctx, code: str, game: str) -> None:
-    #     await ctx.defer(ephemeral=True)
-    #
-    #     hoyolab_api = GenshinAPI()
-    #     cookies_response = await hoyolab_api.set_cookies(
-    #         guild_id=ctx.guild.id,
-    #         user_id=ctx.user.id,
-    #         redemtion_check=True
-    #     )
-    #     if cookies_response is False:
-    #         await ctx.send_followup(
-    #             content=_("You are not logged in"), ephemeral=True
-    #         )
-    #         return
-    #     elif cookies_response == "Error cookie_token_v2":
-    #         await ctx.send_followup(
-    #             content=_("Need to provide cookie_token_v2"), ephemeral=True
-    #         )
-    #         return
-    #     redeem_response = await hoyolab_api.redeem_code(code, game)
-    #     await ctx.send_followup(content=redeem_response)
-
     @hoyolab.command(
         name="subscription",
         name_localizations={"ru": "подписки"},
@@ -672,17 +701,23 @@ class Hoyolab(commands.Cog):
         if not users:
             await ctx.respond(content=_("You are not logged in"), ephemeral=True)
             return
+        # users_data and active_users stay parallel: the select views map
+        # a picked nickname back to its DB row by index.
         users_data = []
+        active_users = []
         for user in users:
             hoyolab_api = HoyolabAPI()
             data = await hoyolab_api.get_user_data(db_id=user.id)
+            if not data:
+                continue
             users_data.append({"nickname": data["nickname"], "icon": data["icon"]})
+            active_users.append(user)
 
         if not users_data:
             await ctx.respond(content=_("Your cookie out of date"), ephemeral=True)
             return
 
-        fields = generate_all_subs_fields(users[0])
+        fields = generate_all_subs_fields(active_users[0])
 
         embed = get_embed(
             title=_("Subscriptions"),
@@ -690,7 +725,9 @@ class Hoyolab(commands.Cog):
             author_icon_URL=users_data[0].get("icon", None),
             fields=fields,
         )
-        await ctx.respond(embed=embed, view=SubsView(self.bot, users_data, users))
+        await ctx.respond(
+            embed=embed, view=SubsView(self.bot, users_data, active_users)
+        )
 
     @hoyolab.command(
         name="delete",
@@ -707,32 +744,21 @@ class Hoyolab(commands.Cog):
         if not users:
             await ctx.respond(content=_("You are not logged in"), ephemeral=True)
             return
+        # Accounts with dead cookies must stay deletable, so fall back to a
+        # placeholder label instead of dropping them from the list.
         users_data = []
         for user in users:
             hoyolab_api = HoyolabAPI()
             data = await hoyolab_api.get_user_data(db_id=user.id)
-            users_data.append({"nickname": data["nickname"], "icon": data["icon"]})
-
-        if not users_data:
-            await ctx.respond(content=_("Your cookie out of date"), ephemeral=True)
-            return
+            users_data.append(
+                {
+                    "nickname": (data or {}).get("nickname")
+                    or f"Hoyolab user #{user.id}",
+                    "icon": (data or {}).get("icon"),
+                }
+            )
 
         await ctx.respond(content="", view=HoyolabAccountDeleteView(users_data, users))
-
-    # @commands.command()
-    # @is_owner()
-    # async def redeem_code_all(self, ctx, *, codes: str) -> None:
-    #     users = await UsagiHoyolab.get_all_by(code_sub=True)
-    #     response_codes = {}
-    #     for user in users:
-    #         hoyolab_api = GenshinAPI()
-    #         await hoyolab_api.set_cookies(guild_id=user.guild_id, user_id=user.user_id)
-    #         for code in codes.split(","):
-    #             response = await hoyolab_api.redeem_code(code.strip())
-    #             user_codes = response_codes.setdefault(user.user_id, {})
-    #             user_codes.setdefault(code, response)
-    #
-    #     await ctx.reply(response_codes)
 
 
 def setup(bot):

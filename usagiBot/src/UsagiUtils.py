@@ -1,19 +1,16 @@
+import contextlib
+import functools
+
 from datetime import datetime
-from typing import List, Dict
+from typing import List, Dict, Optional
 
 import discord
 from discord.ext.commands._types import Error
 
-from usagiBot.env import (
-    BOT_OWNER,
-    QbittorrentHOST,
-    QbittorrentUSERNAME,
-    QbittorrentPASSWORD,
-)
+from usagiBot.env import BOT_OWNER
 from usagiBot.cogs.Main.schemas import UsagiAutoRoles, UsagiLanguage
 from usagiBot.cogs.Moderation.schemas import UsagiCogs, UsagiModerRoles
 
-import qbittorrentapi
 from PIL import Image, ImageDraw, ImageFont
 import io
 
@@ -26,8 +23,8 @@ class UsagiEmbed(discord.Embed):
             for i in range(len(self._fields)):
                 if (
                     self._fields[i].name != other._fields[i].name
-                    and self._fields[i].value != other._fields[i].value
-                    and self._fields[i].inline != other._fields[i].inline
+                    or self._fields[i].value != other._fields[i].value
+                    or self._fields[i].inline != other._fields[i].inline
                 ):
                     return False
 
@@ -111,11 +108,17 @@ class Editor:
         return ImageFont.truetype(path, size)
 
 
+# Discord rejects messages longer than 2000 chars; keep a margin for the
+# trailing ellipsis so a verbose traceback can never make the DM itself raise.
+DISCORD_MESSAGE_LIMIT = 1990
+
+
 async def error_notification_to_owner(
     ctx: discord.ext.commands.Context,
     error: Error,
     bot: discord.Bot,
     app_command: bool = False,
+    traceback_str: Optional[str] = None,
 ):
     """
     Send error log to bot owner
@@ -123,9 +126,10 @@ async def error_notification_to_owner(
     :param error: Error
     :bot: Bot object
     :param app_command: Is command application
+    :param traceback_str: Optional formatted traceback to append (tail-trimmed)
     :return:
     """
-    owner = await ctx.bot.fetch_user(BOT_OWNER)
+    owner = ctx.bot.get_user(BOT_OWNER) or await ctx.bot.fetch_user(BOT_OWNER)
     error_message = (
         "**NEW ERROR OCCURRED**\n"
         + f"> **Command** - {ctx.command.name}\n"
@@ -141,8 +145,47 @@ async def error_notification_to_owner(
             + f"> **Args** - {ctx.args}\n"
             + f"> **Kwargs** - {ctx.kwargs}\n"
         )
+
+    if traceback_str:
+        # Keep the tail — the actual exception line is at the end.
+        budget = DISCORD_MESSAGE_LIMIT - len(error_message) - len("```\n\n```")
+        if budget > 0:
+            error_message += f"```\n{traceback_str[-budget:]}\n```"
+
+    if len(error_message) > DISCORD_MESSAGE_LIMIT:
+        error_message = error_message[:DISCORD_MESSAGE_LIMIT] + "…"
+
     await owner.send(error_message)
     bot.logger.error(error)
+
+
+def guard_loop(coro):
+    """Wrap a ``tasks.loop`` body so an exception can't escape and kill it.
+
+    py-cord permanently stops a ``tasks.loop`` on any exception outside its
+    reconnect set, so the body must never raise. The wrapped cog is expected
+    to expose ``self.bot.logger``.
+    """
+
+    @functools.wraps(coro)
+    async def wrapper(self, *args, **kwargs):
+        try:
+            return await coro(self, *args, **kwargs)
+        except Exception:
+            self.bot.logger.exception("%s: loop tick failed", coro.__name__)
+
+    return wrapper
+
+
+@contextlib.asynccontextmanager
+async def guarded_item(bot: discord.Bot, loop_name: str, item=None):
+    """Isolate one iteration of a loop: log and swallow its error so a single
+    bad row/channel/API call can't abort the rest of the batch.
+    """
+    try:
+        yield
+    except Exception:
+        bot.logger.exception("%s: iteration failed for %r", loop_name, item)
 
 
 async def load_all_command_tags(
@@ -217,24 +260,6 @@ async def init_auto_roles() -> Dict:
 async def init_language() -> Dict:
     langs = await UsagiLanguage.get_all()
     return {lang.user_id: lang.lang for lang in langs}
-
-
-async def init_qbt_client(logger) -> qbittorrentapi.Client:
-    conn_info = dict(
-        host=QbittorrentHOST,
-        username=QbittorrentUSERNAME,
-        password=QbittorrentPASSWORD,
-    )
-
-    qbt_client = qbittorrentapi.Client(**conn_info)
-
-    try:
-        qbt_client.auth_log_in()
-        logger.info("Logged in Qbittorrent")
-    except qbittorrentapi.LoginFailed as e:
-        logger.error(e)
-
-    return qbt_client
 
 
 def get_embed(

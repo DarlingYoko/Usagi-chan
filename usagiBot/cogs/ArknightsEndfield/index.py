@@ -1,9 +1,10 @@
+import asyncio
 from datetime import datetime
 from io import BytesIO
 
+import aiohttp
 import discord
 import pytz
-import requests
 from discord import SlashCommandGroup
 
 from discord.ext import commands, tasks
@@ -14,6 +15,8 @@ from usagiBot.cogs.Main.schemas import UsagiConfig
 from usagiBot.cogs.ArknightsEndfield.arknights_utils import EndfieldClient, draw_endfield_profile
 from usagiBot.src.UsagiChecks import check_is_already_set_up, check_cog_whitelist
 from usagiBot.src.UsagiErrors import UsagiModuleDisabledError
+from usagiBot.src.UsagiNet import UnsafeUrlError, fetch_image
+from usagiBot.src.UsagiUtils import guard_loop, guarded_item
 
 from pycord18n.extension import _
 
@@ -26,11 +29,11 @@ class EndfieldProfileView(discord.ui.View):
                  author: discord.Member,
                  endfield_data: list,
                  profile_files: dict[str, BytesIO],
-                 background_url: str = None,
+                 background_bytes: bytes = None,
                  color: str = None,
                  theme: str = None
                  ):
-        super().__init__(EndfieldProfileSelect(bot, author, endfield_data, profile_files, background_url, color, theme))
+        super().__init__(EndfieldProfileSelect(bot, author, endfield_data, profile_files, background_bytes, color, theme))
         self.timeout = 300
 
 class EndfieldProfileSelect(discord.ui.Select):
@@ -39,7 +42,7 @@ class EndfieldProfileSelect(discord.ui.Select):
                  author: discord.Member,
                  endfield_data: list,
                  profile_files: dict[str, BytesIO],
-                 background_url: str = None,
+                 background_bytes: bytes = None,
                  color: str = None,
                  theme: str = None
                  ):
@@ -47,7 +50,7 @@ class EndfieldProfileSelect(discord.ui.Select):
         self.author = author
         self.endfield_data = endfield_data
         self.profile_files = profile_files
-        self.background_url = background_url
+        self.background_bytes = background_bytes
         self.color = color
         self.theme = theme
         self.timeout = 300
@@ -73,7 +76,9 @@ class EndfieldProfileSelect(discord.ui.Select):
         data = [d for d in self.endfield_data if d.nickname == self.values[0]][0]
         img_bytes = self.profile_files.get(data.nickname, None)
         if img_bytes is None:
-            img_bytes = draw_endfield_profile(data, self.background_url, self.color, self.theme)
+            img_bytes = await asyncio.to_thread(
+                draw_endfield_profile, data, self.background_bytes, self.color, self.theme
+            )
             self.profile_files[data.nickname] = img_bytes
 
         img_bytes.seek(0)
@@ -155,61 +160,60 @@ class Endfield(commands.Cog):
         raise UsagiModuleDisabledError()
 
     @tasks.loop(minutes=60)
+    @guard_loop
     async def check_sanity_overflow(self):
         users = await UsagiGryphline.get_all_by_or(endfield_sanity_sub=True)
+        if not users:
+            return
+        configs = await UsagiConfig.get_all_by(command_tag="endfield")
+        configs_by_guild = {config.guild_id: config for config in configs}
 
         for user in users:
-            config = await UsagiConfig.get(
-                guild_id=user.guild_id, command_tag="endfield"
-            )
-            if not config:
-                continue
-            try:
+            async with guarded_item(self.bot, "check_sanity_overflow", user.id):
+                config = configs_by_guild.get(user.guild_id)
+                if not config:
+                    continue
                 channel = self.bot.get_channel(
                     config.generic_id
                 ) or await self.bot.fetch_channel(config.generic_id)
-            except discord.errors.Forbidden:
-                self.bot.logger.error(f"Cant get access to {config.generic_id}")
-                continue
 
-            client = EndfieldClient(
-                account_token=user.token
-            )
+                client = EndfieldClient(account_token=user.token)
+                await client.start()
 
-            await client.start()
+                try:
+                    if not await client.sign_in():
+                        continue
 
-            try:
-                if not await client.sign_in():
-                    continue
+                    profile = await client.get_profile()
 
-                profile = await client.get_profile()
+                    if not profile.success:
+                        continue
 
-                if not profile.success:
-                    continue
+                finally:
+                    await client.close()
 
-            finally:
-                await client.close()
+                if profile.data and profile.data.sanity.current < 340:
+                    if user.endfield_sanity_sub_notified:
+                        await UsagiGryphline.update(
+                            id=user.id, endfield_sanity_sub_notified=False
+                        )
 
-            if profile.data and profile.data.sanity.current < 340:
-                if user.endfield_sanity_sub_notified:
-                    await UsagiGryphline.update(
-                        id=user.id, endfield_sanity_sub_notified=False
+                lang = self.bot.language.get(user.user_id, "en")
+                if (
+                        profile.data
+                        and user.endfield_sanity_sub
+                        and not user.endfield_sanity_sub_notified
+                        and profile.data.sanity.current >= 340
+                ):
+                    notify_text = self.bot.i18n.get_text("sanity cap", lang).format(
+                        user_id=user.user_id,
+                        nickname=profile.data.nickname,
+                        current_sanity=profile.data.sanity.current,
                     )
-
-            lang = self.bot.language.get(user.user_id, "en")
-            if (
-                    profile.data
-                    and user.endfield_sanity_sub
-                    and not user.endfield_sanity_sub_notified
-                    and profile.data.sanity.current >= 340
-            ):
-                notify_text = self.bot.i18n.get_text("sanity cap", lang).format(
-                    user_id=user.user_id,
-                    nickname=profile.data.nickname,
-                    current_sanity=profile.data.sanity.current,
-                )
-                await channel.send(content=notify_text)
-                await UsagiGryphline.update(id=user.id, endfield_sanity_sub_notified=True)
+                    await channel.send(content=notify_text)
+                    await UsagiGryphline.update(
+                        id=user.id, endfield_sanity_sub_notified=True
+                    )
 
     @check_sanity_overflow.before_loop
     async def before_check_sanity_overflow(self):
@@ -217,6 +221,7 @@ class Endfield(commands.Cog):
         self.bot.logger.info("Checking sanity.")
 
     @tasks.loop(hours=1)
+    @guard_loop
     async def claim_endfield_daily_reward(self):
         moscow_tz = pytz.timezone("Europe/Moscow")
         time_in_moscow = datetime.now(moscow_tz)
@@ -224,49 +229,66 @@ class Endfield(commands.Cog):
             return
 
         users = await UsagiGryphline.get_all_by_or(endfield_daily_sub=True)
+        if not users:
+            return
+        configs = await UsagiConfig.get_all_by(command_tag="endfield")
+        configs_by_guild = {config.guild_id: config for config in configs}
         channels = []
         errors = []
 
         for user in users:
-            config = await UsagiConfig.get(
-                guild_id=user.guild_id, command_tag="endfield"
-            )
-            if not config:
-                continue
-            channel = await self.bot.fetch_channel(config.generic_id)
+            async with guarded_item(
+                self.bot, "claim_endfield_daily_reward", user.id
+            ):
+                config = configs_by_guild.get(user.guild_id)
+                if not config:
+                    continue
+                channel = self.bot.get_channel(
+                    config.generic_id
+                ) or await self.bot.fetch_channel(config.generic_id)
 
-            client = EndfieldClient(
-                account_token=user.token
-            )
+                client = EndfieldClient(account_token=user.token)
+                await client.start()
 
-            await client.start()
+                try:
+                    if not await client.sign_in():
+                        errors.append(
+                            (user.user_id, channel, _("Authorisation failed"))
+                        )
+                        continue
 
-            try:
-                if not await client.sign_in():
-                    errors.append((user.user_id, channel, _("Authorisation failed")))
+                    result = await client.get_attendance()
+                    if result.success and channel not in channels:
+                        channels.append(channel)
 
-                result = await client.get_attendance()
-                if result.success and channel not in channels:
-                    channels.append(channel)
+                    if not result.success:
+                        errors.append(
+                            (
+                                user.user_id,
+                                channel,
+                                _("Profile error").format(message=result.message),
+                            )
+                        )
 
-                if not result.success:
-                    errors.append((user.user_id, channel, _("Profile error").format(message=result.message)))
-
-            finally:
-                await client.close()
+                finally:
+                    await client.close()
 
         for channel in channels:
-            await channel.send(
-                content=(
-                    "Claimed daily rewards.\n"
-                    "To follow use `/endfield settings` and click for daily rewards."
+            async with guarded_item(
+                self.bot, "claim_endfield_daily_reward", channel
+            ):
+                await channel.send(
+                    content=(
+                        "Claimed daily rewards.\n"
+                        "To follow use `/endfield settings` and click for daily rewards."
+                    )
                 )
-            )
 
         for error in errors:
-            await error[1].send(
-                content=f"<@{error[0]}>, {error[2]}"
-            )
+            async with guarded_item(
+                self.bot, "claim_endfield_daily_reward", error[0]
+            ):
+                await error[1].send(content=f"<@{error[0]}>, {error[2]}")
 
     @claim_endfield_daily_reward.before_loop
     async def before_claim_endfield_daily_reward(self):
@@ -298,7 +320,7 @@ class Endfield(commands.Cog):
 
         users_data = await UsagiGryphline.get_all_by(guild_id=ctx.guild.id, user_id=ctx.author.id)
         if not users_data:
-            ctx.respond(_("User not found"), ephemeral=True)
+            await ctx.respond(_("User not found"), ephemeral=True)
             return
 
         endfield_data = []
@@ -325,20 +347,31 @@ class Endfield(commands.Cog):
                 await client.close()
 
         user_profile_data = await UsagiEndfieldProfile.get(guild_id=ctx.guild.id, user_id=ctx.author.id)
-        background_url = None
+        background_bytes = None
         color = None
         theme = None
         if user_profile_data:
-            background_url = user_profile_data.background_url
             color = user_profile_data.accent_color
             theme = user_profile_data.theme
+            if user_profile_data.background_url:
+                try:
+                    background_bytes = await fetch_image(user_profile_data.background_url)
+                except (UnsafeUrlError, aiohttp.ClientError, asyncio.TimeoutError):
+                    # Stored URL went bad or unsafe — render the default background
+                    background_bytes = None
 
         profile_bytes = {
-            endfield_data[0].nickname: draw_endfield_profile(endfield_data[0], background_url=background_url, color=color, theme=theme)
+            endfield_data[0].nickname: await asyncio.to_thread(
+                draw_endfield_profile,
+                endfield_data[0],
+                background_bytes=background_bytes,
+                color=color,
+                theme=theme,
+            )
         }
         endfield_view = None
         if len(endfield_data) > 1:
-            endfield_view = EndfieldProfileView(self.bot, ctx.author, endfield_data, profile_bytes, background_url, color, theme)
+            endfield_view = EndfieldProfileView(self.bot, ctx.author, endfield_data, profile_bytes, background_bytes, color, theme)
 
         img_bytes = profile_bytes[endfield_data[0].nickname]
         img_bytes.seek(0)
@@ -363,7 +396,7 @@ class Endfield(commands.Cog):
 
         users_data = await UsagiGryphline.get_all_by(guild_id=ctx.guild.id, user_id=ctx.author.id)
         if not users_data:
-            ctx.respond(_("User not found"), ephemeral=True)
+            await ctx.respond(_("User not found"), ephemeral=True)
             return
 
         endfield_data = []
@@ -451,7 +484,7 @@ class Endfield(commands.Cog):
     async def endfield_settings(self, ctx: discord.ApplicationContext, option: str, uid: int):
         check_account = await UsagiGryphline.get(guild_id=ctx.guild.id, user_id=ctx.author.id, uid=uid)
         if not check_account:
-            ctx.respond(_("User not found"), ephemeral=True)
+            await ctx.respond(_("User not found"), ephemeral=True)
             return
 
         result = None
@@ -493,7 +526,7 @@ class Endfield(commands.Cog):
     async def endfield_delete(self, ctx: discord.ApplicationContext, uid: int):
         check_account = await UsagiGryphline.get(guild_id=ctx.guild.id, user_id=ctx.author.id, uid=uid)
         if not check_account:
-            ctx.respond(_("User not found"), ephemeral=True)
+            await ctx.respond(_("User not found"), ephemeral=True)
             return
 
         await UsagiGryphline.delete(guild_id=ctx.guild.id, user_id=ctx.author.id, uid=uid)
@@ -516,8 +549,8 @@ class Endfield(commands.Cog):
     )
     async def endfield_set_bg(self, ctx: discord.ApplicationContext, url: str):
         try:
-            requests.get(url)
-        except requests.exceptions.RequestException as e:
+            await fetch_image(url)
+        except (UnsafeUrlError, aiohttp.ClientError, asyncio.TimeoutError):
             await ctx.respond(_("wrong bg url"), ephemeral=True)
             return
 

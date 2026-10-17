@@ -37,10 +37,6 @@ from usagiBot.src.UsagiUtils import get_embed
 # ---------------------------------------------------------------------------
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(message)s",
-)
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -633,17 +629,15 @@ def generate_endfield_profile(p: ProfileData) -> discord.Embed:
         fields=fields,
     )
 
-def draw_endfield_profile(profile_data: ProfileData, background_url: str = None, color: str = None, theme: str = None) -> BytesIO:
+def draw_endfield_profile(profile_data: ProfileData, background_bytes: bytes = None, color: str = None, theme: str = None) -> BytesIO:
+    # Caller fetches the user-set background (SSRF-validated via
+    # UsagiNet.fetch_image) and passes raw bytes; None means default art.
     background_path = "./usagiBot/files/photo/endfield/ENDFIELD_DEFAULT_BACKGROUND.png"
     color = "#dd8181" if color is None else color
     theme = "Dark" if theme is None else theme
 
-    try:
-        response_background = requests.get(background_url)
-        if response_background.status_code == 200:
-            background_path = BytesIO(response_background.content)
-    except requests.exceptions.RequestException as e:
-        pass
+    if background_bytes:
+        background_path = BytesIO(background_bytes)
 
     # Open background image
     with Image.open(background_path) as background:
@@ -657,8 +651,8 @@ def draw_endfield_profile(profile_data: ProfileData, background_url: str = None,
         timer_uid = Image.open("./usagiBot/files/photo/endfield/ENDFIELD_PROFILE_TIMER_UID.png").convert("RGBA")
         sanity_icon = Image.open("./usagiBot/files/photo/endfield/ENDFIELD_SANITY_ICON.png").convert("RGBA")
 
-        # Open icon
-        response = requests.get(profile_data.avatar_url)
+        # Open icon (sync is fine — callers run this whole function in a thread)
+        response = requests.get(profile_data.avatar_url, timeout=15)
         response.raise_for_status()
         icon = Image.open(BytesIO(response.content)).convert("RGBA").resize((300, 300))
 

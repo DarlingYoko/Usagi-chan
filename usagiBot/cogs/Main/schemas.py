@@ -7,7 +7,8 @@ from sqlalchemy import (
     Integer,
     Boolean,
     ForeignKey,
-    DateTime
+    DateTime,
+    UniqueConstraint,
 )
 
 
@@ -23,7 +24,7 @@ class UsagiSaveRoles(Base, ModelAdmin):
     __tablename__ = "usagi_save_roles"
     id = Column(Integer, primary_key=True)
     guild_id = Column(BigInteger)
-    saving_roles = Column(Boolean)
+    saving_roles = Column(Boolean, nullable=False, default=False, server_default="false")
 
 class UsagiMemberRoles(Base, ModelAdmin):
     __tablename__ = "usagi_member_roles"
@@ -42,16 +43,22 @@ class UsagiAutoRolesData(Base, ModelAdmin):
 
 class UsagiBackup(Base, ModelAdmin):
     __tablename__ = "usagi_backup"
+    __table_args__ = (
+        UniqueConstraint(
+            "guild_id", "channel_id", "user_id",
+            name="uq_usagi_backup_guild_channel_user",
+        ),
+    )
     id = Column(Integer, primary_key=True)
     guild_id = Column(BigInteger)
     channel_id = Column(BigInteger)
     user_id = Column(BigInteger)
-    messages = Column(BigInteger)
-    images = Column(BigInteger)
-    gifs = Column(BigInteger)
-    emojis = Column(BigInteger)
-    stickers = Column(BigInteger)
-    voice_min = Column(BigInteger)
+    messages = Column(BigInteger, nullable=False, default=0, server_default="0")
+    images = Column(BigInteger, nullable=False, default=0, server_default="0")
+    gifs = Column(BigInteger, nullable=False, default=0, server_default="0")
+    emojis = Column(BigInteger, nullable=False, default=0, server_default="0")
+    stickers = Column(BigInteger, nullable=False, default=0, server_default="0")
+    voice_min = Column(BigInteger, nullable=False, default=0, server_default="0")
 
 class UsagiAutoRoles(Base, ModelAdmin):
     __tablename__ = "usagi_auto_roles"

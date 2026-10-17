@@ -1,7 +1,7 @@
 import asyncio
 from datetime import datetime
 from typing import List
-from random import randint
+from random import choice
 
 import discord
 import pytz
@@ -15,6 +15,7 @@ from pycord18n.extension import _
 from usagiBot.cogs.Main.schemas import UsagiConfig
 from usagiBot.src.UsagiChecks import check_is_already_set_up, check_cog_whitelist
 from usagiBot.src.UsagiErrors import UsagiModuleDisabledError
+from usagiBot.src.UsagiUtils import guard_loop, guarded_item
 
 from usagiBot.cogs.Birthdays.schemas import UsagiBirthday, UsagiBirthdayTimer
 
@@ -35,7 +36,9 @@ async def get_birthdays(
     users = await UsagiBirthday.get_all_by(guild_id=ctx.interaction.guild_id)
     guild = ctx.bot.get_guild(ctx.interaction.guild_id)
     for user_data in users:
-        user = await guild.fetch_member(user_data.user_id)
+        user = guild.get_member(user_data.user_id) or await guild.fetch_member(
+            user_data.user_id
+        )
         user_names.append(discord.OptionChoice(name=user.name, value=str(user.id)))
 
     return user_names
@@ -55,26 +58,34 @@ class Birthday(commands.Cog):
         raise UsagiModuleDisabledError()
 
     @tasks.loop(hours=1)
+    @guard_loop
     async def check_birthday(self):
         timezone = pytz.timezone("Europe/Moscow")
         time = datetime.now(timezone)
-        if time.hour == 12:
-            with open("./usagiBot/files/birthdays/texts.json") as f:
-                birthday_texts = json.load(f)
-                birthday_texts_length = len(birthday_texts)
-            now = datetime.now()
-            cur_data = datetime(day=now.day, month=now.month, year=now.year)
-            users_data = await UsagiBirthday.get_all_by(date=cur_data)
-            for user_data in users_data:
-                guild = await self.bot.fetch_guild(user_data.guild_id)
-                guild_config = await UsagiConfig.get(
-                    guild_id=user_data.guild_id, command_tag="birthday"
-                )
-                channel = await guild.fetch_channel(guild_config.generic_id)
+        if time.hour != 12:
+            return
 
-                birthday_text = birthday_texts[
-                    str(randint(1, birthday_texts_length))
-                ].format(user_id=user_data.user_id)
+        with open("./usagiBot/files/birthdays/texts.json") as f:
+            birthday_texts = json.load(f)
+        now = datetime.now()
+        cur_data = datetime(day=now.day, month=now.month, year=now.year)
+        users_data = await UsagiBirthday.get_all_by(date=cur_data)
+        if not users_data:
+            return
+        configs = await UsagiConfig.get_all_by(command_tag="birthday")
+        configs_by_guild = {config.guild_id: config for config in configs}
+        for user_data in users_data:
+            async with guarded_item(self.bot, "check_birthday", user_data.user_id):
+                guild_config = configs_by_guild.get(user_data.guild_id)
+                if guild_config is None:
+                    continue
+                channel = self.bot.get_channel(
+                    guild_config.generic_id
+                ) or await self.bot.fetch_channel(guild_config.generic_id)
+
+                birthday_text = choice(list(birthday_texts.values())).format(
+                    user_id=user_data.user_id
+                )
                 await channel.send(content=birthday_text)
                 await UsagiBirthday.update(
                     id=user_data.id, date=user_data.date + relativedelta(years=1)
@@ -86,41 +97,44 @@ class Birthday(commands.Cog):
         self.bot.logger.info("Checking birthdays.")
 
     @tasks.loop(hours=1)
+    @guard_loop
     async def update_birthday_timer(self):
         timers = await UsagiBirthdayTimer.get_all_by(enable=True)
         time_now = datetime.now()
 
         for timer in timers:
-            channel = self.bot.get_channel(
-                timer.channel_id
-            ) or await self.bot.fetch_channel(timer.channel_id)
-            users_data = await UsagiBirthday.get_all_by(guild_id=timer.guild_id)
-            user_birthdays = sorted(users_data, key=lambda x: x.date)
-            br_data = None
-            for user_birthday in user_birthdays:
-                if time_now < user_birthday.date:
-                    br_data = user_birthday
-                    break
+            async with guarded_item(
+                self.bot, "update_birthday_timer", timer.channel_id
+            ):
+                channel = self.bot.get_channel(
+                    timer.channel_id
+                ) or await self.bot.fetch_channel(timer.channel_id)
+                users_data = await UsagiBirthday.get_all_by(guild_id=timer.guild_id)
+                user_birthdays = sorted(users_data, key=lambda x: x.date)
+                br_data = None
+                for user_birthday in user_birthdays:
+                    if time_now < user_birthday.date:
+                        br_data = user_birthday
+                        break
 
-            if br_data is None:
-                return
+                if br_data is None:
+                    continue
 
-            text = f"До др {br_data.name}"
-            category = self.bot.get_channel(
-                channel.category_id
-            ) or await self.bot.fetch_channel(channel.category_id)
-            if category.name != text:
-                await category.edit(name=text, reason="Update birthday timer.")
-            delta = br_data.date - time_now
-            s = delta.seconds
-            hours, remainder = divmod(s, 3600)
-            minutes, seconds = divmod(remainder, 60)
-            time = ""
-            if delta.days:
-                time += f"{delta.days} d."
-            time += f" {hours} h. {minutes} m."
-            await asyncio.sleep(10 * 60)
-            await channel.edit(name=time, reason="Update birthday timer.")
+                text = f"До др {br_data.name}"
+                category = self.bot.get_channel(
+                    channel.category_id
+                ) or await self.bot.fetch_channel(channel.category_id)
+                if category.name != text:
+                    await category.edit(name=text, reason="Update birthday timer.")
+                delta = br_data.date - time_now
+                s = delta.seconds
+                hours, remainder = divmod(s, 3600)
+                minutes, seconds = divmod(remainder, 60)
+                time = ""
+                if delta.days:
+                    time += f"{delta.days} d."
+                time += f" {hours} h. {minutes} m."
+                await channel.edit(name=time, reason="Update birthday timer.")
 
     @update_birthday_timer.before_loop
     async def before_update_birthday_timer(self):
@@ -166,9 +180,12 @@ class Birthday(commands.Cog):
                 _("This user already added in birthday list"), ephemeral=True
             )
         now = datetime.now()
-        cur_data = datetime(day=day, month=month, year=now.year)
-        if now > cur_data:
-            cur_data = datetime(day=day, month=month, year=now.year + 1)
+        try:
+            cur_data = datetime(day=day, month=month, year=now.year)
+            if now > cur_data:
+                cur_data = datetime(day=day, month=month, year=now.year + 1)
+        except ValueError:
+            return await ctx.respond(_("Invalid date"), ephemeral=True)
         await UsagiBirthday.create(
             guild_id=ctx.guild.id, user_id=user.id, date=cur_data, name=name
         )
@@ -190,7 +207,7 @@ class Birthday(commands.Cog):
         exist_user = await UsagiBirthday.get(guild_id=ctx.guild.id, user_id=user_id)
         if not exist_user:
             return await ctx.respond(
-                _("This user isn't in birthday list, add him firstly"), ephemeral=True
+                _("This user isn't in birthday list"), ephemeral=True
             )
         await UsagiBirthday.delete(guild_id=ctx.guild.id, user_id=user_id)
         await ctx.respond(_("Done"), ephemeral=True)
@@ -224,7 +241,7 @@ class Birthday(commands.Cog):
     async def add_birthday_timer(self, ctx, channel: discord.VoiceChannel):
         guild = await UsagiBirthdayTimer.get(guild_id=ctx.guild.id)
         if guild:
-            await UsagiBirthdayTimer.update(id=guild.id, channel=channel.id)
+            await UsagiBirthdayTimer.update(id=guild.id, channel_id=channel.id)
             answer = "Updated birthday timer"
         else:
             await UsagiBirthdayTimer.create(

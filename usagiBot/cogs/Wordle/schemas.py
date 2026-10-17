@@ -23,5 +23,5 @@ class UsagiWordleResults(Base, ModelAdmin):
     id = Column(Integer, primary_key=True)
     guild_id = Column(BigInteger)
     user_id = Column(BigInteger)
-    points = Column(BigInteger)
-    count_of_games = Column(BigInteger)
+    points = Column(BigInteger, nullable=False, default=0, server_default="0")
+    count_of_games = Column(BigInteger, nullable=False, default=0, server_default="0")

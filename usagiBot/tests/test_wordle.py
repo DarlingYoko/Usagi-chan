@@ -40,10 +40,11 @@ class TestWordleMethods(IsolatedAsyncioTestCase):
     def test_check_word_for_reality_not_in_dict(self):
         self.assertFalse(self.wordle_utils.check_word_for_reality("ksdngksdjfnkg"))
 
-    @mock.patch("random.randint")
-    def test_get_word(self, mock_randint):
-        mock_randint.return_value = 0
+    @mock.patch("random.choice")
+    def test_get_word(self, mock_choice):
+        mock_choice.side_effect = lambda words: words[0]
         self.assertEqual(self.wordle_utils.get_word(length=5), "АВТОР")
+        mock_choice.assert_called_once()
 
     async def test_create_finish_game_embed(self) -> None:
         game_author = mock.MagicMock()
@@ -290,3 +291,38 @@ Created by test_game_author[0m[2;32m[4;32m[4;32m[0;32m[0m[4;32m[0m[4;32
             word="ЗАЙЧИК",
             game=wordle_game,
         )
+
+
+class TestWordleTop(IsolatedAsyncioTestCase):
+    @mock.patch(
+        "usagiBot.cogs.Wordle.schemas.UsagiWordleResults", new_callable=mock.AsyncMock
+    )
+    @mock.patch.object(asyncio, "create_async_engine")
+    def setUp(self, mock_engine, mock_Results) -> None:
+        from usagiBot.cogs.Wordle.index import Wordle
+
+        self.Wordle = Wordle
+        self.mock_Results = mock_Results
+        self.Wordle.bot = mock.AsyncMock()
+        self.Wordle.bot.i18n = init_i18n()
+        self.Wordle.bot.language = {}
+        self.ctx = mock.AsyncMock()
+        self.ctx.guild.id = "g1"
+
+    async def test_wordle_top_numbering_starts_at_one(self) -> None:
+        self.mock_Results.get_top.return_value = [
+            mock.MagicMock(user_id=4, points=11, count_of_games=3),
+            mock.MagicMock(user_id=5, points=7, count_of_games=2),
+        ]
+        await self.Wordle.wordle_top.callback(self.Wordle, self.ctx)
+        embed = self.ctx.respond.call_args.kwargs["embed"]
+        self.assertIn("1.", embed.description)
+        self.assertNotIn("0.", embed.description)
+
+    async def test_wordle_top_orders_in_sql(self) -> None:
+        self.mock_Results.get_top.return_value = []
+        await self.Wordle.wordle_top.callback(self.Wordle, self.ctx)
+        self.mock_Results.get_top.assert_awaited_once_with(
+            order_by="points", limit=10, guild_id="g1"
+        )
+        self.mock_Results.get_all_by.assert_not_called()
