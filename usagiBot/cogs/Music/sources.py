@@ -223,6 +223,23 @@ class YTDLSource(discord.PCMVolumeTransformer):
         return get_source(cls, ctx, seek, info)
 
 
+# Discord rejects the whole message when an embed field/description is over these
+EMBED_FIELD_LIMIT = 1024
+EMBED_DESCRIPTION_LIMIT = 4096
+
+
+def _clamp(text, limit: int) -> str:
+    text = str(text)
+    return text if len(text) <= limit else text[: limit - 1] + "…"
+
+
+def _link(label, url, limit: int = EMBED_FIELD_LIMIT) -> str:
+    """Markdown link that always fits an embed field; drops the URL if it can't."""
+    label = _clamp(label, 200)
+    link = f"[{label}]({url})"
+    return link if len(link) <= limit else _clamp(label, limit)
+
+
 class Song:
     __slots__ = (
         "source",
@@ -259,7 +276,7 @@ class Song:
         embed = (
             get_embed(
                 title="Now Playing",
-                description=f"```css\n{self.source.title}\n```",
+                description=f"```css\n{_clamp(self.source.title, EMBED_DESCRIPTION_LIMIT - 20)}\n```",
             )
             .add_field(
                 name="Duration",
@@ -279,17 +296,17 @@ class Song:
         if not self.is_file:
             embed.add_field(
                 name="Uploader",
-                value=f"[{self.source.uploader}]({self.source.uploader_url})",
+                value=_link(self.source.uploader, self.source.uploader_url),
             )
             embed.add_field(
                 name="URL",
-                value=f"[Click]({self.source.url})",
+                value=_link("Click", self.source.url),
             )
             embed.set_thumbnail(url=self.source.thumbnail)
         if self.is_direct_link:
             embed.add_field(
                 name="URL",
-                value=f"[Click]({self.source.url})",
+                value=_link("Click", self.source.url),
             )
 
         return embed

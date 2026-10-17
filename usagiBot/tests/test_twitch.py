@@ -355,12 +355,19 @@ class TestTwitch(IsolatedAsyncioTestCase):
 class TestTwitchAuth(IsolatedAsyncioTestCase):
     async def test_twitch_auth_falls_back_to_app_auth_on_dead_refresh_token(self) -> None:
         from twitchAPI.type import InvalidRefreshTokenException
+
+        await self._assert_falls_back(InvalidRefreshTokenException("Invalid refresh token"))
+
+    async def test_twitch_auth_falls_back_when_token_reports_no_scopes(self) -> None:
+        # twitchAPI raises TypeError ("NoneType is not iterable") when the
+        # token validates but carries no scopes.
+        await self._assert_falls_back(TypeError("argument of type 'NoneType' is not iterable"))
+
+    async def _assert_falls_back(self, error: Exception) -> None:
         from usagiBot.cogs.Twitch import twitch_utils
 
         user_client = mock.MagicMock()
-        user_client.set_user_authentication = mock.AsyncMock(
-            side_effect=InvalidRefreshTokenException("Invalid refresh token")
-        )
+        user_client.set_user_authentication = mock.AsyncMock(side_effect=error)
 
         class AppClient(mock.MagicMock):
             def __await__(self):

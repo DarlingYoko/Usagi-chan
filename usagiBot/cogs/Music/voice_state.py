@@ -193,6 +193,17 @@ class VoiceState:
                 return "error"
             return result
 
+    async def _send_now_playing(self):
+        """Post the now-playing card; a Discord error must not stop playback."""
+        try:
+            return await self.current.source.channel.send(
+                embed=self.current.create_embed("play"),
+                view=PlayerControlView(self.bot, self),
+            )
+        except discord.HTTPException as e:
+            logger.error("Couldn't send now-playing message: %s", e)
+            return None
+
     async def audio_player_task(self):
         while True:
             self.next.clear()
@@ -296,17 +307,15 @@ class VoiceState:
                 self.start_time = time.time()
                 self.current.start_time = time.time()
                 if not self.forbidden:
-                    self.message = await self.current.source.channel.send(
-                        embed=self.current.create_embed("play"),
-                        view=PlayerControlView(self.bot, self),
-                    )
+                    self.message = await self._send_now_playing()
                 self.forbidden = False
                 self.voice.play(self.current.source, after=self.play_next_song)
                 await self.next.wait()
                 # Delete the message of the song playing
                 if not self.forbidden:
                     try:
-                        await self.message.delete()
+                        if self.message:
+                            await self.message.delete()
                     except Exception as e:
                         logger.error("Couldn't delete now-playing message: %s", e)
 

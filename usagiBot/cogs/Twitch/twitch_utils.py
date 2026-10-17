@@ -50,7 +50,7 @@ async def twitch_auth() -> Twitch:
     ]
     try:
         await twitch.set_user_authentication(TWITCH_TOKEN, target_scope, REFRESH_TOKEN)
-    except (InvalidRefreshTokenException, InvalidTokenException):
+    except (InvalidRefreshTokenException, InvalidTokenException, TypeError):
         logger.warning(
             "Twitch user token is invalid or revoked; regenerate TWITCH_TOKEN and "
             "REFRESH_TOKEN. Falling back to app auth (stream notifications still work)."
