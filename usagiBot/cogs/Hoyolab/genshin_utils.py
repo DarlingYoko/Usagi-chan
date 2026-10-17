@@ -51,7 +51,8 @@ class HoyolabAPI:
             return False
         return True
 
-    async def get_user_data(self, db_id: int) -> dict:
+    async def get_user_data(self, db_id: int, games: list[str] | None = None) -> dict:
+        """Profile plus notes; `games` limits which games' notes are fetched."""
         cookies_result = await self.set_cookies(db_id=db_id)
         if not cookies_result:
             return {}
@@ -68,6 +69,8 @@ class HoyolabAPI:
             "geetest_error": None,
         }
         for source in ["starrail", "genshin", "zzz"]:
+            if games is not None and source not in games:
+                continue
             try:
                 res = await getattr(self.client, f"get_{source}_notes")()
                 data[source] = res
@@ -123,10 +126,17 @@ class HoyolabAPI:
             return False
 
 
-def generate_fields(data) -> list[discord.EmbedField]:
-    genshin_data = data.get("genshin", None)
-    starrail_data = data.get("starrail", None)
-    zzz_data = data.get("zzz", None)
+def generate_fields(data, games: list[str] | None = None) -> list[discord.EmbedField]:
+    """Resin embed fields; `games` limits which games are rendered (None = all)."""
+
+    def notes(game: str):
+        if games is not None and game not in games:
+            return None
+        return data.get(game, None)
+
+    genshin_data = notes("genshin")
+    starrail_data = notes("starrail")
+    zzz_data = notes("zzz")
     fields = []
 
     if genshin_data:

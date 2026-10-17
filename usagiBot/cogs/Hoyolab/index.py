@@ -3,6 +3,12 @@ import pytz
 
 from usagiBot.cogs.Main.schemas import UsagiConfig
 from usagiBot.cogs.Hoyolab.genshin_utils import *
+from usagiBot.cogs.Hoyolab.resin_view import (
+    ResinAccount,
+    ResinView,
+    account_label,
+    enabled_games,
+)
 from usagiBot.src.UsagiUtils import get_embed
 from usagiBot.src.UsagiChecks import check_is_already_set_up, check_cog_whitelist
 from usagiBot.src.UsagiErrors import UsagiModuleDisabledError
@@ -108,13 +114,15 @@ class SubsAccountSelect(discord.ui.Select):
         self.users = users
         self.user = users[0]
         self.data = users_data[0]
-        options = []
-        for data in users_data:
-            options.append(
-                discord.SelectOption(
-                    label=data.get("nickname", "Hoyolab user"),
-                )
+        # Value is the DB id: nicknames can repeat or be missing.
+        options = [
+            discord.SelectOption(
+                label=account_label(user.id, data),
+                value=str(user.id),
+                default=user is self.user,
             )
+            for user, data in zip(users, users_data)
+        ]
 
         super().__init__(
             placeholder="Choose account",
@@ -122,22 +130,22 @@ class SubsAccountSelect(discord.ui.Select):
         )
 
     async def callback(self, interaction: discord.Interaction):
-        data_id = 0
-        for i in range(len(self.users_data)):
-            if self.users_data[i]["nickname"] == self.values[0]:
-                data_id = i
-                break
+        data_id = next(
+            i for i, user in enumerate(self.users) if str(user.id) == self.values[0]
+        )
         self.data = self.users_data[data_id]
         self.user = self.users[data_id]
+        for option in self.options:
+            option.default = option.value == self.values[0]
 
         fields = generate_all_subs_fields(self.user)
         embed = get_embed(
             title=_("Subscriptions"),
-            author_name=self.data.get("nickname", "Hoyolab user"),
+            author_name=account_label(self.user.id, self.data),
             author_icon_URL=self.data.get("icon", None),
             fields=fields,
         )
-        await interaction.response.edit_message(embed=embed)
+        await interaction.response.edit_message(embed=embed, view=self.view)
 
 
 class SubsView(discord.ui.View):
@@ -215,51 +223,17 @@ class LoginModal(discord.ui.Modal):
         await interaction.response.edit_message(content=response, view=None)
 
 
-class HoyolabAccountSelect(discord.ui.Select):
-    def __init__(self, bot, users_data):
-        self.bot = bot
-        self.users_data = users_data
-        options = []
-        for data in users_data:
-            options.append(
-                discord.SelectOption(
-                    label=data.get("nickname", "Hoyolab user"),
-                )
-            )
-
-        super().__init__(
-            placeholder="Choose account",
-            options=options,
-        )
-
-    async def callback(self, interaction: discord.Interaction):
-        data = [d for d in self.users_data if d["nickname"] == self.values[0]][0]
-        fields = generate_fields(data)
-        embed = get_embed(
-            title=_("Resin"),
-            author_name=data.get("nickname", "Hoyolab user"),
-            author_icon_URL=data.get("icon", None),
-            fields=fields,
-        )
-        await interaction.response.edit_message(embed=embed)
-
-
-class HoyolabAccountView(discord.ui.View):
-    def __init__(self, bot: discord.Bot, users_data):
-        super().__init__(HoyolabAccountSelect(bot, users_data))
-
-
 class HoyolabAccountDeleteSelect(discord.ui.Select):
     def __init__(self, users_data, users):
         self.users_data = users_data
         self.users = users
-        options = []
-        for data in users_data:
-            options.append(
-                discord.SelectOption(
-                    label=data.get("nickname", "Hoyolab user"),
-                )
+        options = [
+            discord.SelectOption(
+                label=account_label(user.id, data),
+                value=str(user.id),
             )
+            for user, data in zip(users, users_data)
+        ]
 
         super().__init__(
             placeholder="Choose account",
@@ -267,11 +241,9 @@ class HoyolabAccountDeleteSelect(discord.ui.Select):
         )
 
     async def callback(self, interaction: discord.Interaction):
-        data_id = 0
-        for i in range(len(self.users_data)):
-            if self.users_data[i]["nickname"] == self.values[0]:
-                data_id = i
-                break
+        data_id = next(
+            i for i, user in enumerate(self.users) if str(user.id) == self.values[0]
+        )
         await UsagiHoyolab.delete(id=self.users[data_id].id)
         self.users_data.pop(data_id)
         self.users.pop(data_id)
@@ -286,6 +258,11 @@ class HoyolabAccountDeleteSelect(discord.ui.Select):
 class HoyolabAccountDeleteView(discord.ui.View):
     def __init__(self, users_data, users):
         super().__init__(HoyolabAccountDeleteSelect(users_data, users))
+
+
+async def load_resin_account(user) -> dict:
+    """Notes for the games this account has enabled in /hoyolab resin."""
+    return await HoyolabAPI().get_user_data(db_id=user.id, games=enabled_games(user))
 
 
 class Hoyolab(commands.Cog):
@@ -636,36 +613,22 @@ class Hoyolab(commands.Cog):
         if not users:
             await ctx.respond(content=_("You are not logged in"), ephemeral=True)
             return
-        users_data = []
-        for user in users:
-            hoyolab_api = HoyolabAPI()
-            data = await hoyolab_api.get_user_data(db_id=user.id)
-            if not data:
-                continue
-            users_data.append(data)
+        # Stable order: Postgres moves updated rows around, which used to
+        # shuffle which account was listed (and shown) first.
+        users = sorted(users, key=lambda user: user.id)
+        accounts = [
+            ResinAccount(user=user, data=await load_resin_account(user))
+            for user in users
+        ]
 
-        if not users_data:
+        if not any(account.data for account in accounts):
             await ctx.respond(content=_("Your cookie out of date"), ephemeral=True)
             return
 
-        fields = generate_fields(users_data[0])
-        embed = get_embed(
-            title=_("Resin"),
-            author_name=users_data[0].get("nickname", "Hoyolab user"),
-            author_icon_URL=users_data[0].get("icon", None),
-            fields=fields,
+        view = ResinView(
+            accounts, load_resin_account, editable=user_id == ctx.user.id
         )
-        await ctx.send_followup(
-            content="", embed=embed, view=HoyolabAccountView(self.bot, users_data)
-        )
-
-        if users_data[0].get("geetest_error") is not None:
-            await ctx.respond(
-                content=_("geetest error").format(
-                    geetest_error=users_data[0]["geetest_error"]
-                ),
-                ephemeral=True,
-            )
+        await ctx.send_followup(**view.render(), view=view)
 
     @hoyolab.command(
         name="notes",
@@ -701,33 +664,33 @@ class Hoyolab(commands.Cog):
         if not users:
             await ctx.respond(content=_("You are not logged in"), ephemeral=True)
             return
-        # users_data and active_users stay parallel: the select views map
-        # a picked nickname back to its DB row by index.
+        users = sorted(users, key=lambda user: user.id)
+        # users_data and users stay parallel: the select views map a picked
+        # DB id back to its row by index. Accounts with dead cookies stay
+        # listed (placeholder label) so their subscriptions remain editable.
         users_data = []
-        active_users = []
+        any_alive = False
         for user in users:
             hoyolab_api = HoyolabAPI()
             data = await hoyolab_api.get_user_data(db_id=user.id)
-            if not data:
-                continue
-            users_data.append({"nickname": data["nickname"], "icon": data["icon"]})
-            active_users.append(user)
+            any_alive = any_alive or bool(data)
+            users_data.append(
+                {"nickname": (data or {}).get("nickname"), "icon": (data or {}).get("icon")}
+            )
 
-        if not users_data:
+        if not any_alive:
             await ctx.respond(content=_("Your cookie out of date"), ephemeral=True)
             return
 
-        fields = generate_all_subs_fields(active_users[0])
+        fields = generate_all_subs_fields(users[0])
 
         embed = get_embed(
             title=_("Subscriptions"),
-            author_name=users_data[0].get("nickname", "Hoyolab user"),
+            author_name=account_label(users[0].id, users_data[0]),
             author_icon_URL=users_data[0].get("icon", None),
             fields=fields,
         )
-        await ctx.respond(
-            embed=embed, view=SubsView(self.bot, users_data, active_users)
-        )
+        await ctx.respond(embed=embed, view=SubsView(self.bot, users_data, users))
 
     @hoyolab.command(
         name="delete",
@@ -744,6 +707,7 @@ class Hoyolab(commands.Cog):
         if not users:
             await ctx.respond(content=_("You are not logged in"), ephemeral=True)
             return
+        users = sorted(users, key=lambda user: user.id)
         # Accounts with dead cookies must stay deletable, so fall back to a
         # placeholder label instead of dropping them from the list.
         users_data = []
@@ -751,11 +715,7 @@ class Hoyolab(commands.Cog):
             hoyolab_api = HoyolabAPI()
             data = await hoyolab_api.get_user_data(db_id=user.id)
             users_data.append(
-                {
-                    "nickname": (data or {}).get("nickname")
-                    or f"Hoyolab user #{user.id}",
-                    "icon": (data or {}).get("icon"),
-                }
+                {"nickname": (data or {}).get("nickname"), "icon": (data or {}).get("icon")}
             )
 
         await ctx.respond(content="", view=HoyolabAccountDeleteView(users_data, users))

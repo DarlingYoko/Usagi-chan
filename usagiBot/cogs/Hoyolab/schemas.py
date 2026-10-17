@@ -30,3 +30,7 @@ class UsagiHoyolab(Base, ModelAdmin):
     zzz_daily_sub = Column(Boolean, nullable=False, default=False, server_default="false")
     zzz_resin_sub = Column(Boolean, nullable=False, default=False, server_default="false")
     zzz_resin_sub_notified = Column(Boolean, nullable=False, default=False, server_default="false")
+    # Which games /hoyolab resin shows for this account.
+    show_genshin = Column(Boolean, nullable=False, default=True, server_default="true")
+    show_starrail = Column(Boolean, nullable=False, default=True, server_default="true")
+    show_zzz = Column(Boolean, nullable=False, default=True, server_default="true")

@@ -524,6 +524,33 @@ class TestHoyolabMethods(IsolatedAsyncioTestCase):
         )
 
 
+    async def test_check_resin_count_keeps_dead_account_listed(self) -> None:
+        # A second account must not make the first one vanish from the list
+        # just because Hoyolab rejected its cookies.
+        ctx = mock.AsyncMock()
+        ctx.guild.id = "g1"
+        ctx.user.id = 5
+        self.mock_UsagiHoyolab.get_all_by.return_value = [
+            mock.MagicMock(id=2, show_genshin=True, show_starrail=True, show_zzz=True),
+            mock.MagicMock(id=1, show_genshin=True, show_starrail=True, show_zzz=True),
+        ]
+        # fetched in DB-id order: id 1 (dead) first, then id 2
+        self.mock_GenshinAPI().get_user_data.side_effect = [
+            {},
+            {"nickname": "Monopolia", "icon": None, "geetest_error": None},
+        ]
+
+        await self.Genshin.check_resin_count.callback(self.Genshin, ctx, "5")
+
+        view = ctx.send_followup.call_args.kwargs["view"]
+        labels = [option.label for option in view.account_select.options]
+        self.assertEqual(len(labels), 2)
+        # sorted by DB id, so the dead account (id 1) comes first
+        self.assertIn("#1", labels[0])
+        self.assertEqual(labels[1], "Monopolia")
+        self.assertIsNotNone(view.games_select)
+
+
 class TestHoyolabAPI(IsolatedAsyncioTestCase):
     @mock.patch.object(asyncio, "create_async_engine")
     def setUp(self, mock_engine) -> None:
