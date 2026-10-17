@@ -87,3 +87,44 @@ class TestNowPlayingMessage(IsolatedAsyncioTestCase):
             message = await self.state._send_now_playing()
 
         self.assertIs(message, sent)
+
+
+class TestJoinDefersInteraction(IsolatedAsyncioTestCase):
+    @mock.patch.object(sa_asyncio, "create_async_engine")
+    def setUp(self, mock_engine) -> None:
+        from usagiBot.cogs.Music.music_utils import join_voice_channel
+
+        self.join_voice_channel = join_voice_channel
+
+    def _make_ctx(self, order: list, already_done: bool = False) -> mock.MagicMock:
+        ctx = mock.MagicMock()
+        ctx.interaction.response.is_done.return_value = already_done
+        ctx.defer = mock.AsyncMock(side_effect=lambda **kw: order.append("defer"))
+        ctx.respond = mock.AsyncMock()
+        ctx.me.edit = mock.AsyncMock()
+        destination = ctx.author.voice.channel
+        destination.permissions_for.return_value.connect = True
+        destination.connect = mock.AsyncMock(
+            side_effect=lambda: order.append("connect") or mock.MagicMock()
+        )
+        return ctx
+
+    async def test_defers_before_the_slow_voice_connect(self) -> None:
+        # Connecting with DAVE takes a few seconds; the 3s interaction window
+        # would otherwise expire (10062 Unknown interaction) before we respond.
+        order: list = []
+        ctx = self._make_ctx(order)
+
+        await self.join_voice_channel(ctx)
+
+        self.assertEqual(order, ["defer", "connect"])
+        self.assertTrue(ctx.defer.call_args.kwargs["ephemeral"])
+
+    async def test_does_not_defer_twice(self) -> None:
+        order: list = []
+        ctx = self._make_ctx(order, already_done=True)
+
+        await self.join_voice_channel(ctx)
+
+        ctx.defer.assert_not_called()
+        self.assertEqual(order, ["connect"])

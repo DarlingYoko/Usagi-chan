@@ -146,6 +146,12 @@ async def generate_source(self, domain, song_url, song_title, song_requester):
         )
 
 
+async def defer_if_needed(ctx) -> None:
+    """Ephemeral defer unless the interaction was already acknowledged."""
+    if not ctx.interaction.response.is_done():
+        await ctx.defer(ephemeral=True)
+
+
 async def join_voice_channel(ctx):
     destination = ctx.author.voice.channel
 
@@ -159,7 +165,9 @@ async def join_voice_channel(ctx):
             ephemeral=True,
         )
         return False
-    # Connect to the channel
+    # The voice handshake (incl. DAVE) can outlast Discord's 3s interaction
+    # window, so acknowledge first; respond() then sends a followup.
+    await defer_if_needed(ctx)
     ctx.voice_state.voice = await destination.connect()
     await ctx.respond(
         embed=get_embed(

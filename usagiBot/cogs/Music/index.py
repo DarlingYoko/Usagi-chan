@@ -12,6 +12,7 @@ from discord.ext import commands
 from usagiBot.cogs.Music.music_utils import (
     check_user_in_voice,
     create_music_embed,
+    defer_if_needed,
     get_audio_duration,
     join_voice_channel,
     parse_duration,
@@ -209,6 +210,7 @@ class Music(commands.Cog):
             ctx.voice_state.voice = msg.guild.voice_client
         else:
             # Not in any channel, use connect instead
+            await defer_if_needed(ctx)
             ctx.voice_state.voice = await destination.connect()
             await ctx.respond(
                 embed=get_embed(
