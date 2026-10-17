@@ -76,14 +76,18 @@ class ResinGamesSelect(discord.ui.Select):
         chosen = set(self.values)
         flags = {column: key in chosen for key, _name, column in GAMES}
 
-        # The refetch below talks to Hoyolab, which can outlast the 3s window.
-        await interaction.response.defer()
         await UsagiHoyolab.update(id=account.user.id, **flags)
         for column, value in flags.items():
             setattr(account.user, column, value)
-        account.data = await view.loader(account.user)
         view.sync_defaults()
-        await interaction.edit_original_response(**view.render(), view=view)
+
+        # Respond straight away (same path as switching accounts); only a game
+        # we have no data for needs the slow Hoyolab call.
+        missing = [game for game in chosen if game not in account.data]
+        await interaction.response.edit_message(**view.render(), view=view)
+        if missing and account.data:
+            account.data = await view.loader(account.user)
+            await interaction.edit_original_response(**view.render(), view=view)
 
 
 class ResinView(discord.ui.View):

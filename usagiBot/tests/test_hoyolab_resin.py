@@ -216,8 +216,8 @@ class TestResinView(IsolatedAsyncioTestCase):
         self.assertIsNone(view.games_select)
         self.assertEqual(len(view.children), 1)
 
-    async def test_game_selection_is_saved_and_rerendered(self) -> None:
-        loader = mock.AsyncMock(return_value=make_data("Monopolia"))
+    async def test_disabling_a_game_updates_the_message_right_away(self) -> None:
+        loader = mock.AsyncMock()
         account = self._account(7)
         view = self._view([account], loader)
         interaction = self._interaction()
@@ -229,15 +229,38 @@ class TestResinView(IsolatedAsyncioTestCase):
             id=7, show_genshin=True, show_starrail=False, show_zzz=True
         )
         self.assertFalse(account.user.show_starrail)
+        # The data is already loaded: no slow refetch, one plain message edit.
+        loader.assert_not_called()
+        interaction.response.defer.assert_not_called()
+        interaction.edit_original_response.assert_not_called()
+        kwargs = interaction.response.edit_message.call_args.kwargs
+        names = [f.name for f in kwargs["embed"].fields]
+        self.assertNotIn(STARRAIL_LABEL, names)
+        self.assertIn(GENSHIN_LABEL, names)
+        self.assertIs(kwargs["view"], view)
+        defaults = {o.value: o.default for o in view.games_select.options}
+        self.assertFalse(defaults["starrail"])
+
+    async def test_enabling_a_game_without_data_fetches_it(self) -> None:
+        data = make_data()
+        del data["starrail"]
+        loader = mock.AsyncMock(return_value=make_data())
+        account = self._account(7, data=data, show_starrail=False)
+        view = self._view([account], loader)
+        interaction = self._interaction()
+        self._pick(view.games_select, "genshin", "starrail", "zzz")
+
+        await view.games_select.callback(interaction)
+
+        # Acknowledge with the old data first, then swap in the fetched one.
+        interaction.response.edit_message.assert_awaited_once()
         loader.assert_awaited_once_with(account.user)
         interaction.edit_original_response.assert_awaited_once()
         names = [
             f.name
             for f in interaction.edit_original_response.call_args.kwargs["embed"].fields
         ]
-        self.assertNotIn(STARRAIL_LABEL, names)
-        defaults = {o.value: o.default for o in view.games_select.options}
-        self.assertFalse(defaults["starrail"])
+        self.assertIn(STARRAIL_LABEL, names)
 
     async def test_switching_account_updates_games_defaults(self) -> None:
         view = self._view(
