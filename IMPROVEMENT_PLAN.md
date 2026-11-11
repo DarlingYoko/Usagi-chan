@@ -82,7 +82,9 @@ guild/tag); Hoyolab already had it. 3.2 adds `Twitch._fetch_live_streams`
 (one batched get_streams per 100 logins). 3.5 adds
 `ModelAdmin.get_top(order_by, limit, **filters)`. 3.4/3.6 are hand-apply
 SQL in `migrations/2026-06-14-*.sql` (create_all never alters existing
-tables) — **run both before deploy**. Suite green at 185.
+tables). Suite green at 185. _Applied in production — all four files in
+`migrations/` (incl. `2026-06-12-usagi-backup-unique` and
+`2026-10-17-hoyolab-show-games`) confirmed applied 2026-11-11._
 
 - [x] **3.1 Batch config lookups** (pattern from `check_resin_overflow`): Twitch loop, Birthdays `check_birthday`, both Arknights loops, `/help` (one `get_all_by(guild_id=...)` instead of per-command `get`).
 - [x] **3.2 Twitch single API call** — `get_streams(user_login=[...])` accepts 100 logins; currently one call per streamer per 5 min.
@@ -99,7 +101,7 @@ Phase 1.1 dead-key cleanup landed here too (15 keys, see below).
 
 - [x] **4.1 `!ip`** (`Fun/index.py`) — was sync `requests.get`, no timeout, on the event loop, leaking the host's public IP to any member. Now owner-gated (`is_owner()`) and fetched via the aiohttp `get_public_ip()` helper with a timeout; regression tests in `test_fun.py`.
 - [x] **4.2 Logging** — app logger renamed `mylogger` → `usagi`, root level driven by `LOG_LEVEL` env (default INFO), name/levelname added to the format; duplicate `basicConfig` removed from `arknights_utils`.
-- [ ] **4.3 Alembic** — _deferred to its own PR (owner decision 2026-06-15)._ Replace `create_all` migrations-by-restart; with 2.7 the per-reconnect `create_tables()` goes away anyway. The hand-written SQL files in `migrations/` become alembic revisions.
+- [x] **4.3 Alembic** — _done 2026-11-11 in its own PR._ `create_tables()` replaced by `upgrade_database()` (`usagiBot/db/migrate.py`) on first connect. Baseline revision `0001_baseline` = create_all + the four hand-applied SQL files (which are deleted; prod had all four applied). The secondary indexes from `2026-06-14-secondary-indexes.sql` were only in SQL — now declared on the models, otherwise autogenerate would have proposed dropping them. Pre-Alembic DBs are auto-stamped at the baseline. Verified on Postgres 16 + pgvector: fresh-DB upgrade and legacy-DB stamp give identical catalogs, `alembic check` clean on both.
 - [x] **4.4 Dead code & deps** — removed torrent block (Fun command + loop), `init_qbt_client` + `qbittorrentapi` import + `qbittorrent-api` dep + 3 `Qbittorrent*` env vars, the commented `redeem_code`/`redeem_code_all` cog commands in Hoyolab (the live `GenshinAPI.redeem_code` wrapper stays), and unused env vars (`DISCORD_TEST*`, `HOYOLAB_CLIENT_ID/SECRET`).
 - [x] **4.5 AI cog decision** — kept disabled but unpinned: `openai_async` is now a lazy import inside the two methods that use it (boot no longer needs the package), and `openai-async` is dropped from requirements. Re-enabling should migrate to the official `openai` client.
 - [x] **1.1 carry-over** — deleted 15 dead i18n keys from both `en.json`/`ru.json`: 4 torrent strings, the redeem-token reload pair, bare `Stamina`, 6 superseded Hoyolab sub texts, `Geetest error`, `Slash command group`. Kept the runtime-built VPN `notify`/`notifications` pairs and the permission/birthday strings Phase 1.1 repointed code onto (those twins are live, not dead).
