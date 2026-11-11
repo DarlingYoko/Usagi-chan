@@ -14,7 +14,19 @@ docker compose up                 # launches bot + postgres, env from stack.env
 docker compose exec postgres psql -U <user> -W <db>
 ```
 
-After the first DB start, enable pgvector once: `CREATE EXTENSION IF NOT EXISTS vector;`. Tables are then auto-created by `create_tables()` in `usagiBot.usagi.UsagiBot.before_identify_hook` — there is no migration tool, schema changes happen by editing `schemas.py` files and letting `Base.metadata.create_all` add new tables on next boot (existing columns are not migrated).
+### Schema migrations (Alembic)
+
+The bot runs `alembic upgrade head` itself on first connect (`upgrade_database()` in `usagiBot/db/migrate.py`, called from `UsagiBot.before_identify_hook`), so a deploy needs no manual SQL step — the baseline revision also creates the `vector` extension. Revisions live in `usagiBot/db/migrations/versions/`; `0001_baseline` is the schema as of the switch from `create_all`. A pre-Alembic database (tables present, no `alembic_version`) is stamped at the baseline automatically instead of re-created.
+
+To change the schema: edit the model in `schemas.py` (indexes and constraints go in `__table_args__` — the model is the source of truth, never hand-applied SQL), then generate and **review** a revision:
+
+```bash
+alembic revision --autogenerate -m "add foo to usagi_bar"   # needs POSTGRES_*, BOT_OWNER, BOT_ID in env
+alembic upgrade head        # or just restart the bot
+docker compose exec usagi-chan alembic current              # inside the container
+```
+
+`env.py` imports every `cogs/*/schemas.py` (`load_all_models`), renders `EncryptedText` as plain `sa.Text()`, and never autogenerates `DROP TABLE` for tables no model describes. Data backfills (e.g. `UPDATE ... SET col = COALESCE(...)` before `SET NOT NULL`) must be added to the generated revision by hand.
 
 Local (non-docker) runs need a Postgres reachable at `POSTGRES_HOST` and the env vars from `example-usagi-variables.env` exported, then `python main.py`.
 

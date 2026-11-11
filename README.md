@@ -32,5 +32,7 @@ Instalation requirements:
 psql access from docker:
 `docker compose exec -it postgres psql -U <user_name> -W <base_name>`
 
-You must enable vector extension in postgres: 
-`CREATE EXTENSION IF NOT EXISTS vector;`
+The database schema (including the `vector` extension) is created and
+migrated automatically by Alembic when the bot starts. To author a schema
+change: `alembic revision --autogenerate -m "..."`, review the file in
+`usagiBot/db/migrations/versions/`, restart the bot.

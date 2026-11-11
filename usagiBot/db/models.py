@@ -1,4 +1,4 @@
-from usagiBot.db.base import Base, async_session, engine
+from usagiBot.db.base import async_session
 from sqlalchemy import (
     and_,
     or_,
@@ -199,8 +199,3 @@ class ModelAdmin:
         async with async_session() as session:
             results = await session.execute(query)
             return results.scalars().all()
-
-
-async def create_tables() -> None:
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)

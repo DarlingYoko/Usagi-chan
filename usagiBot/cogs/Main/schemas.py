@@ -1,6 +1,7 @@
 from usagiBot.db.base import Base
 from usagiBot.db.models import ModelAdmin
 from sqlalchemy import (
+    Index,
     Text,
     BigInteger,
     Column,
@@ -14,6 +15,9 @@ from sqlalchemy import (
 
 class UsagiConfig(Base, ModelAdmin):
     __tablename__ = "usagi_config"
+    __table_args__ = (
+        Index("ix_usagi_config_guild_tag", "guild_id", "command_tag"),
+    )
 
     id = Column(Integer, primary_key=True)
     guild_id = Column(BigInteger)
@@ -28,6 +32,9 @@ class UsagiSaveRoles(Base, ModelAdmin):
 
 class UsagiMemberRoles(Base, ModelAdmin):
     __tablename__ = "usagi_member_roles"
+    __table_args__ = (
+        Index("ix_usagi_member_roles_guild_user", "guild_id", "user_id"),
+    )
     id = Column(Integer, primary_key=True)
     guild_id = Column(BigInteger)
     user_id = Column(BigInteger)
@@ -35,6 +42,9 @@ class UsagiMemberRoles(Base, ModelAdmin):
 
 class UsagiAutoRolesData(Base, ModelAdmin):
     __tablename__ = "usagi_auto_roles_data"
+    __table_args__ = (
+        Index("ix_usagi_auto_roles_data_message", "message_id"),
+    )
     id = Column(Integer, primary_key=True)
     message_id = Column(Text, ForeignKey("usagi_auto_roles.message_id"))
     role_id = Column(BigInteger)

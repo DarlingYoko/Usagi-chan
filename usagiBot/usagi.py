@@ -5,7 +5,7 @@ import json
 from discord.ext import commands
 from pycord18n.extension import I18nExtension, Language
 
-from usagiBot.db.models import create_tables
+from usagiBot.db.migrate import upgrade_database
 from usagiBot.env import COGS_DIR, LOG_LEVEL
 from usagiBot.src.CustomHelpCommand import CustomHelpCommand
 from usagiBot.src.UsagiUtils import init_language
@@ -56,14 +56,16 @@ class UsagiBot(commands.Bot):
         i18n.init_bot(self, get_locale)
         self.i18n = i18n
 
-    async def before_identify_hook(self, shard_id, *, initial=False):
+    async def before_identify_hook(
+        self, shard_id: int | None, *, initial: bool = False
+    ) -> None:
         # Fires before every (re)identify; one-time DB/lang setup belongs to
         # the first connect only, not to each reconnect.
         if not initial:
             return
 
         self.logger.info("Running DB migrations before bot connect")
-        await create_tables()
+        await upgrade_database()
         self.logger.info("DB Ready")
 
         self.logger.info("Loading Languages")
