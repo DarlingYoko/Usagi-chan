@@ -89,6 +89,30 @@ class TestEndfieldCommands(IsolatedAsyncioTestCase):
         client.sign_in.assert_awaited()
         client.get_attendance.assert_not_called()
 
+    @freeze_time("2026-06-13 16:00:00")
+    async def test_claim_loop_logs_failed_signin(self) -> None:
+        # "Authorisation failed!" reached the channel with nothing in the logs
+        # to say which account it was.
+        self.mock_UsagiGryphline.get_all_by_or.return_value = [
+            mock.MagicMock(id=7, guild_id="g1", user_id="u1", token="t1")
+        ]
+        self.mock_UsagiConfig.get_all_by.return_value = [
+            mock.MagicMock(guild_id="g1", generic_id=42)
+        ]
+        self.Endfield.bot.get_channel = mock.MagicMock(return_value=mock.AsyncMock())
+
+        client = self.mock_EndfieldClient.return_value
+        client.start = mock.AsyncMock()
+        client.close = mock.AsyncMock()
+        client.sign_in = mock.AsyncMock(return_value=False)
+
+        await self.Endfield.claim_endfield_daily_reward.coro(self.Endfield)
+
+        self.Endfield.bot.logger.warning.assert_called()
+        args = self.Endfield.bot.logger.warning.call_args.args
+        self.assertIn(7, args)
+        self.assertIn("u1", args)
+
     async def test_check_sanity_survives_db_error(self) -> None:
         self.mock_UsagiGryphline.get_all_by_or.side_effect = Exception("db down")
 
@@ -375,3 +399,76 @@ class TestEndfieldSetup(IsolatedAsyncioTestCase):
         bot.wait_until_ready = mock.AsyncMock()
         setup(bot)
         bot.add_cog.assert_called_once()
+
+
+class _FakeResponse:
+    def __init__(self, status: int, payload: dict) -> None:
+        self.status = status
+        self._payload = payload
+
+    async def json(self, *args, **kwargs) -> dict:
+        return self._payload
+
+    async def __aenter__(self) -> "_FakeResponse":
+        return self
+
+    async def __aexit__(self, *exc) -> None:
+        return None
+
+
+class TestEndfieldClientAuth(IsolatedAsyncioTestCase):
+    @mock.patch.object(asyncio, "create_async_engine")
+    def setUp(self, mock_engine) -> None:
+        from usagiBot.cogs.ArknightsEndfield import arknights_utils
+
+        self.utils = arknights_utils
+        self.client = arknights_utils.EndfieldClient(account_token="secret-token")
+        self.client.session = mock.MagicMock()
+
+    async def test_signin_logs_why_grant_was_rejected(self) -> None:
+        self.client.session.post = mock.MagicMock(
+            return_value=_FakeResponse(
+                200, {"status": 3, "msg": "token expired", "data": None}
+            )
+        )
+
+        with self.assertLogs(self.utils.logger, level="WARNING") as logs:
+            result = await self.client.sign_in()
+
+        self.assertFalse(result)
+        output = "\n".join(logs.output)
+        self.assertIn("grant", output)
+        self.assertIn("token expired", output)
+        # the token itself must never land in the logs
+        self.assertNotIn("secret-token", output)
+
+    async def test_signin_logs_failed_http_status(self) -> None:
+        self.client.session.post = mock.MagicMock(
+            return_value=_FakeResponse(401, {})
+        )
+
+        with self.assertLogs(self.utils.logger, level="WARNING") as logs:
+            result = await self.client.sign_in()
+
+        self.assertFalse(result)
+        self.assertIn("401", "\n".join(logs.output))
+
+    async def test_signin_logs_missing_endfield_binding(self) -> None:
+        self.client.session.post = mock.MagicMock(
+            side_effect=[
+                _FakeResponse(200, {"status": 0, "data": {"code": "oauth"}}),
+                _FakeResponse(200, {"code": 0, "data": {"cred": "cred"}}),
+            ]
+        )
+        self.client.session.get = mock.MagicMock(
+            side_effect=[
+                _FakeResponse(200, {"code": 0, "data": {"token": "sign"}}),
+                _FakeResponse(200, {"code": 0, "data": {"list": []}}),
+            ]
+        )
+
+        with self.assertLogs(self.utils.logger, level="WARNING") as logs:
+            result = await self.client.sign_in()
+
+        self.assertFalse(result)
+        self.assertIn("binding", "\n".join(logs.output))

@@ -193,6 +193,33 @@ class EndfieldClient:
         match = re.search(rf"{name}=([^;]+)", self.cookie)
         return match.group(1) if match else None
 
+    @staticmethod
+    def _payload_data(payload: object) -> dict:
+        """The response's ``data`` object; error replies send ``null``."""
+        if not isinstance(payload, dict):
+            return {}
+        data = payload.get("data")
+        return data if isinstance(data, dict) else {}
+
+    @staticmethod
+    def _log_auth_failure(step: str, http_status: int, payload: object = None) -> None:
+        """Say which auth step failed and what the API answered.
+
+        Only the status code and message fields are logged: the payload of
+        a successful step carries credentials.
+        """
+        code = message = None
+        if isinstance(payload, dict):
+            code = payload.get("code", payload.get("status"))
+            message = payload.get("message", payload.get("msg"))
+        logger.warning(
+            "Endfield auth step %r failed: http=%s code=%s message=%r",
+            step,
+            http_status,
+            code,
+            message,
+        )
+
     # ------------------------------------------------------------------
     # Auth
     # ------------------------------------------------------------------
@@ -221,9 +248,13 @@ class EndfieldClient:
         headers = {"Cookie": f"SK_OAUTH_CRED_KEY={sk_oauth}"}
         async with self.session.get(ACCOUNT_TOKEN_URL, headers=headers) as r:
             if r.status != 200:
+                self._log_auth_failure("account_token", r.status)
                 return None
             data = await r.json()
-            return data.get("data", {}).get("content")
+        token = self._payload_data(data).get("content")
+        if not token:
+            self._log_auth_failure("account_token", r.status, data)
+        return token
 
     async def _refresh_oauth_code(self, account_token: str) -> Optional[str]:
         """
@@ -246,9 +277,13 @@ class EndfieldClient:
             json={"token": account_token, "appCode": SKPORT_APP_CODE, "type": 0},
         ) as r:
             if r.status != 200:
+                self._log_auth_failure("oauth grant", r.status)
                 return None
             data = await r.json()
-            return data.get("data", {}).get("code")
+        code = self._payload_data(data).get("code")
+        if not code:
+            self._log_auth_failure("oauth grant", r.status, data)
+        return code
 
     async def _get_cred_from_oauth(self, oauth_code: str) -> Optional[str]:
         """
@@ -271,9 +306,13 @@ class EndfieldClient:
             json={"kind": 1, "code": oauth_code},
         ) as r:
             if r.status != 200:
+                self._log_auth_failure("generate_cred_by_code", r.status)
                 return None
             data = await r.json()
-            return data.get("data", {}).get("cred")
+        cred = self._payload_data(data).get("cred")
+        if not cred:
+            self._log_auth_failure("generate_cred_by_code", r.status, data)
+        return cred
 
     async def refresh_sign_token(self) -> bool:
         """
@@ -297,10 +336,13 @@ class EndfieldClient:
             },
         ) as r:
             if r.status != 200:
+                self._log_auth_failure("auth refresh", r.status)
                 return False
             data = await r.json()
-            self.sign_token = data.get("data", {}).get("token")
-            return bool(self.sign_token)
+        self.sign_token = self._payload_data(data).get("token")
+        if not self.sign_token:
+            self._log_auth_failure("auth refresh", r.status, data)
+        return bool(self.sign_token)
 
     async def get_player_binding(self) -> bool:
         """
@@ -331,17 +373,19 @@ class EndfieldClient:
 
         async with self.session.get(SKPORT_BASE_URL + path, headers=headers) as r:
             if r.status != 200:
+                self._log_auth_failure("player binding", r.status)
                 return False
             data = await r.json()
 
-        for app in data.get("data", {}).get("list", []):
-            if app.get("appCode") == "endfield":
+        for app in self._payload_data(data).get("list") or []:
+            if app.get("appCode") == "endfield" and app.get("bindingList"):
                 binding = app["bindingList"][0]
                 role = binding.get("defaultRole")
                 self.uid = int(role["roleId"])
                 self.game_role = f"{ENDFIELD_GAME_ID}_{role['roleId']}_{role['serverId']}"
                 return True
 
+        self._log_auth_failure("player binding (no endfield role)", r.status, data)
         return False
 
     async def ensure_auth(self) -> bool:
@@ -373,6 +417,7 @@ class EndfieldClient:
         """
         account_token = await self._get_account_token()
         if not account_token:
+            logger.warning("Endfield sign-in: no ACCOUNT_TOKEN available")
             return False
 
         oauth_code = await self._refresh_oauth_code(account_token)

@@ -252,6 +252,12 @@ class Endfield(commands.Cog):
 
                 try:
                     if not await client.sign_in():
+                        self.bot.logger.warning(
+                            "claim_endfield_daily_reward: sign-in failed for"
+                            " gryphline row %s (discord user %s)",
+                            user.id,
+                            user.user_id,
+                        )
                         errors.append(
                             (user.user_id, channel, _("Authorisation failed"))
                         )
