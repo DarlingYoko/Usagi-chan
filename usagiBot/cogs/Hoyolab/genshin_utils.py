@@ -21,6 +21,17 @@ red_thick = "<:redThick:874767320915005471>"
 # request that requires auth to succeed.
 COOKIE_CHECK_UID = 701700971
 
+RESIN_SUB_GAMES = ("genshin", "starrail", "zzz")
+
+
+def resin_sub_games(user: UsagiHoyolab) -> list[str]:
+    """Games whose resin overflow this account is subscribed to.
+
+    Notes for any other game are not fetched: an account may have no UID in
+    that game at all, which Hoyolab answers with an error on every request.
+    """
+    return [game for game in RESIN_SUB_GAMES if getattr(user, f"{game}_resin_sub")]
+
 
 class HoyolabAPI:
     def __init__(self):

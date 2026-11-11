@@ -436,6 +436,64 @@ class TestHoyolabMethods(IsolatedAsyncioTestCase):
 
         self.Genshin.bot.logger.exception.assert_called()
 
+    async def test_check_resin_overflow_fetches_only_subscribed_games(self) -> None:
+        # A ZZZ-only account has no Genshin UID: asking for Genshin notes
+        # failed with "No UID provided" every 30 minutes.
+        user = mock.MagicMock(
+            id=68,
+            guild_id="g1",
+            user_id="u1",
+            genshin_resin_sub=False,
+            starrail_resin_sub=False,
+            zzz_resin_sub=True,
+            zzz_resin_sub_notified=False,
+        )
+        self.mock_UsagiHoyolab.get_all_by_or.return_value = [user]
+        self.mock_UsagiConfig.get_all_by.return_value = [
+            mock.MagicMock(guild_id="g1", generic_id="ch1"),
+        ]
+        self.channels["ch1"] = mock.AsyncMock()
+        self.mock_GenshinAPI().get_user_data.return_value = {}
+
+        await self.Genshin.check_resin_overflow(self.Genshin)
+
+        self.mock_GenshinAPI().get_user_data.assert_awaited_once_with(
+            db_id=68, games=["zzz"]
+        )
+
+    async def test_subscriptions_fetches_profile_only(self) -> None:
+        ctx = mock.AsyncMock()
+        ctx.guild.id = "g1"
+        ctx.user.id = "u1"
+        self.mock_UsagiHoyolab.get_all_by.return_value = [
+            mock.MagicMock(id=67),
+            mock.MagicMock(id=68),
+        ]
+        self.mock_GenshinAPI().get_user_data.return_value = {
+            "nickname": "Monopolia",
+            "icon": None,
+        }
+
+        await self.Genshin.subscriptions.callback(self.Genshin, ctx)
+
+        self.assertEqual(
+            self.mock_GenshinAPI().get_user_data.await_args_list,
+            [mock.call(db_id=67, games=[]), mock.call(db_id=68, games=[])],
+        )
+
+    async def test_delete_fetches_profile_only(self) -> None:
+        ctx = mock.AsyncMock()
+        ctx.guild.id = "g1"
+        ctx.user.id = "u1"
+        self.mock_UsagiHoyolab.get_all_by.return_value = [mock.MagicMock(id=68)]
+        self.mock_GenshinAPI().get_user_data.return_value = {}
+
+        await self.Genshin.delete_hoyolab_account.callback(self.Genshin, ctx)
+
+        self.mock_GenshinAPI().get_user_data.assert_awaited_once_with(
+            db_id=68, games=[]
+        )
+
     @freeze_time("2001-03-21 16:00:00")
     async def test_claim_daily_reward_survives_claim_error(self) -> None:
         self.mock_UsagiHoyolab.get_all_by_or.return_value = [

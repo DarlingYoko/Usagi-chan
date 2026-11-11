@@ -303,7 +303,9 @@ class Hoyolab(commands.Cog):
 
             try:
                 hoyolab_api = HoyolabAPI()
-                data = await hoyolab_api.get_user_data(db_id=user.id)
+                data = await hoyolab_api.get_user_data(
+                    db_id=user.id, games=resin_sub_games(user)
+                )
                 if not data:
                     continue
                 genshin_data = data.get("genshin", None)
@@ -672,7 +674,8 @@ class Hoyolab(commands.Cog):
         any_alive = False
         for user in users:
             hoyolab_api = HoyolabAPI()
-            data = await hoyolab_api.get_user_data(db_id=user.id)
+            # Only the profile is shown here; skip the per-game notes.
+            data = await hoyolab_api.get_user_data(db_id=user.id, games=[])
             any_alive = any_alive or bool(data)
             users_data.append(
                 {"nickname": (data or {}).get("nickname"), "icon": (data or {}).get("icon")}
@@ -713,7 +716,7 @@ class Hoyolab(commands.Cog):
         users_data = []
         for user in users:
             hoyolab_api = HoyolabAPI()
-            data = await hoyolab_api.get_user_data(db_id=user.id)
+            data = await hoyolab_api.get_user_data(db_id=user.id, games=[])
             users_data.append(
                 {"nickname": (data or {}).get("nickname"), "icon": (data or {}).get("icon")}
             )
