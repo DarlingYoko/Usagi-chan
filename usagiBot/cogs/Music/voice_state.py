@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import time
+from typing import Any, Optional
 
 import discord
 from async_timeout import timeout
@@ -12,7 +13,7 @@ from usagiBot.cogs.Music.music_utils import (
     parse_duration_raw,
 )
 from usagiBot.cogs.Music.sources import FFMPEGSource, Song, SongQueue
-from usagiBot.cogs.Music.views import PlayerControlView
+from usagiBot.cogs.Music.player_view import PlayerControlView
 
 logger = logging.getLogger(__name__)
 
@@ -25,8 +26,10 @@ class VoiceState:
         self.bot = bot
         self._ctx = ctx
 
-        self.current = None
-        self.voice = None
+        # a Song while playing; briefly a queue dict or "error" while the
+        # player resolves the next source
+        self.current: Any = None
+        self.voice: Optional[discord.VoiceClient] = None
         self.next = asyncio.Event()
         self.next_song = None
         self.songs = SongQueue()

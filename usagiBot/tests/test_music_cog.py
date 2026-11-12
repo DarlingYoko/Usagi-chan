@@ -26,6 +26,20 @@ class TestMusicModuleWiring(IsolatedAsyncioTestCase):
         }
         self.assertEqual(expected - names, set())
 
+    async def test_mixin_commands_bind_to_the_cog(self) -> None:
+        import discord
+
+        bot = discord.Bot()
+        cog = self.music_index.Music(bot)
+        bot.add_cog(cog)
+
+        group = next(command for command in cog.get_commands() if command.name == "music")
+        self.assertEqual(len(group.subcommands), 17)
+        for command in group.subcommands:
+            self.assertIs(command.cog, cog, command.name)
+        listeners = [name for name, _ in cog.get_listeners()]
+        self.assertIn("on_voice_state_update", listeners)
+
     def test_polling_loops_are_gone(self) -> None:
         VoiceState = self.music_voice_state.VoiceState
 

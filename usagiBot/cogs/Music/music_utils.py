@@ -7,8 +7,6 @@ import shutil
 import discord
 import time
 
-from discord.ext import commands
-
 from usagiBot.src.UsagiUtils import get_embed
 
 logger = logging.getLogger(__name__)
@@ -75,7 +73,7 @@ async def get_audio_duration(source: str) -> int:
     return int(float(stdout.decode("ascii").strip()))
 
 
-def parse_duration(duration: int):
+def parse_duration(duration: int) -> str:
     """
     Parse the duration to xx days xx hours xx minutes xx seconds
     """
@@ -83,17 +81,17 @@ def parse_duration(duration: int):
     hours, minutes = divmod(minutes, 60)
     days, hours = divmod(hours, 24)
 
-    duration = []
+    parts = []
     if days > 0:
-        duration.append(f"{days} days")
+        parts.append(f"{days} days")
     if hours > 0:
-        duration.append(f"{hours} hours")
+        parts.append(f"{hours} hours")
     if minutes > 0:
-        duration.append(f"{minutes} minutes")
+        parts.append(f"{minutes} minutes")
     if seconds > 0:
-        duration.append(f"{seconds} seconds")
+        parts.append(f"{seconds} seconds")
 
-    return " ".join(duration)
+    return " ".join(parts)
 
 
 # Parse the duration to 00:00:00:00
@@ -186,55 +184,6 @@ async def join_voice_channel(ctx):
     return True
 
 
-async def parse_songs(ctx, data):
-    entries = data["entries"]
-    playlist = []
-    for pos, song in enumerate(entries):
-        # YouTube only, guess no one would play other than YouTube
-        url = "https://youtu.be/" + song["id"]
-        title = song["title"]
-        duration = None if song["duration"] is None else int(song["duration"])
-        if duration is None:
-            continue
-        playlist.append(
-            {
-                "pos": pos,
-                "url": url,
-                "title": title,
-                "duration": duration,
-            }
-        )
-    # Sort the playlist variable to match with the order in YouTube
-    playlist.sort(key=lambda x: x["pos"])
-    # Add all songs to the pending list
-    for entry in playlist:
-        await ctx.voice_state.songs.put(
-            {
-                "url": entry["url"],
-                "title": entry["title"],
-                "user": ctx.author,
-                "duration": entry["duration"],
-            }
-        )
-    return playlist
-
-
-def set_loop_btns(self):
-    get_children_by_id(self.children, "3").label = (
-        "Disable Looping" if self.voice_state._loop else "Enable Looping"
-    )
-    get_children_by_id(self.children, "4").label = (
-        "Disable Loop Queue" if self.voice_state.loop_queue else "Enable Loop Queue"
-    )
-
-
-def get_children_by_id(children, custom_id):
-    for child in children:
-        if child.custom_id == custom_id:
-            return child
-    return None
-
-
 def queue_embed(data, page, header, description, song_id) -> discord.Embed:
     """
     Five songs per page from the queue/playlist; pages out of range clamp
@@ -247,7 +196,8 @@ def queue_embed(data, page, header, description, song_id) -> discord.Embed:
         return total_duration
 
     items_per_page = 5
-    pages = math.ceil(len(data) / items_per_page)
+    # an empty queue (only the current song) is still one page
+    pages = max(math.ceil(len(data) / items_per_page), 1)
     if page < 1:
         page = 1
     page = min(pages, page)
@@ -359,9 +309,3 @@ async def unmute_self(ctx):
             ),
             ephemeral=True,
         )
-
-
-def cog_check(ctx):
-    if not ctx.guild:
-        raise commands.NoPrivateMessage("This command can't be used in DM channels.")
-    return True

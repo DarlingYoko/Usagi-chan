@@ -93,7 +93,7 @@ Cogs commonly start `discord.ext.tasks.loop` schedulers in `__init__` — e.g. `
 
 - **AI cog is disabled**: `cogs/AI/index.py`'s `setup()` is a no-op (`bot.add_cog` commented out, issue #28). The pgvector memory/embedding code is only reachable from there. Its `openai_async` dependency is an archived project — if re-enabling, migrate to the official `openai` async client first.
 - **VPN cog** (`cogs/VPN/`) manages 3x-ui panel subscriptions via `py3xui` (`Vpn3xui` wrapper in `vpn_utils.py`). Admin commands (`/vpn renew`, `create_user`, `fill_inbound`) are owner-gated via `checks=[is_owner().predicate]`; user commands are `/vpn info|top|request`. Renewal flow: hourly expiry check DMs the user a modal → request rows in `usagi_vpn_renewal_requests` → owner approves with `/vpn renew`.
-- `Music` cog is a 2300-line monolith pending split; see `REFACTOR_PLAN.md` before making changes there.
+- **Music cog** is split by responsibility. `index.py` holds only the `Music` cog (voice-state lifecycle, `on_voice_state_update`), which inherits its slash commands from three mixins: `voice_commands.py`, `playback_commands.py` and `queue_commands.py`. All three declare subcommands on the shared `group.music`, and py-cord collects them through the MRO. Shared logic lives in `enqueue.py` (link → queue, used by `/music play` and the search menu), `seek.py`, `playback.py` (pause/resume/stop/loop-queue, used by commands and the now-playing buttons) and `voting.py` (skip/stop votes). The UI is in `player_view.py` and `search_view.py`; the player itself is `voice_state.VoiceState`. Commands annotate ctx as `context.MusicContext`, a type-only class declaring the `voice_state`/`from_play` attributes that `cog_before_invoke` attaches. In tests, call subcommands as `Music.<cmd>.callback(cog, ctx)`, because they bind to a cog only on `bot.add_cog`. Fakes are in `tests/music_helpers.py`.
 
 ### i18n
 
@@ -112,11 +112,11 @@ User-facing strings go through `_("text")` from `pycord18n.extension`; translati
 
 ## Secrets
 
-`stack.env` holds runtime secrets (Discord token, OpenAI key, Postgres password, Twitch/Hoyolab/VPN creds) and is git-ignored — never commit it or echo its contents into chat/logs. `example-usagi-variables.env` is the template for new keys. Note: there is currently no `.dockerignore`, so `stack.env` lands in the Docker build context — fix tracked in `REFACTOR_PLAN.md` 0.2; don't add new `ADD/COPY` steps that widen this.
+`stack.env` holds runtime secrets (Discord token, OpenAI key, Postgres password, Twitch/Hoyolab/VPN creds) and is git-ignored — never commit it or echo its contents into chat/logs. `example-usagi-variables.env` is the template for new keys. `.dockerignore` keeps `stack.env`, `*.env`, `.git` and the tests out of the build context — when adding new secret-bearing files, add them there too. The image runs as the non-root `usagi` user.
 
 ## Known issues / refactor
 
-`REFACTOR_PLAN.md` (repo root) is the prioritized security/performance refactor plan from the 2026-06 audit. Check it before touching `Music`, `Events.dump_data`, `ModelAdmin`, or anything using `requests`. Rules of thumb derived from the audit:
+`REFACTOR_PLAN.md` (2026-06 security/performance audit) and its follow-up `IMPROVEMENT_PLAN.md` are both fully implemented; they remain as a record of why things are shaped the way they are. Rules of thumb derived from the audit:
 
 - Never call `requests.*`, sync `yt-dlp`, PIL rendering, or `subprocess.check_output` directly in async code — use `aiohttp`, `run_in_executor`/`asyncio.to_thread`, or `asyncio.create_subprocess_exec`. Always set HTTP timeouts.
 - Never build shell strings from user input; pass argv lists without `shell=True`.
