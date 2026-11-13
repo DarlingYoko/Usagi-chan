@@ -1,3 +1,5 @@
+import datetime
+
 import discord
 from sqlalchemy.ext import asyncio
 from unittest import mock
@@ -134,6 +136,48 @@ class TestEventsMethods(IsolatedAsyncioTestCase):
             self.ctx.respond.reset_mock()
             await self.Events.on_application_command_error(self.ctx, error)
             self.ctx.respond.assert_awaited()
+
+    async def test_app_command_expired_interaction_is_only_logged(self) -> None:
+        # /hoyolab resin: the 3s window to defer had already passed, so the
+        # owner got paged and the "something went wrong" reply failed again.
+        owner = mock.AsyncMock()
+        self.ctx.bot.get_user = mock.MagicMock(return_value=None)
+        self.ctx.bot.fetch_user = mock.AsyncMock(return_value=owner)
+        self.ctx.command.qualified_name = "hoyolab resin"
+        created = discord.utils.utcnow() - datetime.timedelta(seconds=5)
+        self.ctx.interaction.id = discord.utils.time_snowflake(created)
+
+        expired = discord.NotFound(
+            mock.MagicMock(status=404, reason="Not Found"),
+            {"code": 10062, "message": "Unknown interaction"},
+        )
+        err = discord.ApplicationCommandInvokeError(expired)
+
+        await self.Events.on_application_command_error(self.ctx, err)
+
+        owner.send.assert_not_awaited()
+        self.ctx.respond.assert_not_awaited()
+        self.bot.logger.warning.assert_called_once()
+        args = self.bot.logger.warning.call_args.args
+        self.assertIn("hoyolab resin", args)
+        age = next(a for a in args if isinstance(a, float))
+        self.assertGreaterEqual(age, 5)
+
+    async def test_app_command_other_not_found_still_notifies_owner(self) -> None:
+        owner = mock.AsyncMock()
+        self.ctx.bot.get_user = mock.MagicMock(return_value=None)
+        self.ctx.bot.fetch_user = mock.AsyncMock(return_value=owner)
+        self.ctx.command.name = "cmd"
+
+        missing = discord.NotFound(
+            mock.MagicMock(status=404, reason="Not Found"),
+            {"code": 10003, "message": "Unknown Channel"},
+        )
+        err = discord.ApplicationCommandInvokeError(missing)
+
+        await self.Events.on_application_command_error(self.ctx, err)
+
+        owner.send.assert_awaited()
 
     async def test_app_command_error_unknown_notifies_owner(self) -> None:
         owner = mock.AsyncMock()

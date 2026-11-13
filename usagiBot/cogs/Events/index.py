@@ -7,6 +7,21 @@ import os
 from discord.ext import commands, tasks
 from discord.ext.commands import BadColourArgument
 
+# Discord error code for an interaction whose response window has closed.
+UNKNOWN_INTERACTION = 10062
+
+
+def is_expired_interaction(error: BaseException | None) -> bool:
+    return (
+        isinstance(error, discord.NotFound) and error.code == UNKNOWN_INTERACTION
+    )
+
+
+def interaction_age(interaction: discord.Interaction) -> float:
+    """Seconds since Discord created the interaction (from its snowflake)."""
+    created = discord.utils.snowflake_time(interaction.id)
+    return (discord.utils.utcnow() - created).total_seconds()
+
 from usagiBot.src.UsagiUtils import (
     error_notification_to_owner,
     load_all_command_tags,
@@ -232,6 +247,17 @@ class Events(commands.Cog):
             await ctx.respond(
                 self.bot.i18n.get_text("Your color is in wrong format", user_lang),
                 ephemeral=True,
+            )
+        elif isinstance(error, discord.ApplicationCommandInvokeError) and (
+            is_expired_interaction(error.original)
+        ):
+            # Discord gives 3s to acknowledge; once that passed nothing can
+            # be sent back, so neither page the owner nor try to respond.
+            self.bot.logger.warning(
+                "%s: interaction expired before it was acknowledged"
+                " (%.1fs after it was created)",
+                ctx.command.qualified_name,
+                interaction_age(ctx.interaction),
             )
         elif isinstance(error, discord.ApplicationCommandInvokeError):
             original = error.original or error
