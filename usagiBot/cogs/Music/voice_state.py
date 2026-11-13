@@ -105,8 +105,11 @@ class VoiceState:
             self.cog.voice_states.pop(self.guild_id, None)
 
     async def seek(self, seconds: int, is_direct_link: bool) -> None:
+        voice = self.voice
+        if voice is None:
+            return
         # Stop the current playing song
-        self.voice.stop()
+        voice.stop()
         # Recreate ffmpeg object; direct links keep their stored title
         if is_direct_link:
             self.current = await self.create_song_source(
@@ -126,7 +129,7 @@ class VoiceState:
         # Update volume
         self.current.source.volume = self._volume
         # Play the seeked song
-        self.voice.play(self.current.source, after=self.play_next_song)
+        voice.play(self.current.source, after=self.play_next_song)
         self.current.time_invoke_seek = time.time()
         # Update the start_time since the song was seeked
         self.current.start_time = time.time() - self.seek_time

@@ -10,8 +10,13 @@ services:
 
     postgres:
         image: pgvector/pgvector:pg17
-        env_file:
-            - stack.env
+        # Only the DB credentials, interpolated from the stack env (Portainer,
+        # or `docker compose --env-file stack.env`) — env_file: stack.env would
+        # also hand the Discord token, Fernet key and VPN creds to Postgres.
+        environment:
+            POSTGRES_DB: ${POSTGRES_DB}
+            POSTGRES_USER: ${POSTGRES_USER}
+            POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
         ports:
           - "127.0.0.1:5432:5432"
         volumes:

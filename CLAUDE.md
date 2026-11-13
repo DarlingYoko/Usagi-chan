@@ -10,9 +10,13 @@ Python 3.12, [py-cord 2.7](https://docs.pycord.dev) Discord bot, async SQLAlchem
 
 ```bash
 docker compose build
-docker compose up                 # launches bot + postgres, env from stack.env
+docker compose --env-file stack.env up   # bot + postgres
 docker compose exec postgres psql -U <user> -W <db>
 ```
+
+The bot container gets all of `stack.env`; Postgres only gets `POSTGRES_DB/USER/PASSWORD`, interpolated as `${...}` in `docker-compose.yaml` (Portainer supplies the stack env for interpolation; locally pass `--env-file stack.env`).
+
+`CREDENTIALS_ENCRYPTION_KEY` is checked at startup. It may hold several comma-separated Fernet keys: the first one encrypts, all of them decrypt. To rotate, prepend the new key and keep the old one until every row has been rewritten. A stored token that no configured key opens raises `CredentialKeyError` instead of being passed through.
 
 ### Schema migrations (Alembic)
 

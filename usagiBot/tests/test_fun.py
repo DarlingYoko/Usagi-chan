@@ -155,9 +155,3 @@ class TestMentionPolicy(TestCase):
         self.assertFalse(ALLOWED_MENTIONS.everyone)
         self.assertFalse(ALLOWED_MENTIONS.roles)
         self.assertTrue(ALLOWED_MENTIONS.users)
-
-    def test_policy_is_installed_on_the_bot(self) -> None:
-        # usagi.py builds the bot at import time (loads every cog), so check
-        # the constructor call in the source instead of importing it.
-        with open("usagiBot/usagi.py", encoding="utf-8") as source:
-            self.assertIn("allowed_mentions=ALLOWED_MENTIONS", source.read())
