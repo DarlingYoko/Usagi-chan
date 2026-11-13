@@ -1,6 +1,6 @@
 """Parsing of the /music seek argument."""
 import re
-from typing import Any, Optional, Tuple
+from typing import Any, Optional
 
 # "1h2m3s", "2m", "45s" — every unit optional, but at least one must be present
 _CLOCK = re.compile(r"(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?")
@@ -12,8 +12,19 @@ def link_domain(url: str) -> Optional[str]:
     return parts[2] if len(parts) > 2 else None
 
 
+YOUTUBE_HOSTS = ("youtube.com", "youtu.be")
+
+
 def is_youtube_domain(domain: Optional[str]) -> bool:
-    return domain is not None and ("youtube" in domain or "youtu.be" in domain)
+    """
+    True only for youtube.com / youtu.be and their subdomains. A substring
+    match would send "youtube.internal" down the YouTube path, where yt-dlp
+    falls back to its generic extractor and fetches the host unchecked.
+    """
+    if domain is None:
+        return False
+    host = domain.rsplit("@", 1)[-1].split(":", 1)[0].lower()
+    return any(host == name or host.endswith("." + name) for name in YOUTUBE_HOSTS)
 
 
 def elapsed_seconds(song: Any, now: float) -> int:
@@ -52,6 +63,6 @@ def parse_seek_target(raw: str, song: Any, now: float) -> int:
     return hours * 3600 + minutes * 60 + seconds
 
 
-def source_kind(url: str) -> Tuple[bool, bool]:
-    """(is_local_file, is_direct_link) — how VoiceState.seek must rebuild the source."""
-    return "local@" in url, not is_youtube_domain(link_domain(url))
+def is_direct_link(url: str) -> bool:
+    """Non-YouTube sources keep their stored title when VoiceState.seek rebuilds them."""
+    return not is_youtube_domain(link_domain(url))

@@ -96,8 +96,8 @@ class TestFetchImage(IsolatedAsyncioTestCase):
     def _patch_session(self, responses: list) -> mock.MagicMock:
         session = make_session(responses)
         patcher = mock.patch.object(
-            self.UsagiNet.aiohttp,
-            "ClientSession",
+            self.UsagiNet,
+            "public_client_session",
             return_value=FakeAsyncContext(session),
         )
         patcher.start()
@@ -153,3 +153,51 @@ class TestFetchImage(IsolatedAsyncioTestCase):
             await self.UsagiNet.fetch_image(
                 "http://good.example/a.png", max_bytes=2048
             )
+
+
+class TestPublicOnlyResolver(IsolatedAsyncioTestCase):
+    """The checked IP must be the one aiohttp connects to (no DNS rebinding)."""
+
+    def setUp(self) -> None:
+        from usagiBot.src import UsagiNet
+
+        self.UsagiNet = UsagiNet
+
+    def resolver(self, *addresses: str):
+        inner = mock.AsyncMock()
+        inner.resolve.return_value = [
+            {"hostname": "h", "host": address, "port": 80, "family": 2, "proto": 0, "flags": 0}
+            for address in addresses
+        ]
+        return self.UsagiNet.PublicOnlyResolver(inner), inner
+
+    async def test_public_addresses_pass_through(self) -> None:
+        resolver, inner = self.resolver("93.184.216.34")
+
+        result = await resolver.resolve("good.example", 80)
+
+        self.assertEqual(result, inner.resolve.return_value)
+
+    async def test_any_private_address_fails_the_lookup(self) -> None:
+        for address in ("127.0.0.1", "10.1.2.3", "169.254.169.254", "::1"):
+            with self.subTest(address=address):
+                resolver, _ = self.resolver("93.184.216.34", address)
+                with self.assertRaises(self.UsagiNet.UnsafeUrlError):
+                    await resolver.resolve("rebind.example", 80)
+
+    async def test_close_closes_inner(self) -> None:
+        resolver, inner = self.resolver()
+
+        await resolver.close()
+
+        inner.close.assert_awaited_once()
+
+    async def test_session_uses_the_resolver(self) -> None:
+        session = self.UsagiNet.public_client_session()
+        try:
+            self.assertIsInstance(
+                session.connector._resolver, self.UsagiNet.PublicOnlyResolver
+            )
+            self.assertEqual(session.timeout, self.UsagiNet.FETCH_TIMEOUT)
+        finally:
+            await session.close()

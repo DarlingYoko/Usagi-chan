@@ -28,6 +28,13 @@ class MusicCommandTestCase(IsolatedAsyncioTestCase):
         self.YTDLSource = YTDLSource
         self.bot = make_bot()
         self.cog = Music(self.bot)
+        # direct links get a DNS check; these tests only use public hosts
+        patcher = mock.patch(
+            "usagiBot.cogs.Music.enqueue.validate_public_http_url",
+            new_callable=mock.AsyncMock,
+        )
+        patcher.start()
+        self.addCleanup(patcher.stop)
 
     async def run_command(self, name: str, ctx, *args):
         return await getattr(self.Music, name).callback(self.cog, ctx, *args)
@@ -687,7 +694,7 @@ class TestSeek(MusicCommandTestCase):
     async def test_plain_seconds(self) -> None:
         ctx = await self.seek("75")
 
-        ctx.voice_state.seek.assert_awaited_with(75, False, False)
+        ctx.voice_state.seek.assert_awaited_with(75, False)
         self.assertEqual(embed_title(ctx.respond), "Seek to 75s")
 
     async def test_hours_minutes_seconds(self) -> None:
@@ -726,12 +733,10 @@ class TestSeek(MusicCommandTestCase):
         ctx.voice_state.seek.assert_not_called()
         self.assertEqual(embed_title(ctx.respond), "Unable to parse seconds to seek!")
 
-    async def test_direct_link_and_local_flags(self) -> None:
+    async def test_direct_link_flag(self) -> None:
         ctx = await self.seek("5", make_current(url="https://cdn.example.com/a.mp3"))
-        ctx.voice_state.seek.assert_awaited_with(5, False, True)
 
-        ctx = await self.seek("5", make_current(url="local@/tmp/a.mp3"))
-        ctx.voice_state.seek.assert_awaited_with(5, True, True)
+        ctx.voice_state.seek.assert_awaited_with(5, True)
 
 
 class TestCogLifecycle(MusicCommandTestCase):
@@ -788,8 +793,7 @@ class TestCogLifecycle(MusicCommandTestCase):
         self.assertFalse(ctx.from_play)
         self.assertEqual(ctx.debug, ctx.voice_state.debug)
 
-    @mock.patch("shutil.rmtree")
-    def test_cog_unload_stops_every_state(self, mock_rmtree) -> None:
+    def test_cog_unload_stops_every_state(self) -> None:
         state = mock.MagicMock()
         state.stop = mock.MagicMock(return_value=mock.MagicMock())
         self.cog.voice_states[1] = state
@@ -798,7 +802,6 @@ class TestCogLifecycle(MusicCommandTestCase):
 
         state.stop.assert_called_with(leave=True)
         self.assertEqual(self.cog.voice_states, {})
-        mock_rmtree.assert_called_with("./tempMusic")
 
 
 class TestVoiceStateUpdateListener(MusicCommandTestCase):

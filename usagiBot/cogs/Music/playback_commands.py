@@ -13,7 +13,7 @@ from usagiBot.cogs.Music.group import music
 from usagiBot.cogs.Music.music_utils import check_user_in_voice, parse_duration
 from usagiBot.cogs.Music.playback import pause_song, resume_song, stop_queue
 from usagiBot.cogs.Music.search_view import SearchView
-from usagiBot.cogs.Music.seek import parse_seek_target, source_kind
+from usagiBot.cogs.Music.seek import is_direct_link, parse_seek_target
 from usagiBot.cogs.Music.sources import YTDLSource
 from usagiBot.cogs.Music.voice_commands import respond_error
 from usagiBot.cogs.Music.voting import SkipVoteView, StopVoteView, run_vote
@@ -191,8 +191,7 @@ class PlaybackCommands:
 
         state.seeking = True
         state.seek_time = target
-        is_local, is_direct_link = source_kind(state.current.source.url)
-        await state.seek(target, is_local, is_direct_link)
+        await state.seek(target, is_direct_link(state.current.source.url))
         await ctx.respond(
             embed=get_embed(title=f"Seek to {target}s", color=discord.Color.green()),
             ephemeral=True,

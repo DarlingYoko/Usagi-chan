@@ -8,10 +8,12 @@ from typing import Any, Callable
 from usagiBot.cogs.Music.music_utils import get_audio_duration
 from usagiBot.cogs.Music.seek import is_youtube_domain, link_domain
 from usagiBot.cogs.Music.sources import YTDLSource, error_messages
+from usagiBot.src.UsagiNet import UnsafeUrlError, validate_public_http_url
 
 logger = logging.getLogger(__name__)
 
 UNSUPPORTED_AUDIO = "Unable to add this song, maybe it is not an audio file?"
+PRIVATE_ADDRESS = "That link points to a private or local address"
 
 
 @dataclass(frozen=True)
@@ -22,6 +24,15 @@ class EnqueueResult:
 
 def _not_found(link: str) -> EnqueueResult:
     return EnqueueResult(False, f"Couldn't find anything that matches `{link}`")
+
+
+async def _is_public(url: str) -> bool:
+    try:
+        await validate_public_http_url(url)
+    except UnsafeUrlError as e:
+        logger.warning("Refused music link %r: %s", url, e)
+        return False
+    return True
 
 
 async def _extract(
@@ -64,10 +75,14 @@ async def _enqueue_playlist(
 
 
 async def _enqueue_youtube(
-    loop: asyncio.AbstractEventLoop, state: Any, link: str, requester: Any
+    loop: asyncio.AbstractEventLoop,
+    state: Any,
+    link: str,
+    requester: Any,
+    query: str | None = None,
 ) -> EnqueueResult:
     try:
-        data = await _extract(loop, YTDLSource.ytdl.extract_info, link)
+        data = await _extract(loop, YTDLSource.ytdl.extract_info, query or link)
     except Exception as e:
         return EnqueueResult(False, f"Error: {error_messages.get(str(e), str(e))}")
     data = _first_entry(data)
@@ -92,27 +107,34 @@ async def _enqueue_youtube(
 async def _enqueue_direct(
     loop: asyncio.AbstractEventLoop, state: Any, link: str, requester: Any
 ) -> EnqueueResult:
+    # yt-dlp's generic extractor and ffmpeg fetch whatever they are given,
+    # so both the link and the stream it resolves to must be public hosts
+    if not await _is_public(link):
+        return EnqueueResult(False, PRIVATE_ADDRESS)
     try:
         data = _first_entry(await _extract(loop, YTDLSource.ytdl.extract_info, link))
         if data is None:
             return _not_found(link)
+        stream_url = data["url"]
         if "duration" in data:
             duration = int(float(data["duration"]))
         else:
             duration = await get_audio_duration(link)
         title = data["title"]
-        await state.songs.put(
-            {
-                "url": link,
-                "title": title,
-                "user": requester,
-                "duration": duration,
-                "realurl": data["url"],
-            }
-        )
     except Exception as e:
         logger.error("Couldn't enqueue direct link %r: %s", link, e)
         return EnqueueResult(False, UNSUPPORTED_AUDIO)
+    if not await _is_public(stream_url):
+        return EnqueueResult(False, PRIVATE_ADDRESS)
+    await state.songs.put(
+        {
+            "url": link,
+            "title": title,
+            "user": requester,
+            "duration": duration,
+            "realurl": stream_url,
+        }
+    )
     return EnqueueResult(True, "Enqueued **{0}**".format(title.replace("_", "\\_")))
 
 
@@ -121,11 +143,16 @@ async def enqueue_link(
 ) -> EnqueueResult:
     """
     Add whatever `link` points to onto `state.songs`. Text that isn't a URL
-    is handed to YouTube search (yt-dlp default_search).
+    is searched on YouTube explicitly: yt-dlp's default_search=auto would
+    otherwise turn "host/path" text into an unchecked http:// fetch.
     """
     domain = link_domain(link)
-    if domain is None or is_youtube_domain(domain):
-        if domain is not None and "/playlist?" in link:
+    if domain is None:
+        result = await _enqueue_youtube(
+            loop, state, link, requester, query=f"ytsearch:{link}"
+        )
+    elif is_youtube_domain(domain):
+        if "/playlist?" in link:
             result = await _enqueue_playlist(loop, state, link, requester)
         else:
             result = await _enqueue_youtube(loop, state, link, requester)

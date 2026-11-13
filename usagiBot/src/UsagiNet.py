@@ -4,6 +4,8 @@ import socket
 from urllib.parse import urlparse, urljoin
 
 import aiohttp
+from aiohttp.abc import AbstractResolver, ResolveResult
+from aiohttp.resolver import ThreadedResolver
 
 MAX_IMAGE_BYTES = 10 * 1024 * 1024
 FETCH_TIMEOUT = aiohttp.ClientTimeout(total=15)
@@ -20,6 +22,46 @@ async def _resolve_host(host: str) -> list[str]:
         host, None, type=socket.SOCK_STREAM
     )
     return [info[4][0] for info in infos]
+
+
+def _check_public_address(host: str, address: str) -> None:
+    try:
+        ip = ipaddress.ip_address(address.split("%")[0])
+    except ValueError as e:
+        raise UnsafeUrlError(f"unparsable address {address!r}") from e
+    if not ip.is_global:
+        raise UnsafeUrlError(f"{host!r} resolves to a non-public address")
+
+
+class PublicOnlyResolver(AbstractResolver):
+    """
+    aiohttp resolver that fails the lookup when any address is non-public.
+    Validating inside the connector means the address that was checked is
+    the one connected to — a TTL-0 domain can't pass the check with a public
+    IP and then connect to 169.254.169.254 (DNS rebinding).
+    """
+
+    def __init__(self, inner: AbstractResolver | None = None) -> None:
+        self._inner = inner or ThreadedResolver()
+
+    async def resolve(
+        self, host: str, port: int = 0, family: socket.AddressFamily = socket.AF_INET
+    ) -> list[ResolveResult]:
+        results = await self._inner.resolve(host, port, family)
+        for result in results:
+            _check_public_address(host, result["host"])
+        return results
+
+    async def close(self) -> None:
+        await self._inner.close()
+
+
+def public_client_session() -> aiohttp.ClientSession:
+    """Session for user-supplied URLs: public addresses only, with a timeout."""
+    return aiohttp.ClientSession(
+        timeout=FETCH_TIMEOUT,
+        connector=aiohttp.TCPConnector(resolver=PublicOnlyResolver()),
+    )
 
 
 async def validate_public_http_url(url: str) -> None:
@@ -39,14 +81,7 @@ async def validate_public_http_url(url: str) -> None:
     if not addresses:
         raise UnsafeUrlError(f"cannot resolve {parsed.hostname!r}")
     for address in addresses:
-        try:
-            ip = ipaddress.ip_address(address.split("%")[0])
-        except ValueError as e:
-            raise UnsafeUrlError(f"unparsable address {address!r}") from e
-        if not ip.is_global:
-            raise UnsafeUrlError(
-                f"{parsed.hostname!r} resolves to a non-public address"
-            )
+        _check_public_address(parsed.hostname, address)
 
 
 async def fetch_image(url: str, *, max_bytes: int = MAX_IMAGE_BYTES) -> bytes:
@@ -54,7 +89,7 @@ async def fetch_image(url: str, *, max_bytes: int = MAX_IMAGE_BYTES) -> bytes:
     Fetch a user-supplied image URL safely: public hosts only (re-checked on
     every redirect hop), total timeout, size cap, image Content-Type required.
     """
-    async with aiohttp.ClientSession(timeout=FETCH_TIMEOUT) as session:
+    async with public_client_session() as session:
         for _ in range(_MAX_REDIRECTS + 1):
             await validate_public_http_url(url)
             async with session.get(url, allow_redirects=False) as response:

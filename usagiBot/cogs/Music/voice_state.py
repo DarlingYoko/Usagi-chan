@@ -9,8 +9,6 @@ from discord.ext import commands
 
 from usagiBot.cogs.Music.music_utils import (
     generate_source,
-    get_audio_duration,
-    parse_duration_raw,
 )
 from usagiBot.cogs.Music.sources import FFMPEGSource, Song, SongQueue
 from usagiBot.cogs.Music.player_view import PlayerControlView
@@ -106,12 +104,11 @@ class VoiceState:
             await self.stop(leave=True)
             self.cog.voice_states.pop(self.guild_id, None)
 
-    # Function for seeking
-    async def seek(self, seconds, is_local, is_direct_link):
+    async def seek(self, seconds: int, is_direct_link: bool) -> None:
         # Stop the current playing song
         self.voice.stop()
-        # Recreate ffmpeg object
-        if is_local or is_direct_link:
+        # Recreate ffmpeg object; direct links keep their stored title
+        if is_direct_link:
             self.current = await self.create_song_source(
                 self._ctx,
                 self.current.source.url,
@@ -135,66 +132,19 @@ class VoiceState:
         self.current.start_time = time.time() - self.seek_time
 
     async def create_song_source(self, ctx, url, title=None, requester=None, seek=None):
+        # Only remote sources: the old "local@<path>" upload marker is gone,
+        # it let a queued link open files from the container's filesystem
         try:
-            domain = url.split("/")[2]
+            return Song(
+                await FFMPEGSource.create_source(
+                    ctx, url, loop=self.bot.loop, requester=requester, seek=seek
+                ),
+                True,
+                True,
+            )
         except Exception as e:
-            logger.error("Couldn't parse domain from %r: %s", url, e)
-            domain = ""
-        if "local@" in url:
-            # It is a local file
-            url = url[6:]
-            try:
-                # Try to get the duration of the uploaded file
-                duration = str(await get_audio_duration(url))
-            except Exception as e:
-                logger.error("ffprobe failed for %r: %s", url, e)
-                return "error"
-            # Return the song object with ffmpeg
-            if seek is not None:
-                return Song(
-                    FFMPEGSource(
-                        ctx,
-                        discord.FFmpegPCMAudio(
-                            url,
-                            before_options="-ss " + parse_duration_raw(seek),
-                        ),
-                        data={
-                            "duration": duration,
-                            "title": title,
-                            "url": "local@" + url,
-                            "requester": requester,
-                        },
-                    ),
-                    True,
-                )
-            else:
-                return Song(
-                    FFMPEGSource(
-                        ctx,
-                        discord.FFmpegPCMAudio(url),
-                        data={
-                            "duration": duration,
-                            "title": title,
-                            "url": "local@" + url,
-                            "requester": requester,
-                        },
-                    ),
-                    True,
-                )
-        else:
-            # Direct Link or another source
-            try:
-                result = Song(
-                    await FFMPEGSource.create_source(
-                        ctx, url, loop=self.bot.loop, requester=requester, seek=seek
-                    ),
-                    True,
-                    True,
-                )
-            except Exception as e:
-                await ctx.channel.send("Error: " + str(e))
-                return "error"
-            return result
+            await ctx.channel.send("Error: " + str(e))
+            return "error"
 
     async def _send_now_playing(self):
         """Post the now-playing card; a Discord error must not stop playback."""
@@ -236,7 +186,6 @@ class VoiceState:
                                 self.current = None
                             # Get the next song
                             self.next_song = await self.songs.get()
-                            # If the url contains local@, it is a local file
                             try:
                                 domain = self.current["url"].split("/")[2]
                             except TypeError:

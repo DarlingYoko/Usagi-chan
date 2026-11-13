@@ -44,20 +44,34 @@ class TestParseSeekTarget(TestCase):
                 self.parse(raw, self.song, now=1100.0)
 
 
-class TestSourceKind(TestCase):
+class TestLinkKind(TestCase):
     def setUp(self) -> None:
-        from usagiBot.cogs.Music.seek import source_kind
+        from usagiBot.cogs.Music.seek import is_direct_link, is_youtube_domain
 
-        self.source_kind = source_kind
+        self.is_direct_link = is_direct_link
+        self.is_youtube_domain = is_youtube_domain
 
-    def test_youtube(self) -> None:
-        self.assertEqual(
-            self.source_kind("https://www.youtube.com/watch?v=a"), (False, False)
-        )
-        self.assertEqual(self.source_kind("https://youtu.be/a"), (False, False))
+    def test_youtube_links(self) -> None:
+        for url in (
+            "https://www.youtube.com/watch?v=a",
+            "https://youtube.com/watch?v=a",
+            "https://music.youtube.com/watch?v=a",
+            "https://m.youtube.com/watch?v=a",
+            "https://youtu.be/a",
+            "https://WWW.YouTube.com:443/watch?v=a",
+        ):
+            with self.subTest(url=url):
+                self.assertFalse(self.is_direct_link(url))
 
-    def test_direct_link(self) -> None:
-        self.assertEqual(self.source_kind("https://cdn.example.com/a.mp3"), (False, True))
+    def test_direct_links(self) -> None:
+        for url in (
+            "https://cdn.example.com/a.mp3",
+            "http://youtube.internal/watch?v=a",
+            "http://notyoutube.com/a",
+            "http://youtube.com.evil.test/a",
+        ):
+            with self.subTest(url=url):
+                self.assertTrue(self.is_direct_link(url))
 
-    def test_local_file(self) -> None:
-        self.assertEqual(self.source_kind("local@/tmp/a.mp3"), (True, True))
+    def test_no_domain(self) -> None:
+        self.assertFalse(self.is_youtube_domain(None))
