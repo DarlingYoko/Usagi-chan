@@ -6,14 +6,20 @@ from discord.ext import commands
 from pycord18n.extension import I18nExtension, Language
 
 from usagiBot.db.migrate import upgrade_database
+from usagiBot.db.types import ensure_encryption_key
 from usagiBot.env import COGS_DIR, LOG_LEVEL
 from usagiBot.src.CustomHelpCommand import CustomHelpCommand
-from usagiBot.src.UsagiUtils import init_language
+from usagiBot.src.UsagiUtils import ALLOWED_MENTIONS, init_language
 
 
 class UsagiBot(commands.Bot):
     def __init__(self, command_prefix, help_command, intents):
-        super().__init__(command_prefix, help_command, intents=intents)
+        super().__init__(
+            command_prefix,
+            help_command,
+            intents=intents,
+            allowed_mentions=ALLOWED_MENTIONS,
+        )
         self.language = None
 
         # Define logger
@@ -63,6 +69,10 @@ class UsagiBot(commands.Bot):
         # the first connect only, not to each reconnect.
         if not initial:
             return
+
+        # Revision 0002 and every credential read need the key; fail now,
+        # not on the first background loop that touches a cookie
+        ensure_encryption_key()
 
         self.logger.info("Running DB migrations before bot connect")
         await upgrade_database()

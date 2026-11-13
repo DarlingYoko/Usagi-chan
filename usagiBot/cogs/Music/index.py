@@ -1,6 +1,5 @@
 """Music cog: per-guild voice state lifecycle; slash commands live in the mixins."""
 import logging
-import shutil
 from typing import Any
 
 import discord
@@ -39,10 +38,6 @@ class Music(VoiceCommands, PlaybackCommands, QueueCommands, commands.Cog):
             # Leave the channel first or else unexpected behaviour will occur
             self.bot.loop.create_task(state.stop(leave=True))
         self.voice_states.clear()
-        try:
-            shutil.rmtree("./tempMusic")
-        except Exception as e:
-            logger.error("Couldn't remove tempMusic: %s", e)
 
     def cog_check(self, ctx: Any) -> bool:
         if not ctx.guild:

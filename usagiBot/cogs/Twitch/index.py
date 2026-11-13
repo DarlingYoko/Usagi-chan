@@ -6,8 +6,7 @@ from discord.ext import commands, tasks
 from usagiBot.cogs.Twitch.twitch_utils import *
 from usagiBot.cogs.Twitch.schemas import UsagiTwitchNotify
 from usagiBot.cogs.Main.schemas import UsagiConfig
-from usagiBot.src.UsagiChecks import check_cog_whitelist
-from usagiBot.src.UsagiErrors import UsagiModuleDisabledError
+from usagiBot.src.UsagiChecks import guild_cog_check
 from usagiBot.src.UsagiUtils import guard_loop, guarded_item
 
 from pycord18n.extension import _
@@ -118,9 +117,7 @@ class Twitch(commands.Cog):
         self.bot.logger.info("Listen Twitch streamers.")
 
     def cog_check(self, ctx):
-        if check_cog_whitelist(self, ctx):
-            return True
-        raise UsagiModuleDisabledError()
+        return guild_cog_check(self, ctx)
 
     twitch_notify = SlashCommandGroup(
         name="twitch_notify",

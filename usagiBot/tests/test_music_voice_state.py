@@ -212,36 +212,15 @@ class TestPlayNextSong(VoiceStateTestCase):
 
 
 class TestCreateSongSource(VoiceStateTestCase):
-    @mock.patch(f"{VS}.get_audio_duration", new_callable=mock.AsyncMock, return_value=90)
-    @mock.patch("discord.FFmpegPCMAudio")
-    async def test_local_file(self, mock_ffmpeg, _duration) -> None:
-        mock_ffmpeg.return_value = audio_source()
+    async def test_local_marker_is_not_a_file_path(self) -> None:
+        # "local@<path>" once meant "open this file"; it must stay a URL now
+        with mock.patch.object(
+            self.module.FFMPEGSource, "create_source", new=mock.AsyncMock()
+        ) as create, mock.patch("discord.FFmpegPCMAudio") as ffmpeg:
+            await self.state.create_song_source(self.ctx, "local@/etc/passwd")
 
-        song = await self.state.create_song_source(
-            self.ctx, "local@/tmp/a.mp3", title="a", requester="me"
-        )
-
-        mock_ffmpeg.assert_called_with("/tmp/a.mp3")
-        self.assertTrue(song.is_file)
-        self.assertEqual(song.source.url, "local@/tmp/a.mp3")
-        self.assertEqual(song.source.duration_int, 90)
-
-    @mock.patch(f"{VS}.get_audio_duration", new_callable=mock.AsyncMock, return_value=90)
-    @mock.patch("discord.FFmpegPCMAudio")
-    async def test_local_file_with_seek(self, mock_ffmpeg, _duration) -> None:
-        mock_ffmpeg.return_value = audio_source()
-
-        await self.state.create_song_source(self.ctx, "local@/tmp/a.mp3", seek=75)
-
-        self.assertEqual(mock_ffmpeg.call_args.kwargs["before_options"], "-ss 1:15")
-
-    @mock.patch(f"{VS}.get_audio_duration", new_callable=mock.AsyncMock)
-    async def test_local_file_ffprobe_failure(self, mock_duration) -> None:
-        mock_duration.side_effect = RuntimeError("ffprobe")
-
-        result = await self.state.create_song_source(self.ctx, "local@/tmp/a.mp3")
-
-        self.assertEqual(result, "error")
+        ffmpeg.assert_not_called()
+        self.assertEqual(create.call_args.args[1], "local@/etc/passwd")
 
     async def test_remote_source(self) -> None:
         source = mock.MagicMock()
@@ -279,7 +258,7 @@ class TestSeek(VoiceStateTestCase):
 
     @mock.patch("time.time", return_value=2000.0)
     async def test_direct_link_keeps_title(self, _time) -> None:
-        await self.state.seek(30, False, True)
+        await self.state.seek(30, True)
 
         self.voice.stop.assert_called_once()
         self.assertEqual(self.state.create_song_source.call_args.kwargs["title"], "song")
@@ -292,7 +271,7 @@ class TestSeek(VoiceStateTestCase):
         self.assertEqual(self.new_song.source.volume, 0.5)
 
     async def test_youtube_refetches_title(self) -> None:
-        await self.state.seek(30, False, False)
+        await self.state.seek(30, False)
 
         self.assertNotIn("title", self.state.create_song_source.call_args.kwargs)
 

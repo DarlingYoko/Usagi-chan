@@ -55,6 +55,12 @@ class TestMainCommands(IsolatedAsyncioTestCase):
         self.ctx.guild_id = "g1"
         self.ctx.author.name = "Yoko"
 
+        import usagiBot.cogs.Main.index as main_index
+
+        grant_patch = mock.patch.object(main_index, "role_grant_error", return_value=None)
+        grant_patch.start()
+        self.addCleanup(grant_patch.stop)
+
     async def test_add_timer_invalid_date_responds(self) -> None:
         channel = mock.MagicMock()
         await self.Main.add_timer.callback(self.Main, self.ctx, channel, "garbage")

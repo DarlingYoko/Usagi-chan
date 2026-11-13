@@ -158,3 +158,111 @@ class TestBeforeIdentifyHook(IsolatedAsyncioTestCase):
 
         upgrade.assert_not_awaited()
         language.assert_not_awaited()
+
+
+class TestEncryptLegacyCredentialsRevision(TestCase):
+    """0002 rewrites plaintext credentials written before Fernet existed."""
+
+    def setUp(self) -> None:
+        import importlib.util
+        from pathlib import Path
+
+        from usagiBot.db import types
+
+        types._fernet_instance = None
+        self.addCleanup(setattr, types, "_fernet_instance", None)
+        self.types = types
+        path = next(
+            Path("usagiBot/db/migrations/versions").glob("0002_*.py")
+        )
+        spec = importlib.util.spec_from_file_location("rev0002", path)
+        self.revision = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(self.revision)
+
+    def fake_bind(self, rows: dict) -> mock.MagicMock:
+        updates = []
+
+        def execute(statement, params=None):
+            sql = str(statement)
+            if sql.startswith("SELECT"):
+                table = sql.split(" FROM ")[1].split()[0]
+                column = sql.split("SELECT id, ")[1].split()[0]
+                result = mock.MagicMock()
+                result.fetchall.return_value = rows.get((table, column), [])
+                return result
+            updates.append((sql, params))
+            return mock.MagicMock()
+
+        bind = mock.MagicMock()
+        bind.execute.side_effect = execute
+        bind.updates = updates
+        return bind
+
+    def test_covers_every_encrypted_column(self) -> None:
+        self.assertEqual(
+            set(self.revision.ENCRYPTED_COLUMNS),
+            {
+                ("usagi_gryphline", "token"),
+                ("usagi_hoyolab", "ltoken_v2"),
+                ("usagi_hoyolab", "cookie_token_v2"),
+                ("usagi_vpn_users", "uid"),
+                ("usagi_vpn_history_logs", "uid"),
+                ("usagi_vpn_renewal_requests", "uid"),
+            },
+        )
+
+    def test_encrypts_only_plaintext_rows(self) -> None:
+        column = self.types.EncryptedText()
+        already = column.process_bind_param("done", None)
+        bind = self.fake_bind(
+            {("usagi_hoyolab", "ltoken_v2"): [(1, "plain_token"), (2, already)]}
+        )
+
+        with mock.patch.object(self.revision.op, "get_bind", return_value=bind):
+            self.revision.upgrade()
+
+        self.assertEqual(len(bind.updates), 1)
+        sql, params = bind.updates[0]
+        self.assertIn("UPDATE usagi_hoyolab SET ltoken_v2", sql)
+        self.assertEqual(params["id"], 1)
+        self.assertEqual(column.process_result_value(params["value"], None), "plain_token")
+
+    def test_empty_tables_need_no_key(self) -> None:
+        bind = self.fake_bind({})
+
+        with mock.patch.dict(os.environ), mock.patch.object(
+            self.revision.op, "get_bind", return_value=bind
+        ):
+            os.environ.pop(self.types.KEY_ENV, None)
+            self.revision.upgrade()
+
+        self.assertEqual(bind.updates, [])
+
+
+class TestBootChecksKey(IsolatedAsyncioTestCase):
+    def setUp(self) -> None:
+        self._cogs_dir = tempfile.TemporaryDirectory()
+        patcher = mock.patch("usagiBot.env.COGS_DIR", self._cogs_dir.name)
+        patcher.start()
+        self.addCleanup(patcher.stop)
+        self.addCleanup(self._cogs_dir.cleanup)
+        sys.modules.pop("usagiBot.usagi", None)
+        self.addCleanup(sys.modules.pop, "usagiBot.usagi", None)
+
+    @mock.patch("usagiBot.src.UsagiUtils.init_language", new_callable=mock.AsyncMock)
+    @mock.patch("usagiBot.db.migrate.upgrade_database", new_callable=mock.AsyncMock)
+    @mock.patch("usagiBot.db.types.ensure_encryption_key")
+    async def test_key_is_checked_before_migrations(self, ensure, upgrade, _lang) -> None:
+        from usagiBot.usagi import bot
+
+        ensure.side_effect = RuntimeError("no key")
+
+        with self.assertRaises(RuntimeError):
+            await bot.before_identify_hook(0, initial=True)
+        upgrade.assert_not_awaited()
+
+    async def test_bot_never_pings_everyone_or_roles(self) -> None:
+        from usagiBot.usagi import bot
+
+        self.assertFalse(bot.allowed_mentions.everyone)
+        self.assertFalse(bot.allowed_mentions.roles)

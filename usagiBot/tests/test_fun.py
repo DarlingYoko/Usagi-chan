@@ -1,7 +1,7 @@
 from usagiBot.cogs.Fun import fun_utils
 from sqlalchemy.ext import asyncio
 from unittest import mock
-from unittest import IsolatedAsyncioTestCase
+from unittest import IsolatedAsyncioTestCase, TestCase
 
 from usagiBot.tests.utils import *
 
@@ -117,3 +117,41 @@ class TestFunMethods(IsolatedAsyncioTestCase):
 
         self.assertTrue(await checks[0](owner_ctx))
         self.assertFalse(await checks[0](other_ctx))
+
+
+class TestBasedMessageLimits(IsolatedAsyncioTestCase):
+    @mock.patch("usagiBot.cogs.Main.schemas.UsagiConfig")
+    @mock.patch.object(asyncio, "create_async_engine")
+    def setUp(self, mock_engine, mock_UsagiConfig) -> None:
+        from usagiBot.cogs.Fun.index import Fun
+
+        self.Fun = Fun(mock.AsyncMock())
+        mock_UsagiConfig.get = mock.AsyncMock(
+            return_value=mock.MagicMock(generic_id=54321)
+        )
+        self.channel = mock.AsyncMock()
+        self.ctx = mock.AsyncMock()
+        self.ctx.command.__original_kwargs__ = {"command_tag": "based_message_channel"}
+        self.ctx.bot.get_channel = mock.MagicMock(return_value=self.channel)
+
+    async def test_long_message_fits_discord_limit(self) -> None:
+        message = mock.AsyncMock()
+        message.author.mention = "<@1>"
+        message.content = "x" * 2000
+        message.attachments = []
+        message.embeds = []
+
+        await self.Fun.add_based_message(self.Fun, self.ctx, message)
+
+        content = self.channel.send.call_args.kwargs["content"]
+        self.assertLessEqual(len(content), 2000)
+        self.assertTrue(content.endswith("…"))
+
+
+class TestMentionPolicy(TestCase):
+    def test_bot_never_pings_everyone_or_roles(self) -> None:
+        from usagiBot.src.UsagiUtils import ALLOWED_MENTIONS
+
+        self.assertFalse(ALLOWED_MENTIONS.everyone)
+        self.assertFalse(ALLOWED_MENTIONS.roles)
+        self.assertTrue(ALLOWED_MENTIONS.users)

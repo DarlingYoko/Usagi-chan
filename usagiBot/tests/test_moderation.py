@@ -58,6 +58,7 @@ class TestModerationMethods(IsolatedAsyncioTestCase):
         self.moder_role = mock.MagicMock()
         self.moder_role.id = "test_moder_role_id"
         self.moder_role.mention = "test_moder_role_mention"
+        self.moder_role.is_default.return_value = False
 
     def tearDown(self):
         self.patcher.stop()

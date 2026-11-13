@@ -199,3 +199,84 @@ class TestVpn(IsolatedAsyncioTestCase):
         self.assertCountEqual(notified_users, [111, 222])
         self.bot.logger.warning.assert_called()
 
+
+
+class TestVpnRenewalSafety(IsolatedAsyncioTestCase):
+    @mock.patch.object(sa_asyncio, "create_async_engine")
+    def setUp(self, mock_engine) -> None:
+        from usagiBot.cogs.VPN import index as vpn_index
+
+        self.vpn_index = vpn_index
+        self.VPN = vpn_index.VPN
+        self.bot = mock.AsyncMock()
+        self.bot.i18n = init_i18n()
+        self.bot.language = {}
+        self.VPN.bot = self.bot
+        self.profile = mock.MagicMock(user_id=111, sub_name="sub", uid="u1")
+
+    def interaction(self, user_id: int) -> mock.MagicMock:
+        interaction = mock.MagicMock()
+        interaction.user.id = user_id
+        interaction.response.send_modal = mock.AsyncMock()
+        interaction.response.send_message = mock.AsyncMock()
+        return interaction
+
+    async def test_renew_button_rejects_other_users(self) -> None:
+        button = self.vpn_index.VpnRenewButton(self.bot, [self.profile], "en")
+        interaction = self.interaction(222)
+
+        await button.callback(interaction)
+
+        interaction.response.send_modal.assert_not_called()
+        self.assertEqual(
+            interaction.response.send_message.call_args.kwargs["embed"].title,
+            "This isn't your VPN profile.",
+        )
+        self.assertTrue(interaction.response.send_message.call_args.kwargs["ephemeral"])
+
+    async def test_renew_button_opens_modal_for_owner(self) -> None:
+        button = self.vpn_index.VpnRenewButton(self.bot, [self.profile], "en")
+        interaction = self.interaction(111)
+
+        await button.callback(interaction)
+
+        interaction.response.send_modal.assert_awaited_once()
+
+    @mock.patch("usagiBot.cogs.VPN.index.generate_vpn_user_info", new_callable=mock.AsyncMock)
+    @mock.patch("usagiBot.cogs.VPN.index.UsagiVpnUsers", new_callable=mock.AsyncMock)
+    async def test_manual_request_is_ephemeral(self, mock_Users, mock_info) -> None:
+        mock_Users.get_all_by.return_value = [self.profile]
+        mock_info.return_value = mock.MagicMock()
+        ctx = mock.AsyncMock()
+        ctx.author.id = 111
+
+        with mock.patch.object(self.vpn_index, "VpnRenewView"):
+            await self.VPN.request_renew_vpn.callback(self.VPN, ctx)
+
+        self.assertTrue(ctx.respond.call_args.kwargs["ephemeral"])
+
+    @mock.patch("usagiBot.cogs.VPN.index.Vpn3xui")
+    @mock.patch("usagiBot.cogs.VPN.index.UsagiVpnRenewalRequests", new_callable=mock.AsyncMock)
+    async def test_unknown_decision_changes_nothing(self, mock_Requests, mock_3xui) -> None:
+        ctx = mock.AsyncMock()
+        user = mock.AsyncMock()
+
+        for decision in ("reject", "rejected", "", "approve"):
+            with self.subTest(decision=decision):
+                ctx.respond.reset_mock()
+                await self.VPN.renew_vpn.callback(self.VPN, ctx, user, decision)
+
+                mock_Requests.update_all.assert_not_called()
+                mock_Requests.get_all_by.assert_not_called()
+                mock_3xui.assert_not_called()
+                user.send.assert_not_called()
+                self.assertEqual(
+                    ctx.respond.call_args.args[0],
+                    "Unknown decision: use Approved or Rejected.",
+                )
+
+    def test_decision_is_a_fixed_choice(self) -> None:
+        option = next(o for o in self.VPN.renew_vpn.options if o.name == "decision")
+
+        self.assertEqual([c.value for c in option.choices], ["Approved", "Rejected"])
+        self.assertIsNone(option.autocomplete)

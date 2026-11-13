@@ -22,6 +22,13 @@ class UsagiCallFromNotModerError(CommandError):
     """
 
 
+class UsagiCallFromNotAdminError(UsagiCallFromNotModerError):
+    """Raised when an admin-only command was called by a non-admin
+
+    Subclasses the moderator error so it gets the same "no permissions" reply.
+    """
+
+
 class UsagiCallFromWrongChannelError(CommandError):
     """Exception raised when the command was called from wrong channel
 

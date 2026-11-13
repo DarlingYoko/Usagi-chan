@@ -1,8 +1,6 @@
 import asyncio
 import logging
 import math
-import os
-import shutil
 
 import discord
 import time
@@ -176,9 +174,6 @@ async def join_voice_channel(ctx):
 
     if isinstance(ctx.voice_state.voice.channel, discord.StageChannel):
         await unmute_self(ctx)
-    # Clear all music files
-    if os.path.isdir(f"./tempMusic/{ctx.guild.id}"):
-        shutil.rmtree(f"./tempMusic/{ctx.guild.id}")
     await ctx.me.edit(deafen=True)
 
     return True
@@ -208,21 +203,12 @@ def queue_embed(data, page, header, description, song_id) -> discord.Embed:
     # If data has children, iterates through all children and create the body
     if len(data):
         for i, song in enumerate(data[start:end], start=start):
-            if "local@" in song[song_id]:
-                title = song["title"].replace("_", "\\_")
-                try:
-                    duration = parse_duration(song["duration"])
-                except Exception as e:
-                    logger.error("Couldn't parse duration: %s", e)
-                    duration = "Unknown"
-                queue += f"`{i + 1}.` **{title}** ({duration})\n"
-            else:
-                try:
-                    duration = parse_duration_raw(song["duration"])
-                except Exception as e:
-                    logger.error("Couldn't parse duration: %s", e)
-                    duration = "Unknown"
-                queue += f"`{i + 1}.` [**{song['title']}**]({url}{song[song_id]}) ({duration})\n"
+            try:
+                duration = parse_duration_raw(song["duration"])
+            except Exception as e:
+                logger.error("Couldn't parse duration: %s", e)
+                duration = "Unknown"
+            queue += f"`{i + 1}.` [**{song['title']}**]({url}{song[song_id]}) ({duration})\n"
 
     else:
         queue = "No songs in queue..."

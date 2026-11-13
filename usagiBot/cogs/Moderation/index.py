@@ -5,7 +5,7 @@ from discord.ext import commands
 from usagiBot.cogs.Main.schemas import UsagiConfig
 from usagiBot.cogs.Moderation.schemas import UsagiCogs, UsagiModerRoles
 from usagiBot.src.UsagiUtils import check_arg_in_command_tags
-from usagiBot.src.UsagiChecks import check_member_is_moder
+from usagiBot.src.UsagiChecks import check_member_is_admin, check_member_is_moder
 
 from typing import Union, List
 from pycord18n.extension import _
@@ -247,6 +247,7 @@ class Moderation(commands.Cog):
         name_localizations={"ru": "добавить"},
         description="Add new moder role for guild.",
         description_localizations={"ru": "Добавить новую модер роль для сервера."},
+        checks=[check_member_is_admin],
     )
     @discord.commands.option(
         name="role",
@@ -259,6 +260,12 @@ class Moderation(commands.Cog):
         ctx,
         member_role: discord.Role,
     ) -> None:
+        if member_role.is_default():
+            # every member has @everyone, so it would make the whole server moderators
+            await ctx.respond(
+                content=_("@everyone can't be a moderation role"), ephemeral=True
+            )
+            return
         guild_id = ctx.guild.id
         moder_roles = ctx.bot.moder_roles
         if guild_id in moder_roles and member_role.id in moder_roles[guild_id]:
@@ -287,6 +294,7 @@ class Moderation(commands.Cog):
         name_localizations={"ru": "удалить"},
         description="Remove moder role from guild.",
         description_localizations={"ru": "Удалить модер роль с сервера."},
+        checks=[check_member_is_admin],
     )
     @discord.commands.option(
         name="role",

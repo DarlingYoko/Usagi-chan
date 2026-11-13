@@ -91,12 +91,14 @@ class TestQueueEmbed(TestCase):
         self.assertEqual(embed.fields[0].value, "`6.` [**t5**](https://youtu.be/5) (1:00)\n")
         self.assertEqual(embed.fields[0].name, "**6 tracks** - 6 minutes")
 
-    def test_local_files_and_ids(self) -> None:
-        local = [{"id": "local@/a_b.mp3", "title": "a_b", "duration": 61}]
+    def test_entries_by_youtube_id(self) -> None:
+        songs = [{"id": "abc", "title": "t", "duration": 61}]
 
-        embed = self.queue_embed(local, 1, "Header", "Desc", "id")
+        embed = self.queue_embed(songs, 1, "Header", "Desc", "id")
 
-        self.assertEqual(embed.fields[0].value, "`1.` **a\\_b** (1 minutes 1 seconds)\n")
+        self.assertEqual(
+            embed.fields[0].value, "`1.` [**t**](https://youtu.be/abc) (1:01)\n"
+        )
 
 
 class TestVoiceChecks(IsolatedAsyncioTestCase):

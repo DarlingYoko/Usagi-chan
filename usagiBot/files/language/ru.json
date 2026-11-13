@@ -212,5 +212,13 @@
     "VPN no profiles": "У вас нет активных ВПН профилей.",
     "Invalid date": "Такой даты не существует, проверьте день и месяц.",
     "You already have a unic role": "У вас уже есть персональная роль, сначала удалите её.",
-    "Role not found": "Этой роли нет в этом сообщении."
+    "Role not found": "Этой роли нет в этом сообщении.",
+    "This role can't be given out": "Эту роль нельзя выдавать.",
+    "This role is above my highest role": "Эта роль выше моей самой высокой роли, я не могу её выдавать.",
+    "You can only give out roles below your highest role": "Можно выдавать только роли ниже вашей самой высокой роли.",
+    "Only administrators can give out roles with moderation permissions": "Роли с модераторскими правами могут выдавать только администраторы.",
+    "@everyone can't be a moderation role": "@everyone не может быть модераторской ролью.",
+    "This command can't be used in DMs": "Эту команду нельзя использовать в личных сообщениях.",
+    "This isn't your VPN profile": "Это не ваш ВПН профиль.",
+    "Unknown decision: use Approved or Rejected": "Неизвестное решение: выберите Approved или Rejected."
 }

@@ -13,8 +13,11 @@ from discord.ext import commands, tasks
 from pycord18n.extension import _
 
 from usagiBot.cogs.Main.schemas import UsagiConfig
-from usagiBot.src.UsagiChecks import check_is_already_set_up, check_cog_whitelist
-from usagiBot.src.UsagiErrors import UsagiModuleDisabledError
+from usagiBot.src.UsagiChecks import (
+    check_is_already_set_up,
+    check_member_is_moder,
+    guild_cog_check,
+)
 from usagiBot.src.UsagiUtils import guard_loop, guarded_item
 
 from usagiBot.cogs.Birthdays.schemas import UsagiBirthday, UsagiBirthdayTimer
@@ -53,9 +56,7 @@ class Birthday(commands.Cog):
         self.update_birthday_timer.start()
 
     def cog_check(self, ctx):
-        if check_cog_whitelist(self, ctx):
-            return True
-        raise UsagiModuleDisabledError()
+        return guild_cog_check(self, ctx)
 
     @tasks.loop(hours=1)
     @guard_loop
@@ -217,6 +218,7 @@ class Birthday(commands.Cog):
         name_localizations={"ru": "переключить_таймер"},
         description="Enable|Disable birthday timer.",
         description_localizations={"ru": "Включить|Выключить таймер дня рождения."},
+        checks=[check_member_is_moder],
     )
     async def toggle_timer(self, ctx):
         guild = await UsagiBirthdayTimer.get(guild_id=ctx.guild.id)
@@ -233,6 +235,7 @@ class Birthday(commands.Cog):
         name_localizations={"ru": "добавить_таймер"},
         description="Add birthday timer.",
         description_localizations={"ru": "Добавить таймер дня рождения."},
+        checks=[check_member_is_moder],
     )
     @discord.commands.option(
         name="channel",

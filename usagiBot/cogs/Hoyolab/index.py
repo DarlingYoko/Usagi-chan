@@ -10,8 +10,7 @@ from usagiBot.cogs.Hoyolab.resin_view import (
     enabled_games,
 )
 from usagiBot.src.UsagiUtils import get_embed
-from usagiBot.src.UsagiChecks import check_is_already_set_up, check_cog_whitelist
-from usagiBot.src.UsagiErrors import UsagiModuleDisabledError
+from usagiBot.src.UsagiChecks import check_is_already_set_up, guild_cog_check
 
 from discord.ext import commands, tasks
 from discord import SlashCommandGroup
@@ -529,9 +528,7 @@ class Hoyolab(commands.Cog):
         self.bot.logger.info("Checking daily reward.")
 
     def cog_check(self, ctx):
-        if check_cog_whitelist(self, ctx):
-            return True
-        raise UsagiModuleDisabledError()
+        return guild_cog_check(self, ctx)
 
     @commands.command(name="primogems", aliases=["примогемы"])
     async def primogems_link(self, ctx):
