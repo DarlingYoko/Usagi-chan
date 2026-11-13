@@ -1,5 +1,4 @@
 import uuid
-from typing import List
 
 import discord
 from discord import SlashCommandGroup, ButtonStyle
@@ -15,8 +14,8 @@ from usagiBot.src.UsagiUtils import get_embed, guard_loop, guarded_item
 from datetime import datetime, timedelta
 
 
-def get_decisions(ctx: discord.AutocompleteContext) -> List:
-    return ['Approved', 'Rejected']
+# /vpn renew outcomes; anything else must change nothing
+DECISIONS = ('Approved', 'Rejected')
 
 # ------- Notify classes ---------
 class VpnNotifyButton(discord.ui.Button):
@@ -162,7 +161,17 @@ class VpnRenewButton(discord.ui.Button):
         )
 
     @discord.ui.button()
-    async def callback(self, interaction):
+    async def callback(self, interaction: discord.Interaction) -> None:
+        # the view can sit in a public channel; only the profiles' owner may file
+        if interaction.user.id != self.vpn_profiles[0].user_id:
+            await interaction.response.send_message(
+                embed=get_embed(
+                    title=self.bot.i18n.get_text("This isn't your VPN profile", self.lang),
+                    color=discord.Color.red(),
+                ),
+                ephemeral=True,
+            )
+            return
         await interaction.response.send_modal(
             RenewVpnModal(self.bot, self.vpn_profiles, self.lang)
         )
@@ -339,9 +348,13 @@ class VPN(commands.Cog):
         description="Decision about user VPN renewal.",
         description_localizations={"ru": "Решение про продлению ВПНа."},
         required=True,
-        autocomplete=get_decisions
+        choices=list(DECISIONS),
     )
     async def renew_vpn(self, ctx: discord.ApplicationContext, user: discord.Member, decision: str):
+        if decision not in DECISIONS:
+            await ctx.respond(_('Unknown decision: use Approved or Rejected'))
+            return None
+
         # If no payment found or wrong data -> Reject request
         if decision == 'Rejected':
             await UsagiVpnRenewalRequests.update_all(
@@ -435,7 +448,7 @@ class VPN(commands.Cog):
     async def request_renew_vpn(self, ctx: discord.ApplicationContext):
         vpn_users = await UsagiVpnUsers.get_all_by(user_id=ctx.author.id, active=True)
         if not vpn_users:
-            await ctx.respond(_("VPN no profiles"))
+            await ctx.respond(_("VPN no profiles"), ephemeral=True)
             return None
 
         lang = self.bot.language.get(int(ctx.author.id), "en")
@@ -443,7 +456,9 @@ class VPN(commands.Cog):
         embed = await generate_vpn_user_info(self.bot, vpn_users, lang)
         embed.title = renewal_request_title
         embed.fields = []
-        await ctx.respond(embed=embed, view=VpnRenewView(self.bot, vpn_users, lang))
+        await ctx.respond(
+            embed=embed, view=VpnRenewView(self.bot, vpn_users, lang), ephemeral=True
+        )
         return None
 
     @vpn.command(

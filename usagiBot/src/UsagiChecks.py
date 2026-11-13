@@ -1,3 +1,5 @@
+from typing import Any, Optional
+
 from discord.ext import commands
 from discord import DMChannel, ApplicationContext
 
@@ -5,9 +7,44 @@ from usagiBot.src.UsagiErrors import *
 from usagiBot.cogs.Main.schemas import UsagiConfig
 from usagiBot.env import BOT_OWNER
 
+# A role with any of these is a staff role: binding it to a public reaction
+# is a privilege grant, so only administrators may do it.
+ELEVATED_PERMISSIONS = (
+    "administrator",
+    "manage_guild",
+    "manage_roles",
+    "manage_channels",
+    "manage_webhooks",
+    "manage_messages",
+    "manage_nicknames",
+    "manage_emojis",
+    "manage_events",
+    "manage_threads",
+    "kick_members",
+    "ban_members",
+    "moderate_members",
+    "mention_everyone",
+)
+
+
+def require_guild(ctx: Any) -> bool:
+    """Guild-only commands: answer DMs with NoPrivateMessage instead of crashing on ctx.guild."""
+    if ctx.guild is None:
+        raise commands.NoPrivateMessage()
+    return True
+
+
+def guild_cog_check(cog: Any, ctx: Any) -> bool:
+    """cog_check for toggleable cogs whose commands all need a guild."""
+    require_guild(ctx)
+    if check_cog_whitelist(cog, ctx):
+        return True
+    raise UsagiModuleDisabledError()
+
 
 def check_is_already_set_up():
     async def predicate(ctx):
+        require_guild(ctx)
         command = ctx.command
         if ctx.command.parent:
             command = ctx.command.parent
@@ -51,7 +88,12 @@ def check_cog_whitelist(cog, ctx) -> bool:
     return False
 
 
+def _is_guild_or_bot_owner(ctx: Any) -> bool:
+    return ctx.author.id in (ctx.guild.owner_id, BOT_OWNER)
+
+
 def check_member_is_moder(ctx):
+    require_guild(ctx)
     moder_roles = ctx.bot.moder_roles
     guild_id = ctx.guild.id
     member_roles = ctx.author.roles
@@ -68,6 +110,42 @@ def check_member_is_moder(ctx):
         return True
 
     raise UsagiCallFromNotModerError()
+
+
+def check_member_is_admin(ctx: Any) -> bool:
+    """Server administrators, the server owner or the bot owner — not bot-configured moderators."""
+    require_guild(ctx)
+    if ctx.author.guild_permissions.administrator or _is_guild_or_bot_owner(ctx):
+        return True
+    raise UsagiCallFromNotAdminError()
+
+
+def check_member_can_pin(ctx: Any) -> bool:
+    """Pinning through the bot needs Manage Messages or a bot moderator role."""
+    require_guild(ctx)
+    if ctx.author.guild_permissions.manage_messages:
+        return True
+    return check_member_is_moder(ctx)
+
+
+def role_grant_error(member: Any, role: Any) -> Optional[str]:
+    """
+    Why `member` may not hand out `role` through the bot (an i18n key),
+    or None when it is allowed. The bot assigns with its own permissions,
+    so without this a moderator could give themselves any role below the bot.
+    """
+    if role.is_default() or role.managed:
+        return "This role can't be given out"
+    if not role.is_assignable():
+        return "This role is above my highest role"
+    if member.id in (member.guild.owner_id, BOT_OWNER):
+        return None
+    if role.position >= member.top_role.position:
+        return "You can only give out roles below your highest role"
+    elevated = any(getattr(role.permissions, name) for name in ELEVATED_PERMISSIONS)
+    if elevated and not member.guild_permissions.administrator:
+        return "Only administrators can give out roles with moderation permissions"
+    return None
 
 
 def is_owner():

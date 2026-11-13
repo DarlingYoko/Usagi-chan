@@ -14,6 +14,20 @@ from usagiBot.cogs.Moderation.schemas import UsagiCogs, UsagiModerRoles
 from PIL import Image, ImageDraw, ImageFont
 import io
 
+# Bot-wide default: users may be pinged, @everyone/@here and roles never —
+# the bot often echoes text written by members.
+ALLOWED_MENTIONS = discord.AllowedMentions(
+    everyone=False, roles=False, users=True, replied_user=True
+)
+
+# Discord rejects message content longer than this
+MESSAGE_LIMIT = 2000
+
+
+def clamp_text(text: str, limit: int = MESSAGE_LIMIT) -> str:
+    """Cut `text` to `limit` characters, marking the cut with an ellipsis."""
+    return text if len(text) <= limit else text[: limit - 1] + "…"
+
 
 class UsagiEmbed(discord.Embed):
     def __eq__(self, other):

@@ -7,11 +7,11 @@ from datetime import timedelta
 from discord.ext.commands import ColorConverter
 
 from usagiBot.src.UsagiChecks import (
-    check_cog_whitelist,
+    check_member_can_pin,
+    guild_cog_check,
     check_correct_channel_command,
     check_member_is_moder,
 )
-from usagiBot.src.UsagiErrors import UsagiModuleDisabledError
 from usagiBot.cogs.Tech.tech_utils import get_user_roles, get_user_role
 from usagiBot.cogs.Tech.schemas import UsagiUnicRoles
 
@@ -23,13 +23,12 @@ class Tech(commands.Cog):
         pass
 
     def cog_check(self, ctx):
-        if check_cog_whitelist(self, ctx):
-            return True
-        raise UsagiModuleDisabledError()
+        return guild_cog_check(self, ctx)
 
     @commands.message_command(
         name="Pin message",
         name_localizations={"ru": "Закрепить сообщение"},
+        checks=[check_member_can_pin],
     )
     async def pin_message(self, ctx, message: discord.Message) -> None:
         await message.pin(reason=f"Pinned by {ctx.author.name}")

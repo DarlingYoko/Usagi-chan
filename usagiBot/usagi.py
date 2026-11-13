@@ -8,12 +8,17 @@ from pycord18n.extension import I18nExtension, Language
 from usagiBot.db.migrate import upgrade_database
 from usagiBot.env import COGS_DIR, LOG_LEVEL
 from usagiBot.src.CustomHelpCommand import CustomHelpCommand
-from usagiBot.src.UsagiUtils import init_language
+from usagiBot.src.UsagiUtils import ALLOWED_MENTIONS, init_language
 
 
 class UsagiBot(commands.Bot):
     def __init__(self, command_prefix, help_command, intents):
-        super().__init__(command_prefix, help_command, intents=intents)
+        super().__init__(
+            command_prefix,
+            help_command,
+            intents=intents,
+            allowed_mentions=ALLOWED_MENTIONS,
+        )
         self.language = None
 
         # Define logger

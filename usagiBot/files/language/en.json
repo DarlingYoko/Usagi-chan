@@ -212,5 +212,13 @@
     "VPN no profiles": "You have no active VPN profiles.",
     "Invalid date": "That date doesn't exist, check the day and month.",
     "You already have a unic role": "You already have a personal role, delete it first.",
-    "Role not found": "That role isn't part of this message."
+    "Role not found": "That role isn't part of this message.",
+    "This role can't be given out": "This role can't be given out.",
+    "This role is above my highest role": "This role is above my highest role, so I can't give it out.",
+    "You can only give out roles below your highest role": "You can only give out roles below your highest role.",
+    "Only administrators can give out roles with moderation permissions": "Only administrators can give out roles with moderation permissions.",
+    "@everyone can't be a moderation role": "@everyone can't be a moderation role.",
+    "This command can't be used in DMs": "This command can't be used in DMs.",
+    "This isn't your VPN profile": "This isn't your VPN profile.",
+    "Unknown decision: use Approved or Rejected": "Unknown decision: use Approved or Rejected."
 }

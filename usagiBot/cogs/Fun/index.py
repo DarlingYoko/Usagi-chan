@@ -12,7 +12,7 @@ from usagiBot.src.UsagiChecks import (
     is_owner,
 )
 from usagiBot.src.UsagiErrors import UsagiModuleDisabledError
-from usagiBot.src.UsagiUtils import get_embed
+from usagiBot.src.UsagiUtils import clamp_text, get_embed
 
 from pycord18n.extension import _
 
@@ -176,8 +176,10 @@ class Fun(commands.Cog):
                 files.append(file)
 
         await channel.send(
-            content=_("based from").format(
-                mention=message.author.mention, message=message.content
+            content=clamp_text(
+                _("based from").format(
+                    mention=message.author.mention, message=message.content
+                )
             ),
             files=files,
             embeds=message.embeds,

@@ -144,7 +144,12 @@ class Events(commands.Cog):
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):
         user_lang = self.bot.language.get(ctx.author.id, "en")
-        if isinstance(error, commands.CommandNotFound):
+        if isinstance(error, commands.NoPrivateMessage):
+            await ctx.reply(
+                self.bot.i18n.get_text("This command can't be used in DMs", user_lang),
+                delete_after=2 * 60,
+            )
+        elif isinstance(error, commands.CommandNotFound):
             await ctx.reply(
                 self.bot.i18n.get_text("This command doesn't exist", user_lang),
                 delete_after=2 * 60,
@@ -186,7 +191,7 @@ class Events(commands.Cog):
                 self.bot.i18n.get_text("Your color is in wrong format", user_lang),
                 delete_after=2 * 60,
             )
-        elif isinstance(error, discord.errors.CheckFailure):
+        elif isinstance(error, (discord.errors.CheckFailure, commands.CheckFailure)):
             await ctx.reply(
                 self.bot.i18n.get_text("Some requirements were not met", user_lang),
                 delete_after=2 * 60,
@@ -206,7 +211,12 @@ class Events(commands.Cog):
     @commands.Cog.listener()
     async def on_application_command_error(self, ctx, error):
         user_lang = self.bot.language.get(ctx.author.id, "en")
-        if isinstance(error, discord.errors.CheckFailure):
+        if isinstance(error, commands.NoPrivateMessage):
+            await ctx.respond(
+                self.bot.i18n.get_text("This command can't be used in DMs", user_lang),
+                ephemeral=True,
+            )
+        elif isinstance(error, discord.errors.CheckFailure):
             await ctx.respond(
                 self.bot.i18n.get_text("Some requirements were not met", user_lang),
                 ephemeral=True,
@@ -246,6 +256,12 @@ class Events(commands.Cog):
         elif isinstance(error, BadColourArgument):
             await ctx.respond(
                 self.bot.i18n.get_text("Your color is in wrong format", user_lang),
+                ephemeral=True,
+            )
+        elif isinstance(error, commands.CheckFailure):
+            # ext checks (has_permissions, guild_only, ...) are user errors too
+            await ctx.respond(
+                self.bot.i18n.get_text("Some requirements were not met", user_lang),
                 ephemeral=True,
             )
         elif isinstance(error, discord.ApplicationCommandInvokeError) and (

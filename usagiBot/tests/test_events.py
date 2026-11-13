@@ -581,3 +581,52 @@ class TestDumpData(IsolatedAsyncioTestCase):
         self.bot.logger.exception.assert_called()
         # 3 restored + 1 that arrived during the failed flush
         self.assertEqual(self.bot.messages_dump["g1"]["c1"]["u1"]["messages"], 4)
+
+
+class TestGuildOnlyErrors(IsolatedAsyncioTestCase):
+    @mock.patch("usagiBot.cogs.Main.schemas.UsagiBackup", new_callable=mock.AsyncMock)
+    @mock.patch.object(asyncio, "create_async_engine")
+    def setUp(self, mock_engine, mock_UsagiBackup) -> None:
+        from usagiBot.cogs.Events.index import Events
+
+        self.bot = mock.MagicMock()
+        self.bot.i18n = init_i18n()
+        self.bot.language = {}
+        self.Events = Events(self.bot)
+        self.ctx = mock.AsyncMock()
+        self.notify = mock.patch(
+            "usagiBot.cogs.Events.index.error_notification_to_owner",
+            new_callable=mock.AsyncMock,
+        )
+        self.owner_dm = self.notify.start()
+        self.addCleanup(self.notify.stop)
+
+    async def test_dm_use_of_guild_command_is_explained(self) -> None:
+        await self.Events.on_application_command_error(
+            self.ctx, commands.NoPrivateMessage()
+        )
+
+        self.ctx.respond.assert_awaited_with(
+            "This command can't be used in DMs.", ephemeral=True
+        )
+        self.owner_dm.assert_not_called()
+
+    async def test_ext_check_failures_do_not_page_owner(self) -> None:
+        await self.Events.on_application_command_error(
+            self.ctx, commands.MissingPermissions(["manage_messages"])
+        )
+
+        self.ctx.respond.assert_awaited_with(
+            "Some requirements were not met.", ephemeral=True
+        )
+        self.owner_dm.assert_not_called()
+
+    async def test_prefix_dm_use_is_explained(self) -> None:
+        self.ctx.message.channel = mock.MagicMock(spec=discord.DMChannel)
+
+        await self.Events.on_command_error(self.ctx, commands.NoPrivateMessage())
+
+        self.assertEqual(
+            self.ctx.reply.call_args.args[0], "This command can't be used in DMs."
+        )
+        self.owner_dm.assert_not_called()

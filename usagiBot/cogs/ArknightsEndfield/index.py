@@ -13,8 +13,7 @@ from discord.ext.commands import ColorConverter
 from usagiBot.cogs.ArknightsEndfield.schemas import UsagiGryphline, UsagiEndfieldProfile
 from usagiBot.cogs.Main.schemas import UsagiConfig
 from usagiBot.cogs.ArknightsEndfield.arknights_utils import EndfieldClient, draw_endfield_profile
-from usagiBot.src.UsagiChecks import check_is_already_set_up, check_cog_whitelist
-from usagiBot.src.UsagiErrors import UsagiModuleDisabledError
+from usagiBot.src.UsagiChecks import check_is_already_set_up, guild_cog_check
 from usagiBot.src.UsagiNet import UnsafeUrlError, fetch_image
 from usagiBot.src.UsagiUtils import guard_loop, guarded_item
 
@@ -155,9 +154,7 @@ class Endfield(commands.Cog):
         self.check_sanity_overflow.start()
 
     def cog_check(self, ctx):
-        if check_cog_whitelist(self, ctx):
-            return True
-        raise UsagiModuleDisabledError()
+        return guild_cog_check(self, ctx)
 
     @tasks.loop(minutes=60)
     @guard_loop

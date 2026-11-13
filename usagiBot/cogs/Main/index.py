@@ -8,6 +8,7 @@ from discord.commands import SlashCommandGroup
 from usagiBot.src.UsagiChecks import (
     check_correct_channel_command,
     check_member_is_moder,
+    role_grant_error,
 )
 from usagiBot.src.UsagiErrors import *
 from usagiBot.cogs.Main.schemas import (
@@ -104,6 +105,7 @@ class Main(commands.Cog):
         name_localizations={"ru": "помощь"},
         description="Show help for commands",
         description_localizations={"ru": "Показать помощь по командам"},
+        contexts={discord.InteractionContextType.guild},
     )
     @discord.commands.option(
         name="module",
@@ -457,6 +459,12 @@ class Main(commands.Cog):
         emoji: discord.Emoji,
         description: str,
     ):
+        grant_error = role_grant_error(ctx.author, role)
+        if grant_error:
+            return await ctx.respond(
+                embed=get_embed(title=_(grant_error), color=discord.Color.red()),
+                ephemeral=True,
+            )
         auto_roles = ctx.bot.auto_roles.get(ctx.guild_id, {})
         message_id = message
         role_data = auto_roles.get(message_id, None)
@@ -635,6 +643,12 @@ class Main(commands.Cog):
         new_role: discord.Role,
     ):
         await ctx.defer(ephemeral=True)
+        grant_error = role_grant_error(ctx.author, new_role)
+        if grant_error:
+            return await ctx.send_followup(
+                embed=get_embed(title=_(grant_error), color=discord.Color.red()),
+                ephemeral=True,
+            )
         auto_roles = ctx.bot.auto_roles.get(ctx.guild_id, {})
         message_id = message
         role_data = auto_roles.get(message_id, None)
